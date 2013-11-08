@@ -6,7 +6,7 @@ pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
 
 include_directories(
     ${Unity-qml_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/Unity
     ${CMAKE_CURRENT_BINARY_DIR}
     ${LIBUNITYPROTO_INCLUDE_DIRS}
     ${LIBUNITY_INCLUDE_DIRS}

@@ -50,12 +50,12 @@ macro(export_qmlplugin PLUGIN VERSION PLUGIN_SUBPATH)
     if(NOT CMAKE_CROSSCOMPILING)
         # create the plugin.qmltypes file
         add_custom_target(${PLUGIN}-qmltypes ALL
-            COMMAND ${qmlplugindump_exe} -notrelocatable ${PLUGIN} ${VERSION} ${CMAKE_BINARY_DIR}/plugins > ${CMAKE_BINARY_DIR}/plugins/${PLUGIN_SUBPATH}/plugin.qmltypes
+            COMMAND ${qmlplugindump_exe} -notrelocatable ${PLUGIN} ${VERSION} ${CMAKE_CURRENT_BINARY_DIR}/../ > ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
         )
         add_dependencies(${PLUGIN}-qmltypes ${PLUGIN}-qmlfiles ${qmlplugin_TARGETS})
 
         # install the qmltypes file.
-        install(FILES ${CMAKE_BINARY_DIR}/plugins/${PLUGIN_SUBPATH}/plugin.qmltypes
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
             DESTINATION ${SHELL_PRIVATE_LIBDIR}/qml/${PLUGIN_SUBPATH}
         )
     endif()
