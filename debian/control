@@ -1,0 +1,26 @@
+Source: unity8-plugin-scopes
+Priority: extra
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Build-Depends: debhelper (>= 9),
+               cmake,
+               pkg-config,
+               libdee-qt5-dev (>= 3.2),
+               libunity-core-6.0-dev (>= 7.1.1),
+               libglib2.0-dev,
+               qtdeclarative5-dev,
+               qtdeclarative5-dev-tools,
+Standards-Version: 3.9.4
+Section: libs
+Homepage: https://launchpad.net/unity-scopes-shell
+Vcs-Bzr: lp:unity-scopes-shell
+Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
+
+Package: unity8-plugin-scopes
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends},
+Depends: qtdeclarative5-dee-plugin,
+         ${misc:Depends},
+         ${shlibs:Depends},
+Description: QML plugin for Scopes
+ Library to integrate scopes with the Unity shell
