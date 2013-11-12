@@ -86,6 +86,7 @@ enable_testing()
 # add subdirectories to build
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(data)
 
 #
 # Translation
