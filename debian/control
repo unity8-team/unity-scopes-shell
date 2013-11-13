@@ -22,5 +22,7 @@ Pre-Depends: ${misc:Pre-Depends},
 Depends: qtdeclarative5-dee-plugin,
          ${misc:Depends},
          ${shlibs:Depends},
+Provides: unity-scopes-impl,
+          unity-scopes-impl-0,
 Description: QML plugin for Scopes
  Library to integrate scopes with the Unity shell
