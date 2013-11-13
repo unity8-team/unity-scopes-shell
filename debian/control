@@ -24,5 +24,7 @@ Depends: qtdeclarative5-dee-plugin,
          ${shlibs:Depends},
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
+Breaks: unity8-private (<< 7.84)
+Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Library to integrate scopes with the Unity shell
