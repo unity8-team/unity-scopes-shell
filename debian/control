@@ -1,5 +1,5 @@
 Source: unity-scopes-shell
-Priority: extra
+Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: cmake,
                debhelper (>= 9),
