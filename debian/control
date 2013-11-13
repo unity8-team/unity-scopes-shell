@@ -1,12 +1,12 @@
 Source: unity-scopes-shell
 Priority: extra
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Build-Depends: debhelper (>= 9),
-               cmake,
-               pkg-config,
+Build-Depends: cmake,
+               debhelper (>= 9),
                libdee-qt5-dev (>= 3.2),
-               libunity-core-6.0-dev (>= 7.1.1),
                libglib2.0-dev,
+               libunity-core-6.0-dev (>= 7.1.1),
+               pkg-config,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
 Standards-Version: 3.9.4
@@ -18,12 +18,9 @@ Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
 Package: unity-plugin-scopes
 Architecture: any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends},
-Depends: qtdeclarative5-dee-plugin,
-         ${misc:Depends},
-         ${shlibs:Depends},
-Provides: unity-scopes-impl,
-          unity-scopes-impl-0,
+Pre-Depends: ${misc:Pre-Depends}
+Depends: qtdeclarative5-dee-plugin, ${misc:Depends}, ${shlibs:Depends}
+Provides: unity-scopes-impl, unity-scopes-impl-0
 Breaks: unity8-private (<< 7.84)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
