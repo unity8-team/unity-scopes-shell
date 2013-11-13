@@ -1,6 +1,6 @@
 Source: unity-scopes-shell
 Priority: optional
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
                libdee-qt5-dev (>= 3.2),
@@ -12,7 +12,7 @@ Build-Depends: cmake,
                qtdeclarative5-dev-tools,
                qtdeclarative5-qtquick2-plugin
 Standards-Version: 3.9.4
-Section: libs
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
 Vcs-Bzr: lp:unity-scopes-shell
 Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
