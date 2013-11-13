@@ -7,8 +7,10 @@ Build-Depends: cmake,
                libglib2.0-dev,
                libunity-core-6.0-dev (>= 7.1.1),
                pkg-config,
+               qt5-default,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
+               qtdeclarative5-qtquick2-plugin
 Standards-Version: 3.9.4
 Section: libs
 Homepage: https://launchpad.net/unity-scopes-shell
