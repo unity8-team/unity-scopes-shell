@@ -1,4 +1,4 @@
-Source: unity8-plugin-scopes
+Source: unity-scopes-shell
 Priority: extra
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: debhelper (>= 9),
@@ -15,7 +15,7 @@ Homepage: https://launchpad.net/unity-scopes-shell
 Vcs-Bzr: lp:unity-scopes-shell
 Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
 
-Package: unity8-plugin-scopes
+Package: unity-plugin-scopes
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},
