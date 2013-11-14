@@ -48,7 +48,9 @@ set(QMLPLUGIN_SRC
     variantutils.cpp
 )
 
-add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
+add_subdirectory(scopes-ng)
+
+add_library(Unity-qml SHARED ${QMLPLUGIN_SRC} $<TARGET_OBJECTS:ScopesNG-qml>)
 
 target_link_libraries(Unity-qml
     ${QTDEE_LDFLAGS}
