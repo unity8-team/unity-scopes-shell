@@ -19,7 +19,7 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 includedir=${prefix}/include
 libdir=@CMAKE_INSTALL_PREFIX@/@SHELL_PRIVATE_LIBDIR@/qml/Unity
-plugindir=${libdir}
+plugindir=@CMAKE_INSTALL_PREFIX@/@SHELL_PRIVATE_LIBDIR@/qml
 
 Name: unity-scopes-qml
 Description: Unity Scopes QML plugin
