@@ -2,6 +2,7 @@
  * Copyright (C) 2013 Canonical, Ltd.
  *
  * Authors:
+ *  Michał Sawicz <michal.sawicz@canonical.com>
  *  Michal Hruby <michal.hruby@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,62 +18,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NG_SCOPES_H
-#define NG_SCOPES_H
 
-// Qt
+#ifndef NG_CATEGORIES_H
+#define NG_CATEGORIES_H
+
 #include <QAbstractListModel>
-#include <QList>
+#include <QSet>
+#include <QTimer>
 
-#include <scopes/Runtime.h>
+#include <scopes/Category.h>
 
 namespace scopes_ng
 {
 
-class Scope;
-
-class Scopes : public QAbstractListModel
+class Categories : public QAbstractListModel
 {
     Q_OBJECT
 
     Q_ENUMS(Roles)
 
-    Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
-
 public:
-    explicit Scopes(QObject *parent = 0);
-    ~Scopes() = default;
+    explicit Categories(QObject* parent = 0);
 
     enum Roles {
-        RoleScope,
-        RoleId,
-        RoleVisible
+        RoleCategoryId,
+        RoleName,
+        RoleIcon,
+        RoleRenderer,
+        RoleContentType,
+        RoleRendererHint,
+        RoleProgressSource,
+        RoleHints,
+        RoleResults,
+        RoleCount
     };
 
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex& parent) const override;
 
-    Q_INVOKABLE QVariant get(int row) const;
-    Q_INVOKABLE QVariant get(const QString& scope_id) const;
-
-    QHash<int, QByteArray> roleNames() const;
-
-    bool loaded() const;
-
-Q_SIGNALS:
-    void loadedChanged(bool loaded);
+    void registerCategory(unity::api::scopes::Category::SCPtr category);
 
 private Q_SLOTS:
-    void populateScopes();
 
 private:
     QHash<int, QByteArray> m_roles;
-    QList<Scope*> m_scopes;
-    bool m_loaded;
-
-    unity::api::scopes::Runtime::UPtr m_scopes_runtime;
+    QList<unity::api::scopes::Category::SCPtr> m_categories;
 };
 
 } // namespace scopes_ng
 
-#endif // NG_SCOPES_H
+#endif // NG_CATEGORIES_H

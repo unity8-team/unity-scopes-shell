@@ -1,15 +1,16 @@
 # Dependencies
 include(FindPkgConfig)
-pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${QTDEE_INCLUDE_DIRS}
     ${Qt5Qml_INCLUDE_DIRS}
+    ${SCOPESLIB_INCLUDE_DIRS}
 )
 
 set(PLUGIN_SRC
+    categories.cpp
     scope.cpp
     scopes.cpp
 )

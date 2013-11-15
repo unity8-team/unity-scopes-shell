@@ -27,8 +27,13 @@
 #include <QDebug>
 #include <QTimer>
 
+#include <scopes/Registry.h>
+#include <unity/UnityExceptions.h>
+
 namespace scopes_ng
 {
+
+using namespace unity::api;
 
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
@@ -37,6 +42,15 @@ Scopes::Scopes(QObject *parent)
     m_roles[Scopes::RoleScope] = "scope";
     m_roles[Scopes::RoleId] = "id";
     m_roles[Scopes::RoleVisible] = "visible";
+
+    try
+    {
+        m_scopes_runtime = scopes::Runtime::create("dash");
+    }
+    catch (unity::Exception const& err)
+    {
+        qWarning("ERROR! Caught %s", err.to_string().c_str());
+    }
 
     // simulate a bit of asynchrocinity, might not be needed
     QTimer::singleShot(1, this, SLOT(populateScopes()));
@@ -60,7 +74,16 @@ void Scopes::populateScopes()
 
     // FIXME: a little bit of hardcoded data for now
     auto scope = new Scope(this);
-    m_scopes.append(scope);
+    try
+    {
+        auto registry = m_scopes_runtime->registry();
+        scope->setProxyObject(registry->find("scope-A"));
+        m_scopes.append(scope);
+    }
+    catch (unity::Exception const& err)
+    {
+        qWarning("ERROR! Caught %s", err.to_string().c_str());
+    }
 
     endResetModel();
 }

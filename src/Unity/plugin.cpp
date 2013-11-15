@@ -17,7 +17,6 @@
  */
 
 // Qt
-#include <QDBusConnection>
 #include <QQmlContext>
 #include <qqml.h>
 
@@ -38,6 +37,7 @@
 
 #include "scopes-ng/scopes.h"
 #include "scopes-ng/scope.h"
+#include "scopes-ng/categories.h"
 
 // libqtdee
 #include "deelistmodel.h"
@@ -60,6 +60,7 @@ void UnityPlugin::registerTypes(const char *uri)
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scope>(uri, 0, 2, "Scope");
     qmlRegisterType<scopes_ng::Scopes>(uri, 0, 2, "Scopes");
+    qmlRegisterType<scopes_ng::Categories>(uri, 0, 2, "Categories");
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)

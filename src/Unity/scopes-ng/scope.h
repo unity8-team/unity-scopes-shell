@@ -25,8 +25,13 @@
 #include <QString>
 #include <QMetaType>
 
+// scopes
+#include <scopes/Scope.h>
+
 namespace scopes_ng
 {
+
+class Categories;
 
 class Scope : public QObject
 {
@@ -41,7 +46,7 @@ class Scope : public QObject
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(QString shortcut READ shortcut NOTIFY shortcutChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
-    //Q_PROPERTY(Categories* categories READ categories NOTIFY categoriesChanged)
+    Q_PROPERTY(Categories* categories READ categories NOTIFY categoriesChanged)
     //Q_PROPERTY(Filters* filters READ filters NOTIFY filtersChanged)
 
     Q_PROPERTY(QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged)
@@ -62,7 +67,7 @@ public:
     QString shortcut() const;
     bool connected() const;
     bool searchInProgress() const;
-    //Categories* categories() const;
+    Categories* categories() const;
     //Filters* filters() const;
     QString searchQuery() const;
     QString noResultsHint() const;
@@ -85,6 +90,7 @@ public:
 
     //void setUnityScope(const unity::dash::Scope::Ptr& scope);
     //unity::dash::Scope::Ptr unityScope() const;
+    void setProxyObject(unity::api::scopes::ScopeProxy const& proxy);
 
 Q_SIGNALS:
     void idChanged(const std::string&);
@@ -96,7 +102,7 @@ Q_SIGNALS:
     void visibleChanged(bool);
     void shortcutChanged(const std::string&);
     void connectedChanged(bool);
-    //void categoriesChanged();
+    void categoriesChanged();
     //void filtersChanged();
     void searchQueryChanged();
     void noResultsHintChanged();
@@ -120,6 +126,9 @@ private:
     QString m_formFactor;
     bool m_isActive;
     bool m_searchInProgress;
+
+    unity::api::scopes::ScopeProxy m_proxy;
+    Categories* m_categories;
 };
 
 } // namespace scopes_ng

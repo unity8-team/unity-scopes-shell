@@ -21,7 +21,7 @@
 #include "scope.h"
 
 // local
-//#include "categories.h"
+#include "categories.h"
 //#include "preview.h"
 
 // Qt
@@ -34,15 +34,46 @@
 #include <libintl.h>
 #include <glib.h>
 
+#include <scopes/ReplyBase.h>
+#include <scopes/ResultItem.h>
+
 namespace scopes_ng
 {
+
+using namespace unity::api;
+
+class QueryReply: public scopes::ReplyBase
+{
+public:
+    virtual void push(scopes::ResultItem const& result) override
+    {
+        qWarning("received result: %s", result.uri().c_str());
+    }
+
+    virtual void finished() override
+    {
+        qWarning("query finished");
+    }
+
+    QueryReply()
+    {
+    }
+
+private:
+    
+};
 
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
 {
-    //m_categories.reset(new Categories(this));
+    m_categories = new Categories(this);
+}
+
+void Scope::setProxyObject(scopes::ScopeProxy const& proxy)
+{
+    m_proxy = proxy;
 }
 
 QString Scope::id() const
@@ -98,12 +129,12 @@ bool Scope::connected() const
     return false;
 }
 
-/*
 Categories* Scope::categories() const
 {
-    return m_categories.get();
+    return m_categories;
 }
 
+/*
 Filters* Scope::filters() const
 {
     return m_filters.get();
@@ -141,6 +172,11 @@ void Scope::setSearchQuery(const QString& search_query)
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
         m_searchQuery = search_query;
         // FIXME: dispatch search to the proxy
+        if (m_proxy) {
+            scopes::VariantMap vm;
+            std::shared_ptr<QueryReply> reply(new QueryReply);
+            m_proxy->create_query(search_query.toStdString(), vm, reply);
+        }
         Q_EMIT searchQueryChanged();
         if (!m_searchInProgress) {
             m_searchInProgress = true;
