@@ -53,8 +53,10 @@ find_package(Qt5DBus)
 # Standard install paths
 include(GNUInstallDirs)
 
-#set(SHELL_APP_DIR ${CMAKE_INSTALL_DATADIR}/unity8)
-set(SHELL_PRIVATE_LIBDIR ${CMAKE_INSTALL_LIBDIR}/unity8)
+execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=plugindir_suffix unity-shell-api OUTPUT_VARIABLE SHELL_PLUGINDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(SHELL_PLUGINDIR STREQUAL "")
+    set(SHELL_PLUGINDIR ${CMAKE_INSTALL_LIBDIR}/unity8/qml)
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
