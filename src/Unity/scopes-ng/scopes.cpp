@@ -45,7 +45,9 @@ Scopes::Scopes(QObject *parent)
 
     try
     {
-        m_scopes_runtime = scopes::Runtime::create("dash");
+        // FIXME: use proper path for the runtime config
+        //   but have libunity-scopes export it first?!
+        m_scopes_runtime = scopes::Runtime::create("dash", "/home/miso/projects/unity-scopes-api/build/demo/Runtime.ini");
     }
     catch (unity::Exception const& err)
     {
@@ -73,11 +75,18 @@ void Scopes::populateScopes()
     beginResetModel();
 
     // FIXME: a little bit of hardcoded data for now
-    auto scope = new Scope(this);
     try
     {
         auto registry = m_scopes_runtime->registry();
+
+        auto scope = new Scope(this);
+        scope->setScopeId(QString("home.scope"));
         scope->setProxyObject(registry->find("scope-A"));
+        m_scopes.append(scope);
+
+        scope = new Scope(this);
+        scope->setScopeId(QString("scope-B"));
+        scope->setProxyObject(registry->find("scope-B"));
         m_scopes.append(scope);
     }
     catch (unity::Exception const& err)
@@ -86,6 +95,9 @@ void Scopes::populateScopes()
     }
 
     endResetModel();
+
+    m_loaded = true;
+    Q_EMIT loadedChanged(m_loaded);
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const

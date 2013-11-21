@@ -56,6 +56,9 @@ class Scope : public QObject
 
 public:
     explicit Scope(QObject *parent = 0);
+    virtual ~Scope();
+
+    virtual bool event(QEvent* ev) override;
 
     /* getters */
     QString id() const;
@@ -88,12 +91,12 @@ public:
                               const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
     Q_INVOKABLE void cancelActivation();
 
-    //void setUnityScope(const unity::dash::Scope::Ptr& scope);
     //unity::dash::Scope::Ptr unityScope() const;
     void setProxyObject(unity::api::scopes::ScopeProxy const& proxy);
+    void setScopeId(QString const& scope_id);
 
 Q_SIGNALS:
-    void idChanged(const std::string&);
+    void idChanged();
     void nameChanged(const std::string&);
     void iconHintChanged(const std::string&);
     void descriptionChanged(const std::string&);
@@ -121,6 +124,7 @@ Q_SIGNALS:
 private Q_SLOTS:
 
 private:
+    QString m_scopeId;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
@@ -128,6 +132,8 @@ private:
     bool m_searchInProgress;
 
     unity::api::scopes::ScopeProxy m_proxy;
+    unity::api::scopes::QueryCtrlProxy m_lastQuery;
+    unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;
 };
 
