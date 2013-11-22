@@ -144,7 +144,7 @@ public:
     }
 
     // which thread is this invoked in? (assuming same as push())
-    virtual void finished() override
+    virtual void finished(scopes::ReceiverBase::Reason reason) override
     {
         m_collector->postResults(m_collector, true);
     }
@@ -197,8 +197,11 @@ bool Scope::event(QEvent* ev)
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_set)
 {
+    if (result_set.count() == 0) return;
+
     // this will keep the list of categories in order
     QList<scopes::Category::SCPtr> categories;
+
     // split the result_set by category_id
     QMap<std::string, QList<std::shared_ptr<scopes::ResultItem>>> category_results;
     Q_FOREACH(std::shared_ptr<scopes::ResultItem> result, result_set) {
