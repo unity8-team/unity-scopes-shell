@@ -96,7 +96,6 @@ void Categories::updateResultCount(ResultsModel* resultsModel)
         qWarning("unable to update results counts");
         return;
     }
-    qWarning("updating results count for %s", m_categories[idx]->id().c_str());
 
     QVector<int> roles;
     roles.append(RoleCount);
@@ -153,10 +152,8 @@ Categories::data(const QModelIndex& index, int role) const
             return QVariant();
         case RoleResults:
             return QVariant::fromValue(resultsModel);
-        case RoleCount: {
-            qWarning("count for %s: %d", cat->id().c_str(), resultsModel->rowCount(QModelIndex()));
+        case RoleCount:
             return QVariant(resultsModel ? resultsModel->rowCount(QModelIndex()) : 0);
-        }
         default:
             return QVariant();
     }
