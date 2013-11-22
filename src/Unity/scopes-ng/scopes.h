@@ -23,8 +23,12 @@
 // Qt
 #include <QAbstractListModel>
 #include <QList>
+#include <QThread>
 
 #include <scopes/Runtime.h>
+#include <scopes/Registry.h>
+#include <scopes/Scope.h>
+#include <scopes/ScopeProxyFwd.h>
 
 namespace scopes_ng
 {
@@ -64,14 +68,33 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void populateScopes();
+    void discoveryFinished();
 
 private:
     QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
     bool m_loaded;
 
-    unity::api::scopes::Runtime::UPtr m_scopes_runtime;
+    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
 };
+
+class ScopeListWorker: public QThread
+{
+    Q_OBJECT
+
+public:
+    void run() override;
+    unity::api::scopes::Runtime::UPtr takeRuntime();
+    unity::api::scopes::ScopeMap scopeMap() const;
+
+Q_SIGNALS:
+    void discoveryFinished();
+
+private:
+    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::api::scopes::ScopeMap m_scopeMap;
+};
+
 
 } // namespace scopes_ng
 

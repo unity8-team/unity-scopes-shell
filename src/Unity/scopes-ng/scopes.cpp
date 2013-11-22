@@ -28,6 +28,8 @@
 #include <QTimer>
 
 #include <scopes/Registry.h>
+#include <scopes/Scope.h>
+#include <scopes/ScopeProxyFwd.h>
 #include <unity/UnityExceptions.h>
 
 namespace scopes_ng
@@ -35,6 +37,33 @@ namespace scopes_ng
 
 using namespace unity::api;
 
+void ScopeListWorker::run()
+{
+    try
+    {
+        // FIXME: use proper path for the runtime config
+        //   but have libunity-scopes export it first?!
+        m_scopesRuntime = scopes::Runtime::create("dash", "/home/miso/projects/unity-scopes-api/build/demo/Runtime.ini");
+        auto registry = m_scopesRuntime->registry();
+        m_scopeMap = registry->list();
+    }
+    catch (unity::Exception const& err)
+    {
+        qWarning("ERROR! Caught %s", err.to_string().c_str());
+    }
+    Q_EMIT discoveryFinished();
+}
+
+scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
+{
+    return std::move(m_scopesRuntime);
+}
+
+scopes::ScopeMap ScopeListWorker::scopeMap() const
+{
+    return m_scopeMap;
+}
+        
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
     , m_loaded(false)
@@ -43,19 +72,8 @@ Scopes::Scopes(QObject *parent)
     m_roles[Scopes::RoleId] = "id";
     m_roles[Scopes::RoleVisible] = "visible";
 
-    try
-    {
-        // FIXME: use proper path for the runtime config
-        //   but have libunity-scopes export it first?!
-        m_scopes_runtime = scopes::Runtime::create("dash", "/home/miso/projects/unity-scopes-api/build/demo/Runtime.ini");
-    }
-    catch (unity::Exception const& err)
-    {
-        qWarning("ERROR! Caught %s", err.to_string().c_str());
-    }
-
     // simulate a bit of asynchrocinity, might not be needed
-    QTimer::singleShot(1, this, SLOT(populateScopes()));
+    QTimer::singleShot(0, this, SLOT(populateScopes()));
 }
 
 QHash<int, QByteArray> Scopes::roleNames() const
@@ -72,28 +90,30 @@ int Scopes::rowCount(const QModelIndex& parent) const
 
 void Scopes::populateScopes()
 {
+    auto thread = new ScopeListWorker;
+    QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::discoveryFinished);
+    QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
+    thread->start();
+}
+
+void Scopes::discoveryFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+    
+    m_scopesRuntime = thread->takeRuntime();
+    auto scopes = thread->scopeMap();
+
+    int i = 0;
     beginResetModel();
-
-    // FIXME: a little bit of hardcoded data for now
-    try
-    {
-        auto registry = m_scopes_runtime->registry();
-
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         auto scope = new Scope(this);
-        scope->setScopeId(QString("home.scope"));
-        scope->setProxyObject(registry->find("scope-A"));
-        m_scopes.append(scope);
-
-        scope = new Scope(this);
-        scope->setScopeId(QString("scope-onlinemusic"));
-        scope->setProxyObject(registry->find("scope-onlinemusic"));
+        // FIXME: seems we need home.scope, Unity doesn't like when it's not there
+        QString scopeId("home.scope");
+        if (++i > 1) scopeId = QString::fromStdString(it->first);
+        scope->setScopeId(scopeId);
+        scope->setProxyObject(it->second);
         m_scopes.append(scope);
     }
-    catch (unity::Exception const& err)
-    {
-        qWarning("ERROR! Caught %s", err.to_string().c_str());
-    }
-
     endResetModel();
 
     m_loaded = true;

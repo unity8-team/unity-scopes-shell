@@ -56,7 +56,7 @@ void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::ResultIt
 {
     if (results.count() == 0) return;
     
-    beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count());
+    beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
     Q_FOREACH(std::shared_ptr<scopes::ResultItem> const& result, results) {
         m_results.append(result);
     }

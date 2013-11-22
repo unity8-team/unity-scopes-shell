@@ -243,7 +243,7 @@ QString Scope::id() const
 QString Scope::name() const
 {
     // FIXME: get from scope config
-    return QString::fromStdString("Foo");
+    return m_scopeId;
 }
 
 QString Scope::iconHint() const
