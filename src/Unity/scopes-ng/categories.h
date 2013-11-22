@@ -28,6 +28,8 @@
 
 #include <scopes/Category.h>
 
+#include "resultsmodel.h"
+
 namespace scopes_ng
 {
 
@@ -57,13 +59,17 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent) const override;
 
-    void registerCategory(unity::api::scopes::Category::SCPtr category);
+    ResultsModel* lookupCategory(std::string const& category_id);
+    void registerCategory(unity::api::scopes::Category::SCPtr category, ResultsModel* model);
+    void updateResultCount(ResultsModel* resultsModel);
+    void clearAll();
 
 private Q_SLOTS:
 
 private:
     QHash<int, QByteArray> m_roles;
     QList<unity::api::scopes::Category::SCPtr> m_categories;
+    QMap<std::string, ResultsModel*> m_categoryResults;
 };
 
 } // namespace scopes_ng

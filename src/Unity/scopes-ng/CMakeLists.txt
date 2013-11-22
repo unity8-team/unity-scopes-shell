@@ -11,6 +11,7 @@ include_directories(
 
 set(PLUGIN_SRC
     categories.cpp
+    resultsmodel.cpp
     scope.cpp
     scopes.cpp
 )

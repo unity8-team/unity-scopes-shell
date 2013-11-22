@@ -47,64 +47,7 @@ namespace scopes_ng
 
 using namespace unity::api;
 
-class ResultCollector: public QObject
-{
-public:
-    ResultCollector(): QObject(nullptr), m_finished(false), m_posted(false)
-    {
-    }
-
-    /* Returns true if result was added, false if the event no longer accepts
-     * more results */
-    void addResult(std::shared_ptr<scopes::ResultItem> const& result)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_results.append(result);
-    }
-
-    QList<std::shared_ptr<scopes::ResultItem>> getResults()
-    {
-        QMutexLocker locker(&m_mutex);
-        m_posted = false;
-
-        QList<std::shared_ptr<scopes::ResultItem>> results;
-        m_results.swap(results);
-
-        return results;
-    }
-
-    bool finished()
-    {
-        QMutexLocker locker(&m_mutex);
-        return m_finished;
-    }
-
-    void setFinished(bool finished)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_finished = finished;
-    }
-
-    // Returns whether this resultset was already posted, note that call
-    // to getResults() resets the flag and allows to post the resultset again
-    bool posted()
-    {
-        QMutexLocker locker(&m_mutex);
-        return m_posted;
-    }
-
-    void setPosted(bool posted)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_posted = posted;
-    }
-
-private:
-    QMutex m_mutex;
-    QList<std::shared_ptr<scopes::ResultItem>> m_results;
-    bool m_finished;
-    bool m_posted;
-};
+class ResultCollector;
 
 class PushEvent: public QEvent
 {
@@ -128,57 +71,96 @@ private:
 
 const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
 
+class ResultCollector: public QObject
+{
+public:
+    ResultCollector(QObject* receiver): QObject(nullptr), m_receiver(receiver), m_finished(false), m_posted(false)
+    {
+    }
+
+    // Returns bool indicating whether this resultset was already posted
+    bool addResult(std::shared_ptr<scopes::ResultItem> const& result)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_results.append(result);
+
+        return m_posted;
+    }
+
+    QList<std::shared_ptr<scopes::ResultItem>> getResults()
+    {
+        QList<std::shared_ptr<scopes::ResultItem>> results;
+
+        QMutexLocker locker(&m_mutex);
+        m_posted = false;
+        m_results.swap(results);
+
+        return results;
+    }
+
+    void postResults(QSharedPointer<ResultCollector> collector, bool last = false)
+    {
+        QMutexLocker locker(&m_mutex);
+        if (last != m_finished) m_finished = last;
+        if (m_posted || !m_receiver) return;
+
+        // FIXME: alloc outside of the lock
+        PushEvent* pushEvent = new PushEvent(collector);
+        m_posted = true;
+
+        // posting the event steals the ownership
+        QCoreApplication::postEvent(m_receiver, pushEvent);
+    }
+
+    bool finished()
+    {
+        QMutexLocker locker(&m_mutex);
+        return m_finished;
+    }
+
+    void invalidate()
+    {
+        QMutexLocker locker(&m_mutex);
+        m_receiver = nullptr;
+    }
+
+private:
+    QMutex m_mutex;
+    QList<std::shared_ptr<scopes::ResultItem>> m_results;
+    QObject* m_receiver;
+    bool m_finished;
+    bool m_posted;
+};
+
 class ResultReceiver: public scopes::ReceiverBase
 {
 public:
     virtual void push(scopes::ResultItem result) override
     {
         auto res = std::make_shared<scopes::ResultItem>(std::move(result));
-        m_collector->addResult(res);
-        // FIXME: we could post the event even here, but do we want that?
-        postResults();
+        bool posted = m_collector->addResult(res);
+        // FIXME: we can post the event here, but do we really want that?
+        if (!posted) m_collector->postResults(m_collector);
     }
 
     // which thread is this invoked in? (assuming same as push())
     virtual void finished() override
     {
-        qWarning("query was finished");
-        m_collector->setFinished(true);
-        postResults();
-    }
-
-    void postResults()
-    {
-        if (m_collector->posted()) return;
-
-        PushEvent* pushEvent = new PushEvent(m_collector);
-        m_collector->setPosted(true);
-
-        QMutexLocker locker(&m_receiver_lock);
-        if (m_receiver) {
-            // posting the event steals the ownership
-            QCoreApplication::postEvent(m_receiver, pushEvent);
-        } else {
-            delete pushEvent;
-        }
+        m_collector->postResults(m_collector, true);
     }
 
     void invalidate()
     {
-        QMutexLocker locker(&m_receiver_lock);
-        m_receiver = nullptr;
+        m_collector->invalidate();
     }
 
     ResultReceiver(QObject* receiver):
-        m_collector(new ResultCollector),
-        m_receiver(receiver)
+        m_collector(new ResultCollector(receiver))
     {
     }
 
 private:
     QSharedPointer<ResultCollector> m_collector;
-    QObject* m_receiver;
-    QMutex m_receiver_lock;
 };
 
 Scope::Scope(QObject *parent) : QObject(parent)
@@ -202,13 +184,42 @@ bool Scope::event(QEvent* ev)
         PushEvent* pe = static_cast<PushEvent*>(ev);
         auto collector = pe->getCollector();
         auto results = collector->getResults();
-        qWarning("got a push event for %s: %d results", m_scopeId.toStdString().c_str(), results.count());
+        qWarning("received push event from %s! (%d results)", m_scopeId.toStdString().c_str(), results.count());
+        processResultSet(results);
+
         if (collector->finished() && m_searchInProgress) {
             m_searchInProgress = false;
             Q_EMIT searchInProgressChanged();
         }
     }
-    QObject::event(ev);
+    return QObject::event(ev);
+}
+
+void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_set)
+{
+    // this will keep the list of categories in order
+    QList<scopes::Category::SCPtr> categories;
+    // split the result_set by category_id
+    QMap<std::string, QList<std::shared_ptr<scopes::ResultItem>>> category_results;
+    Q_FOREACH(std::shared_ptr<scopes::ResultItem> result, result_set) {
+        if (!category_results.contains(result->category()->id())) {
+            categories.append(result->category());
+        }
+        category_results[result->category()->id()].append(result);
+    }
+
+    Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
+        ResultsModel* category_model = m_categories->lookupCategory(category->id());
+        if (category_model == nullptr) {
+            category_model = new ResultsModel(m_categories);
+            category_model->setCategoryId(QString::fromStdString(category->id()));
+            category_model->addResults(category_results[category->id()]);
+            m_categories->registerCategory(category, category_model);
+        } else {
+            category_model->addResults(category_results[category->id()]);
+            m_categories->updateResultCount(category_model);
+        }
+    }
 }
 
 void Scope::setProxyObject(scopes::ScopeProxy const& proxy)
@@ -324,6 +335,8 @@ void Scope::setSearchQuery(const QString& search_query)
         if (m_lastQuery) {
             m_lastQuery->cancel();
         }
+        // TODO: not the best idea to put the clearAll() here
+        m_categories->clearAll();
         if (m_proxy) {
             scopes::VariantMap vm;
             m_lastReceiver.reset(new ResultReceiver(this));

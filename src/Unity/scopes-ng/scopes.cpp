@@ -85,8 +85,8 @@ void Scopes::populateScopes()
         m_scopes.append(scope);
 
         scope = new Scope(this);
-        scope->setScopeId(QString("scope-B"));
-        scope->setProxyObject(registry->find("scope-B"));
+        scope->setScopeId(QString("scope-onlinemusic"));
+        scope->setProxyObject(registry->find("scope-onlinemusic"));
         m_scopes.append(scope);
     }
     catch (unity::Exception const& err)

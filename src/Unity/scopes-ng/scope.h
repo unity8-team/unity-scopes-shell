@@ -124,6 +124,8 @@ Q_SIGNALS:
 private Q_SLOTS:
 
 private:
+    void processResultSet(QList<std::shared_ptr<unity::api::scopes::ResultItem>>& result_set);
+
     QString m_scopeId;
     QString m_searchQuery;
     QString m_noResultsHint;
