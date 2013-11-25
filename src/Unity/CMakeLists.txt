@@ -36,6 +36,7 @@ set(QMLPLUGIN_SRC
     genericpreview.cpp
     moviepreview.cpp
     musicpreview.cpp
+    musicpreviewtrackmodel.cpp
     preview.cpp
     previewaction.cpp
     previewinfohint.cpp

@@ -35,6 +35,7 @@
 #include "categoryresults.h"
 #include "genericoptionsmodel.h"
 #include "result.h"
+#include "musicpreviewtrackmodel.h"
 
 #include "scopes-ng/scopes.h"
 #include "scopes-ng/scope.h"
@@ -56,6 +57,7 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterType<Categories>(uri, 0, 1, "Categories");
     qmlRegisterUncreatableType<CategoryResults>(uri, 0, 1, "CategoryResults", "Can't create new Category Results in QML. Get them from Categories instance.");
     qmlRegisterType<DeeListModel>(uri, 0, 1, "DeeListModel");
+    qmlRegisterType<MusicPreviewTrackModel>(uri, 0, 1, "MusicPreviewTrackModel");
 
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scope>(uri, 0, 2, "Scope");
