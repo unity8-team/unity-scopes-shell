@@ -34,6 +34,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 #include <libintl.h>
 #include <glib.h>
@@ -74,8 +75,11 @@ const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::regi
 class ResultCollector: public QObject
 {
 public:
-    ResultCollector(QObject* receiver): QObject(nullptr), m_receiver(receiver), m_finished(false), m_posted(false)
+    enum CollectionStatus { INCOMPLETE, FINISHED, CANCELLED };
+
+    ResultCollector(QObject* receiver): QObject(nullptr), m_receiver(receiver), m_status(CollectionStatus::INCOMPLETE), m_posted(false)
     {
+        m_timer.start();
     }
 
     // Returns bool indicating whether this resultset was already posted
@@ -87,21 +91,25 @@ public:
         return m_posted;
     }
 
-    QList<std::shared_ptr<scopes::ResultItem>> getResults()
+    QList<std::shared_ptr<scopes::ResultItem>> getResults(CollectionStatus& status)
     {
         QList<std::shared_ptr<scopes::ResultItem>> results;
 
         QMutexLocker locker(&m_mutex);
-        m_posted = false;
+        if (m_status == CollectionStatus::INCOMPLETE) {
+            // allow re-posting this collector if !resultset.finished()
+            m_posted = false;
+        }
+        status = m_status;
         m_results.swap(results);
 
         return results;
     }
 
-    void postResults(QSharedPointer<ResultCollector> collector, bool last = false)
+    void postResults(QSharedPointer<ResultCollector> collector, CollectionStatus status = CollectionStatus::INCOMPLETE)
     {
         QMutexLocker locker(&m_mutex);
-        if (last != m_finished) m_finished = last;
+        if (status != CollectionStatus::INCOMPLETE) m_status = status;
         if (m_posted || !m_receiver) return;
 
         // FIXME: alloc outside of the lock
@@ -109,32 +117,36 @@ public:
         m_posted = true;
 
         // posting the event steals the ownership
+        // also posting while the lock is held will ensure correct order
         QCoreApplication::postEvent(m_receiver, pushEvent);
-    }
-
-    bool finished()
-    {
-        QMutexLocker locker(&m_mutex);
-        return m_finished;
     }
 
     void invalidate()
     {
         QMutexLocker locker(&m_mutex);
         m_receiver = nullptr;
+        m_status = CollectionStatus::CANCELLED;
+    }
+
+    qint64 msecsSinceStart() const
+    {
+        return m_timer.elapsed();
     }
 
 private:
     QMutex m_mutex;
     QList<std::shared_ptr<scopes::ResultItem>> m_results;
     QObject* m_receiver;
-    bool m_finished;
+    CollectionStatus m_status;
     bool m_posted;
+    // not locked
+    QElapsedTimer m_timer;
 };
 
 class ResultReceiver: public scopes::ReceiverBase
 {
 public:
+    // this will be called from non-main thread, (might even be multiple different threads)
     virtual void push(scopes::ResultItem result) override
     {
         auto res = std::make_shared<scopes::ResultItem>(std::move(result));
@@ -143,10 +155,13 @@ public:
         if (!posted) m_collector->postResults(m_collector);
     }
 
-    // which thread is this invoked in? (assuming same as push())
+    // this might be called from any thread (might be main, might be any other thread)
     virtual void finished(scopes::ReceiverBase::Reason reason) override
     {
-        m_collector->postResults(m_collector, true);
+        ResultCollector::CollectionStatus status = reason == scopes::ReceiverBase::Reason::Cancelled ?
+            ResultCollector::CollectionStatus::CANCELLED : ResultCollector::CollectionStatus::FINISHED;
+
+        m_collector->postResults(m_collector, status);
     }
 
     void invalidate()
@@ -181,16 +196,26 @@ Scope::~Scope()
 bool Scope::event(QEvent* ev)
 {
     if (ev->type() == PushEvent::eventType) {
+        ResultCollector::CollectionStatus status;
         PushEvent* pe = static_cast<PushEvent*>(ev);
+
         auto collector = pe->getCollector();
-        auto results = collector->getResults();
-        qWarning("received push event from %s! (%d results)", m_scopeId.toStdString().c_str(), results.count());
+
+        // FIXME: check collector->msecsSinceStart() and delay processing of this event if it's <= ~50 milliseconds
+        // (that will give the collector time to actually collect something)
+
+        auto results = collector->getResults(status);
+        if (status == ResultCollector::CollectionStatus::CANCELLED) {
+            return true;
+        }
+
         processResultSet(results);
 
-        if (collector->finished() && m_searchInProgress) {
+        if (status == ResultCollector::CollectionStatus::FINISHED && m_searchInProgress) {
             m_searchInProgress = false;
             Q_EMIT searchInProgressChanged();
         }
+        return true;
     }
     return QObject::event(ev);
 }
