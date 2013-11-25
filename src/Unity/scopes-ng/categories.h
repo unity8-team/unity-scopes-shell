@@ -74,4 +74,6 @@ private:
 
 } // namespace scopes_ng
 
+Q_DECLARE_METATYPE(scopes_ng::Categories*)
+
 #endif // NG_CATEGORIES_H

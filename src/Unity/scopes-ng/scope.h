@@ -46,7 +46,7 @@ class Scope : public QObject
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(QString shortcut READ shortcut NOTIFY shortcutChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
-    Q_PROPERTY(Categories* categories READ categories NOTIFY categoriesChanged)
+    Q_PROPERTY(scopes_ng::Categories* categories READ categories NOTIFY categoriesChanged)
     //Q_PROPERTY(Filters* filters READ filters NOTIFY filtersChanged)
 
     Q_PROPERTY(QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged)
