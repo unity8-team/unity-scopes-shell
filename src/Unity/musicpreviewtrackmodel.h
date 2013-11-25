@@ -34,9 +34,7 @@ public:
         RoleUri,
         RoleTrackNo,
         RoleTitle,
-        RoleLength,
-        RolePlayState,
-        RoleProgress
+        RoleLength
     };
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;

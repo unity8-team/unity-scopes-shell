@@ -37,8 +37,6 @@ MusicPreviewTrackModel::MusicPreviewTrackModel(QObject *parent): DeeListModel(pa
     m_roles.insert(RoleTrackNo, "trackNo");
     m_roles.insert(RoleTitle, "title");
     m_roles.insert(RoleLength, "length");
-    m_roles.insert(RolePlayState, "playState");
-    m_roles.insert(RoleProgress, "progress");
 }
 
 QVariant MusicPreviewTrackModel::data(const QModelIndex &index, int role) const
@@ -60,10 +58,6 @@ QVariant MusicPreviewTrackModel::data(const QModelIndex &index, int role) const
         }
         return QVariant();
     }
-    case RolePlayState:
-        return DeeListModel::data(index, ResultsColumn::PLAY_STATE);
-    case RoleProgress:
-        return DeeListModel::data(index, ResultsColumn::PROGRESS);
     }
     return QVariant();
 }
