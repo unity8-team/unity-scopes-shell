@@ -98,7 +98,7 @@ ResultsModel::data(const QModelIndex& index, int role) const
         case RoleUri:
             return QVariant(QString::fromStdString(result->uri()));
         case RoleIconHint: {
-            QString iconHint(QString::fromStdString(result->icon()));
+            QString iconHint(QString::fromStdString(result->art()));
             if (iconHint.isEmpty()) {
                 QString uri(QString::fromStdString(result->uri()));
                 QString thumbnailerUri(uriToThumbnailerProviderString(uri, QString(), QVariantHash()));
