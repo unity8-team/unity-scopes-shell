@@ -46,17 +46,25 @@
 void UnityPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(uri == QLatin1String("Unity"));
-    qmlRegisterUncreatableType<Preview>(uri, 0, 1, "Preview", "Can't create Preview object in QML.");
-    qmlRegisterUncreatableType<PreviewAction>(uri, 0, 1, "PreviewAction", "Can't create PreviewAction object in QML.");
-    qmlRegisterUncreatableType<PreviewInfoHint>(uri, 0, 1, "PreviewInfoHint", "Can't create PreviewInfoHint object in QML.");
-    qmlRegisterUncreatableType<SocialPreviewComment>(uri, 0, 1, "SocialPreviewComment", "Can't create SocialPreviewComment object in QML.");
-    qmlRegisterUncreatableType<GenericOptionsModel>(uri, 0, 1, "GenericOptionsModel", "Can't create options model in QML.");
-    qmlRegisterUncreatableType<Result>(uri, 0, 1, "Result", "Can't create result object in QML.");
-    qmlRegisterType<Scope>(uri, 0, 1, "Scope");
-    qmlRegisterType<Scopes>(uri, 0, 1, "Scopes");
-    qmlRegisterType<Categories>(uri, 0, 1, "Categories");
-    qmlRegisterUncreatableType<CategoryResults>(uri, 0, 1, "CategoryResults", "Can't create new Category Results in QML. Get them from Categories instance.");
-    qmlRegisterType<DeeListModel>(uri, 0, 1, "DeeListModel");
+
+    if (qgetenv("UNITY_FORCE_NEW_SCOPES").isNull()) {
+        qmlRegisterUncreatableType<Preview>(uri, 0, 1, "Preview", "Can't create Preview object in QML.");
+        qmlRegisterUncreatableType<PreviewAction>(uri, 0, 1, "PreviewAction", "Can't create PreviewAction object in QML.");
+        qmlRegisterUncreatableType<PreviewInfoHint>(uri, 0, 1, "PreviewInfoHint", "Can't create PreviewInfoHint object in QML.");
+        qmlRegisterUncreatableType<SocialPreviewComment>(uri, 0, 1, "SocialPreviewComment", "Can't create SocialPreviewComment object in QML.");
+        qmlRegisterUncreatableType<GenericOptionsModel>(uri, 0, 1, "GenericOptionsModel", "Can't create options model in QML.");
+        qmlRegisterUncreatableType<Result>(uri, 0, 1, "Result", "Can't create result object in QML.");
+        qmlRegisterType<Scope>(uri, 0, 1, "Scope");
+        qmlRegisterType<Scopes>(uri, 0, 1, "Scopes");
+        qmlRegisterType<Categories>(uri, 0, 1, "Categories");
+        qmlRegisterUncreatableType<CategoryResults>(uri, 0, 1, "CategoryResults", "Can't create new Category Results in QML. Get them from Categories instance.");
+        qmlRegisterType<DeeListModel>(uri, 0, 1, "DeeListModel");
+    } else {
+        qmlRegisterType<scopes_ng::Scope>(uri, 0, 1, "Scope");
+        qmlRegisterType<scopes_ng::Scopes>(uri, 0, 1, "Scopes");
+        qmlRegisterType<scopes_ng::Categories>(uri, 0, 1, "Categories");
+        qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 1, "ResultsModel", "Can't create new Results Model in QML. Get them from Categories instance.");
+    }
 
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scope>(uri, 0, 2, "Scope");
