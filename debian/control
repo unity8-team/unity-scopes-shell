@@ -11,10 +11,13 @@ Build-Depends: cmake,
                qt5-default,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
-               qtdeclarative5-qtquick2-plugin
+               qtdeclarative5-qtquick2-plugin,
 Standards-Version: 3.9.4
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
+# if you don't have have commit access to this branch but would like to upload
+# directly to Ubuntu, don't worry: your changes will be merged back into the
+# upstream branch
 Vcs-Bzr: lp:unity-scopes-shell
 Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
 
@@ -22,9 +25,12 @@ Package: unity-plugin-scopes
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
-Depends: qtdeclarative5-dee-plugin, ${misc:Depends}, ${shlibs:Depends}
-Provides: unity-scopes-impl, unity-scopes-impl-0
+Depends: ${misc:Depends}, 
+         ${shlibs:Depends},
+         qtdeclarative5-dee-plugin,
+Provides: unity-scopes-impl,
+          unity-scopes-impl-0,
 Breaks: unity8-private (<< 7.84)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
- Library to integrate scopes with the Unity shell
+ Plugin to integrate scopes with the Unity shell

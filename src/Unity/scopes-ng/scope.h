@@ -143,4 +143,4 @@ private:
 
 Q_DECLARE_METATYPE(scopes_ng::Scope*)
 
-#endif // SCOPE_H
+#endif // NG_SCOPE_H

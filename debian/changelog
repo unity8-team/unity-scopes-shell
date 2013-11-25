@@ -1,5 +1,14 @@
-unity-scopes-shell (0.1) UNRELEASED; urgency=low
+unity-scopes-shell (0.1+14.04.20131120-0ubuntu1) trusty; urgency=low
 
+  [ Michal Hruby ]
   * Initial release
+  * Fix typo.
 
- -- Michal Hruby <michal.hruby@canonical.com>  Tue, 12 Nov 2013 15:52:35 +0000
+  [ Łukasz 'sil2100' Zemczak ]
+  * Automatic snapshot from revision 16 (bootstrap)
+  * Copyright fixes, missed copyright checking.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 19
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 20 Nov 2013 12:52:16 +0000
