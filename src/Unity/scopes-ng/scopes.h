@@ -50,7 +50,8 @@ public:
     enum Roles {
         RoleScope,
         RoleId,
-        RoleVisible
+        RoleVisible,
+        RoleTitle
     };
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;

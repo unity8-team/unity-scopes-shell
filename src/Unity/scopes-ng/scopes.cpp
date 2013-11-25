@@ -71,6 +71,7 @@ Scopes::Scopes(QObject *parent)
     m_roles[Scopes::RoleScope] = "scope";
     m_roles[Scopes::RoleId] = "id";
     m_roles[Scopes::RoleVisible] = "visible";
+    m_roles[Scopes::RoleTitle] = "title";
 
     // simulate a bit of asynchrocinity, might not be needed
     QTimer::singleShot(0, this, SLOT(populateScopes()));
@@ -135,6 +136,8 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(scope->id());
         case Scopes::RoleVisible:
             return QVariant::fromValue(scope->visible());
+        case Scopes::RoleTitle:
+            return QVariant::fromValue(scope->name());
         default:
             return QVariant();
     }
