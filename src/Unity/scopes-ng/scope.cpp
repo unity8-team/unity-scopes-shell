@@ -48,6 +48,8 @@ namespace scopes_ng
 
 using namespace unity::api;
 
+const int AGGREGATION_TIMEOUT = 110;
+
 class ResultCollector;
 
 class PushEvent: public QEvent
@@ -91,7 +93,7 @@ public:
         return m_posted;
     }
 
-    QList<std::shared_ptr<scopes::ResultItem>> getResults(CollectionStatus& status)
+    QList<std::shared_ptr<scopes::ResultItem>> collect(CollectionStatus& status)
     {
         QList<std::shared_ptr<scopes::ResultItem>> results;
 
@@ -151,7 +153,7 @@ public:
     {
         auto res = std::make_shared<scopes::ResultItem>(std::move(result));
         bool posted = m_collector->addResult(res);
-        // FIXME: we can post the event here, but do we really want that?
+        // posting as soon as possible means we minimize delay
         if (!posted) m_collector->postResults(m_collector);
     }
 
@@ -184,6 +186,9 @@ Scope::Scope(QObject *parent) : QObject(parent)
     , m_searchInProgress(false)
 {
     m_categories = new Categories(this);
+    m_aggregatorTimer = new QTimer(this);
+    m_aggregatorTimer->setSingleShot(true);
+    QObject::connect(m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
 }
 
 Scope::~Scope()
@@ -201,23 +206,46 @@ bool Scope::event(QEvent* ev)
 
         auto collector = pe->getCollector();
 
-        // FIXME: check collector->msecsSinceStart() and delay processing of this event if it's <= ~50 milliseconds
-        // (that will give the collector time to actually collect something)
-
-        auto results = collector->getResults(status);
+        auto results = collector->collect(status);
         if (status == ResultCollector::CollectionStatus::CANCELLED) {
             return true;
         }
 
-        processResultSet(results);
+        // qint64 inProgressMs = collector->msecsSinceStart();
+        // FIXME: should we push immediately if this search is already taking a while?
+        //   if we don't we're just delaying the results by another AGGREGATION_TIMEOUT ms,
+        //   yet if we do, we risk getting more results right after this one
 
-        if (status == ResultCollector::CollectionStatus::FINISHED && m_searchInProgress) {
-            m_searchInProgress = false;
-            Q_EMIT searchInProgressChanged();
+        if (m_cachedResults.empty()) {
+            m_cachedResults.swap(results);
+        } else {
+            m_cachedResults.append(results);
         }
+
+        if (status == ResultCollector::CollectionStatus::INCOMPLETE) {
+            if (!m_aggregatorTimer->isActive()) {
+                m_aggregatorTimer->start(AGGREGATION_TIMEOUT);
+            }
+        } else {
+            // FINISHED or ERRORed collection
+            m_aggregatorTimer->stop();
+
+            flushUpdates();
+
+            if (m_searchInProgress) {
+                m_searchInProgress = false;
+                Q_EMIT searchInProgressChanged();
+            }
+        }
+
         return true;
     }
     return QObject::event(ev);
+}
+
+void Scope::flushUpdates()
+{
+    processResultSet(m_cachedResults); // clears the result list
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_set)
@@ -229,11 +257,12 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_
 
     // split the result_set by category_id
     QMap<std::string, QList<std::shared_ptr<scopes::ResultItem>>> category_results;
-    Q_FOREACH(std::shared_ptr<scopes::ResultItem> result, result_set) {
+    while (!result_set.empty()) {
+        auto result = result_set.takeFirst();
         if (!category_results.contains(result->category()->id())) {
             categories.append(result->category());
         }
-        category_results[result->category()->id()].append(result);
+        category_results[result->category()->id()].append(std::move(result));
     }
 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
@@ -248,6 +277,25 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_
             m_categories->updateResultCount(category_model);
         }
     }
+}
+
+void Scope::invalidateLastSearch()
+{
+    if (m_lastReceiver) {
+        std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
+        m_lastReceiver.reset();
+    }
+    if (m_lastQuery) {
+        m_lastQuery->cancel();
+        m_lastQuery.reset();
+    }
+    if (m_aggregatorTimer->isActive()) {
+        m_aggregatorTimer->stop();
+    }
+    m_cachedResults.clear();
+
+    // TODO: not the best idea to put the clearAll() here, can cause flicker
+    m_categories->clearAll();
 }
 
 void Scope::setProxyObject(scopes::ScopeProxy const& proxy)
@@ -357,14 +405,7 @@ void Scope::setSearchQuery(const QString& search_query)
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
         m_searchQuery = search_query;
-        if (m_lastReceiver) {
-            std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
-        }
-        if (m_lastQuery) {
-            m_lastQuery->cancel();
-        }
-        // TODO: not the best idea to put the clearAll() here
-        m_categories->clearAll();
+        invalidateLastSearch();
         if (m_proxy) {
             scopes::VariantMap vm;
             m_lastReceiver.reset(new ResultReceiver(this));

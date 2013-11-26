@@ -23,6 +23,7 @@
 // Qt
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QMetaType>
 
 // scopes
@@ -122,9 +123,11 @@ Q_SIGNALS:
     void activateApplication(const QString &desktop);
 
 private Q_SLOTS:
+    void flushUpdates();
 
 private:
     void processResultSet(QList<std::shared_ptr<unity::api::scopes::ResultItem>>& result_set);
+    void invalidateLastSearch();
 
     QString m_scopeId;
     QString m_searchQuery;
@@ -137,6 +140,8 @@ private:
     unity::api::scopes::QueryCtrlProxy m_lastQuery;
     unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;
+    QTimer* m_aggregatorTimer;
+    QList<std::shared_ptr<unity::api::scopes::ResultItem>> m_cachedResults;
 };
 
 } // namespace scopes_ng
