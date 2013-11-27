@@ -100,18 +100,14 @@ void Scopes::populateScopes()
 void Scopes::discoveryFinished()
 {
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
-    
+
     m_scopesRuntime = thread->takeRuntime();
     auto scopes = thread->scopeMap();
 
-    int i = 0;
     beginResetModel();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         auto scope = new Scope(this);
-        // FIXME: seems we need home.scope, Unity doesn't like when it's not there
-        QString scopeId("home.scope");
-        if (++i > 1) scopeId = QString::fromStdString(it->first);
-        scope->setScopeId(scopeId);
+        scope->setScopeId(QString::fromStdString(it->first));
         scope->setProxyObject(it->second);
         m_scopes.append(scope);
     }
