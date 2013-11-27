@@ -20,7 +20,12 @@
 
 // self
 #include "categories.h"
+
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QDebug>
+
+#include <scopes/CategoryRenderer.h>
 
 using namespace unity::api;
 
@@ -70,8 +75,11 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         }
     }
     if (index >= 0) {
-        // TODO: check if any attributes of the category changed
+        // check if any attributes of the category changed
+        QVector<int> changedRoles(collectChangedAttributes(m_categories[index], category));
         m_categories.replace(index, category);
+        QModelIndex changedIndex(this->index(index));
+        dataChanged(changedIndex, changedIndex, changedRoles);
     } else {
         auto last_index = m_categories.size();
         beginInsertRows(QModelIndex(), last_index, last_index);
@@ -80,6 +88,23 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         m_categoryResults[category->id()] = resultsModel;
         endInsertRows();
     }
+}
+
+QVector<int> Categories::collectChangedAttributes(scopes::Category::SCPtr old_category, scopes::Category::SCPtr category)
+{
+    QVector<int> roles;
+
+    if (category->title() != old_category->title()) {
+        roles.append(RoleName);
+    }
+    if (category->icon() != old_category->icon()) {
+        roles.append(RoleIcon);
+    }
+    if (category->renderer_template().data() != old_category->renderer_template().data()) {
+        roles.append(RoleRenderer);
+    }
+
+    return roles;
 }
 
 void Categories::updateResultCount(ResultsModel* resultsModel)
@@ -140,8 +165,11 @@ Categories::data(const QModelIndex& index, int role) const
             return QVariant(QString::fromStdString(cat->title()));
         case RoleIcon:
             return QVariant(QString::fromStdString(cat->icon()));
-        case RoleRenderer:
-            return QVariant(QString("default"));
+        case RoleRenderer: {
+            QJsonDocument json = QJsonDocument::fromJson(QByteArray(cat->renderer_template().data().c_str()));
+            // FIXME: validate the json
+            return json.toVariant();
+        }
         case RoleContentType:
             return QVariant(QString("default"));
         case RoleRendererHint:

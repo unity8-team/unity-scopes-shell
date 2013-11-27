@@ -67,6 +67,8 @@ public:
 private Q_SLOTS:
 
 private:
+    QVector<int> collectChangedAttributes(unity::api::scopes::Category::SCPtr old_category, unity::api::scopes::Category::SCPtr category);
+
     QHash<int, QByteArray> m_roles;
     QList<unity::api::scopes::Category::SCPtr> m_categories;
     QMap<std::string, ResultsModel*> m_categoryResults;
