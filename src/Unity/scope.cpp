@@ -278,8 +278,7 @@ void Scope::fallbackActivate(const QString& uri)
        If it has no understanding of the given scheme it falls back on asking
        Qt to open the uri.
     */
-    QString urii = "application:///usr/share/applications/kde/kate.desktop";
-    QUrl url(urii);
+    QUrl url(uri);
     if (url.scheme() == "file") {
         /* Override the files place's default URI handler: we want the file
            manager to handle opening folders, not the dash.
