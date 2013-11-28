@@ -48,6 +48,8 @@ Scope::Scope(QObject *parent) : QObject(parent)
 {
     m_categories.reset(new Categories(this));
 
+    m_applicationsDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+
     connect(this, &Scope::isActiveChanged, this, &Scope::scopeIsActiveChanged);
 }
 
@@ -291,11 +293,7 @@ void Scope::fallbackActivate(const QString& uri)
     if (url.scheme() == "application") {
         QString path(url.path().isEmpty() ? url.authority() : url.path());
 
-        QStringList searchDirs;
-        searchDirs << QDir::homePath() + "/.local/share/applications/";
-        searchDirs << "/usr/share/applications/";
-
-        Q_FOREACH(const QString &dir, searchDirs) {
+        Q_FOREACH(const QString &dir, m_applicationsDirs) {
             if (path.startsWith(dir)) {
                 path.remove(dir);
                 path.replace('/', '-');
