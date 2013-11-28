@@ -23,7 +23,6 @@
 // Qt
 #include <QObject>
 #include <QString>
-#include <QStringList>
 #include <QMetaType>
 
 // libunity-core
@@ -144,7 +143,6 @@ private:
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
-    QStringList m_applicationsDirs;
     bool m_isActive;
     bool m_searchInProgress;
     unity::glib::Cancellable m_cancellable;
