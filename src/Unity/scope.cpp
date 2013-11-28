@@ -288,7 +288,8 @@ void Scope::fallbackActivate(const QString& uri)
         return;
     }
     if (url.scheme() == "application") {
-        Q_EMIT activateApplication(QFileInfo(url.authority()).baseName());
+        QString path(url.path().isEmpty() ? url.authority() : url.path());
+        Q_EMIT activateApplication(QFileInfo(path).baseName());
         return;
     }
 
