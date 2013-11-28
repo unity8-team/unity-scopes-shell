@@ -33,6 +33,7 @@
 #include <QtGui/QDesktopServices>
 #include <QQmlEngine>
 #include <QFileInfo>
+#include <QDir>
 
 #include <UnityCore/Variant.h>
 #include <UnityCore/GLibWrapper.h>
@@ -277,7 +278,8 @@ void Scope::fallbackActivate(const QString& uri)
        If it has no understanding of the given scheme it falls back on asking
        Qt to open the uri.
     */
-    QUrl url(uri);
+    QString urii = "application:///usr/share/applications/kde/kate.desktop";
+    QUrl url(urii);
     if (url.scheme() == "file") {
         /* Override the files place's default URI handler: we want the file
            manager to handle opening folders, not the dash.
@@ -289,6 +291,18 @@ void Scope::fallbackActivate(const QString& uri)
     }
     if (url.scheme() == "application") {
         QString path(url.path().isEmpty() ? url.authority() : url.path());
+
+        QStringList searchDirs;
+        searchDirs << QDir::homePath() + "/.local/share/applications/";
+        searchDirs << "/usr/share/applications/";
+
+        Q_FOREACH(const QString &dir, searchDirs) {
+            if (path.startsWith(dir)) {
+                path.remove(dir);
+                path.replace('/', '-');
+            }
+        }
+
         Q_EMIT activateApplication(QFileInfo(path).baseName());
         return;
     }
