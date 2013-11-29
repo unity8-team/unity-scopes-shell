@@ -28,6 +28,7 @@
 
 // scopes
 #include <scopes/Scope.h>
+#include <scopes/ScopeMetadata.h>
 
 namespace scopes_ng
 {
@@ -93,8 +94,7 @@ public:
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;
-    void setProxyObject(unity::api::scopes::ScopeProxy const& proxy);
-    void setScopeId(QString const& scope_id);
+    void setScopeData(unity::api::scopes::ScopeMetadata const& data);
 
 Q_SIGNALS:
     void idChanged();
@@ -137,6 +137,7 @@ private:
     bool m_searchInProgress;
 
     unity::api::scopes::ScopeProxy m_proxy;
+    std::shared_ptr<unity::api::scopes::ScopeMetadata> m_scopeMetadata;
     unity::api::scopes::QueryCtrlProxy m_lastQuery;
     unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;

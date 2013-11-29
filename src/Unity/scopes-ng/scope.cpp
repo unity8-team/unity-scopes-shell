@@ -298,46 +298,36 @@ void Scope::invalidateLastSearch()
     m_categories->clearAll();
 }
 
-void Scope::setProxyObject(scopes::ScopeProxy const& proxy)
+void Scope::setScopeData(scopes::ScopeMetadata const& data)
 {
-    m_proxy = proxy;
-}
-
-void Scope::setScopeId(QString const& scope_id)
-{
-    if (scope_id != m_scopeId) {
-        m_scopeId = scope_id;
-        Q_EMIT idChanged();
-    }
+    m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
+    m_proxy = data.proxy();
 }
 
 QString Scope::id() const
 {
-    return m_scopeId;
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->scope_name() : "");
 }
 
 QString Scope::name() const
 {
-    // FIXME: get from scope config
-    return m_scopeId;
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->localized_name() : "");
 }
 
 QString Scope::iconHint() const
 {
-    // FIXME: get from scope config
     return QString::fromStdString("");
+    //return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->icon() : "");
 }
 
 QString Scope::description() const
 {
-    // FIXME: get from scope config
-    return QString::fromStdString("");
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->description() : "");
 }
 
 QString Scope::searchHint() const
 {
-    // FIXME: get from scope config
-    return QString::fromStdString("Search");
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->search_hint() : "");
 }
 
 bool Scope::searchInProgress() const
@@ -354,7 +344,7 @@ bool Scope::visible() const
 QString Scope::shortcut() const
 {
     // FIXME: get from scope config
-    return QString::fromStdString("");
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->hot_key() : "");
 }
 
 bool Scope::connected() const

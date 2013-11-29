@@ -43,7 +43,7 @@ void ScopeListWorker::run()
     {
         // FIXME: use proper path for the runtime config
         //   but have libunity-scopes export it first?!
-        m_scopesRuntime = scopes::Runtime::create("dash", "/home/miso/projects/unity-scopes-api/build/demo/Runtime.ini");
+        m_scopesRuntime = scopes::Runtime::create("dash");
         auto registry = m_scopesRuntime->registry();
         m_scopeMap = registry->list();
     }
@@ -107,8 +107,7 @@ void Scopes::discoveryFinished()
     beginResetModel();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         auto scope = new Scope(this);
-        scope->setScopeId(QString::fromStdString(it->first));
-        scope->setProxyObject(it->second);
+        scope->setScopeData(it->second);
         m_scopes.append(scope);
     }
     endResetModel();
@@ -119,7 +118,7 @@ void Scopes::discoveryFinished()
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid()) {
+    if (!index.isValid() || index.row() >= m_scopes.count()) {
         return QVariant();
     }
 
