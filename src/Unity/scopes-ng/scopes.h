@@ -45,7 +45,7 @@ class Scopes : public QAbstractListModel
 
 public:
     explicit Scopes(QObject *parent = 0);
-    ~Scopes() = default;
+    ~Scopes();
 
     enum Roles {
         RoleScope,
@@ -74,6 +74,7 @@ private Q_SLOTS:
 private:
     QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
+    QThread* m_listThread;
     bool m_loaded;
 
     unity::api::scopes::Runtime::UPtr m_scopesRuntime;

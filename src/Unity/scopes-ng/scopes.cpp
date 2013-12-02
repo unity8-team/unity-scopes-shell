@@ -66,6 +66,7 @@ scopes::ScopeMap ScopeListWorker::scopeMap() const
         
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
+    , m_listThread(nullptr)
     , m_loaded(false)
 {
     m_roles[Scopes::RoleScope] = "scope";
@@ -73,8 +74,17 @@ Scopes::Scopes(QObject *parent)
     m_roles[Scopes::RoleVisible] = "visible";
     m_roles[Scopes::RoleTitle] = "title";
 
-    // simulate a bit of asynchrocinity, might not be needed
-    QTimer::singleShot(0, this, SLOT(populateScopes()));
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    QTimer::singleShot(100, this, SLOT(populateScopes()));
+}
+
+Scopes::~Scopes()
+{
+    if (m_listThread && !m_listThread->isFinished()) {
+        // FIXME: wait indefinitely once libunity-scopes supports timeouts
+        m_listThread->wait(5000);
+    }
 }
 
 QHash<int, QByteArray> Scopes::roleNames() const
@@ -94,7 +104,9 @@ void Scopes::populateScopes()
     auto thread = new ScopeListWorker;
     QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::discoveryFinished);
     QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
-    thread->start();
+
+    m_listThread = thread;
+    m_listThread->start();
 }
 
 void Scopes::discoveryFinished()
@@ -114,6 +126,8 @@ void Scopes::discoveryFinished()
 
     m_loaded = true;
     Q_EMIT loadedChanged(m_loaded);
+
+    m_listThread = nullptr;
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
