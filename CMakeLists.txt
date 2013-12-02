@@ -48,7 +48,6 @@ find_package(Qt5Core)
 find_package(Qt5Qml)
 find_package(Qt5Quick)
 find_package(Qt5Gui)
-find_package(Qt5DBus)
 
 # Standard install paths
 include(GNUInstallDirs)
