@@ -25,6 +25,7 @@
 #include <QAbstractListModel>
 #include <QSet>
 #include <QTimer>
+#include <QSharedPointer>
 
 #include <scopes/Category.h>
 
@@ -32,6 +33,8 @@
 
 namespace scopes_ng
 {
+
+struct CategoryData;
 
 class Categories : public QAbstractListModel
 {
@@ -70,7 +73,7 @@ private:
     QVector<int> collectChangedAttributes(unity::api::scopes::Category::SCPtr old_category, unity::api::scopes::Category::SCPtr category);
 
     QHash<int, QByteArray> m_roles;
-    QList<unity::api::scopes::Category::SCPtr> m_categories;
+    QList<QSharedPointer<CategoryData>> m_categories;
     QMap<std::string, ResultsModel*> m_categoryResults;
 };
 

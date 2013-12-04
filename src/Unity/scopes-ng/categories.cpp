@@ -31,6 +31,19 @@ using namespace unity::api;
 
 namespace scopes_ng {
 
+struct CategoryData
+{
+    scopes::Category::SCPtr category;
+    QJsonDocument renderer_template;
+
+    void setCategory(scopes::Category::SCPtr cat)
+    {
+        category = cat;
+        // FIXME: validate
+        renderer_template = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
+    }
+};
+
 Categories::Categories(QObject* parent)
     : QAbstractListModel(parent)
 {
@@ -69,23 +82,28 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
     // do we already have a category with this id?
     int index = -1;
     for (int i = 0; i < m_categories.size(); i++) {
-        if (m_categories[i]->id() == category->id()) {
+        if (m_categories[i]->category->id() == category->id()) {
             index = i;
             break;
         }
     }
     if (index >= 0) {
+        CategoryData* catData = m_categories[index].data();
         // check if any attributes of the category changed
-        QVector<int> changedRoles(collectChangedAttributes(m_categories[index], category));
-        m_categories.replace(index, category);
+        QVector<int> changedRoles(collectChangedAttributes(catData->category, category));
+
+        catData->setCategory(category);
         if (changedRoles.size() > 0) {
             QModelIndex changedIndex(this->index(index));
             dataChanged(changedIndex, changedIndex, changedRoles);
         }
     } else {
+        CategoryData* catData = new CategoryData;
+        catData->setCategory(category);
+
         auto last_index = m_categories.size();
         beginInsertRows(QModelIndex(), last_index, last_index);
-        m_categories.append(category);
+        m_categories.append(QSharedPointer<CategoryData>(catData));
         if (resultsModel == nullptr) {
             resultsModel = new ResultsModel(this);
         }
@@ -118,7 +136,7 @@ void Categories::updateResultCount(ResultsModel* resultsModel)
     auto categoryId = resultsModel->categoryId().toStdString();
     int idx = -1;
     for (int i = 0; i < m_categories.count(); i++) {
-        if (m_categories[i]->id() == categoryId) {
+        if (m_categories[i]->category->id() == categoryId) {
             idx = i;
             break;
         }
@@ -161,7 +179,8 @@ Categories::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::Category::SCPtr cat(m_categories[index.row()]);
+    CategoryData* catData = m_categories[index.row()].data();
+    scopes::Category::SCPtr cat(catData->category);
     ResultsModel* resultsModel = m_categoryResults.contains(cat->id()) ? m_categoryResults[cat->id()] : nullptr;
 
     switch (role) {
@@ -171,11 +190,8 @@ Categories::data(const QModelIndex& index, int role) const
             return QVariant(QString::fromStdString(cat->title()));
         case RoleIcon:
             return QVariant(QString::fromStdString(cat->icon()));
-        case RoleRenderer: {
-            QJsonDocument json = QJsonDocument::fromJson(QByteArray(cat->renderer_template().data().c_str()));
-            // FIXME: validate the json
-            return json.toVariant();
-        }
+        case RoleRenderer:
+            return catData->renderer_template.toVariant();
         case RoleComponents:
              return QVariant();
         case RoleContentType:
