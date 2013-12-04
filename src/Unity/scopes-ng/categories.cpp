@@ -78,8 +78,10 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         // check if any attributes of the category changed
         QVector<int> changedRoles(collectChangedAttributes(m_categories[index], category));
         m_categories.replace(index, category);
-        QModelIndex changedIndex(this->index(index));
-        dataChanged(changedIndex, changedIndex, changedRoles);
+        if (changedRoles.size() > 0) {
+            QModelIndex changedIndex(this->index(index));
+            dataChanged(changedIndex, changedIndex, changedRoles);
+        }
     } else {
         auto last_index = m_categories.size();
         beginInsertRows(QModelIndex(), last_index, last_index);
