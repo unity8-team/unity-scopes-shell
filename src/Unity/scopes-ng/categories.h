@@ -47,10 +47,10 @@ public:
         RoleName,
         RoleIcon,
         RoleRenderer,
-        RoleContentType,
-        RoleRendererHint,
-        RoleProgressSource,
-        RoleHints,
+        RoleComponents,
+        RoleContentType, // FIXME: remove
+        RoleRendererHint, // FIXME: remove
+        RoleProgressSource, // maybe
         RoleResults,
         RoleCount
     };

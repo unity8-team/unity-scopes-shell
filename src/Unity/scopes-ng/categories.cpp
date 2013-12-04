@@ -38,10 +38,10 @@ Categories::Categories(QObject* parent)
     m_roles[Categories::RoleName] = "name";
     m_roles[Categories::RoleIcon] = "icon";
     m_roles[Categories::RoleRenderer] = "renderer";
+    m_roles[Categories::RoleComponents] = "components";
     m_roles[Categories::RoleContentType] = "contentType";
     m_roles[Categories::RoleRendererHint] = "rendererHint";
     m_roles[Categories::RoleProgressSource] = "progressSource";
-    m_roles[Categories::RoleHints] = "hints";
     m_roles[Categories::RoleResults] = "results";
     m_roles[Categories::RoleCount] = "count";
 }
@@ -86,6 +86,9 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         auto last_index = m_categories.size();
         beginInsertRows(QModelIndex(), last_index, last_index);
         m_categories.append(category);
+        if (resultsModel == nullptr) {
+            resultsModel = new ResultsModel(this);
+        }
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
         m_categoryResults[category->id()] = resultsModel;
         endInsertRows();
@@ -104,6 +107,7 @@ QVector<int> Categories::collectChangedAttributes(scopes::Category::SCPtr old_ca
     }
     if (category->renderer_template().data() != old_category->renderer_template().data()) {
         roles.append(RoleRenderer);
+        roles.append(RoleComponents);
     }
 
     return roles;
@@ -172,13 +176,13 @@ Categories::data(const QModelIndex& index, int role) const
             // FIXME: validate the json
             return json.toVariant();
         }
+        case RoleComponents:
+             return QVariant();
         case RoleContentType:
             return QVariant(QString("default"));
         case RoleRendererHint:
             return QVariant();
         case RoleProgressSource:
-            return QVariant();
-        case RoleHints:
             return QVariant();
         case RoleResults:
             return QVariant::fromValue(resultsModel);
