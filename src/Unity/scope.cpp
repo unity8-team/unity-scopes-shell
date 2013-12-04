@@ -48,7 +48,6 @@ Scope::Scope(QObject *parent) : QObject(parent)
 {
     m_categories.reset(new Categories(this));
 
-    qDebug() << "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
     connect(this, &Scope::isActiveChanged, this, &Scope::scopeIsActiveChanged);
 }
 
