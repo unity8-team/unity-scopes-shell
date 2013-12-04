@@ -87,14 +87,14 @@ class ScopeListWorker: public QThread
 public:
     void run() override;
     unity::api::scopes::Runtime::UPtr takeRuntime();
-    unity::api::scopes::ScopeMap scopeMap() const;
+    unity::api::scopes::MetadataMap metadataMap() const;
 
 Q_SIGNALS:
     void discoveryFinished();
 
 private:
     unity::api::scopes::Runtime::UPtr m_scopesRuntime;
-    unity::api::scopes::ScopeMap m_scopeMap;
+    unity::api::scopes::MetadataMap m_metadataMap;
 };
 
 

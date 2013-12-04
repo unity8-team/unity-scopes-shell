@@ -311,13 +311,18 @@ QString Scope::id() const
 
 QString Scope::name() const
 {
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->localized_name() : "");
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->display_name() : "");
 }
 
 QString Scope::iconHint() const
 {
-    return QString::fromStdString("");
-    //return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->icon() : "");
+    std::string icon;
+    try {
+        if (m_scopeMetadata) {
+            icon = m_scopeMetadata->icon();
+        }
+    } catch (...) { }
+    return QString::fromStdString(icon);
 }
 
 QString Scope::description() const

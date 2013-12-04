@@ -43,9 +43,9 @@ void ScopeListWorker::run()
     {
         // FIXME: use proper path for the runtime config
         //   but have libunity-scopes export it first?!
-        m_scopesRuntime = scopes::Runtime::create("dash");
+        m_scopesRuntime = scopes::Runtime::create();
         auto registry = m_scopesRuntime->registry();
-        m_scopeMap = registry->list();
+        m_metadataMap = registry->list();
     }
     catch (unity::Exception const& err)
     {
@@ -59,9 +59,9 @@ scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
     return std::move(m_scopesRuntime);
 }
 
-scopes::ScopeMap ScopeListWorker::scopeMap() const
+scopes::MetadataMap ScopeListWorker::metadataMap() const
 {
-    return m_scopeMap;
+    return m_metadataMap;
 }
         
 Scopes::Scopes(QObject *parent)
@@ -114,7 +114,7 @@ void Scopes::discoveryFinished()
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
     m_scopesRuntime = thread->takeRuntime();
-    auto scopes = thread->scopeMap();
+    auto scopes = thread->metadataMap();
 
     beginResetModel();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
