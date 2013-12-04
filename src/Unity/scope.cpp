@@ -48,6 +48,7 @@ Scope::Scope(QObject *parent) : QObject(parent)
 {
     m_categories.reset(new Categories(this));
 
+    qDebug() << "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
     connect(this, &Scope::isActiveChanged, this, &Scope::scopeIsActiveChanged);
 }
 
@@ -291,10 +292,13 @@ void Scope::fallbackActivate(const QString& uri)
     if (url.scheme() == "application") {
         QString path(url.path().isEmpty() ? url.authority() : url.path());
 
-        Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
-            if (path.startsWith(dir)) {
-                path.remove(dir);
-                path.replace('/', '-');
+        if (path.startsWith('/')) {
+            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
+                if (path.startsWith(dir)) {
+                    path.remove(dir);
+                    path.replace('/', '-');
+                    break;
+                }
             }
         }
 
