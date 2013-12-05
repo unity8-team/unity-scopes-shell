@@ -50,36 +50,12 @@ using namespace unity::api;
 
 const int AGGREGATION_TIMEOUT = 110;
 
-class ResultCollector;
-
-class PushEvent: public QEvent
-{
-public:
-    static const QEvent::Type eventType;
-
-    PushEvent(QSharedPointer<ResultCollector> collector):
-        QEvent(PushEvent::eventType),
-        m_collector(collector)
-    {
-    }
-
-    ResultCollector* getCollector()
-    {
-        return m_collector.data();
-    }
-
-private:
-    QSharedPointer<ResultCollector> m_collector;
-};
-
-const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
-
 class ResultCollector: public QObject
 {
 public:
     enum CollectionStatus { INCOMPLETE, FINISHED, CANCELLED };
 
-    ResultCollector(QObject* receiver): QObject(nullptr), m_receiver(receiver), m_status(CollectionStatus::INCOMPLETE), m_posted(false)
+    ResultCollector(): QObject(nullptr), m_status(CollectionStatus::INCOMPLETE), m_posted(false)
     {
         m_timer.start();
     }
@@ -93,7 +69,7 @@ public:
         return m_posted;
     }
 
-    QList<std::shared_ptr<scopes::CategorisedResult>> collect(CollectionStatus& status)
+    QList<std::shared_ptr<scopes::CategorisedResult>> collect(CollectionStatus& out_status)
     {
         QList<std::shared_ptr<scopes::CategorisedResult>> results;
 
@@ -102,31 +78,27 @@ public:
             // allow re-posting this collector if !resultset.finished()
             m_posted = false;
         }
-        status = m_status;
+        out_status = m_status;
         m_results.swap(results);
 
         return results;
     }
 
-    void postResults(QSharedPointer<ResultCollector> collector, CollectionStatus status = CollectionStatus::INCOMPLETE)
+    /* Returns bool indicating whether the collector should be sent to the UI thread */
+    bool submit(CollectionStatus status = CollectionStatus::INCOMPLETE)
     {
         QMutexLocker locker(&m_mutex);
-        if (status != CollectionStatus::INCOMPLETE) m_status = status;
-        if (m_posted || !m_receiver) return;
+        if (m_status == CollectionStatus::INCOMPLETE) m_status = status;
+        if (m_posted) return false;
 
-        // FIXME: alloc outside of the lock
-        PushEvent* pushEvent = new PushEvent(collector);
         m_posted = true;
 
-        // posting the event steals the ownership
-        // also posting while the lock is held will ensure correct order
-        QCoreApplication::postEvent(m_receiver, pushEvent);
+        return true;
     }
 
     void invalidate()
     {
         QMutexLocker locker(&m_mutex);
-        m_receiver = nullptr;
         m_status = CollectionStatus::CANCELLED;
     }
 
@@ -138,12 +110,33 @@ public:
 private:
     QMutex m_mutex;
     QList<std::shared_ptr<scopes::CategorisedResult>> m_results;
-    QObject* m_receiver;
     CollectionStatus m_status;
     bool m_posted;
     // not locked
     QElapsedTimer m_timer;
 };
+
+class PushEvent: public QEvent
+{
+public:
+    static const QEvent::Type eventType;
+
+    PushEvent(QSharedPointer<ResultCollector> collector):
+        QEvent(PushEvent::eventType),
+        m_collector(collector)
+    {
+    }
+
+    QList<std::shared_ptr<scopes::CategorisedResult>> collect(ResultCollector::CollectionStatus& out_status)
+    {
+        return m_collector->collect(out_status);
+    }
+
+private:
+    QSharedPointer<ResultCollector> m_collector;
+};
+
+const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
 
 class ResultReceiver: public scopes::ReceiverBase
 {
@@ -154,7 +147,9 @@ public:
         auto res = std::make_shared<scopes::CategorisedResult>(std::move(result));
         bool posted = m_collector->addResult(res);
         // posting as soon as possible means we minimize delay
-        if (!posted) m_collector->postResults(m_collector);
+        if (!posted) {
+            postCollectedResults();
+        }
     }
 
     // this might be called from any thread (might be main, might be any other thread)
@@ -163,21 +158,36 @@ public:
         ResultCollector::CollectionStatus status = reason == scopes::ReceiverBase::Reason::Cancelled ?
             ResultCollector::CollectionStatus::CANCELLED : ResultCollector::CollectionStatus::FINISHED;
 
-        m_collector->postResults(m_collector, status);
+        postCollectedResults(status);
+    }
+
+    void postCollectedResults(ResultCollector::CollectionStatus status = ResultCollector::CollectionStatus::INCOMPLETE)
+    {
+        if (m_collector->submit(status)) {
+            auto pushEvent = new PushEvent(m_collector);
+            QMutexLocker locker(&m_mutex);
+            // posting the event steals the ownership
+            if (m_receiver == nullptr) return;
+            QCoreApplication::postEvent(m_receiver, pushEvent);
+        }
     }
 
     void invalidate()
     {
         m_collector->invalidate();
+        QMutexLocker locker(&m_mutex);
+        m_receiver = nullptr;
     }
 
     ResultReceiver(QObject* receiver):
-        m_collector(new ResultCollector(receiver))
+        m_collector(new ResultCollector), m_receiver(receiver)
     {
     }
 
 private:
     QSharedPointer<ResultCollector> m_collector;
+    QMutex m_mutex;
+    QObject* m_receiver;
 };
 
 Scope::Scope(QObject *parent) : QObject(parent)
@@ -201,19 +211,17 @@ Scope::~Scope()
 bool Scope::event(QEvent* ev)
 {
     if (ev->type() == PushEvent::eventType) {
+        PushEvent* pushEvent = static_cast<PushEvent*>(ev);
+
         ResultCollector::CollectionStatus status;
-        PushEvent* pe = static_cast<PushEvent*>(ev);
-
-        auto collector = pe->getCollector();
-
-        auto results = collector->collect(status);
+        auto results = pushEvent->collect(status);
         if (status == ResultCollector::CollectionStatus::CANCELLED) {
             return true;
         }
 
         // qint64 inProgressMs = collector->msecsSinceStart();
         // FIXME: should we push immediately if this search is already taking a while?
-        //   if we don't we're just delaying the results by another AGGREGATION_TIMEOUT ms,
+        //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
         //   yet if we do, we risk getting more results right after this one
 
         if (m_cachedResults.empty()) {
