@@ -321,7 +321,10 @@ QString Scope::iconHint() const
         if (m_scopeMetadata) {
             icon = m_scopeMetadata->icon();
         }
-    } catch (...) { }
+    } catch (...) {
+        // throws if the value isn't set, safe to ignore
+    }
+
     return QString::fromStdString(icon);
 }
 
@@ -348,8 +351,16 @@ bool Scope::visible() const
 
 QString Scope::shortcut() const
 {
-    // FIXME: get from scope config
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->hot_key() : "");
+    std::string hotkey;
+    try {
+        if (m_scopeMetadata) {
+            hotkey = m_scopeMetadata->hot_key();
+        }
+    } catch (...) {
+        // throws if the value isn't set, safe to ignore
+    }
+
+    return QString::fromStdString(hotkey);
 }
 
 bool Scope::connected() const
