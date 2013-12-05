@@ -34,13 +34,17 @@ namespace scopes_ng {
 struct CategoryData
 {
     scopes::Category::SCPtr category;
-    QJsonDocument renderer_template;
+    QJsonValue renderer_template;
+    QJsonValue components;
 
     void setCategory(scopes::Category::SCPtr cat)
     {
         category = cat;
         // FIXME: validate
-        renderer_template = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
+        QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
+        QJsonObject category_root = category_def.object();
+        renderer_template = category_root.value(QString("template"));
+        components = category_root.value(QString("components"));
     }
 };
 
@@ -193,7 +197,7 @@ Categories::data(const QModelIndex& index, int role) const
         case RoleRenderer:
             return catData->renderer_template.toVariant();
         case RoleComponents:
-             return QVariant();
+             return catData->components.toVariant();
         case RoleContentType:
             return QVariant(QString("default"));
         case RoleRendererHint:
