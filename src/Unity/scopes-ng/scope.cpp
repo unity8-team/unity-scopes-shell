@@ -161,17 +161,6 @@ public:
         postCollectedResults(status);
     }
 
-    void postCollectedResults(ResultCollector::CollectionStatus status = ResultCollector::CollectionStatus::INCOMPLETE)
-    {
-        if (m_collector->submit(status)) {
-            auto pushEvent = new PushEvent(m_collector);
-            QMutexLocker locker(&m_mutex);
-            // posting the event steals the ownership
-            if (m_receiver == nullptr) return;
-            QCoreApplication::postEvent(m_receiver, pushEvent);
-        }
-    }
-
     void invalidate()
     {
         m_collector->invalidate();
@@ -185,6 +174,17 @@ public:
     }
 
 private:
+    void postCollectedResults(ResultCollector::CollectionStatus status = ResultCollector::CollectionStatus::INCOMPLETE)
+    {
+        if (m_collector->submit(status)) {
+            auto pushEvent = new PushEvent(m_collector);
+            QMutexLocker locker(&m_mutex);
+            // posting the event steals the ownership
+            if (m_receiver == nullptr) return;
+            QCoreApplication::postEvent(m_receiver, pushEvent);
+        }
+    }
+
     QSharedPointer<ResultCollector> m_collector;
     QMutex m_mutex;
     QObject* m_receiver;
@@ -196,16 +196,13 @@ Scope::Scope(QObject *parent) : QObject(parent)
     , m_searchInProgress(false)
 {
     m_categories = new Categories(this);
-    m_aggregatorTimer = new QTimer(this);
-    m_aggregatorTimer->setSingleShot(true);
-    QObject::connect(m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    m_aggregatorTimer.setSingleShot(true);
+    QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
 }
 
 Scope::~Scope()
 {
-    if (m_lastReceiver) {
-        std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
-    }
+    invalidateLastSearch();
 }
 
 bool Scope::event(QEvent* ev)
@@ -231,12 +228,12 @@ bool Scope::event(QEvent* ev)
         }
 
         if (status == ResultCollector::CollectionStatus::INCOMPLETE) {
-            if (!m_aggregatorTimer->isActive()) {
-                m_aggregatorTimer->start(AGGREGATION_TIMEOUT);
+            if (!m_aggregatorTimer.isActive()) {
+                m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
             }
         } else {
             // FINISHED or ERRORed collection
-            m_aggregatorTimer->stop();
+            m_aggregatorTimer.stop();
 
             flushUpdates();
 
@@ -297,13 +294,40 @@ void Scope::invalidateLastSearch()
         m_lastQuery->cancel();
         m_lastQuery.reset();
     }
-    if (m_aggregatorTimer->isActive()) {
-        m_aggregatorTimer->stop();
+    if (m_aggregatorTimer.isActive()) {
+        m_aggregatorTimer.stop();
     }
     m_cachedResults.clear();
 
     // TODO: not the best idea to put the clearAll() here, can cause flicker
     m_categories->clearAll();
+}
+
+void Scope::dispatchSearch()
+{
+    /* There are a few objects associated with searches:
+     * 1) ResultReceiver    2) ResultCollector    3) PushEvent
+     *
+     * ResultReceiver is associated with the search and has methods that get called
+     * by the scopes framework when results / categories / annotations are received.
+     * Since the notification methods (push(...)) of ResultReceiver are called
+     * from different thread(s), it uses ResultCollector to collect multiple results
+     * in a thread-safe manner.
+     * Once a couple of results are collected, the collector is sent via a PushEvent
+     * to the UI thread, where it is processed. When the results are collected by the UI thread,
+     * the collector continues to collect more results, and uses another PushEvent to post them.
+     *
+     * If a new query is submitted the previous one is marked as cancelled by invoking
+     * ResultReceiver::invalidate() and any PushEvent that is waiting to be processed
+     * will be discarded as the collector will also be marked as invalid.
+     * The new query will have new instances of ResultReceiver and ResultCollector.
+     */
+
+    if (m_proxy) {
+        scopes::VariantMap vm;
+        m_lastReceiver.reset(new ResultReceiver(this));
+        m_lastQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastReceiver);
+    }
 }
 
 void Scope::setScopeData(scopes::ScopeMetadata const& data)
@@ -419,12 +443,11 @@ void Scope::setSearchQuery(const QString& search_query)
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
         m_searchQuery = search_query;
+
         invalidateLastSearch();
-        if (m_proxy) {
-            scopes::VariantMap vm;
-            m_lastReceiver.reset(new ResultReceiver(this));
-            m_lastQuery = m_proxy->create_query(search_query.toStdString(), vm, m_lastReceiver);
-        }
+        // FIXME: use a timeout
+        dispatchSearch();
+
         Q_EMIT searchQueryChanged();
         if (!m_searchInProgress) {
             m_searchInProgress = true;

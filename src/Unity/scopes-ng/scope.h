@@ -127,6 +127,7 @@ private Q_SLOTS:
 
 private:
     void processResultSet(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>>& result_set);
+    void dispatchSearch();
     void invalidateLastSearch();
 
     QString m_scopeId;
@@ -141,7 +142,7 @@ private:
     unity::api::scopes::QueryCtrlProxy m_lastQuery;
     unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;
-    QTimer* m_aggregatorTimer;
+    QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_cachedResults;
 };
 
