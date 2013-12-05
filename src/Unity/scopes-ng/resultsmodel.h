@@ -34,6 +34,7 @@ class Q_DECL_EXPORT ResultsModel : public QAbstractListModel
     Q_ENUMS(Roles)
 
     Q_PROPERTY(QString categoryId READ categoryId WRITE setCategoryId NOTIFY categoryIdChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     explicit ResultsModel(QObject* parent = 0);
@@ -58,12 +59,14 @@ public:
 
     /* getters */
     QString categoryId() const;
+    int count() const;
 
     /* setters */
     void setCategoryId(QString const& id);
 
 Q_SIGNALS:
     void categoryIdChanged();
+    void countChanged();
 
 private:
     QHash<int, QByteArray> m_roles;

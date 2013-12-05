@@ -61,6 +61,8 @@ void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::ResultIt
         m_results.append(result);
     }
     endInsertRows();
+
+    Q_EMIT countChanged();
 }
 
 void ResultsModel::clearResults()
@@ -70,6 +72,8 @@ void ResultsModel::clearResults()
     beginRemoveRows(QModelIndex(), 0, m_results.count() - 1);
     m_results.clear();
     endRemoveRows();
+
+    Q_EMIT countChanged();
 }
 
 QHash<int, QByteArray>
@@ -82,6 +86,11 @@ int ResultsModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
 
+    return m_results.count();
+}
+
+int ResultsModel::count() const
+{
     return m_results.count();
 }
 
