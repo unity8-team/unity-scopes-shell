@@ -23,7 +23,7 @@
 
 #include <QAbstractListModel>
 
-#include <scopes/ResultItem.h>
+#include <scopes/CategorisedResult.h>
 
 namespace scopes_ng {
 
@@ -54,7 +54,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void addResults(QList<std::shared_ptr<unity::api::scopes::ResultItem>> const&);
+    void addResults(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> const&);
     void clearResults();
 
     /* getters */
@@ -70,7 +70,7 @@ Q_SIGNALS:
 
 private:
     QHash<int, QByteArray> m_roles;
-    QList<std::shared_ptr<unity::api::scopes::ResultItem>> m_results;
+    QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_results;
     QString m_categoryId;
 };
 

@@ -40,7 +40,7 @@
 #include <glib.h>
 
 #include <scopes/ReceiverBase.h>
-#include <scopes/ResultItem.h>
+#include <scopes/CategorisedResult.h>
 #include <scopes/QueryCtrl.h>
 
 namespace scopes_ng
@@ -85,7 +85,7 @@ public:
     }
 
     // Returns bool indicating whether this resultset was already posted
-    bool addResult(std::shared_ptr<scopes::ResultItem> const& result)
+    bool addResult(std::shared_ptr<scopes::CategorisedResult> const& result)
     {
         QMutexLocker locker(&m_mutex);
         m_results.append(result);
@@ -93,9 +93,9 @@ public:
         return m_posted;
     }
 
-    QList<std::shared_ptr<scopes::ResultItem>> collect(CollectionStatus& status)
+    QList<std::shared_ptr<scopes::CategorisedResult>> collect(CollectionStatus& status)
     {
-        QList<std::shared_ptr<scopes::ResultItem>> results;
+        QList<std::shared_ptr<scopes::CategorisedResult>> results;
 
         QMutexLocker locker(&m_mutex);
         if (m_status == CollectionStatus::INCOMPLETE) {
@@ -137,7 +137,7 @@ public:
 
 private:
     QMutex m_mutex;
-    QList<std::shared_ptr<scopes::ResultItem>> m_results;
+    QList<std::shared_ptr<scopes::CategorisedResult>> m_results;
     QObject* m_receiver;
     CollectionStatus m_status;
     bool m_posted;
@@ -149,9 +149,9 @@ class ResultReceiver: public scopes::ReceiverBase
 {
 public:
     // this will be called from non-main thread, (might even be multiple different threads)
-    virtual void push(scopes::ResultItem result) override
+    virtual void push(scopes::CategorisedResult result) override
     {
-        auto res = std::make_shared<scopes::ResultItem>(std::move(result));
+        auto res = std::make_shared<scopes::CategorisedResult>(std::move(result));
         bool posted = m_collector->addResult(res);
         // posting as soon as possible means we minimize delay
         if (!posted) m_collector->postResults(m_collector);
@@ -248,7 +248,7 @@ void Scope::flushUpdates()
     processResultSet(m_cachedResults); // clears the result list
 }
 
-void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_set)
+void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)
 {
     if (result_set.count() == 0) return;
 
@@ -256,7 +256,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::ResultItem>>& result_
     QList<scopes::Category::SCPtr> categories;
 
     // split the result_set by category_id
-    QMap<std::string, QList<std::shared_ptr<scopes::ResultItem>>> category_results;
+    QMap<std::string, QList<std::shared_ptr<scopes::CategorisedResult>>> category_results;
     while (!result_set.empty()) {
         auto result = result_set.takeFirst();
         if (!category_results.contains(result->category()->id())) {

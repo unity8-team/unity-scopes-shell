@@ -126,7 +126,7 @@ private Q_SLOTS:
     void flushUpdates();
 
 private:
-    void processResultSet(QList<std::shared_ptr<unity::api::scopes::ResultItem>>& result_set);
+    void processResultSet(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>>& result_set);
     void invalidateLastSearch();
 
     QString m_scopeId;
@@ -142,7 +142,7 @@ private:
     unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;
     QTimer* m_aggregatorTimer;
-    QList<std::shared_ptr<unity::api::scopes::ResultItem>> m_cachedResults;
+    QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_cachedResults;
 };
 
 } // namespace scopes_ng

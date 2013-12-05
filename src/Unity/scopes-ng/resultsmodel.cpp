@@ -52,12 +52,12 @@ void ResultsModel::setCategoryId(QString const& id)
     }
 }
 
-void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::ResultItem>> const& results)
+void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> const& results)
 {
     if (results.count() == 0) return;
     
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
-    Q_FOREACH(std::shared_ptr<scopes::ResultItem> const& result, results) {
+    Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
         m_results.append(result);
     }
     endInsertRows();
@@ -101,7 +101,7 @@ ResultsModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::ResultItem* result = m_results[index.row()].get();
+    scopes::CategorisedResult* result = m_results[index.row()].get();
 
     switch (role) {
         case RoleUri:
