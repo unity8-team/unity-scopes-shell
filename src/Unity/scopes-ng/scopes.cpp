@@ -27,19 +27,64 @@
 #include <QDebug>
 #include <QTimer>
 
+#include <scopes/Registry.h>
+#include <scopes/Scope.h>
+#include <scopes/ScopeProxyFwd.h>
+#include <unity/UnityExceptions.h>
+
 namespace scopes_ng
 {
 
+using namespace unity::api;
+
+void ScopeListWorker::run()
+{
+    try
+    {
+        // FIXME: use proper path for the runtime config
+        //   but have libunity-scopes export it first?!
+        m_scopesRuntime = scopes::Runtime::create();
+        auto registry = m_scopesRuntime->registry();
+        m_metadataMap = registry->list();
+    }
+    catch (unity::Exception const& err)
+    {
+        qWarning("ERROR! Caught %s", err.to_string().c_str());
+    }
+    Q_EMIT discoveryFinished();
+}
+
+scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
+{
+    return std::move(m_scopesRuntime);
+}
+
+scopes::MetadataMap ScopeListWorker::metadataMap() const
+{
+    return m_metadataMap;
+}
+        
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
+    , m_listThread(nullptr)
     , m_loaded(false)
 {
     m_roles[Scopes::RoleScope] = "scope";
     m_roles[Scopes::RoleId] = "id";
     m_roles[Scopes::RoleVisible] = "visible";
+    m_roles[Scopes::RoleTitle] = "title";
 
-    // simulate a bit of asynchrocinity, might not be needed
-    QTimer::singleShot(1, this, SLOT(populateScopes()));
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    QTimer::singleShot(100, this, SLOT(populateScopes()));
+}
+
+Scopes::~Scopes()
+{
+    if (m_listThread && !m_listThread->isFinished()) {
+        // FIXME: wait indefinitely once libunity-scopes supports timeouts
+        m_listThread->wait(5000);
+    }
 }
 
 QHash<int, QByteArray> Scopes::roleNames() const
@@ -56,21 +101,37 @@ int Scopes::rowCount(const QModelIndex& parent) const
 
 void Scopes::populateScopes()
 {
+    auto thread = new ScopeListWorker;
+    QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::discoveryFinished);
+    QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
+
+    m_listThread = thread;
+    m_listThread->start();
+}
+
+void Scopes::discoveryFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+
+    m_scopesRuntime = thread->takeRuntime();
+    auto scopes = thread->metadataMap();
+
     beginResetModel();
-
-    // FIXME: a little bit of hardcoded data for now
-    auto scope = new Scope(this);
-    m_scopes.append(scope);
-
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        auto scope = new Scope(this);
+        scope->setScopeData(it->second);
+        m_scopes.append(scope);
+    }
     endResetModel();
+
+    m_loaded = true;
+    Q_EMIT loadedChanged(m_loaded);
+
+    m_listThread = nullptr;
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid()) {
-        return QVariant();
-    }
-
     Scope* scope = m_scopes.at(index.row());
 
     switch (role) {
@@ -80,6 +141,8 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(scope->id());
         case Scopes::RoleVisible:
             return QVariant::fromValue(scope->visible());
+        case Scopes::RoleTitle:
+            return QVariant::fromValue(scope->name());
         default:
             return QVariant();
     }

@@ -23,10 +23,17 @@
 // Qt
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QMetaType>
+
+// scopes
+#include <scopes/Scope.h>
+#include <scopes/ScopeMetadata.h>
 
 namespace scopes_ng
 {
+
+class Categories;
 
 class Scope : public QObject
 {
@@ -41,7 +48,7 @@ class Scope : public QObject
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(QString shortcut READ shortcut NOTIFY shortcutChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
-    //Q_PROPERTY(Categories* categories READ categories NOTIFY categoriesChanged)
+    Q_PROPERTY(scopes_ng::Categories* categories READ categories NOTIFY categoriesChanged)
     //Q_PROPERTY(Filters* filters READ filters NOTIFY filtersChanged)
 
     Q_PROPERTY(QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchQueryChanged)
@@ -51,6 +58,9 @@ class Scope : public QObject
 
 public:
     explicit Scope(QObject *parent = 0);
+    virtual ~Scope();
+
+    virtual bool event(QEvent* ev) override;
 
     /* getters */
     QString id() const;
@@ -62,7 +72,7 @@ public:
     QString shortcut() const;
     bool connected() const;
     bool searchInProgress() const;
-    //Categories* categories() const;
+    Categories* categories() const;
     //Filters* filters() const;
     QString searchQuery() const;
     QString noResultsHint() const;
@@ -83,11 +93,11 @@ public:
                               const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
     Q_INVOKABLE void cancelActivation();
 
-    //void setUnityScope(const unity::dash::Scope::Ptr& scope);
     //unity::dash::Scope::Ptr unityScope() const;
+    void setScopeData(unity::api::scopes::ScopeMetadata const& data);
 
 Q_SIGNALS:
-    void idChanged(const std::string&);
+    void idChanged();
     void nameChanged(const std::string&);
     void iconHintChanged(const std::string&);
     void descriptionChanged(const std::string&);
@@ -96,7 +106,7 @@ Q_SIGNALS:
     void visibleChanged(bool);
     void shortcutChanged(const std::string&);
     void connectedChanged(bool);
-    //void categoriesChanged();
+    void categoriesChanged();
     //void filtersChanged();
     void searchQueryChanged();
     void noResultsHintChanged();
@@ -113,13 +123,27 @@ Q_SIGNALS:
     void activateApplication(const QString &desktop);
 
 private Q_SLOTS:
+    void flushUpdates();
 
 private:
+    void processResultSet(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>>& result_set);
+    void dispatchSearch();
+    void invalidateLastSearch();
+
+    QString m_scopeId;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
     bool m_isActive;
     bool m_searchInProgress;
+
+    unity::api::scopes::ScopeProxy m_proxy;
+    std::shared_ptr<unity::api::scopes::ScopeMetadata> m_scopeMetadata;
+    unity::api::scopes::QueryCtrlProxy m_lastQuery;
+    unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
+    Categories* m_categories;
+    QTimer m_aggregatorTimer;
+    QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_cachedResults;
 };
 
 } // namespace scopes_ng

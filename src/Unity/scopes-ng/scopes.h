@@ -23,6 +23,12 @@
 // Qt
 #include <QAbstractListModel>
 #include <QList>
+#include <QThread>
+
+#include <scopes/Runtime.h>
+#include <scopes/Registry.h>
+#include <scopes/Scope.h>
+#include <scopes/ScopeProxyFwd.h>
 
 namespace scopes_ng
 {
@@ -39,12 +45,13 @@ class Scopes : public QAbstractListModel
 
 public:
     explicit Scopes(QObject *parent = 0);
-    ~Scopes() = default;
+    ~Scopes();
 
     enum Roles {
         RoleScope,
         RoleId,
-        RoleVisible
+        RoleVisible,
+        RoleTitle
     };
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
@@ -62,12 +69,34 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void populateScopes();
+    void discoveryFinished();
 
 private:
     QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
+    QThread* m_listThread;
     bool m_loaded;
+
+    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
 };
+
+class ScopeListWorker: public QThread
+{
+    Q_OBJECT
+
+public:
+    void run() override;
+    unity::api::scopes::Runtime::UPtr takeRuntime();
+    unity::api::scopes::MetadataMap metadataMap() const;
+
+Q_SIGNALS:
+    void discoveryFinished();
+
+private:
+    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::api::scopes::MetadataMap m_metadataMap;
+};
+
 
 } // namespace scopes_ng
 

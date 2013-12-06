@@ -5,13 +5,14 @@ include(Plugins)
 include(FindPkgConfig)
 pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
 pkg_check_modules(UNITYCORE REQUIRED unity-core-6.0>=7.1.1)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${QTDEE_INCLUDE_DIRS}
     ${UNITYCORE_INCLUDE_DIRS}
-    ${Qt5DBus_INCLUDE_DIRS}
+    ${SCOPESLIB_INCLUDE_DIRS}
 )
 
 set(QMLPLUGIN_SRC
@@ -56,7 +57,7 @@ add_library(Unity-qml SHARED ${QMLPLUGIN_SRC} $<TARGET_OBJECTS:ScopesNG-qml>)
 target_link_libraries(Unity-qml
     ${QTDEE_LDFLAGS}
     ${UNITYCORE_LDFLAGS}
-    ${Qt5DBus_LIBRARIES}
+    ${SCOPESLIB_LDFLAGS}
     ${Qt5Gui_LIBRARIES}
     )
 
