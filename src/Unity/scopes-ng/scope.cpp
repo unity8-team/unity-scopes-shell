@@ -280,6 +280,8 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
             category_model->addResults(category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
         } else {
+            // FIXME: only update when we know it's necessary
+            m_categories->registerCategory(category, nullptr);
             category_model->addResults(category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }
