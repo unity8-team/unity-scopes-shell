@@ -202,7 +202,9 @@ Scope::Scope(QObject *parent) : QObject(parent)
 
 Scope::~Scope()
 {
-    invalidateLastSearch();
+    if (m_lastReceiver) {
+        std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
+    }
 }
 
 bool Scope::event(QEvent* ev)
