@@ -132,10 +132,6 @@ void Scopes::discoveryFinished()
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() >= m_scopes.count()) {
-        return QVariant();
-    }
-
     Scope* scope = m_scopes.at(index.row());
 
     switch (role) {

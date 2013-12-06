@@ -175,15 +175,7 @@ void Categories::clearAll()
 QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid()) {
-        return QVariant();
-    }
-
-    if (index.row() >= m_categories.size()) {
-        return QVariant();
-    }
-
-    CategoryData* catData = m_categories[index.row()].data();
+    CategoryData* catData = m_categories.at(index.row()).data();
     scopes::Category::SCPtr cat(catData->category);
     ResultsModel* resultsModel = m_categoryResults.contains(cat->id()) ? m_categoryResults[cat->id()] : nullptr;
 

@@ -97,11 +97,7 @@ int ResultsModel::count() const
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() >= m_results.count()) {
-        return QVariant();
-    }
-
-    scopes::CategorisedResult* result = m_results[index.row()].get();
+    scopes::CategorisedResult* result = m_results.at(index.row()).get();
 
     switch (role) {
         case RoleUri:
