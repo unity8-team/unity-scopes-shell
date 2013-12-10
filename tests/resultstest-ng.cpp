@@ -46,12 +46,12 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
-        QFileInfo runtimedir(TEST_RUNTIME_CONFIG);
-        QDir endpointdir(runtimedir.dir());
+        QDir endpointdir(QFileInfo(TEST_RUNTIME_CONFIG).dir());
         endpointdir.cd(QString("endpoints"));
         QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
-        bool linked = QFile::link(endpointdir.absolutePath(), SCOPES_TMP_ENDPOINT_DIR);
-        QVERIFY2(linked, "Unable to create symlink " SCOPES_TMP_ENDPOINT_DIR);
+        // symlinking to workaround "File name too long" issue
+        QVERIFY2(QFile::link(endpointdir.absolutePath(), SCOPES_TMP_ENDPOINT_DIR),
+            "Unable to create symlink " SCOPES_TMP_ENDPOINT_DIR);
         // startup our private scope registry
         QString registryBin(TEST_SCOPEREGISTRY_BIN);
         QStringList arguments;
