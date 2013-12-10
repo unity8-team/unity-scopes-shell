@@ -30,7 +30,7 @@ ResultsModel::ResultsModel(QObject* parent)
     : QAbstractListModel(parent)
 {
     m_roles[ResultsModel::RoleUri] = "uri";
-    m_roles[ResultsModel::RoleCategory] = "category";
+    m_roles[ResultsModel::RoleCategoryId] = "categoryId";
     m_roles[ResultsModel::RoleDndUri] = "dndUri";
     m_roles[ResultsModel::RoleMetadata] = "metadata";
     m_roles[ResultsModel::RoleTitle] = "title";
@@ -124,7 +124,7 @@ ResultsModel::data(const QModelIndex& index, int role) const
     switch (role) {
         case RoleUri:
             return QVariant(QString::fromStdString(result->uri()));
-        case RoleCategory:
+        case RoleCategoryId:
             return QVariant(QString::fromStdString(result->category()->id()));
         case RoleDndUri:
             return QVariant(QString::fromStdString(result->dnd_uri()));

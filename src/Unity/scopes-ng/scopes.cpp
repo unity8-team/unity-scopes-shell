@@ -41,9 +41,8 @@ void ScopeListWorker::run()
 {
     try
     {
-        // FIXME: use proper path for the runtime config
-        //   but have libunity-scopes export it first?!
-        m_scopesRuntime = scopes::Runtime::create();
+        // m_runtimeConfig should be null in most cases, and empty string is for system-wide fallback
+        m_scopesRuntime = scopes::Runtime::create(m_runtimeConfig.toStdString());
         auto registry = m_scopesRuntime->registry();
         m_metadataMap = registry->list();
     }
@@ -52,6 +51,11 @@ void ScopeListWorker::run()
         qWarning("ERROR! Caught %s", err.to_string().c_str());
     }
     Q_EMIT discoveryFinished();
+}
+
+void ScopeListWorker::setRuntimeConfig(QString const& config)
+{
+    m_runtimeConfig = config;
 }
 
 scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
@@ -63,7 +67,7 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 {
     return m_metadataMap;
 }
-        
+
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
     , m_listThread(nullptr)
@@ -102,6 +106,8 @@ int Scopes::rowCount(const QModelIndex& parent) const
 void Scopes::populateScopes()
 {
     auto thread = new ScopeListWorker;
+    QByteArray runtimeConfig = qgetenv("UNITY_SCOPES_RUNTIME_PATH");
+    thread->setRuntimeConfig(QString::fromLocal8Bit(runtimeConfig));
     QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::discoveryFinished);
     QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
 

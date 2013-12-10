@@ -1,0 +1,3 @@
+[Zmq]
+EndpointDir.Public = @CMAKE_CURRENT_BINARY_DIR@/endpoints
+EndpointDir.Private = @CMAKE_CURRENT_BINARY_DIR@/endpoints

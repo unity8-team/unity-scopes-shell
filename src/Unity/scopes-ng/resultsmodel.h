@@ -42,7 +42,7 @@ public:
 
     enum Roles {
         RoleUri,
-        RoleCategory,
+        RoleCategoryId,
         RoleDndUri,
         RoleMetadata,
         // card components
@@ -59,7 +59,7 @@ public:
         RoleSummary
     };
 
-    int rowCount(const QModelIndex& parent) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

@@ -35,7 +35,7 @@ namespace scopes_ng
 
 class Scope;
 
-class Scopes : public QAbstractListModel
+class Q_DECL_EXPORT Scopes : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -85,6 +85,7 @@ class ScopeListWorker: public QThread
     Q_OBJECT
 
 public:
+    void setRuntimeConfig(QString const& config);
     void run() override;
     unity::api::scopes::Runtime::UPtr takeRuntime();
     unity::api::scopes::MetadataMap metadataMap() const;
@@ -93,6 +94,7 @@ Q_SIGNALS:
     void discoveryFinished();
 
 private:
+    QString m_runtimeConfig;
     unity::api::scopes::Runtime::UPtr m_scopesRuntime;
     unity::api::scopes::MetadataMap m_metadataMap;
 };
