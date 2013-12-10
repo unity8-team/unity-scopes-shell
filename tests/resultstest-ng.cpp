@@ -19,6 +19,9 @@
 
 #include <QObject>
 #include <QTest>
+#include <QFile>
+#include <QFileInfo>
+#include <QDir>
 #include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
@@ -36,26 +39,34 @@ class ResultsTestNg : public QObject
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
-    QProcess* m_registry;
+    QScopedPointer<QProcess> m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
+        QFileInfo runtimedir(TEST_RUNTIME_CONFIG);
+        QDir endpointdir(runtimedir.dir());
+        endpointdir.cd(QString("endpoints"));
+        bool linked = QFile::link(endpointdir.absolutePath(), "/tmp/scopes-test-endpoints");
+        QVERIFY2(linked, "Unable to create symlink /tmp/scopes-test-endpoints");
         // startup our private scope registry
         QString registryBin(TEST_SCOPEREGISTRY_BIN);
         QStringList arguments;
         arguments << TEST_RUNTIME_CONFIG;
 
-        m_registry = new QProcess(this);
+        m_registry.reset(new QProcess(nullptr));
         m_registry->start(registryBin, arguments);
     }
 
     void cleanupTestCase()
     {
-        m_registry->terminate();
-        if (!m_registry->waitForFinished()) {
-            m_registry->kill();
+        if (m_registry) {
+            m_registry->terminate();
+            if (!m_registry->waitForFinished()) {
+                m_registry->kill();
+            }
         }
+        QFile::remove("/tmp/scopes-test-endpoints");
     }
 
     void init()

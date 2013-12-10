@@ -7,9 +7,9 @@ pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1.3)
 
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
-set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/config/Runtime.ini)
+set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
 
-add_subdirectory(config)
+add_subdirectory(data)
 
 include_directories(
     ${Unity-qml_SOURCE_DIR}
