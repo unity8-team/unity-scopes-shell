@@ -30,13 +30,20 @@ ResultsModel::ResultsModel(QObject* parent)
     : QAbstractListModel(parent)
 {
     m_roles[ResultsModel::RoleUri] = "uri";
-    m_roles[ResultsModel::RoleIconHint] = "icon";
     m_roles[ResultsModel::RoleCategory] = "category";
-    m_roles[ResultsModel::RoleTitle] = "title";
-    m_roles[ResultsModel::RoleComment] = "comment";
     m_roles[ResultsModel::RoleDndUri] = "dndUri";
     m_roles[ResultsModel::RoleMetadata] = "metadata";
-    m_roles[ResultsModel::RoleRendererHints] = "rendererHints";
+    m_roles[ResultsModel::RoleTitle] = "title";
+    m_roles[ResultsModel::RoleArt] = "art";
+    m_roles[ResultsModel::RoleSubtitle] = "subtitle";
+    m_roles[ResultsModel::RoleMascot] = "mascot";
+    m_roles[ResultsModel::RoleEmblem] = "emblem";
+    m_roles[ResultsModel::RoleOldPrice] = "oldPrice";
+    m_roles[ResultsModel::RolePrice] = "price";
+    m_roles[ResultsModel::RoleAltPrice] = "altPrice";
+    m_roles[ResultsModel::RoleRating] = "rating";
+    m_roles[ResultsModel::RoleAltRating] = "altRating";
+    m_roles[ResultsModel::RoleSummary] = "summary";
 }
 
 QString ResultsModel::categoryId() const
@@ -95,6 +102,21 @@ int ResultsModel::count() const
 }
 
 QVariant
+ResultsModel::componentValue(scopes::CategorisedResult* result, std::string const& fieldName) const
+{
+    // FIXME: component field mapping
+    if (!result->has_metadata(fieldName)) {
+        return QVariant();
+    }
+    scopes::Variant const& v = result->metadata(fieldName);
+    if (v.which() != scopes::Variant::Type::String) {
+        return QVariant();
+    }
+
+    return QVariant(QString::fromStdString(v.get_string()));
+}
+
+QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
     scopes::CategorisedResult* result = m_results.at(index.row()).get();
@@ -102,29 +124,44 @@ ResultsModel::data(const QModelIndex& index, int role) const
     switch (role) {
         case RoleUri:
             return QVariant(QString::fromStdString(result->uri()));
-        case RoleIconHint: {
-            QString iconHint(QString::fromStdString(result->art()));
-            if (iconHint.isEmpty()) {
+        case RoleCategory:
+            return QVariant(QString::fromStdString(result->category()->id()));
+        case RoleDndUri:
+            return QVariant(QString::fromStdString(result->dnd_uri()));
+        case RoleMetadata:
+            return QVariant(QVariantMap()); // FIXME! would be great to keep it opaque, so it isn't misused
+        case RoleTitle:
+            return QVariant(QString::fromStdString(result->title()));
+        case RoleArt: {
+            QString image(QString::fromStdString(result->art()));
+            if (image.isEmpty()) {
                 QString uri(QString::fromStdString(result->uri()));
+                // FIXME: what to do about mimetype?
                 QString thumbnailerUri(uriToThumbnailerProviderString(uri, QString(), QVariantHash()));
                 if (!thumbnailerUri.isNull()) {
                     return QVariant::fromValue(thumbnailerUri);
                 }
             }
-            return QVariant(iconHint);
+            return QVariant(image);
         }
-        case RoleCategory:
-            return QVariant(QString::fromStdString(result->category()->id()));
-        case RoleTitle:
-            return QVariant(QString::fromStdString(result->title()));
-        case RoleComment:
-            return QVariant();
-        case RoleDndUri:
-            return QVariant(QString::fromStdString(result->dnd_uri()));
-        case RoleMetadata:
-            return QVariant(QVariantMap());
-        case RoleRendererHints:
-            return QVariant();
+        case RoleSubtitle:
+            return componentValue(result, "subtitle");
+        case RoleMascot:
+            return componentValue(result, "mascot");
+        case RoleEmblem:
+            return componentValue(result, "emblem");
+        case RoleOldPrice:
+            return componentValue(result, "old-price");
+        case RolePrice:
+            return componentValue(result, "price");
+        case RoleAltPrice:
+            return componentValue(result, "alt-price");
+        case RoleRating:
+            return componentValue(result, "rating");
+        case RoleAltRating:
+            return componentValue(result, "alt-rating");
+        case RoleSummary:
+            return componentValue(result, "summary");
         default:
             return QVariant();
     }

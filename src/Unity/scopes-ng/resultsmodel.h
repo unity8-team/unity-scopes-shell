@@ -24,6 +24,7 @@
 #include <QAbstractListModel>
 
 #include <scopes/CategorisedResult.h>
+#include <unordered_map>
 
 namespace scopes_ng {
 
@@ -41,13 +42,21 @@ public:
 
     enum Roles {
         RoleUri,
-        RoleIconHint,
         RoleCategory,
-        RoleTitle,
-        RoleComment,
         RoleDndUri,
         RoleMetadata,
-        RoleRendererHints
+        // card components
+        RoleTitle,
+        RoleArt,
+        RoleSubtitle,
+        RoleMascot,
+        RoleEmblem,
+        RoleOldPrice,
+        RolePrice,
+        RoleAltPrice,
+        RoleRating,
+        RoleAltRating,
+        RoleSummary
     };
 
     int rowCount(const QModelIndex& parent) const override;
@@ -69,7 +78,10 @@ Q_SIGNALS:
     void countChanged();
 
 private:
+    QVariant componentValue(unity::api::scopes::CategorisedResult* result, std::string const& fieldName) const;
+
     QHash<int, QByteArray> m_roles;
+    std::unordered_map<std::string, std::string> m_componentMapping;
     QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_results;
     QString m_categoryId;
 };
