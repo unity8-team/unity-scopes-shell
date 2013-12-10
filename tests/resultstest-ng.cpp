@@ -31,6 +31,8 @@
 #include <scopes-ng/categories.h>
 #include <scopes-ng/resultsmodel.h>
 
+#define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
+
 using namespace scopes_ng;
 
 class ResultsTestNg : public QObject
@@ -47,8 +49,9 @@ private Q_SLOTS:
         QFileInfo runtimedir(TEST_RUNTIME_CONFIG);
         QDir endpointdir(runtimedir.dir());
         endpointdir.cd(QString("endpoints"));
-        bool linked = QFile::link(endpointdir.absolutePath(), "/tmp/scopes-test-endpoints");
-        QVERIFY2(linked, "Unable to create symlink /tmp/scopes-test-endpoints");
+        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
+        bool linked = QFile::link(endpointdir.absolutePath(), SCOPES_TMP_ENDPOINT_DIR);
+        QVERIFY2(linked, "Unable to create symlink " SCOPES_TMP_ENDPOINT_DIR);
         // startup our private scope registry
         QString registryBin(TEST_SCOPEREGISTRY_BIN);
         QStringList arguments;
@@ -66,7 +69,7 @@ private Q_SLOTS:
                 m_registry->kill();
             }
         }
-        QFile::remove("/tmp/scopes-test-endpoints");
+        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
     }
 
     void init()
