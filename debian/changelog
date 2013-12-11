@@ -1,3 +1,14 @@
+unity-scopes-shell (0.1.1+14.04.20131211-0ubuntu1) trusty; urgency=low
+
+  [ Łukasz 'sil2100' Zemczak ]
+  * Revert rev 25 as it seems to cause a big regression, breaking
+    launching of click applications in unity8
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 29
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 11 Dec 2013 17:06:08 +0000
+
 unity-scopes-shell (0.1.1+14.04.20131209-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
