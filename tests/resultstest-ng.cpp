@@ -22,6 +22,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
+#include <QJsonValue>
+#include <QJsonObject>
 #include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
@@ -160,7 +162,7 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleCategoryId), categories->data(categories->index(0), Categories::Roles::RoleCategoryId));
     }
 
-    void testMetadataData()
+    void testResultMetadata()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
         // perform a search
@@ -181,6 +183,44 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleSubtitle).toString(), QString("subtitle"));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleAltRating).toString(), QString());
+    }
+
+    void testCategoryDefaults()
+    {
+        // this search return minimal category definition, defaults should kick in
+        m_scope->setSearchQuery(QString("minimal"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+
+        // get renderer_template and components
+        auto cidx = categories->index(0);
+        QVariant components_var = categories->data(cidx, Categories::Roles::RoleComponents);
+        QVERIFY(components_var.canConvert<QVariantMap>());
+        QJsonObject components = QJsonValue::fromVariant(components_var).toObject();
+        QVariant renderer_var = categories->data(cidx, Categories::Roles::RoleRenderer);
+        QVERIFY(renderer_var.canConvert<QVariantMap>());
+        QJsonObject renderer = QJsonValue::fromVariant(renderer_var).toObject();
+
+        QCOMPARE(components.size(), 1);
+        QVERIFY(components.contains("title"));
+        QVERIFY(renderer.contains("card-size"));
+        QVERIFY(renderer.contains("card-layout"));
+        QVERIFY(renderer.contains("category-layout"));
+
+        // get ResultsModel instance
+        QVariant results_var = categories->data(cidx, Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
+        // components don't specify art
+        QEXPECT_FAIL("", "component mapping isn't implemented yet", Continue);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString());
     }
 };
 

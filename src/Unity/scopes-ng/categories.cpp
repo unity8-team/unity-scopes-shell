@@ -23,6 +23,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QDebug>
 
 #include <scopes/CategoryRenderer.h>
@@ -43,8 +44,64 @@ struct CategoryData
         // FIXME: validate
         QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
         QJsonObject category_root = category_def.object();
-        renderer_template = category_root.value(QString("template"));
-        components = category_root.value(QString("components"));
+        // assumes pre-validated json
+        renderer_template = normalizeTemplate(category_root.value(QString("template")));
+        components = normalizeComponents(category_root.value(QString("components")));
+    }
+
+    // normalizes the components QJsonValue by adding default values (if not present)
+    QJsonValue normalizeComponents(QJsonValue const& raw_components)
+    {
+        // components should be dict of keys
+        QJsonObject result;
+        QJsonObject components_dict = raw_components.toObject();
+        for (auto it = components_dict.begin(); it != components_dict.end(); ++it) {
+            // if value is a string, convert it to an object
+            if (it.value().type() == QJsonValue::Type::String) {
+                QJsonObject component_obj;
+                component_obj.insert("field", it.value());
+                result.insert(it.key(), component_obj);
+            } else {
+                result.insert(it.key(), it.value());
+            }
+        }
+
+        // fix-up the art object
+        if (result.contains("art")) {
+            QJsonObject art_obj = result["art"].toObject();
+            if (!art_obj.contains("aspect-ratio")) {
+                art_obj.insert("aspect-ratio", QJsonValue(1.0));
+            }
+            if (!art_obj.contains("fill-mode")) {
+              art_obj.insert("fill-mode", QJsonValue(QString("crop")));
+            }
+            // FIXME: is this necessary?
+            result.insert("art", art_obj);
+        }
+
+        return QJsonValue(result);
+    }
+
+    // normalizes the template QJsonValue by adding default values (if not present)
+    QJsonValue normalizeTemplate(QJsonValue const& raw_template)
+    {
+        // copy everything over
+        QJsonObject result = raw_template.toObject();
+
+        // add missing defaults
+        if (!result.contains("category-layout")) {
+            result.insert("category-layout", QJsonValue(QString("grid")));
+        }
+        if (!result.contains("card-layout")) {
+            result.insert("card-layout", QJsonValue(QString("vertical")));
+        }
+        if (!result.contains("card-size")) {
+            result.insert("card-size", QJsonValue(QString("medium")));
+        }
+        if (!result.contains("collapsed-rows")) {
+            result.insert("collapsed-rows", QJsonValue(2));
+        }
+        return QJsonValue(result);
     }
 };
 
