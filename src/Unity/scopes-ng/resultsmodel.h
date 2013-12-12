@@ -78,7 +78,7 @@ Q_SIGNALS:
     void countChanged();
 
 private:
-    QVariant componentValue(unity::api::scopes::CategorisedResult* result, std::string const& fieldName) const;
+    QVariant componentValue(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
 
     QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;

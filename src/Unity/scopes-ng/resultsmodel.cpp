@@ -102,7 +102,7 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::CategorisedResult* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
 {
     // FIXME: component field mapping
     if (!result->has_metadata(fieldName)) {
