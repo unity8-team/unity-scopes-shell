@@ -1,7 +1,7 @@
 [ScopeConfig]
-DisplayName = scope-A.DisplayName
-Description = scope-A.Description
-Art = scope-A.Art
-Icon = scope-A.Icon
-SearchHint = scope-A.SearchHint
-HotKey = scope-A.HotKey
+DisplayName = mock.DisplayName
+Description = mock.Description
+Art = mock.Art
+Icon = mock.Icon
+SearchHint = mock.SearchHint
+HotKey = mock.HotKey
