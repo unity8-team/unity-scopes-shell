@@ -116,6 +116,18 @@ private Q_SLOTS:
         QVERIFY(results->rowCount() > 0);
     }
 
+    void testScopesGet()
+    {
+        QVariant scope_var = m_scopes->get(0);
+        QVERIFY(scope_var.canConvert<scopes_ng::Scope*>());
+
+        // try incorrect index as well
+        scope_var = m_scopes->get(65536);
+        QVERIFY(scope_var.isNull());
+        scope_var = m_scopes->get(-1);
+        QVERIFY(scope_var.isNull());
+    }
+
     void testTwoSearches()
     {
         QCOMPARE(m_scope->searchInProgress(), false);

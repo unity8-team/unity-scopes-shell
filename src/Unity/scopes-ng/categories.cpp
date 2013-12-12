@@ -238,17 +238,17 @@ Categories::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case RoleCategoryId:
-            return QVariant(QString::fromStdString(cat->id()));
+            return QString::fromStdString(cat->id());
         case RoleName:
-            return QVariant(QString::fromStdString(cat->title()));
+            return QString::fromStdString(cat->title());
         case RoleIcon:
-            return QVariant(QString::fromStdString(cat->icon()));
+            return QString::fromStdString(cat->icon());
         case RoleRenderer:
             return catData->renderer_template.toVariant();
         case RoleComponents:
              return catData->components.toVariant();
         case RoleContentType:
-            return QVariant(QString("default"));
+            return QString("default");
         case RoleRendererHint:
             return QVariant();
         case RoleProgressSource:

@@ -1,7 +1,0 @@
-[ScopeConfig]
-DisplayName = scope-A.DisplayName
-Description = scope-A.Description
-Art = scope-A.Art
-Icon = scope-A.Icon
-SearchHint = scope-A.SearchHint
-HotKey = scope-A.HotKey

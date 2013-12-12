@@ -113,7 +113,7 @@ ResultsModel::componentValue(scopes::CategorisedResult* result, std::string cons
         return QVariant();
     }
 
-    return QVariant(QString::fromStdString(v.get_string()));
+    return QString::fromStdString(v.get_string());
 }
 
 QVariant
@@ -123,15 +123,15 @@ ResultsModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case RoleUri:
-            return QVariant(QString::fromStdString(result->uri()));
+            return QString::fromStdString(result->uri());
         case RoleCategoryId:
-            return QVariant(QString::fromStdString(result->category()->id()));
+            return QString::fromStdString(result->category()->id());
         case RoleDndUri:
-            return QVariant(QString::fromStdString(result->dnd_uri()));
+            return QString::fromStdString(result->dnd_uri());
         case RoleMetadata:
-            return QVariant(QVariantMap()); // FIXME! would be great to keep it opaque, so it isn't misused
+            return QVariantMap(); // FIXME! would be great to keep it opaque, so it isn't misused
         case RoleTitle:
-            return QVariant(QString::fromStdString(result->title()));
+            return QString::fromStdString(result->title());
         case RoleArt: {
             QString image(QString::fromStdString(result->art()));
             if (image.isEmpty()) {
@@ -139,10 +139,10 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 // FIXME: what to do about mimetype?
                 QString thumbnailerUri(uriToThumbnailerProviderString(uri, QString(), QVariantHash()));
                 if (!thumbnailerUri.isNull()) {
-                    return QVariant::fromValue(thumbnailerUri);
+                    return thumbnailerUri;
                 }
             }
-            return QVariant(image);
+            return image;
         }
         case RoleSubtitle:
             return componentValue(result, "subtitle");

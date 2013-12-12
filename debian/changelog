@@ -1,8 +1,38 @@
-unity-scopes-shell (0.1.1+14.04.20131201-0ubuntu1) UNRELEASED; urgency=low
+unity-scopes-shell (0.1.1+14.04.20131211-0ubuntu1) trusty; urgency=low
 
+  [ Łukasz 'sil2100' Zemczak ]
+  * Revert rev 25 as it seems to cause a big regression, breaking
+    launching of click applications in unity8
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 29
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 11 Dec 2013 17:06:08 +0000
+
+unity-scopes-shell (0.1.1+14.04.20131209-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
   * Prepare for PPA release
+  * Backport fix for lp:1237829 from lp:unity8. (LP: #1237829)
+  * Re-register categories, which causes the template and components to
+    be updated.
 
- -- Michal Hruby <michal.hruby@canonical.com>  Fri, 29 Nov 2013 13:13:35 +0000
+  [ Michael Zanetti ]
+  * Add MusicPreviewTrackModel in order to expose tracks in a music
+    preview properly.
+  * use appId for app activation instead of .desktop file path.
+
+  [ Michał Sawicz ]
+  * Use the minimal platform for tests.
+
+  [ Albert Astals ]
+  * Add a title role This way this model can be fed directly to the new
+    TabBar api.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 27
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 09 Dec 2013 02:58:19 +0000
 
 unity-scopes-shell (0.1+14.04.20131120-0ubuntu1) trusty; urgency=low
 
