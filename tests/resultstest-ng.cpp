@@ -128,6 +128,15 @@ private Q_SLOTS:
         QVERIFY(scope_var.isNull());
     }
 
+    void testScopeProperties()
+    {
+        QCOMPARE(m_scope->id(), QString("mock-scope"));
+        QCOMPARE(m_scope->name(), QString("mock.DisplayName"));
+        QCOMPARE(m_scope->iconHint(), QString("mock.Icon"));
+        QCOMPARE(m_scope->description(), QString("mock.Description"));
+        QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
+    }
+
     void testTwoSearches()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
@@ -192,9 +201,19 @@ private Q_SLOTS:
 
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
+        // mapped to the same field name
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleSubtitle).toString(), QString("subtitle"));
+        // mapped to a different field name
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
-        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleAltRating).toString(), QString());
+        // mapped but not present in the result
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleMascot).toString(), QString());
+        // unmapped
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltRating).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleOldPrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RolePrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltPrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleRating).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
     }
 
     void testCategoryDefaults()
@@ -230,8 +249,7 @@ private Q_SLOTS:
 
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
-        // components don't specify art
-        QEXPECT_FAIL("", "component mapping isn't implemented yet", Continue);
+        // components json doesn't specify "art"
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString());
     }
 };

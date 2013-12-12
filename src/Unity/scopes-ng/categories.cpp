@@ -24,6 +24,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QHash>
 #include <QDebug>
 
 #include <scopes/CategoryRenderer.h>
@@ -50,7 +51,7 @@ struct CategoryData
     }
 
     // normalizes the components QJsonValue by adding default values (if not present)
-    QJsonValue normalizeComponents(QJsonValue const& raw_components)
+    static QJsonValue normalizeComponents(QJsonValue const& raw_components)
     {
         // components should be dict of keys
         QJsonObject result;
@@ -82,8 +83,20 @@ struct CategoryData
         return QJsonValue(result);
     }
 
+    QHash<QString, QString> getComponentsMapping() const
+    {
+        QHash<QString, QString> result;
+        QJsonObject components_dict = components.toObject();
+        for (auto it = components_dict.begin(); it != components_dict.end(); ++it) {
+            QString fieldName(it.value().toObject().value("field").toString());
+            result[it.key()] = fieldName;
+        }
+
+        return result;
+    }
+
     // normalizes the template QJsonValue by adding default values (if not present)
-    QJsonValue normalizeTemplate(QJsonValue const& raw_template)
+    static QJsonValue normalizeTemplate(QJsonValue const& raw_template)
     {
         // copy everything over
         QJsonObject result = raw_template.toObject();
@@ -155,6 +168,10 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
 
         catData->setCategory(category);
         if (changedRoles.size() > 0) {
+            resultsModel = m_categoryResults[category->id()];
+            if (resultsModel) {
+                resultsModel->setComponentsMapping(catData->getComponentsMapping());
+            }
             QModelIndex changedIndex(this->index(index));
             dataChanged(changedIndex, changedIndex, changedRoles);
         }
@@ -169,6 +186,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
             resultsModel = new ResultsModel(this);
         }
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
+        resultsModel->setComponentsMapping(catData->getComponentsMapping());
         m_categoryResults[category->id()] = resultsModel;
         endInsertRows();
     }
