@@ -156,7 +156,10 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
 
 QVariant Scopes::get(int row) const
 {
-    return data(QAbstractListModel::index(row), 0);
+    if (row >= m_scopes.size() || row < 0) {
+        return QVariant();
+    }
+    return data(QAbstractListModel::index(row), RoleScope);
 }
 
 QVariant Scopes::get(const QString& scope_id) const
