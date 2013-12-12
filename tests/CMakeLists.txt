@@ -1,8 +1,15 @@
+include(FindPkgConfig)
 pkg_check_modules(UNITYCORE REQUIRED unity-core-6.0>=7.1.1)
 pkg_check_modules(LIBUNITYPROTO REQUIRED unity-protocol-private)
 pkg_check_modules(LIBUNITY REQUIRED unity)
 pkg_check_modules(LIBSIGCPP REQUIRED sigc++-2.0)
 pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1.3)
+
+set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
+set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
+
+add_subdirectory(data)
 
 include_directories(
     ${Unity-qml_SOURCE_DIR}
@@ -13,6 +20,7 @@ include_directories(
     ${LIBSIGCPP_INCLUDE_DIRS}
     ${UNITYCORE_INCLUDE_DIRS}
     ${QTDEE_INCLUDE_DIRS}
+    ${SCOPESLIB_INCLUDE_DIRS}
     )
 
 macro(run_tests)
@@ -27,7 +35,9 @@ macro(run_tests)
         add_executable(${_test}Exec ${_test}.cpp)
         qt5_use_modules(${_test}Exec Test Core Qml)
         set_tests_properties(test${CLASSNAME}${_test}
-                PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal;LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/plugins/Unity:${LIBUNITYPROTO_LIBRARY_DIRS}")
+                PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal;LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/plugins/Unity:${LIBUNITYPROTO_LIBRARY_DIRS};UNITY_SCOPES_RUNTIME_PATH=${SCOPES_TEST_RUNTIME}")
+        set_target_properties(${_test}Exec
+                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 
         target_link_libraries(${_test}Exec
             Unity-qml
@@ -36,6 +46,7 @@ macro(run_tests)
             ${LIBUNITYPROTO_LDFLAGS}
             ${LIBSIGCPP_LDFLAGS}
             ${QTDEE_LDFLAGS}
+            ${SCOPESLIB_LDFLAGS}
             )
 
         set(_test_list "${_test_list};${_test}")
@@ -47,4 +58,5 @@ run_tests(
     previewbindingstest
     filtersbindingstest
     resultstest
+    resultstest-ng
     )

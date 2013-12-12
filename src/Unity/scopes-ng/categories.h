@@ -36,7 +36,7 @@ namespace scopes_ng
 
 struct CategoryData;
 
-class Categories : public QAbstractListModel
+class Q_DECL_EXPORT Categories : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -60,7 +60,7 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
-    int rowCount(const QModelIndex& parent) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     ResultsModel* lookupCategory(std::string const& category_id);
     void registerCategory(unity::api::scopes::Category::SCPtr category, ResultsModel* model);

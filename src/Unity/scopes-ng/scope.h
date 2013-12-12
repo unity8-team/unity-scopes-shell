@@ -35,7 +35,7 @@ namespace scopes_ng
 
 class Categories;
 
-class Scope : public QObject
+class Q_DECL_EXPORT Scope : public QObject
 {
     Q_OBJECT
 
