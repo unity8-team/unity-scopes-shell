@@ -4,5 +4,4 @@ Zmq.Endpoint = ipc:///tmp/scopes-test-endpoints/Registry
 Zmq.EndpointDir = /tmp/scopes-test-endpoints
 Zmq.ConfigFile = @CMAKE_CURRENT_BINARY_DIR@/Zmq.ini
 Scope.InstallDir = @CMAKE_CURRENT_BINARY_DIR@
-#Scope.GroupConfigDir = @CMAKE_CURRENT_BINARY_DIR@/scope-groups
 Scoperunner.Path = @SCOPES_BIN_DIR@/scoperunner/scoperunner

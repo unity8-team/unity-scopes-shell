@@ -5,7 +5,7 @@ set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 
 include_directories(${SCOPESLIB_INCLUDE_DIRS})
 
-add_library(scope-A MODULE scope-A.cpp)
-target_link_libraries(scope-A ${SCOPESLIB_LDFLAGS})
+add_library(mock-scope MODULE mock-scope.cpp)
+target_link_libraries(mock-scope ${SCOPESLIB_LDFLAGS})
 
-configure_file(scope-A.ini.in scope-A.ini)
+configure_file(mock-scope.ini.in mock-scope.ini)
