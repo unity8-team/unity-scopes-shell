@@ -49,10 +49,9 @@ public:
         RoleCategoryId,
         RoleName,
         RoleIcon,
+        RoleRawRendererTemplate,
         RoleRenderer,
         RoleComponents,
-        RoleContentType, // FIXME: remove
-        RoleRendererHint, // FIXME: remove
         RoleProgressSource, // maybe
         RoleResults,
         RoleCount

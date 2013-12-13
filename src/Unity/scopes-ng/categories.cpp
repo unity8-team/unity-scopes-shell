@@ -111,10 +111,9 @@ Categories::Categories(QObject* parent)
     m_roles[Categories::RoleCategoryId] = "categoryId";
     m_roles[Categories::RoleName] = "name";
     m_roles[Categories::RoleIcon] = "icon";
+    m_roles[Categories::RoleRawRendererTemplate] = "rawRendererTemplate";
     m_roles[Categories::RoleRenderer] = "renderer";
     m_roles[Categories::RoleComponents] = "components";
-    m_roles[Categories::RoleContentType] = "contentType";
-    m_roles[Categories::RoleRendererHint] = "rendererHint";
     m_roles[Categories::RoleProgressSource] = "progressSource";
     m_roles[Categories::RoleResults] = "results";
     m_roles[Categories::RoleCount] = "count";
@@ -243,14 +242,12 @@ Categories::data(const QModelIndex& index, int role) const
             return QString::fromStdString(cat->title());
         case RoleIcon:
             return QString::fromStdString(cat->icon());
+        case RoleRawRendererTemplate:
+            return QString::fromStdString(cat->renderer_template().data());
         case RoleRenderer:
             return catData->renderer_template.toVariant();
         case RoleComponents:
              return catData->components.toVariant();
-        case RoleContentType:
-            return QString("default");
-        case RoleRendererHint:
-            return QVariant();
         case RoleProgressSource:
             return QVariant();
         case RoleResults:
