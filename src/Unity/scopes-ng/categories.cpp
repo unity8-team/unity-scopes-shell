@@ -24,6 +24,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QJsonParseError>
 #include <QDebug>
 
 #include <scopes/CategoryRenderer.h>
@@ -32,8 +33,12 @@ using namespace unity::api;
 
 namespace scopes_ng {
 
+// FIXME: this should be in a common place
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"medium","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "old-price":null, "price":null, "alt-price":null, "rating":null, "alt-rating":null, "summary":null }, "resources":{}})"
+
 struct CategoryData
 {
+    static QJsonValue* DEFAULTS;
     scopes::Category::SCPtr category;
     QJsonValue renderer_template;
     QJsonValue components;
@@ -41,69 +46,54 @@ struct CategoryData
     void setCategory(scopes::Category::SCPtr cat)
     {
         category = cat;
+        // lazy init of the defaults
+        if (DEFAULTS == nullptr) {
+            DEFAULTS = new QJsonValue(QJsonDocument::fromJson(QByteArray(CATEGORY_JSON_DEFAULTS)).object());
+        }
+
         // FIXME: validate
-        QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
-        QJsonObject category_root = category_def.object();
+        QJsonParseError parseError;
+        QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()), &parseError);
+        if (parseError.error != QJsonParseError::NoError || !category_def.isObject()) {
+            qWarning("Unable to parse category JSON: %s", parseError.errorString().toLocal8Bit().constData());
+            return;
+        }
+
+        QJsonObject category_root = mergeOverrides(*DEFAULTS, category_def.object()).toObject();
+        qWarning("category def: %s", QJsonDocument(category_root).toJson().constData());
         // assumes pre-validated json
-        renderer_template = normalizeTemplate(category_root.value(QString("template")));
-        components = normalizeComponents(category_root.value(QString("components")));
+        renderer_template = category_root.value(QString("template"));
+        components = category_root.value(QString("components"));
     }
 
-    // normalizes the components QJsonValue by adding default values (if not present)
-    QJsonValue normalizeComponents(QJsonValue const& raw_components)
+    QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
     {
-        // components should be dict of keys
-        QJsonObject result;
-        QJsonObject components_dict = raw_components.toObject();
-        for (auto it = components_dict.begin(); it != components_dict.end(); ++it) {
-            // if value is a string, convert it to an object
-            if (it.value().type() == QJsonValue::Type::String) {
-                QJsonObject component_obj;
-                component_obj.insert("field", it.value());
-                result.insert(it.key(), component_obj);
-            } else {
-                result.insert(it.key(), it.value());
+        if (overrideVal.isObject() && defaultVal.isObject()) {
+            QJsonObject obj(defaultVal.toObject());
+            QJsonObject overrideObj(overrideVal.toObject());
+            QJsonObject resultObj;
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                if (overrideObj.contains(it.key())) {
+                    resultObj.insert(it.key(), mergeOverrides(it.value(), overrideObj[it.key()]));
+                } else {
+                    resultObj.insert(it.key(), it.value());
+                }
             }
+            return resultObj;
+        } else if (overrideVal.isString() && (defaultVal.isNull() || defaultVal.isObject())) {
+            // special case the expansion of "art": "icon" -> "art": {"field": "icon"}
+            QJsonObject resultObj(defaultVal.toObject());
+            resultObj.insert("field", overrideVal);
+            return resultObj;
+        } else if (defaultVal.isNull() && overrideVal.isObject()) {
+            return overrideVal;
+        } else {
+            return overrideVal;
         }
-
-        // fix-up the art object
-        if (result.contains("art")) {
-            QJsonObject art_obj = result["art"].toObject();
-            if (!art_obj.contains("aspect-ratio")) {
-                art_obj.insert("aspect-ratio", QJsonValue(1.0));
-            }
-            if (!art_obj.contains("fill-mode")) {
-              art_obj.insert("fill-mode", QJsonValue(QString("crop")));
-            }
-            // FIXME: is this necessary?
-            result.insert("art", art_obj);
-        }
-
-        return QJsonValue(result);
-    }
-
-    // normalizes the template QJsonValue by adding default values (if not present)
-    QJsonValue normalizeTemplate(QJsonValue const& raw_template)
-    {
-        // copy everything over
-        QJsonObject result = raw_template.toObject();
-
-        // add missing defaults
-        if (!result.contains("category-layout")) {
-            result.insert("category-layout", QJsonValue(QString("grid")));
-        }
-        if (!result.contains("card-layout")) {
-            result.insert("card-layout", QJsonValue(QString("vertical")));
-        }
-        if (!result.contains("card-size")) {
-            result.insert("card-size", QJsonValue(QString("medium")));
-        }
-        if (!result.contains("collapsed-rows")) {
-            result.insert("collapsed-rows", QJsonValue(2));
-        }
-        return QJsonValue(result);
     }
 };
+
+QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
     : QAbstractListModel(parent)
