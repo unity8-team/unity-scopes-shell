@@ -235,11 +235,19 @@ private Q_SLOTS:
         QVERIFY(renderer_var.canConvert<QVariantMap>());
         QJsonObject renderer = QJsonValue::fromVariant(renderer_var).toObject();
 
-        QCOMPARE(components.size(), 1);
-        QVERIFY(components.contains("title"));
+        int num_active_components = 0;
+        for (auto it = components.begin(); it != components.end(); ++it) {
+            if (it.value().isObject() && it.value().toObject().value("field").isString()) {
+                num_active_components++;
+            }
+        }
+        QCOMPARE(num_active_components, 1);
         QVERIFY(renderer.contains("card-size"));
+        QCOMPARE(renderer.value("card-size"), QJsonValue(QString("medium")));
         QVERIFY(renderer.contains("card-layout"));
+        QCOMPARE(renderer.value("card-layout"), QJsonValue(QString("vertical")));
         QVERIFY(renderer.contains("category-layout"));
+        QCOMPARE(renderer.value("category-layout"), QJsonValue(QString("grid")));
 
         // get ResultsModel instance
         QVariant results_var = categories->data(cidx, Categories::Roles::RoleResults);
