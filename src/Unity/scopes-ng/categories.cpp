@@ -60,7 +60,6 @@ struct CategoryData
         }
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_def.object()).toObject();
-        qWarning("category def: %s", QJsonDocument(category_root).toJson().constData());
         // assumes pre-validated json
         renderer_template = category_root.value(QString("template"));
         components = category_root.value(QString("components"));
