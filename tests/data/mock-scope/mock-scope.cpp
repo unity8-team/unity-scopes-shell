@@ -52,14 +52,15 @@ public:
     {
         if (query_ == "metadata")
         {
-            auto cat = reply->register_category("cat1", "Category 1", "");
+            CategoryRenderer meta(R"({"schema-version": 1, "components": {"title": "title", "art": "art", "subtitle": "subtitle", "emblem": "icon", "mascot": "mascot"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", meta);
             CategorisedResult res(cat);
             res.set_uri("test:uri");
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
             res.add_metadata("subtitle", Variant("subtitle"));
-            res.add_metadata("emblem", Variant("emblem"));
+            res.add_metadata("icon", Variant("emblem"));
             reply->push(res);
         }
         else if (query_ == "rating")

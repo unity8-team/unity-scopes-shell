@@ -22,6 +22,7 @@
 #define NG_CATEGORY_RESULTS_H
 
 #include <QAbstractListModel>
+#include <QHash>
 
 #include <scopes/CategorisedResult.h>
 #include <unordered_map>
@@ -72,13 +73,15 @@ public:
 
     /* setters */
     void setCategoryId(QString const& id);
+    void setComponentsMapping(QHash<QString, QString> const& mapping);
 
 Q_SIGNALS:
     void categoryIdChanged();
     void countChanged();
 
 private:
-    QVariant componentValue(unity::api::scopes::CategorisedResult* result, std::string const& fieldName) const;
+    QVariant componentValue(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
+    QVariant componentValueWithFallback(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
 
     QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;

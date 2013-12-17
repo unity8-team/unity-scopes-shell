@@ -25,6 +25,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonParseError>
+#include <QHash>
 #include <QDebug>
 
 #include <scopes/CategoryRenderer.h>
@@ -62,6 +63,21 @@ struct CategoryData
         // FIXME: validate the merged json
         renderer_template = category_root.value(QString("template"));
         components = category_root.value(QString("components"));
+    }
+
+    QHash<QString, QString> getComponentsMapping() const
+    {
+        QHash<QString, QString> result;
+        QJsonObject components_dict = components.toObject();
+        for (auto it = components_dict.begin(); it != components_dict.end(); ++it) {
+            if (it.value().isObject() == false) continue;
+            QJsonObject component_dict(it.value().toObject());
+            QString fieldName(component_dict.value("field").toString());
+            if (fieldName.isEmpty()) continue;
+            result[it.key()] = fieldName;
+        }
+
+        return result;
     }
 
     QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
@@ -142,6 +158,10 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
 
         catData->setCategory(category);
         if (changedRoles.size() > 0) {
+            resultsModel = m_categoryResults[category->id()];
+            if (resultsModel) {
+                resultsModel->setComponentsMapping(catData->getComponentsMapping());
+            }
             QModelIndex changedIndex(this->index(index));
             dataChanged(changedIndex, changedIndex, changedRoles);
         }
@@ -156,6 +176,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
             resultsModel = new ResultsModel(this);
         }
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
+        resultsModel->setComponentsMapping(catData->getComponentsMapping());
         m_categoryResults[category->id()] = resultsModel;
         endInsertRows();
     }
