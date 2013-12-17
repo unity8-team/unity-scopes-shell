@@ -22,6 +22,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
+#include <QJsonValue>
+#include <QJsonObject>
 #include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
@@ -172,7 +174,7 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleCategoryId), categories->data(categories->index(0), Categories::Roles::RoleCategoryId));
     }
 
-    void testMetadataData()
+    void testResultMetadata()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
         // perform a search
@@ -193,6 +195,73 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleSubtitle).toString(), QString("subtitle"));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleAltRating).toString(), QString());
+    }
+
+    void testCategoryWithRating()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("rating"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // get ResultsModel instance
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"rating\""));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleRating).toString(), QString("***"));
+    }
+
+    void testCategoryDefaults()
+    {
+        // this search return minimal category definition, defaults should kick in
+        m_scope->setSearchQuery(QString("minimal"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+
+        // get renderer_template and components
+        auto cidx = categories->index(0);
+        QVariant components_var = categories->data(cidx, Categories::Roles::RoleComponents);
+        QVERIFY(components_var.canConvert<QVariantMap>());
+        QJsonObject components = QJsonValue::fromVariant(components_var).toObject();
+        QVariant renderer_var = categories->data(cidx, Categories::Roles::RoleRenderer);
+        QVERIFY(renderer_var.canConvert<QVariantMap>());
+        QJsonObject renderer = QJsonValue::fromVariant(renderer_var).toObject();
+
+        int num_active_components = 0;
+        for (auto it = components.begin(); it != components.end(); ++it) {
+            if (it.value().isObject() && it.value().toObject().value("field").isString()) {
+                num_active_components++;
+            }
+        }
+        QCOMPARE(num_active_components, 1);
+        QVERIFY(renderer.contains("card-size"));
+        QCOMPARE(renderer.value("card-size"), QJsonValue(QString("medium")));
+        QVERIFY(renderer.contains("card-layout"));
+        QCOMPARE(renderer.value("card-layout"), QJsonValue(QString("vertical")));
+        QVERIFY(renderer.contains("category-layout"));
+        QCOMPARE(renderer.value("category-layout"), QJsonValue(QString("grid")));
+
+        // get ResultsModel instance
+        QVariant results_var = categories->data(cidx, Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
+        // components don't specify art
+        QEXPECT_FAIL("", "component mapping isn't implemented yet", Continue);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString());
     }
 };
 

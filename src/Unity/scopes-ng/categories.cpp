@@ -23,6 +23,8 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonParseError>
 #include <QDebug>
 
 #include <scopes/CategoryRenderer.h>
@@ -31,8 +33,12 @@ using namespace unity::api;
 
 namespace scopes_ng {
 
+// FIXME: this should be in a common place
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"medium","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "old-price":null, "price":null, "alt-price":null, "rating":null, "alt-rating":null, "summary":null }, "resources":{}})"
+
 struct CategoryData
 {
+    static QJsonValue* DEFAULTS;
     scopes::Category::SCPtr category;
     QJsonValue renderer_template;
     QJsonValue components;
@@ -40,13 +46,52 @@ struct CategoryData
     void setCategory(scopes::Category::SCPtr cat)
     {
         category = cat;
-        // FIXME: validate
-        QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()));
-        QJsonObject category_root = category_def.object();
+        // lazy init of the defaults
+        if (DEFAULTS == nullptr) {
+            DEFAULTS = new QJsonValue(QJsonDocument::fromJson(QByteArray(CATEGORY_JSON_DEFAULTS)).object());
+        }
+
+        QJsonParseError parseError;
+        QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()), &parseError);
+        if (parseError.error != QJsonParseError::NoError || !category_def.isObject()) {
+            qWarning() << "Unable to parse category JSON: %s" << parseError.errorString();
+            return;
+        }
+
+        QJsonObject category_root = mergeOverrides(*DEFAULTS, category_def.object()).toObject();
+        // FIXME: validate the merged json
         renderer_template = category_root.value(QString("template"));
         components = category_root.value(QString("components"));
     }
+
+    QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
+    {
+        if (overrideVal.isObject() && defaultVal.isObject()) {
+            QJsonObject obj(defaultVal.toObject());
+            QJsonObject overrideObj(overrideVal.toObject());
+            QJsonObject resultObj;
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                if (overrideObj.contains(it.key())) {
+                    resultObj.insert(it.key(), mergeOverrides(it.value(), overrideObj[it.key()]));
+                } else {
+                    resultObj.insert(it.key(), it.value());
+                }
+            }
+            return resultObj;
+        } else if (overrideVal.isString() && (defaultVal.isNull() || defaultVal.isObject())) {
+            // special case the expansion of "art": "icon" -> "art": {"field": "icon"}
+            QJsonObject resultObj(defaultVal.toObject());
+            resultObj.insert("field", overrideVal);
+            return resultObj;
+        } else if (defaultVal.isNull() && overrideVal.isObject()) {
+            return overrideVal;
+        } else {
+            return overrideVal;
+        }
+    }
 };
+
+QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
     : QAbstractListModel(parent)
@@ -54,10 +99,9 @@ Categories::Categories(QObject* parent)
     m_roles[Categories::RoleCategoryId] = "categoryId";
     m_roles[Categories::RoleName] = "name";
     m_roles[Categories::RoleIcon] = "icon";
+    m_roles[Categories::RoleRawRendererTemplate] = "rawRendererTemplate";
     m_roles[Categories::RoleRenderer] = "renderer";
     m_roles[Categories::RoleComponents] = "components";
-    m_roles[Categories::RoleContentType] = "contentType";
-    m_roles[Categories::RoleRendererHint] = "rendererHint";
     m_roles[Categories::RoleProgressSource] = "progressSource";
     m_roles[Categories::RoleResults] = "results";
     m_roles[Categories::RoleCount] = "count";
@@ -130,6 +174,7 @@ QVector<int> Categories::collectChangedAttributes(scopes::Category::SCPtr old_ca
     if (category->renderer_template().data() != old_category->renderer_template().data()) {
         roles.append(RoleRenderer);
         roles.append(RoleComponents);
+        roles.append(RoleRawRendererTemplate);
     }
 
     return roles;
@@ -186,14 +231,12 @@ Categories::data(const QModelIndex& index, int role) const
             return QString::fromStdString(cat->title());
         case RoleIcon:
             return QString::fromStdString(cat->icon());
+        case RoleRawRendererTemplate:
+            return QString::fromStdString(cat->renderer_template().data());
         case RoleRenderer:
             return catData->renderer_template.toVariant();
         case RoleComponents:
              return catData->components.toVariant();
-        case RoleContentType:
-            return QString("default");
-        case RoleRendererHint:
-            return QVariant();
         case RoleProgressSource:
             return QVariant();
         case RoleResults:
