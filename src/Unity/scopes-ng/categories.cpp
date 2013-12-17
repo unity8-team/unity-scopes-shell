@@ -174,6 +174,7 @@ QVector<int> Categories::collectChangedAttributes(scopes::Category::SCPtr old_ca
     if (category->renderer_template().data() != old_category->renderer_template().data()) {
         roles.append(RoleRenderer);
         roles.append(RoleComponents);
+        roles.append(RoleRawRendererTemplate);
     }
 
     return roles;
