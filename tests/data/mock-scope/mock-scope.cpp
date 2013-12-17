@@ -63,10 +63,22 @@ public:
             res.add_metadata("icon", Variant("emblem"));
             reply->push(res);
         }
+        else if (query_ == "rating")
+        {
+            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "rating": {"field": "rating", "type": "stars"}}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", rating_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            res.set_dnd_uri("test:dnd_uri");
+            res.add_metadata("rating", Variant("***"));
+            reply->push(res);
+        }
         else if (query_ == "minimal")
         {
-            CategoryRenderer minimal(R"({"schema-version": 1, "components": {"title": "title"}})");
-            auto cat = reply->register_category("cat1", "Category 1", "", minimal);
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
             res.set_uri("test:uri");
             res.set_title("result for: \"" + query_ + "\"");
