@@ -51,16 +51,15 @@ struct CategoryData
             DEFAULTS = new QJsonValue(QJsonDocument::fromJson(QByteArray(CATEGORY_JSON_DEFAULTS)).object());
         }
 
-        // FIXME: validate
         QJsonParseError parseError;
         QJsonDocument category_def = QJsonDocument::fromJson(QByteArray(category->renderer_template().data().c_str()), &parseError);
         if (parseError.error != QJsonParseError::NoError || !category_def.isObject()) {
-            qWarning("Unable to parse category JSON: %s", parseError.errorString().toLocal8Bit().constData());
+            qWarning() << "Unable to parse category JSON: %s" << parseError.errorString();
             return;
         }
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_def.object()).toObject();
-        // assumes pre-validated json
+        // FIXME: validate the merged json
         renderer_template = category_root.value(QString("template"));
         components = category_root.value(QString("components"));
     }
