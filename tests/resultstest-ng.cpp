@@ -197,6 +197,27 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleAltRating).toString(), QString());
     }
 
+    void testCategoryWithRating()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("rating"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // get ResultsModel instance
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"rating\""));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleRating).toString(), QString("***"));
+    }
+
     void testCategoryDefaults()
     {
         // this search return minimal category definition, defaults should kick in
