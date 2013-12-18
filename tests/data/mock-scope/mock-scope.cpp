@@ -52,15 +52,15 @@ public:
     {
         if (query_ == "metadata")
         {
-            CategoryRenderer meta(R"({"schema-version": 1, "components": {"title": "title", "art": "art", "subtitle": "subtitle", "emblem": "icon", "mascot": "mascot"}})");
-            auto cat = reply->register_category("cat1", "Category 1", "", meta);
+            CategoryRenderer meta_rndr(R"({"schema-version": 1, "components": {"title": "title", "art": "art", "subtitle": "subtitle", "emblem": "icon", "mascot": "mascot"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", meta_rndr);
             CategorisedResult res(cat);
             res.set_uri("test:uri");
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
-            res.add_metadata("subtitle", Variant("subtitle"));
-            res.add_metadata("icon", Variant("emblem"));
+            res["subtitle"] = Variant("subtitle");
+            res["icon"] = Variant("emblem");
             reply->push(res);
         }
         else if (query_ == "rating")
@@ -72,7 +72,7 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
-            res.add_metadata("rating", Variant("***"));
+            res["rating"] = Variant("***");
             reply->push(res);
         }
         else if (query_ == "minimal")

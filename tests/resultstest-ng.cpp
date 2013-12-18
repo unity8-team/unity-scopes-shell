@@ -27,6 +27,7 @@
 #include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
+#include <QSignalSpy>
 
 #include <scopes-ng/scopes.h>
 #include <scopes-ng/scope.h>
@@ -280,6 +281,35 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
         // components json doesn't specify "art"
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString());
+    }
+
+    void testCategoryDefinitionChange()
+    {
+        m_scope->setSearchQuery(QString(""));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+
+        qRegisterMetaType<QVector<int>>();
+        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+
+        // should at least change components
+        m_scope->setSearchQuery(QString("metadata"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // expecting a few dataChanged signals, count and components changes
+        // ensure we get the components one
+        bool componentsChanged = false;
+        while (!spy.empty() && !componentsChanged) {
+            QList<QVariant> arguments = spy.takeFirst();
+            auto roles = arguments.at(2).value<QVector<int>>();
+            componentsChanged |= roles.contains(Categories::Roles::RoleComponents);
+        }
+
+        QCOMPARE(componentsChanged, true);
     }
 };
 
