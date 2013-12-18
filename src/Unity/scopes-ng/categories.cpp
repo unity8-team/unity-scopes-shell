@@ -50,7 +50,7 @@ public:
         m_category = category;
         m_rawTemplate = category->renderer_template().data();
 
-        parseTemplate();
+        parseTemplate(m_rawTemplate, m_rendererTemplate, m_components);
     }
 
     scopes::Category::SCPtr category() const
@@ -61,6 +61,21 @@ public:
     std::string rawTemplate() const
     {
         return m_rawTemplate;
+    }
+
+    bool overrideTemplate(std::string const& raw_template)
+    {
+        QJsonValue components;
+        QJsonValue renderer;
+
+        if (parseTemplate(raw_template, renderer, components)) {
+            m_rawTemplate = raw_template;
+            m_rendererTemplate = renderer;
+            m_components = components;
+            return true;
+        }
+
+        return false;
     }
 
     QJsonValue rendererTemplate() const
@@ -106,7 +121,7 @@ private:
     QJsonValue m_components;
     ResultsModel* m_resultsModel;
 
-    bool parseTemplate()
+    static bool parseTemplate(std::string const& raw_template, QJsonValue& renderer, QJsonValue& components)
     {
         // lazy init of the defaults
         if (DEFAULTS == nullptr) {
@@ -114,7 +129,7 @@ private:
         }
 
         QJsonParseError parseError;
-        QJsonDocument category_doc = QJsonDocument::fromJson(QByteArray(m_rawTemplate.c_str()), &parseError);
+        QJsonDocument category_doc = QJsonDocument::fromJson(QByteArray(raw_template.c_str()), &parseError);
         if (parseError.error != QJsonParseError::NoError || !category_doc.isObject()) {
             qWarning() << "Unable to parse category JSON: %s" << parseError.errorString();
             return false;
@@ -122,8 +137,8 @@ private:
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_doc.object()).toObject();
         // FIXME: validate the merged json
-        m_rendererTemplate = category_root.value(QString("template"));
-        m_components = category_root.value(QString("components"));
+        renderer = category_root.value(QString("template"));
+        components = category_root.value(QString("components"));
 
         return true;
     }
@@ -285,6 +300,37 @@ void Categories::clearAll()
     QVector<int> roles;
     roles.append(RoleCount);
     dataChanged(changeStart, changeEnd, roles);
+}
+
+bool Categories::overrideCategoryJson(QString const& categoryId, QString const& json)
+{
+    int idx = -1;
+    for (int i = 0; i < m_categories.count(); i++) {
+        if (m_categories[i]->category()->id() == categoryId.toStdString()) {
+            idx = i;
+            break;
+        }
+    }
+
+    if (idx >= 0) {
+        CategoryData* catData = m_categories.at(idx).data();
+        if (!catData->overrideTemplate(json.toStdString())) {
+            return false;
+        }
+        if (catData->resultsModel()) {
+            catData->resultsModel()->setComponentsMapping(catData->getComponentsMapping());
+        }
+        QModelIndex changeIndex(index(idx));
+        QVector<int> roles;
+        roles.append(RoleRenderer);
+        roles.append(RoleComponents);
+        roles.append(RoleRawRendererTemplate);
+        dataChanged(changeIndex, changeIndex, roles);
+
+        return true;
+    }
+
+    return false;
 }
 
 QVariant
