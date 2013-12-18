@@ -81,7 +81,6 @@ Q_SIGNALS:
 
 private:
     QVariant componentValue(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
-    QVariant componentValueWithFallback(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
 
     QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;
