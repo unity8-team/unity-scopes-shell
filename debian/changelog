@@ -1,3 +1,16 @@
+unity-scopes-shell (0.1.1+14.04.20131219.1-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Updated result model roles and added unit tests for the new scopes
+    framework.
+  * Manipulate renderer and components json and fill in defaults.
+  * Implement component mapping and add tests.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 33
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 19 Dec 2013 21:07:50 +0000
+
 unity-scopes-shell (0.1.1+14.04.20131211-0ubuntu1) trusty; urgency=low
 
   [ Łukasz 'sil2100' Zemczak ]
