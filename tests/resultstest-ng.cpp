@@ -27,6 +27,7 @@
 #include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
+#include <QSignalSpy>
 
 #include <scopes-ng/scopes.h>
 #include <scopes-ng/scope.h>
@@ -128,6 +129,15 @@ private Q_SLOTS:
         QVERIFY(scope_var.isNull());
     }
 
+    void testScopeProperties()
+    {
+        QCOMPARE(m_scope->id(), QString("mock-scope"));
+        QCOMPARE(m_scope->name(), QString("mock.DisplayName"));
+        QCOMPARE(m_scope->iconHint(), QString("mock.Icon"));
+        QCOMPARE(m_scope->description(), QString("mock.Description"));
+        QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
+    }
+
     void testTwoSearches()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
@@ -192,9 +202,19 @@ private Q_SLOTS:
 
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
+        // mapped to the same field name
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleSubtitle).toString(), QString("subtitle"));
+        // mapped to a different field name
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
-        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleAltRating).toString(), QString());
+        // mapped but not present in the result
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleMascot).toString(), QString());
+        // unmapped
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltRating).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleOldPrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RolePrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltPrice).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleRating).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
     }
 
     void testCategoryWithRating()
@@ -259,9 +279,37 @@ private Q_SLOTS:
 
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
-        // components don't specify art
-        QEXPECT_FAIL("", "component mapping isn't implemented yet", Continue);
+        // components json doesn't specify "art"
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString());
+    }
+
+    void testCategoryDefinitionChange()
+    {
+        m_scope->setSearchQuery(QString(""));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+
+        qRegisterMetaType<QVector<int>>();
+        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+
+        // should at least change components
+        m_scope->setSearchQuery(QString("metadata"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // expecting a few dataChanged signals, count and components changes
+        // ensure we get the components one
+        bool componentsChanged = false;
+        while (!spy.empty() && !componentsChanged) {
+            QList<QVariant> arguments = spy.takeFirst();
+            auto roles = arguments.at(2).value<QVector<int>>();
+            componentsChanged |= roles.contains(Categories::Roles::RoleComponents);
+        }
+
+        QCOMPARE(componentsChanged, true);
     }
 };
 

@@ -59,6 +59,22 @@ void ResultsModel::setCategoryId(QString const& id)
     }
 }
 
+void ResultsModel::setComponentsMapping(QHash<QString, QString> const& mapping)
+{
+    std::unordered_map<std::string, std::string> newMapping;
+    for (auto it = mapping.begin(); it != mapping.end(); ++it) {
+        newMapping[it.key().toStdString()] = it.value().toStdString();
+    }
+
+    if (rowCount() > 0) {
+        beginResetModel();
+        m_componentMapping.swap(newMapping);
+        endResetModel();
+    } else {
+        m_componentMapping.swap(newMapping);
+    }
+}
+
 void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> const& results)
 {
     if (results.count() == 0) return;
@@ -102,13 +118,17 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::CategorisedResult* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
 {
-    // FIXME: component field mapping
-    if (!result->has_metadata(fieldName)) {
+    auto mappingIt = m_componentMapping.find(fieldName);
+    if (mappingIt == m_componentMapping.end()) {
         return QVariant();
     }
-    scopes::Variant const& v = result->metadata(fieldName);
+    std::string const& realFieldName = mappingIt->second;
+    if (!result->contains(realFieldName)) {
+        return QVariant();
+    }
+    scopes::Variant const& v = result->value(realFieldName);
     if (v.which() != scopes::Variant::Type::String) {
         return QVariant();
     }
@@ -131,9 +151,9 @@ ResultsModel::data(const QModelIndex& index, int role) const
         case RoleMetadata:
             return QVariantMap(); // FIXME! would be great to keep it opaque, so it isn't misused
         case RoleTitle:
-            return QString::fromStdString(result->title());
+            return componentValue(result, "title");
         case RoleArt: {
-            QString image(QString::fromStdString(result->art()));
+            QString image(componentValue(result, "art").toString());
             if (image.isEmpty()) {
                 QString uri(QString::fromStdString(result->uri()));
                 // FIXME: what to do about mimetype?
