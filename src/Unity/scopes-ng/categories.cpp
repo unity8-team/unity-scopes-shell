@@ -50,7 +50,7 @@ public:
         m_category = category;
         m_rawTemplate = category->renderer_template().data();
 
-        parseTemplate(m_rawTemplate, m_rendererTemplate, m_components);
+        parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
     }
 
     scopes::Category::SCPtr category() const
@@ -68,7 +68,7 @@ public:
         QJsonValue components;
         QJsonValue renderer;
 
-        if (parseTemplate(raw_template, renderer, components)) {
+        if (parseTemplate(raw_template, &renderer, &components)) {
             m_rawTemplate = raw_template;
             m_rendererTemplate = renderer;
             m_components = components;
@@ -152,7 +152,7 @@ private:
     QJsonValue m_components;
     ResultsModel* m_resultsModel;
 
-    static bool parseTemplate(std::string const& raw_template, QJsonValue& renderer, QJsonValue& components)
+    static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
         // lazy init of the defaults
         if (DEFAULTS == nullptr) {
@@ -168,8 +168,8 @@ private:
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_doc.object()).toObject();
         // FIXME: validate the merged json
-        renderer = category_root.value(QString("template"));
-        components = category_root.value(QString("components"));
+        *renderer = category_root.value(QString("template"));
+        *components = category_root.value(QString("components"));
 
         return true;
     }
