@@ -217,6 +217,33 @@ private Q_SLOTS:
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
     }
 
+    void testCategoryOverride()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("metadata"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // get ResultsModel instance
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
+
+        // drop all components but title
+        categories->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title"}})");
+        // check that the model no longer has the components
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleEmblem).isNull());
+    }
+
     void testCategoryWithRating()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
