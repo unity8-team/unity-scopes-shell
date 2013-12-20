@@ -72,6 +72,8 @@ private Q_SLOTS:
     void discoveryFinished();
 
 private:
+    static int LIST_DELAY;
+
     QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
     QThread* m_listThread;
