@@ -68,6 +68,8 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
     return m_metadataMap;
 }
 
+int Scopes::LIST_DELAY = -1;
+
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
     , m_listThread(nullptr)
@@ -80,7 +82,11 @@ Scopes::Scopes(QObject *parent)
 
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
-    QTimer::singleShot(100, this, SLOT(populateScopes()));
+    if (LIST_DELAY < 0) {
+        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
+        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    }
+    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
 }
 
 Scopes::~Scopes()
