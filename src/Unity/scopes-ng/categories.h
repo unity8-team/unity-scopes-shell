@@ -61,6 +61,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json);
+
     ResultsModel* lookupCategory(std::string const& category_id);
     void registerCategory(unity::api::scopes::Category::SCPtr category, ResultsModel* model);
     void updateResultCount(ResultsModel* resultsModel);
