@@ -1,6 +1,6 @@
 # Dependencies
 include(FindPkgConfig)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1.6)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.1.7)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

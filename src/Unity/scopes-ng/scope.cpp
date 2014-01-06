@@ -153,8 +153,9 @@ public:
     }
 
     // this might be called from any thread (might be main, might be any other thread)
-    virtual void finished(scopes::ReceiverBase::Reason reason) override
+    virtual void finished(scopes::ReceiverBase::Reason reason, std::string const& error_msg) override
     {
+        Q_UNUSED(error_msg);
         ResultCollector::CollectionStatus status = reason == scopes::ReceiverBase::Reason::Cancelled ?
             ResultCollector::CollectionStatus::CANCELLED : ResultCollector::CollectionStatus::FINISHED;
 
@@ -487,6 +488,15 @@ void Scope::activate(const QVariant &uri, const QVariant &icon_hint, const QVari
                      const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
                      const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata)
 {
+    Q_UNUSED(uri);
+    Q_UNUSED(icon_hint);
+    Q_UNUSED(category);
+    Q_UNUSED(result_type);
+    Q_UNUSED(mimetype);
+    Q_UNUSED(title);
+    Q_UNUSED(comment);
+    Q_UNUSED(dnd_uri);
+    Q_UNUSED(metadata);
 }
 
 // FIXME: Change to use row index.
@@ -494,6 +504,15 @@ void Scope::preview(const QVariant &uri, const QVariant &icon_hint, const QVaria
              const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
              const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata)
 {
+    Q_UNUSED(uri);
+    Q_UNUSED(icon_hint);
+    Q_UNUSED(category);
+    Q_UNUSED(result_type);
+    Q_UNUSED(mimetype);
+    Q_UNUSED(title);
+    Q_UNUSED(comment);
+    Q_UNUSED(dnd_uri);
+    Q_UNUSED(metadata);
     // FIXME: handle overridden results
 }
 
