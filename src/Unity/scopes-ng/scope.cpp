@@ -39,14 +39,14 @@
 #include <libintl.h>
 #include <glib.h>
 
-#include <scopes/ReceiverBase.h>
-#include <scopes/CategorisedResult.h>
-#include <scopes/QueryCtrl.h>
+#include <unity/scopes/ReceiverBase.h>
+#include <unity/scopes/CategorisedResult.h>
+#include <unity/scopes/QueryCtrl.h>
 
 namespace scopes_ng
 {
 
-using namespace unity::api;
+using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
 

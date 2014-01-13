@@ -27,8 +27,8 @@
 #include <QMetaType>
 
 // scopes
-#include <scopes/Scope.h>
-#include <scopes/ScopeMetadata.h>
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ScopeMetadata.h>
 
 namespace scopes_ng
 {
@@ -94,7 +94,7 @@ public:
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;
-    void setScopeData(unity::api::scopes::ScopeMetadata const& data);
+    void setScopeData(unity::scopes::ScopeMetadata const& data);
 
 Q_SIGNALS:
     void idChanged();
@@ -126,7 +126,7 @@ private Q_SLOTS:
     void flushUpdates();
 
 private:
-    void processResultSet(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>>& result_set);
+    void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
 
@@ -137,13 +137,13 @@ private:
     bool m_isActive;
     bool m_searchInProgress;
 
-    unity::api::scopes::ScopeProxy m_proxy;
-    std::shared_ptr<unity::api::scopes::ScopeMetadata> m_scopeMetadata;
-    unity::api::scopes::QueryCtrlProxy m_lastQuery;
-    unity::api::scopes::ReceiverBase::SPtr m_lastReceiver;
+    unity::scopes::ScopeProxy m_proxy;
+    std::shared_ptr<unity::scopes::ScopeMetadata> m_scopeMetadata;
+    unity::scopes::QueryCtrlProxy m_lastQuery;
+    unity::scopes::ReceiverBase::SPtr m_lastReceiver;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
-    QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_cachedResults;
+    QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
 };
 
 } // namespace scopes_ng

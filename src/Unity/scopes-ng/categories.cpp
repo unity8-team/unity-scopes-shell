@@ -28,9 +28,9 @@
 #include <QHash>
 #include <QDebug>
 
-#include <scopes/CategoryRenderer.h>
+#include <unity/scopes/CategoryRenderer.h>
 
-using namespace unity::api;
+using namespace unity;
 
 namespace scopes_ng {
 

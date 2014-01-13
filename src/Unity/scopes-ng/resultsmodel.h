@@ -24,7 +24,7 @@
 #include <QAbstractListModel>
 #include <QHash>
 
-#include <scopes/CategorisedResult.h>
+#include <unity/scopes/CategorisedResult.h>
 #include <unordered_map>
 
 namespace scopes_ng {
@@ -64,7 +64,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void addResults(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> const&);
+    void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 
     /* getters */
@@ -80,11 +80,11 @@ Q_SIGNALS:
     void countChanged();
 
 private:
-    QVariant componentValue(unity::api::scopes::CategorisedResult const* result, std::string const& fieldName) const;
+    QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
 
     QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;
-    QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> m_results;
+    QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
     QString m_categoryId;
 };
 
