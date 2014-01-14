@@ -27,15 +27,15 @@
 #include <QDebug>
 #include <QTimer>
 
-#include <scopes/Registry.h>
-#include <scopes/Scope.h>
-#include <scopes/ScopeProxyFwd.h>
+#include <unity/scopes/Registry.h>
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ScopeProxyFwd.h>
 #include <unity/UnityExceptions.h>
 
 namespace scopes_ng
 {
 
-using namespace unity::api;
+using namespace unity;
 
 void ScopeListWorker::run()
 {

@@ -27,7 +27,7 @@
 #include <QTimer>
 #include <QSharedPointer>
 
-#include <scopes/Category.h>
+#include <unity/scopes/Category.h>
 
 #include "resultsmodel.h"
 
@@ -64,14 +64,14 @@ public:
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json);
 
     ResultsModel* lookupCategory(std::string const& category_id);
-    void registerCategory(unity::api::scopes::Category::SCPtr category, ResultsModel* model);
+    void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
     void updateResultCount(ResultsModel* resultsModel);
     void clearAll();
 
 private Q_SLOTS:
 
 private:
-    QVector<int> collectChangedAttributes(unity::api::scopes::Category::SCPtr old_category, unity::api::scopes::Category::SCPtr category);
+    QVector<int> collectChangedAttributes(unity::scopes::Category::SCPtr old_category, unity::scopes::Category::SCPtr category);
 
     QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<CategoryData>> m_categories;

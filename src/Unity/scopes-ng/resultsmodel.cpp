@@ -24,7 +24,7 @@
 
 namespace scopes_ng {
 
-using namespace unity::api;
+using namespace unity;
 
 ResultsModel::ResultsModel(QObject* parent)
     : QAbstractListModel(parent)
@@ -75,7 +75,7 @@ void ResultsModel::setComponentsMapping(QHash<QString, QString> const& mapping)
     }
 }
 
-void ResultsModel::addResults(QList<std::shared_ptr<unity::api::scopes::CategorisedResult>> const& results)
+void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
     if (results.count() == 0) return;
     

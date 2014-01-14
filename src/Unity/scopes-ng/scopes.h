@@ -25,10 +25,10 @@
 #include <QList>
 #include <QThread>
 
-#include <scopes/Runtime.h>
-#include <scopes/Registry.h>
-#include <scopes/Scope.h>
-#include <scopes/ScopeProxyFwd.h>
+#include <unity/scopes/Runtime.h>
+#include <unity/scopes/Registry.h>
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ScopeProxyFwd.h>
 
 namespace scopes_ng
 {
@@ -79,7 +79,7 @@ private:
     QThread* m_listThread;
     bool m_loaded;
 
-    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::scopes::Runtime::UPtr m_scopesRuntime;
 };
 
 class ScopeListWorker: public QThread
@@ -89,16 +89,16 @@ class ScopeListWorker: public QThread
 public:
     void setRuntimeConfig(QString const& config);
     void run() override;
-    unity::api::scopes::Runtime::UPtr takeRuntime();
-    unity::api::scopes::MetadataMap metadataMap() const;
+    unity::scopes::Runtime::UPtr takeRuntime();
+    unity::scopes::MetadataMap metadataMap() const;
 
 Q_SIGNALS:
     void discoveryFinished();
 
 private:
     QString m_runtimeConfig;
-    unity::api::scopes::Runtime::UPtr m_scopesRuntime;
-    unity::api::scopes::MetadataMap m_metadataMap;
+    unity::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::scopes::MetadataMap m_metadataMap;
 };
 
 
