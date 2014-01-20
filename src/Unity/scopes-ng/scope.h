@@ -140,7 +140,7 @@ private:
     unity::scopes::ScopeProxy m_proxy;
     std::shared_ptr<unity::scopes::ScopeMetadata> m_scopeMetadata;
     unity::scopes::QueryCtrlProxy m_lastQuery;
-    unity::scopes::ReceiverBase::SPtr m_lastReceiver;
+    unity::scopes::SearchListener::SPtr m_lastReceiver;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;

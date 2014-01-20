@@ -1,3 +1,9 @@
+unity-scopes-shell (0.2.0-0ubuntu1) UNRELEASED; urgency=low
+
+  * Use libunity-scopes 0.2.0.
+
+ -- Michal Hruby <michal.hruby@canonical.com>  Mon, 20 Jan 2014 09:05:11 +0000
+
 unity-scopes-shell (0.1.1+14.04.20131219.1-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]

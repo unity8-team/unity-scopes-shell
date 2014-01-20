@@ -39,7 +39,7 @@
 #include <libintl.h>
 #include <glib.h>
 
-#include <unity/scopes/ReceiverBase.h>
+#include <unity/scopes/ListenerBase.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
 
@@ -138,7 +138,7 @@ private:
 
 const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
 
-class ResultReceiver: public scopes::ReceiverBase
+class ResultReceiver: public scopes::SearchListener
 {
 public:
     // this will be called from non-main thread, (might even be multiple different threads)
@@ -153,10 +153,10 @@ public:
     }
 
     // this might be called from any thread (might be main, might be any other thread)
-    virtual void finished(scopes::ReceiverBase::Reason reason, std::string const& error_msg) override
+    virtual void finished(scopes::ListenerBase::Reason reason, std::string const& error_msg) override
     {
         Q_UNUSED(error_msg);
-        ResultCollector::CollectionStatus status = reason == scopes::ReceiverBase::Reason::Cancelled ?
+        ResultCollector::CollectionStatus status = reason == scopes::ListenerBase::Reason::Cancelled ?
             ResultCollector::CollectionStatus::CANCELLED : ResultCollector::CollectionStatus::FINISHED;
 
         postCollectedResults(status);

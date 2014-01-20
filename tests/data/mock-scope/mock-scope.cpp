@@ -18,7 +18,8 @@
  */
 
 #include <unity/scopes/ScopeBase.h>
-#include <unity/scopes/Reply.h>
+#include <unity/scopes/SearchReply.h>
+#include <unity/scopes/PreviewReply.h>
 #include <unity/scopes/Category.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/CategoryRenderer.h>
@@ -32,7 +33,7 @@ using namespace unity::scopes;
 
 // Example scope A: replies synchronously to a query. (Replies are returned before returning from the run() method.)
 
-class MyQuery : public QueryBase
+class MyQuery : public SearchQuery
 {
 public:
     MyQuery(string const& query) :
@@ -48,7 +49,7 @@ public:
     {
     }
 
-    virtual void run(ReplyProxy const& reply) override
+    virtual void run(SearchReplyProxy const& reply) override
     {
         if (query_ == "metadata")
         {
@@ -117,6 +118,11 @@ public:
         QueryBase::UPtr query(new MyQuery(q));
         cout << "scope-A: created query: \"" << q << "\"" << endl;
         return query;
+    }
+
+    virtual QueryBase::UPtr preview(Result const& result, VariantMap const&) override
+    {
+        return nullptr;
     }
 };
 
