@@ -1,8 +1,18 @@
-unity-scopes-shell (0.2.0-0ubuntu1) UNRELEASED; urgency=low
+unity-scopes-shell (0.2.0+14.04.20140120-0ubuntu1) trusty; urgency=low
 
+  [ Michal Hruby ]
   * Use libunity-scopes 0.2.0.
+  * Added environment variable that controls the scope thread delay.
+  * Implement category JSON overrides (used by scope-dev-tool).
+  * Update because of API change.
 
- -- Michal Hruby <michal.hruby@canonical.com>  Mon, 20 Jan 2014 09:05:11 +0000
+  [ Pawel Stolowski ]
+  * Updated for scopes API changes.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 39
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 20 Jan 2014 16:05:39 +0000
 
 unity-scopes-shell (0.1.1+14.04.20131219.1-0ubuntu1) trusty; urgency=low
 
