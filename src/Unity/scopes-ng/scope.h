@@ -85,12 +85,8 @@ public:
     void setFormFactor(const QString& form_factor);
     void setActive(const bool);
 
-    Q_INVOKABLE void activate(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-                              const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-                              const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
-    Q_INVOKABLE void preview(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-                              const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-                              const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
+    Q_INVOKABLE void activate(QVariant const& result);
+    Q_INVOKABLE void preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;
@@ -129,6 +125,9 @@ private:
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
+    void dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
+
+    void activateUri(QString const& uri);
 
     QString m_scopeId;
     QString m_searchQuery;
@@ -138,9 +137,11 @@ private:
     bool m_searchInProgress;
 
     unity::scopes::ScopeProxy m_proxy;
-    std::shared_ptr<unity::scopes::ScopeMetadata> m_scopeMetadata;
-    unity::scopes::QueryCtrlProxy m_lastQuery;
-    unity::scopes::SearchListener::SPtr m_lastReceiver;
+    unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
+    unity::scopes::SearchListener::SPtr m_lastSearch;
+    unity::scopes::QueryCtrlProxy m_lastSearchQuery;
+    unity::scopes::PreviewListener::SPtr m_lastPreview;
+    unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;

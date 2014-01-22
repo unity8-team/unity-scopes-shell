@@ -45,7 +45,7 @@ public:
         RoleUri,
         RoleCategoryId,
         RoleDndUri,
-        RoleMetadata,
+        RoleResult,
         // card components
         RoleTitle,
         RoleArt,
@@ -89,5 +89,7 @@ private:
 };
 
 } // namespace scopes_ng
+
+Q_DECLARE_METATYPE(std::shared_ptr<unity::scopes::Result>)
 
 #endif // NG_CATEGORY_RESULTS_H
