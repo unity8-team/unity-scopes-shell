@@ -34,6 +34,7 @@ namespace scopes_ng
 {
 
 class Categories;
+class PushEvent;
 
 class Q_DECL_EXPORT Scope : public QObject
 {
@@ -122,6 +123,9 @@ private Q_SLOTS:
     void flushUpdates();
 
 private:
+    void processSearchChunk(PushEvent* pushEvent);
+    void processPreviewChunk(PushEvent* pushEvent);
+
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();

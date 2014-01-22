@@ -117,19 +117,19 @@ public:
         return m_posted;
     }
 
-    QList<std::shared_ptr<scopes::CategorisedResult>> collect(Status& out_status)
+    Status collect(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
     {
-        QList<std::shared_ptr<scopes::CategorisedResult>> results;
+        Status status;
 
         QMutexLocker locker(&m_mutex);
         if (m_status == Status::INCOMPLETE) {
             // allow re-posting this collector if !resultset.finished()
             m_posted = false;
         }
-        out_status = m_status;
-        m_results.swap(results);
+        status = m_status;
+        m_results.swap(out_results);
 
-        return results;
+        return status;
     }
 
 private:
@@ -160,15 +160,20 @@ public:
         return m_posted;
     }
 
-    void collect(Status& out_status)
+    Status collect(scopes::PreviewWidgetList& out_widgets, QHash<QString, scopes::Variant>& out_data)
     {
+        Status status;
+
         QMutexLocker locker(&m_mutex);
         if (m_status == Status::INCOMPLETE) {
             // allow re-posting this collector if !resultset.finished()
             m_posted = false;
         }
-        out_status = m_status;
-        // TODO: swap the results
+        status = m_status;
+        m_widgets.swap(out_widgets);
+        m_previewData.swap(out_data);
+
+        return status;
     }
 
 private:
@@ -181,19 +186,34 @@ class PushEvent: public QEvent
 public:
     static const QEvent::Type eventType;
 
-    PushEvent(std::shared_ptr<CollectorBase> collector):
+    enum Type { SEARCH, PREVIEW };
+
+    PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector):
         QEvent(PushEvent::eventType),
+        m_eventType(event_type),
         m_collector(collector)
     {
     }
 
-    QList<std::shared_ptr<scopes::CategorisedResult>> collect(CollectorBase::Status& out_status)
+    Type type()
+    {
+        return m_eventType;
+    }
+
+    CollectorBase::Status collectResults(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
     {
         auto collector = std::dynamic_pointer_cast<ResultCollector>(m_collector);
-        return collector->collect(out_status);
+        return collector->collect(out_results);
+    }
+
+    CollectorBase::Status collectPreviewData(scopes::PreviewWidgetList& out_widgets, QHash<QString, scopes::Variant>& out_data)
+    {
+        auto collector = std::dynamic_pointer_cast<PreviewDataCollector>(m_collector);
+        return collector->collect(out_widgets, out_data);
     }
 
 private:
+    Type m_eventType;
     std::shared_ptr<CollectorBase> m_collector;
 };
 
@@ -239,7 +259,7 @@ private:
     void postCollectedResults(CollectorBase::Status status = CollectorBase::Status::INCOMPLETE)
     {
         if (m_collector->submit(status)) {
-            QScopedPointer<PushEvent> pushEvent(new PushEvent(m_collector));
+            QScopedPointer<PushEvent> pushEvent(new PushEvent(PushEvent::SEARCH, m_collector));
             QMutexLocker locker(&m_mutex);
             // posting the event steals the ownership
             if (m_receiver == nullptr) return;
@@ -298,7 +318,7 @@ private:
     void postCollectedResults(CollectorBase::Status status = CollectorBase::Status::INCOMPLETE)
     {
         if (m_collector->submit(status)) {
-            QScopedPointer<PushEvent> pushEvent(new PushEvent(m_collector));
+            QScopedPointer<PushEvent> pushEvent(new PushEvent(PushEvent::PREVIEW, m_collector));
             QMutexLocker locker(&m_mutex);
             // posting the event steals the ownership
             if (m_receiver == nullptr) return;
@@ -328,45 +348,74 @@ Scope::~Scope()
     }
 }
 
+void Scope::processSearchChunk(PushEvent* pushEvent)
+{
+    CollectorBase::Status status;
+    QList<std::shared_ptr<scopes::CategorisedResult>> results;
+
+    status = pushEvent->collectResults(results);
+    if (status == CollectorBase::Status::CANCELLED) {
+        return;
+    }
+
+    // qint64 inProgressMs = collector->msecsSinceStart();
+    // FIXME: should we push immediately if this search is already taking a while?
+    //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
+    //   yet if we do, we risk getting more results right after this one
+
+    if (m_cachedResults.empty()) {
+        m_cachedResults.swap(results);
+    } else {
+        m_cachedResults.append(results);
+    }
+
+    if (status == CollectorBase::Status::INCOMPLETE) {
+        if (!m_aggregatorTimer.isActive()) {
+            m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
+        }
+    } else {
+        // FINISHED or ERRORed collection
+        m_aggregatorTimer.stop();
+
+        flushUpdates();
+
+        if (m_searchInProgress) {
+            m_searchInProgress = false;
+            Q_EMIT searchInProgressChanged();
+        }
+    }
+}
+
+void Scope::processPreviewChunk(PushEvent* pushEvent)
+{
+    CollectorBase::Status status;
+    scopes::PreviewWidgetList widgets;
+    QHash<QString, scopes::Variant> preview_data;
+
+    status = pushEvent->collectPreviewData(widgets, preview_data);
+    if (status == CollectorBase::Status::CANCELLED) {
+        return;
+    }
+
+    // TODO: do something with the data
+}
+
 bool Scope::event(QEvent* ev)
 {
     if (ev->type() == PushEvent::eventType) {
         PushEvent* pushEvent = static_cast<PushEvent*>(ev);
 
-        CollectorBase::Status status;
-        auto results = pushEvent->collect(status);
-        if (status == CollectorBase::Status::CANCELLED) {
-            return true;
+        switch (pushEvent->type()) {
+            case PushEvent::SEARCH:
+                processSearchChunk(pushEvent);
+                return true;
+            case PushEvent::PREVIEW:
+                processPreviewChunk(pushEvent);
+                return true;
+            default:
+                qWarning("Unknown PushEvent type!");
+                return false;
         }
-
-        // qint64 inProgressMs = collector->msecsSinceStart();
-        // FIXME: should we push immediately if this search is already taking a while?
-        //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
-        //   yet if we do, we risk getting more results right after this one
-
-        if (m_cachedResults.empty()) {
-            m_cachedResults.swap(results);
-        } else {
-            m_cachedResults.append(results);
-        }
-
-        if (status == CollectorBase::Status::INCOMPLETE) {
-            if (!m_aggregatorTimer.isActive()) {
-                m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
-            }
-        } else {
-            // FINISHED or ERRORed collection
-            m_aggregatorTimer.stop();
-
-            flushUpdates();
-
-            if (m_searchInProgress) {
-                m_searchInProgress = false;
-                Q_EMIT searchInProgressChanged();
-            }
-        }
-
-        return true;
     }
     return QObject::event(ev);
 }
