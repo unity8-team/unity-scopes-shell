@@ -16,6 +16,7 @@ set(PLUGIN_SRC
     resultsmodel.cpp
     scope.cpp
     scopes.cpp
+    utils.cpp
 )
 
 add_library(ScopesNG-qml OBJECT ${PLUGIN_SRC})

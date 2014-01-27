@@ -20,6 +20,9 @@
 // Self
 #include "collectors.h"
 
+// local
+#include "utils.h"
+
 // Qt
 #include <QDebug>
 #include <QEvent>
@@ -122,12 +125,12 @@ public:
     bool addData(std::string const& key, scopes::Variant const& value)
     {
         QMutexLocker locker(&m_mutex);
-        m_previewData[QString::fromStdString(key)] = value;
+        m_previewData.insert(QString::fromStdString(key), scopeVariantToQVariant(value));
 
         return m_posted;
     }
 
-    Status collect(scopes::PreviewWidgetList& out_widgets, QHash<QString, scopes::Variant>& out_data)
+    Status collect(scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
     {
         Status status;
 
@@ -145,7 +148,7 @@ public:
 
 private:
     scopes::PreviewWidgetList m_widgets;
-    QHash<QString, scopes::Variant> m_previewData;
+    QHash<QString, QVariant> m_previewData;
 };
 
 PushEvent::PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector):
@@ -166,7 +169,7 @@ CollectorBase::Status PushEvent::collectResults(QList<std::shared_ptr<scopes::Ca
     return collector->collect(out_results);
 }
 
-CollectorBase::Status PushEvent::collectPreviewData(scopes::PreviewWidgetList& out_widgets, QHash<QString, scopes::Variant>& out_data)
+CollectorBase::Status PushEvent::collectPreviewData(scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
 {
     auto collector = std::dynamic_pointer_cast<PreviewDataCollector>(m_collector);
     return collector->collect(out_widgets, out_data);

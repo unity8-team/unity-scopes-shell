@@ -35,6 +35,7 @@ namespace scopes_ng
 
 class Categories;
 class PushEvent;
+class PreviewModel;
 
 class Q_DECL_EXPORT Scope : public QObject
 {
@@ -111,7 +112,7 @@ Q_SIGNALS:
     void isActiveChanged(bool);
 
     // signals triggered by activate(..) or preview(..) requests.
-    //void previewReady(Preview *preview);
+    void previewReady(scopes_ng::PreviewModel* preview);
     void showDash();
     void hideDash();
     void gotoUri(const QString &uri);
@@ -121,6 +122,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void flushUpdates();
+    void previewTimeout();
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
@@ -129,6 +131,7 @@ private:
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
+    void invalidateLastPreview();
     void dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
 
     void activateUri(QString const& uri);
@@ -146,8 +149,10 @@ private:
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::PreviewListener::SPtr m_lastPreview;
     unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
+    PreviewModel* m_preview;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
+    QTimer m_previewTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
 };
 

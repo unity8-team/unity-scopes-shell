@@ -27,6 +27,7 @@
 #include <QSharedPointer>
 
 #include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/Result.h>
 
 namespace scopes_ng
 {
@@ -52,11 +53,21 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    void setResult(std::shared_ptr<unity::scopes::Result> const&);
+
+    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
+    void updatePreviewData(QHash<QString, QVariant> const&);
+
 private Q_SLOTS:
 
 private:
+    void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
+
     QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
+    QMap<QString, QVariant> m_allData;
+
+    std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };
 
 } // namespace scopes_ng

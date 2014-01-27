@@ -69,7 +69,7 @@ public:
     Type type();
 
     CollectorBase::Status collectResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results);
-    CollectorBase::Status collectPreviewData(unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, unity::scopes::Variant>& out_data);
+    CollectorBase::Status collectPreviewData(unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
 
 private:
     Type m_eventType;

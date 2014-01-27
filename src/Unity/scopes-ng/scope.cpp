@@ -22,8 +22,8 @@
 
 // local
 #include "categories.h"
-//#include "preview.h"
 #include "collectors.h"
+#include "preview.h"
 
 // Qt
 #include <QUrl>
@@ -54,21 +54,29 @@ namespace scopes_ng
 using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
+const int PREVIEW_TIMEOUT = 110;
 
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
+    , m_preview(nullptr)
 {
     m_categories = new Categories(this);
+
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    m_previewTimer.setSingleShot(true);
+    QObject::connect(&m_previewTimer, &QTimer::timeout, this, &Scope::previewTimeout);
 }
 
 Scope::~Scope()
 {
     if (m_lastSearch) {
         std::dynamic_pointer_cast<SearchResultReceiver>(m_lastSearch)->invalidate();
+    }
+    if (m_lastPreview) {
+        std::dynamic_pointer_cast<PreviewDataReceiver>(m_lastPreview)->invalidate();
     }
 }
 
@@ -114,14 +122,24 @@ void Scope::processPreviewChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
     scopes::PreviewWidgetList widgets;
-    QHash<QString, scopes::Variant> preview_data;
+    QHash<QString, QVariant> preview_data;
 
     status = pushEvent->collectPreviewData(widgets, preview_data);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
-    // TODO: do something with the data
+    if (m_preview) {
+        m_preview->addWidgetDefinitions(widgets);
+        m_preview->updatePreviewData(preview_data);
+    }
+
+    if (status == CollectorBase::Status::FINISHED) {
+        if (m_previewTimer.isActive()) {
+            m_previewTimer.stop();
+            previewTimeout();
+        }
+    }
 }
 
 bool Scope::event(QEvent* ev)
@@ -147,6 +165,16 @@ bool Scope::event(QEvent* ev)
 void Scope::flushUpdates()
 {
     processResultSet(m_cachedResults); // clears the result list
+}
+
+void Scope::previewTimeout()
+{
+    if (m_preview) {
+        m_preview->setParent(nullptr);
+        // FIXME: who should own this?
+        Q_EMIT previewReady(m_preview);
+        m_preview = nullptr;
+    }
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)
@@ -201,6 +229,26 @@ void Scope::invalidateLastSearch()
     m_categories->clearAll();
 }
 
+void Scope::invalidateLastPreview()
+{
+    if (m_lastPreview) {
+        std::dynamic_pointer_cast<PreviewDataReceiver>(m_lastPreview)->invalidate();
+        m_lastPreview.reset();
+    }
+    if (m_lastPreviewQuery) {
+        m_lastPreviewQuery->cancel();
+        m_lastPreviewQuery.reset();
+    }
+    // TODO: stop preview timer, dispose of m_preview
+    if (m_previewTimer.isActive()) {
+        m_previewTimer.stop();
+        if (m_preview) {
+            delete m_preview;
+            m_preview = nullptr;
+        }
+    }
+}
+
 void Scope::dispatchSearch()
 {
     /* There are a few objects associated with searches:
@@ -224,7 +272,11 @@ void Scope::dispatchSearch()
     if (m_proxy) {
         scopes::VariantMap vm;
         m_lastSearch.reset(new SearchResultReceiver(this));
-        m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
+        try {
+            m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
+        } catch (...) {
+            qWarning("Caught exception from create_query()");
+        }
     }
 }
 
@@ -233,8 +285,18 @@ void Scope::dispatchPreview(std::shared_ptr<scopes::Result> const& result)
     if (m_proxy) {
         scopes::VariantMap vm;
         m_lastPreview.reset(new PreviewDataReceiver(this));
+        if (m_preview) {
+            delete m_preview;
+        }
+        m_preview = new PreviewModel(this);
+        m_preview->setResult(result);
         // FIXME: don't block
-        m_lastPreviewQuery = m_proxy->preview(*(result.get()), vm, m_lastPreview);
+        m_previewTimer.start(PREVIEW_TIMEOUT);
+        try {
+            m_lastPreviewQuery = m_proxy->preview(*(result.get()), vm, m_lastPreview);
+        } catch (...) {
+            qWarning("Caught exception from preview()");
+        }
     }
 }
 

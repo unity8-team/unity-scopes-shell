@@ -23,6 +23,7 @@
 #include <unity/scopes/Category.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/CategoryRenderer.h>
+#include <unity/scopes/PreviewWidget.h>
 
 #include <iostream>
 
@@ -103,6 +104,36 @@ private:
     string query_;
 };
 
+class MyPreview : public PreviewQuery
+{
+public:
+    MyPreview(Result const& result) :
+        result_(result)
+    {
+    }
+
+    ~MyPreview() noexcept
+    {
+    }
+
+    virtual void cancelled() override
+    {
+    }
+
+    virtual void run(PreviewReplyProxy const& reply) override
+    {
+        PreviewWidgetList widgets;
+        PreviewWidget w1(R"({"id": "header", "type": "header", "components": {"title": "title", "subtitle": "uri"}})");
+        PreviewWidget w2(R"({"id": "image", "type": "image", "components": {"source": "art"}, "zoomable": false})");
+        widgets.push_back(w1);
+        widgets.push_back(w2);
+        reply->push(widgets);
+    }
+
+private:
+    Result result_;
+};
+
 class MyScope : public ScopeBase
 {
 public:
@@ -122,7 +153,9 @@ public:
 
     virtual QueryBase::UPtr preview(Result const& result, VariantMap const&) override
     {
-        return nullptr;
+        QueryBase::UPtr query(new MyPreview(result));
+        cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
+        return query;
     }
 };
 
