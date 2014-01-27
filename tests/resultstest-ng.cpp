@@ -117,6 +117,14 @@ private Q_SLOTS:
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
         QVERIFY(results->rowCount() > 0);
+
+        // test also the ResultsModel::get() method
+        QVariantMap result_data(results->get(0).toMap());
+        QVERIFY(result_data.size() > 0);
+        QVERIFY(result_data.contains("uri"));
+        QVERIFY(result_data.contains("categoryId"));
+        QVERIFY(result_data.contains("result"));
+        QVERIFY(result_data.contains("title"));
     }
 
     void testScopesGet()
