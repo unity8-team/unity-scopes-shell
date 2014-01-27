@@ -64,6 +64,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
+    Q_INVOKABLE QVariant get(int row) const;
+
     void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 

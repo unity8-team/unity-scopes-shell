@@ -136,6 +136,23 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     return QString::fromStdString(v.get_string());
 }
 
+QVariant ResultsModel::get(int row) const
+{
+    if (row >= m_results.size() || row < 0) return QVariantMap();
+
+    QVariantMap result;
+    QModelIndex modelIndex(index(row));
+    QHashIterator<int, QByteArray> it(roleNames());
+    while (it.hasNext()) {
+        it.next();
+        QVariant val(data(modelIndex, it.key()));
+        if (val.isNull()) continue;
+        result[it.value()] = val;
+    }
+
+    return result;
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
