@@ -25,6 +25,7 @@
 #include <QString>
 #include <QTimer>
 #include <QMetaType>
+#include <QPointer>
 
 // scopes
 #include <unity/scopes/Scope.h>
@@ -88,7 +89,7 @@ public:
     void setActive(const bool);
 
     Q_INVOKABLE void activate(QVariant const& result);
-    Q_INVOKABLE void preview(QVariant const& result);
+    Q_INVOKABLE scopes_ng::PreviewModel* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;
@@ -122,7 +123,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void flushUpdates();
-    void previewTimeout();
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
@@ -132,7 +132,7 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
     void invalidateLastPreview();
-    void dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
+    PreviewModel* dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
 
     void activateUri(QString const& uri);
 
@@ -149,10 +149,9 @@ private:
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::PreviewListener::SPtr m_lastPreview;
     unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
-    PreviewModel* m_preview;
+    QPointer<PreviewModel> m_preview;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
-    QTimer m_previewTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
 };
 

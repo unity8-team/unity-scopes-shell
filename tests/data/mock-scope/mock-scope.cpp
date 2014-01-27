@@ -123,8 +123,8 @@ public:
     virtual void run(PreviewReplyProxy const& reply) override
     {
         PreviewWidgetList widgets;
-        PreviewWidget w1(R"({"id": "header", "type": "header", "components": {"title": "title", "subtitle": "uri"}})");
-        PreviewWidget w2(R"({"id": "image", "type": "image", "components": {"source": "art"}, "zoomable": false})");
+        PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri"}})");
+        PreviewWidget w2(R"({"id": "img", "type": "image", "components": {"source": "art"}, "zoomable": false})");
         widgets.push_back(w1);
         widgets.push_back(w2);
         reply->push(widgets);

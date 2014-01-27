@@ -54,20 +54,16 @@ namespace scopes_ng
 using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
-const int PREVIEW_TIMEOUT = 110;
 
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
-    , m_preview(nullptr)
 {
     m_categories = new Categories(this);
 
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
-    m_previewTimer.setSingleShot(true);
-    QObject::connect(&m_previewTimer, &QTimer::timeout, this, &Scope::previewTimeout);
 }
 
 Scope::~Scope()
@@ -105,8 +101,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         if (!m_aggregatorTimer.isActive()) {
             m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
         }
-    } else {
-        // FINISHED or ERRORed collection
+    } else { // status in [FINISHED, ERROR]
         m_aggregatorTimer.stop();
 
         flushUpdates();
@@ -134,10 +129,12 @@ void Scope::processPreviewChunk(PushEvent* pushEvent)
         m_preview->updatePreviewData(preview_data);
     }
 
-    if (status == CollectorBase::Status::FINISHED) {
-        if (m_previewTimer.isActive()) {
-            m_previewTimer.stop();
-            previewTimeout();
+    // status in [FINISHED, ERROR]
+    if (status != CollectorBase::Status::INCOMPLETE) {
+        if (m_preview) {
+            // FIXME: how to signal when preview finishes with error?
+            Q_EMIT previewReady(m_preview);
+            m_preview.clear();
         }
     }
 }
@@ -165,16 +162,6 @@ bool Scope::event(QEvent* ev)
 void Scope::flushUpdates()
 {
     processResultSet(m_cachedResults); // clears the result list
-}
-
-void Scope::previewTimeout()
-{
-    if (m_preview) {
-        m_preview->setParent(nullptr);
-        // FIXME: who should own this?
-        Q_EMIT previewReady(m_preview);
-        m_preview = nullptr;
-    }
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)
@@ -239,13 +226,8 @@ void Scope::invalidateLastPreview()
         m_lastPreviewQuery->cancel();
         m_lastPreviewQuery.reset();
     }
-    // TODO: stop preview timer, dispose of m_preview
-    if (m_previewTimer.isActive()) {
-        m_previewTimer.stop();
-        if (m_preview) {
-            delete m_preview;
-            m_preview = nullptr;
-        }
+    if (m_preview) {
+        m_preview.clear();
     }
 }
 
@@ -280,24 +262,23 @@ void Scope::dispatchSearch()
     }
 }
 
-void Scope::dispatchPreview(std::shared_ptr<scopes::Result> const& result)
+PreviewModel* Scope::dispatchPreview(std::shared_ptr<scopes::Result> const& result)
 {
+    PreviewModel* preview = nullptr;
     if (m_proxy) {
         scopes::VariantMap vm;
         m_lastPreview.reset(new PreviewDataReceiver(this));
-        if (m_preview) {
-            delete m_preview;
-        }
-        m_preview = new PreviewModel(this);
-        m_preview->setResult(result);
+        preview = new PreviewModel(this);
+        preview->setResult(result);
         // FIXME: don't block
-        m_previewTimer.start(PREVIEW_TIMEOUT);
         try {
             m_lastPreviewQuery = m_proxy->preview(*(result.get()), vm, m_lastPreview);
         } catch (...) {
             qWarning("Caught exception from preview()");
         }
     }
+
+    return preview;
 }
 
 void Scope::setScopeData(scopes::ScopeMetadata const& data)
@@ -481,18 +462,17 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-/* We'll guarantee that a previewReady signal is emitted within AGGREGATION_TIMEOUT milliseconds of the invocation */
-void Scope::preview(QVariant const& result_var)
+PreviewModel* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview result, unable to convert");
-        return;
+        return nullptr;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
         qWarning("Cannot preview null result");
-        return;
+        return nullptr;
     }
 
     // TODO: figure out if the result can produce a preview without sending a request to the scope
@@ -500,7 +480,7 @@ void Scope::preview(QVariant const& result_var)
     if (m_scopeMetadata) {
         auto scope_name = result->activation_scope_name();
         if (scope_name == m_scopeMetadata->scope_name()) {
-            dispatchPreview(result);
+            m_preview = dispatchPreview(result);
         } else {
             // FIXME: send the request to a different proxy
             qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
@@ -508,6 +488,7 @@ void Scope::preview(QVariant const& result_var)
     } else {
         qWarning("Unable to activate result");
     }
+    return m_preview;
 }
 
 void Scope::cancelActivation()

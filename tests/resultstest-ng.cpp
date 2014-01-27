@@ -367,14 +367,36 @@ private Q_SLOTS:
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
         QVERIFY(results->rowCount() > 0);
-        auto result = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result.isNull(), false);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
         qRegisterMetaType<scopes_ng::PreviewModel*>();
         QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
 
-        m_scope->preview(result);
+        auto preview = m_scope->preview(result_var);
         QVERIFY(spy.wait());
+        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+
+        QCOMPARE(preview->rowCount(), 2);
+        QVariantMap props;
+        QModelIndex idx;
+
+        idx = preview->index(0);
+        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("hdr"));
+        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("header"));
+        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
+        QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
+
+        idx = preview->index(1);
+        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("img"));
+        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("image"));
+        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        QVERIFY(props.contains("source"));
+        QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
+        QVERIFY(props.contains("zoomable"));
+        QCOMPARE(props[QString("zoomable")].toBool(), false);
     }
 };
 
