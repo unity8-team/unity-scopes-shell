@@ -25,6 +25,7 @@
 #include <QAbstractListModel>
 #include <QSet>
 #include <QSharedPointer>
+#include <QMultiMap>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
@@ -66,6 +67,7 @@ private:
     QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
     QMap<QString, QVariant> m_allData;
+    QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

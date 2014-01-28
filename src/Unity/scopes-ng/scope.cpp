@@ -479,6 +479,7 @@ PreviewModel* Scope::preview(QVariant const& result_var)
     // if (result->has_early_preview()) { ... }
     if (m_scopeMetadata) {
         auto scope_name = result->activation_scope_name();
+        invalidateLastPreview();
         if (scope_name == m_scopeMetadata->scope_name()) {
             m_preview = dispatchPreview(result);
         } else {

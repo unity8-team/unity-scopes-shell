@@ -396,6 +396,7 @@ private Q_SLOTS:
         props = preview->data(idx, PreviewModel::RoleProperties).toMap();
         QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
         QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
+        QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
 
         idx = preview->index(1);
         QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("img"));
