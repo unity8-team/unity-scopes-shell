@@ -161,6 +161,6 @@ FUNCTION(ENABLE_COVERAGE_REPORT)
 
     # This gets rid of any stale .gcda files. Run this if a running a binary causes lots of messages about
     # about a "merge mismatch for summaries".
-    ADD_CUSTOM_TARGET(clean-coverage COMMAND find ${CMAKE_BINARY_DIR} -name '*.gcda' | xargs rm -f)
+    ADD_CUSTOM_TARGET(clean-coverage COMMAND find ${CMAKE_BINARY_DIR} -name '*.gcda' | xargs rm -f COMMAND rm -rf "${CMAKE_BINARY_DIR}/coveragereport" "${CMAKE_BINARY_DIR}/coverage.info" "${CMAKE_BINARY_DIR}/coverage.raw.info")
 
-ENDFUNCTION()   
+ENDFUNCTION()
