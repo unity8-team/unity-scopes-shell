@@ -250,12 +250,19 @@ private Q_SLOTS:
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleEmblem).toString(), QString("emblem"));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString("art"));
 
         // drop all components but title
         categories->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title"}})");
         // check that the model no longer has the components
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleEmblem).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleArt).isNull());
+
+        categories->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title", "art": {"field": "art"}}})");
+        // check that the model has the art
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString("art"));
     }
 
     void testCategoryWithRating()

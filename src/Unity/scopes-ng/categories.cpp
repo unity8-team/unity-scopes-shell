@@ -180,10 +180,17 @@ private:
             QJsonObject obj(defaultVal.toObject());
             QJsonObject overrideObj(overrideVal.toObject());
             QJsonObject resultObj;
+            // iterate over the default object keys and merge the values with the overrides
             for (auto it = obj.begin(); it != obj.end(); ++it) {
                 if (overrideObj.contains(it.key())) {
                     resultObj.insert(it.key(), mergeOverrides(it.value(), overrideObj[it.key()]));
                 } else {
+                    resultObj.insert(it.key(), it.value());
+                }
+            }
+            // iterate over overrides keys and add everything that wasn't specified in default object
+            for (auto it = overrideObj.begin(); it != overrideObj.end(); ++it) {
+                if (!resultObj.contains(it.key())) {
                     resultObj.insert(it.key(), it.value());
                 }
             }
