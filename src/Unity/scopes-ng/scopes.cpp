@@ -128,12 +128,31 @@ void Scopes::discoveryFinished()
     m_scopesRuntime = thread->takeRuntime();
     auto scopes = thread->metadataMap();
 
+    // FIXME: use a dconf setting for this
+    QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
+
     beginResetModel();
-    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
-        auto scope = new Scope(this);
-        scope->setScopeData(it->second);
-        m_scopes.append(scope);
+
+    if (!enabledScopes.isNull()) {
+        QList<QByteArray> scopeList = enabledScopes.split(';');
+        for (int i = 0; i < scopeList.size(); i++) {
+            std::string scope_name(scopeList[i].constData());
+            auto it = scopes.find(scope_name);
+            if (it != scopes.end()) {
+                auto scope = new Scope(this);
+                scope->setScopeData(it->second);
+                m_scopes.append(scope);
+            }
+        }
+    } else {
+        // add all the scopes
+        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+            auto scope = new Scope(this);
+            scope->setScopeData(it->second);
+            m_scopes.append(scope);
+        }
     }
+
     endResetModel();
 
     m_loaded = true;
