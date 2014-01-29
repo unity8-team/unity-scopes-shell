@@ -125,13 +125,13 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
 
 void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
 {
-    // TODO: emit dataChanged for relevant widgets, if called after addDefs()
     QSet<PreviewData*> changedWidgets;
     for (auto it = data.begin(); it != data.end(); ++it) {
         m_allData.insert(it.key(), it.value());
-        if (m_dataToWidgetMap.contains(it.key())) {
-            QSet<PreviewData*> values = m_dataToWidgetMap.values(it.key()).toSet();
-            changedWidgets.unite(values);
+        auto map_it = m_dataToWidgetMap.constFind(it.key());
+        while (map_it != m_dataToWidgetMap.end() && map_it.key() == it.key()) {
+            changedWidgets.insert(map_it.value());
+            ++map_it;
         }
     }
 
