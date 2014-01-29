@@ -525,7 +525,7 @@ void Scope::activateUri(QString const& uri)
         if (path.startsWith("/")) {
             Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
                 if (path.startsWith(dir)) {
-                    path.remove(dir);
+                    path.remove(0, dir.length());
                     path.replace('/', '-');
                     break;
                 }
