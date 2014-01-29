@@ -135,7 +135,7 @@ void Scope::processPreviewChunk(PushEvent* pushEvent)
     // status in [FINISHED, ERROR]
     if (status != CollectorBase::Status::INCOMPLETE) {
         if (m_preview) {
-            // FIXME: how to signal when preview finishes with error?
+            // FIXME: do something special when preview finishes with error?
             Q_EMIT previewReady(m_preview);
             m_preview.clear();
         }
@@ -166,7 +166,8 @@ bool Scope::event(QEvent* ev)
                         case scopes::ActivationResponse::Handled:
                             Q_EMIT hideDash();
                             break;
-                        default: break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -365,12 +366,6 @@ QString Scope::shortcut() const
     return QString::fromStdString(hotkey);
 }
 
-bool Scope::connected() const
-{
-    // FIXME: get from scope proxy?
-    return false;
-}
-
 Categories* Scope::categories() const
 {
     return m_categories;
@@ -465,13 +460,14 @@ void Scope::activate(QVariant const& result_var)
         activateUri(QString::fromStdString(result->uri()));
     } else if (m_scopeMetadata) {
         try {
+            // this needs to be hidden from the clients, straight proxy->activate() should suffice
             auto scope_name = result->activation_scope_name();
             if (scope_name == m_scopeMetadata->scope_name()) {
-                // FIXME: don't block, handle the result
+                // FIXME: don't block
                 m_lastActivation.reset(new ActivationReceiver(this, result));
                 m_proxy->activate(*(result.get()), scopes::VariantMap(), m_lastActivation);
             } else {
-                // FIXME: send the request to a different proxy
+                // FIXME: shouldn't be necessary in the future
                 qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
             }
         } catch (...) {
@@ -498,13 +494,14 @@ PreviewModel* Scope::preview(QVariant const& result_var)
     // TODO: figure out if the result can produce a preview without sending a request to the scope
     // if (result->has_early_preview()) { ... }
     if (m_scopeMetadata) {
+        // this needs to be hidden from the clients, straight proxy->preview() should suffice
         auto scope_name = result->activation_scope_name();
         invalidateLastPreview();
         if (scope_name == m_scopeMetadata->scope_name()) {
             m_preview = dispatchPreview(result);
         } else {
-            // FIXME: send the request to a different proxy
-            qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
+            // FIXME: shouldn't be necessary in the future
+            qWarning("UNIMPLEMENTED: result needs to be previewed by '%s'", scope_name.c_str());
         }
     } else {
         qWarning("Unable to activate result");

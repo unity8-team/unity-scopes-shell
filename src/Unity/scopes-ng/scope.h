@@ -50,7 +50,6 @@ class Q_DECL_EXPORT Scope : public QObject
     Q_PROPERTY(bool searchInProgress READ searchInProgress NOTIFY searchInProgressChanged)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(QString shortcut READ shortcut NOTIFY shortcutChanged)
-    Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
     Q_PROPERTY(scopes_ng::Categories* categories READ categories NOTIFY categoriesChanged)
     //Q_PROPERTY(Filters* filters READ filters NOTIFY filtersChanged)
 
@@ -73,7 +72,6 @@ public:
     QString searchHint() const;
     bool visible() const;
     QString shortcut() const;
-    bool connected() const;
     bool searchInProgress() const;
     Categories* categories() const;
     //Filters* filters() const;
@@ -104,7 +102,6 @@ Q_SIGNALS:
     void searchInProgressChanged();
     void visibleChanged(bool);
     void shortcutChanged(const std::string&);
-    void connectedChanged(bool);
     void categoriesChanged();
     //void filtersChanged();
     void searchQueryChanged();
