@@ -23,7 +23,6 @@
 // Qt
 #include <QVariant>
 
-#include <unity/scopes/Result.h>
 #include <unity/scopes/Variant.h>
 
 namespace scopes_ng
