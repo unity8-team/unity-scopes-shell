@@ -20,6 +20,7 @@
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 #include <unity/scopes/PreviewReply.h>
+#include <unity/scopes/ActivationBase.h>
 #include <unity/scopes/Category.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/CategoryRenderer.h>
@@ -96,6 +97,7 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
+            res.set_intercept_activation();
             reply->push(res);
         }
     }
@@ -136,6 +138,31 @@ private:
     Result result_;
 };
 
+class MyActivation : public ActivationBase
+{
+public:
+    MyActivation(Result const& result) :
+        result_(result)
+    {
+    }
+
+    ~MyActivation() noexcept
+    {
+    }
+
+    virtual void cancelled() override
+    {
+    }
+
+    virtual ActivationResponse activate() override
+    {
+        return ActivationResponse(ActivationResponse::Handled);
+    }
+
+private:
+    Result result_;
+};
+
 class MyScope : public ScopeBase
 {
 public:
@@ -158,6 +185,11 @@ public:
         QueryBase::UPtr query(new MyPreview(result));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
+    }
+
+    virtual ActivationBase::UPtr activate(Result const& result, VariantMap const&) override
+    {
+        return ActivationBase::UPtr(new MyActivation(result));
     }
 };
 

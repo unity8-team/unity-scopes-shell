@@ -151,6 +151,41 @@ private:
     QHash<QString, QVariant> m_previewData;
 };
 
+class ActivationCollector: public CollectorBase
+{
+public:
+    ActivationCollector(std::shared_ptr<scopes::Result> const& result): CollectorBase(), m_result(result)
+    {
+    }
+
+    // Returns bool indicating whether this resultset was already posted
+    void setResponse(scopes::ActivationResponse const& response)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_response.reset(new scopes::ActivationResponse(response));
+    }
+
+    Status collect(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result)
+    {
+        Status status;
+
+        QMutexLocker locker(&m_mutex);
+        if (m_status == Status::INCOMPLETE) {
+            // allow re-posting this collector if !resultset.finished()
+            m_posted = false;
+        }
+        status = m_status;
+        out_response = m_response;
+        out_result = m_result;
+
+        return status;
+    }
+
+private:
+    std::shared_ptr<scopes::ActivationResponse> m_response;
+    std::shared_ptr<scopes::Result> m_result;
+};
+
 PushEvent::PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector):
     QEvent(PushEvent::eventType),
     m_eventType(event_type),
@@ -163,7 +198,7 @@ PushEvent::Type PushEvent::type()
     return m_eventType;
 }
 
-CollectorBase::Status PushEvent::collectResults(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
+CollectorBase::Status PushEvent::collectSearchResults(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
 {
     auto collector = std::dynamic_pointer_cast<ResultCollector>(m_collector);
     return collector->collect(out_results);
@@ -173,6 +208,42 @@ CollectorBase::Status PushEvent::collectPreviewData(scopes::PreviewWidgetList& o
 {
     auto collector = std::dynamic_pointer_cast<PreviewDataCollector>(m_collector);
     return collector->collect(out_widgets, out_data);
+}
+
+CollectorBase::Status PushEvent::collectActivationResponse(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result)
+{
+    auto collector = std::dynamic_pointer_cast<ActivationCollector>(m_collector);
+    return collector->collect(out_response, out_result);
+}
+
+ScopeDataReceiverBase::ScopeDataReceiverBase(QObject* receiver, PushEvent::Type push_type, 
+                                             std::shared_ptr<CollectorBase> const& collector):
+    m_receiver(receiver), m_eventType(push_type), m_collector(collector)
+{
+}
+
+void ScopeDataReceiverBase::postCollectedResults(CollectorBase::Status status)
+{
+    if (m_collector->submit(status)) {
+        QScopedPointer<PushEvent> pushEvent(new PushEvent(m_eventType, m_collector));
+        QMutexLocker locker(&m_mutex);
+        // posting the event steals the ownership
+        if (m_receiver == nullptr) return;
+        QCoreApplication::postEvent(m_receiver, pushEvent.take());
+    }
+}
+
+void ScopeDataReceiverBase::invalidate()
+{
+    m_collector->invalidate();
+    QMutexLocker locker(&m_mutex);
+    m_receiver = nullptr;
+}
+
+SearchResultReceiver::SearchResultReceiver(QObject* receiver):
+    ScopeDataReceiverBase(receiver, PushEvent::SEARCH, std::shared_ptr<CollectorBase>(new ResultCollector))
+{
+    m_collector = collectorAs<ResultCollector>();
 }
 
 // this will be called from non-main thread, (might even be multiple different threads)
@@ -196,27 +267,10 @@ void SearchResultReceiver::finished(scopes::ListenerBase::Reason reason, std::st
     postCollectedResults(status);
 }
 
-void SearchResultReceiver::invalidate()
+PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
+    ScopeDataReceiverBase(receiver, PushEvent::PREVIEW, std::shared_ptr<CollectorBase>(new PreviewDataCollector))
 {
-    m_collector->invalidate();
-    QMutexLocker locker(&m_mutex);
-    m_receiver = nullptr;
-}
-
-SearchResultReceiver::SearchResultReceiver(QObject* receiver):
-    m_collector(new ResultCollector), m_receiver(receiver)
-{
-}
-
-void SearchResultReceiver::postCollectedResults(CollectorBase::Status status)
-{
-    if (m_collector->submit(status)) {
-        QScopedPointer<PushEvent> pushEvent(new PushEvent(PushEvent::SEARCH, m_collector));
-        QMutexLocker locker(&m_mutex);
-        // posting the event steals the ownership
-        if (m_receiver == nullptr) return;
-        QCoreApplication::postEvent(m_receiver, pushEvent.take());
-    }
+    m_collector = collectorAs<PreviewDataCollector>();
 }
 
 // this will be called from non-main thread, (might even be multiple different threads)
@@ -246,27 +300,24 @@ void PreviewDataReceiver::finished(scopes::ListenerBase::Reason reason, std::str
     postCollectedResults(status);
 }
 
-void PreviewDataReceiver::invalidate()
+void ActivationReceiver::activation_response(scopes::ActivationResponse const& response)
 {
-    m_collector->invalidate();
-    QMutexLocker locker(&m_mutex);
-    m_receiver = nullptr;
+    m_collector->setResponse(response);
 }
 
-PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
-    m_collector(new PreviewDataCollector), m_receiver(receiver)
+void ActivationReceiver::finished(scopes::ListenerBase::Reason reason, std::string const& error_msg)
 {
+    Q_UNUSED(error_msg);
+    CollectorBase::Status status = reason == scopes::ListenerBase::Reason::Cancelled ?
+        CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
+
+    postCollectedResults(status);
 }
 
-void PreviewDataReceiver::postCollectedResults(CollectorBase::Status status)
+ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):
+    ScopeDataReceiverBase(receiver, PushEvent::ACTIVATION, std::shared_ptr<CollectorBase>(new ActivationCollector(result)))
 {
-    if (m_collector->submit(status)) {
-        QScopedPointer<PushEvent> pushEvent(new PushEvent(PushEvent::PREVIEW, m_collector));
-        QMutexLocker locker(&m_mutex);
-        // posting the event steals the ownership
-        if (m_receiver == nullptr) return;
-        QCoreApplication::postEvent(m_receiver, pushEvent.take());
-    }
+    m_collector = collectorAs<ActivationCollector>();
 }
 
 } // namespace scopes_ng

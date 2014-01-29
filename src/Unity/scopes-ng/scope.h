@@ -149,6 +149,7 @@ private:
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::PreviewListener::SPtr m_lastPreview;
     unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
+    unity::scopes::ActivationListener::SPtr m_lastActivation;
     QPointer<PreviewModel> m_preview;
     Categories* m_categories;
     QTimer m_aggregatorTimer;

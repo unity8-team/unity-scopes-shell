@@ -407,6 +407,33 @@ private Q_SLOTS:
         QVERIFY(props.contains("zoomable"));
         QCOMPARE(props[QString("zoomable")].toBool(), false);
     }
+
+    void testScopeActivation()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString(""));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+
+        QSignalSpy spy(m_scope, SIGNAL(hideDash()));
+        m_scope->activate(result_var);
+        QVERIFY(spy.wait());
+    }
 };
 
 QTEST_MAIN(ResultsTestNg)

@@ -24,17 +24,20 @@
 #include <QElapsedTimer>
 
 #include <unity/scopes/ListenerBase.h>
+#include <unity/scopes/ActivationListener.h>
 #include <unity/scopes/SearchListener.h>
 #include <unity/scopes/PreviewListener.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
 #include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/ActivationResponse.h>
 
 namespace scopes_ng
 {
 
 class ResultCollector;
 class PreviewDataCollector;
+class ActivationCollector;
 
 class CollectorBase
 {
@@ -63,54 +66,71 @@ class PushEvent: public QEvent
 public:
     static const QEvent::Type eventType;
 
-    enum Type { SEARCH, PREVIEW };
+    enum Type { SEARCH, PREVIEW, ACTIVATION };
 
     PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector);
     Type type();
 
-    CollectorBase::Status collectResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results);
+    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results);
     CollectorBase::Status collectPreviewData(unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
+    CollectorBase::Status collectActivationResponse(std::shared_ptr<unity::scopes::ActivationResponse>& out_response, std::shared_ptr<unity::scopes::Result>& out_result);
 
 private:
     Type m_eventType;
     std::shared_ptr<CollectorBase> m_collector;
 };
 
-class SearchResultReceiver: public unity::scopes::SearchListener
+class ScopeDataReceiverBase
+{
+public:
+    ScopeDataReceiverBase(QObject* receiver, PushEvent::Type push_type, std::shared_ptr<CollectorBase> const& collector);
+
+    void invalidate();
+    template<typename T> std::shared_ptr<T> collectorAs() { return std::dynamic_pointer_cast<T>(m_collector); }
+protected:
+    void postCollectedResults(CollectorBase::Status status = CollectorBase::Status::INCOMPLETE);
+private:
+    QMutex m_mutex;
+    QObject* m_receiver;
+    PushEvent::Type m_eventType;
+    std::shared_ptr<CollectorBase> m_collector;
+};
+
+class SearchResultReceiver: public unity::scopes::SearchListener, public ScopeDataReceiverBase
 {
 public:
     virtual void push(unity::scopes::CategorisedResult result) override;
     virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
 
-    void invalidate();
-
     SearchResultReceiver(QObject* receiver);
 
 private:
-    void postCollectedResults(CollectorBase::Status status = CollectorBase::Status::INCOMPLETE);
-
     std::shared_ptr<ResultCollector> m_collector;
-    QMutex m_mutex;
-    QObject* m_receiver;
 };
 
-class PreviewDataReceiver: public unity::scopes::PreviewListener
+class PreviewDataReceiver: public unity::scopes::PreviewListener, public ScopeDataReceiverBase
 {
 public:
     virtual void push(unity::scopes::PreviewWidgetList const& widgets) override;
     virtual void push(std::string const& key, unity::scopes::Variant const& value) override;
     virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
 
-    void invalidate();
-
     PreviewDataReceiver(QObject* receiver);
 
 private:
-    void postCollectedResults(CollectorBase::Status status = CollectorBase::Status::INCOMPLETE);
-
     std::shared_ptr<PreviewDataCollector> m_collector;
-    QMutex m_mutex;
-    QObject* m_receiver;
+};
+
+class ActivationReceiver: public unity::scopes::ActivationListener, public ScopeDataReceiverBase
+{
+public:
+    virtual void activation_response(unity::scopes::ActivationResponse const&) override;
+    virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
+
+    ActivationReceiver(QObject* receiver, std::shared_ptr<unity::scopes::Result> const& result);
+
+private:
+    std::shared_ptr<ActivationCollector> m_collector;
 };
 
 } // namespace scopes_ng

@@ -69,10 +69,13 @@ Scope::Scope(QObject *parent) : QObject(parent)
 Scope::~Scope()
 {
     if (m_lastSearch) {
-        std::dynamic_pointer_cast<SearchResultReceiver>(m_lastSearch)->invalidate();
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastSearch)->invalidate();
     }
     if (m_lastPreview) {
-        std::dynamic_pointer_cast<PreviewDataReceiver>(m_lastPreview)->invalidate();
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastPreview)->invalidate();
+    }
+    if (m_lastActivation) {
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
     }
 }
 
@@ -81,7 +84,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
 
-    status = pushEvent->collectResults(results);
+    status = pushEvent->collectSearchResults(results);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
@@ -151,6 +154,22 @@ bool Scope::event(QEvent* ev)
             case PushEvent::PREVIEW:
                 processPreviewChunk(pushEvent);
                 return true;
+            case PushEvent::ACTIVATION: {
+                std::shared_ptr<scopes::ActivationResponse> response;
+                std::shared_ptr<scopes::Result> result;
+                pushEvent->collectActivationResponse(response, result);
+                if (response) {
+                    switch (response->status()) {
+                        case scopes::ActivationResponse::NotHandled:
+                            activateUri(QString::fromStdString(result->uri()));
+                            break;
+                        case scopes::ActivationResponse::Handled:
+                            Q_EMIT hideDash();
+                            break;
+                        default: break;
+                    }
+                }
+            }
             default:
                 qWarning("Unknown PushEvent type!");
                 return false;
@@ -449,7 +468,8 @@ void Scope::activate(QVariant const& result_var)
             auto scope_name = result->activation_scope_name();
             if (scope_name == m_scopeMetadata->scope_name()) {
                 // FIXME: don't block, handle the result
-                m_proxy->activate(*(result.get()), scopes::VariantMap(), nullptr);
+                m_lastActivation.reset(new ActivationReceiver(this, result));
+                m_proxy->activate(*(result.get()), scopes::VariantMap(), m_lastActivation);
             } else {
                 // FIXME: send the request to a different proxy
                 qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
