@@ -274,6 +274,12 @@ PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
 }
 
 // this will be called from non-main thread, (might even be multiple different threads)
+void PreviewDataReceiver::push(unity::scopes::ColumnLayoutList const& layouts)
+{
+    // TODO: add support for this!
+    Q_UNUSED(layouts);
+}
+
 void PreviewDataReceiver::push(scopes::PreviewWidgetList const& widgets)
 {
     bool posted = m_collector->addWidgets(widgets);

@@ -111,6 +111,7 @@ private:
 class PreviewDataReceiver: public unity::scopes::PreviewListener, public ScopeDataReceiverBase
 {
 public:
+    virtual void push(unity::scopes::ColumnLayoutList const& layouts) override;
     virtual void push(unity::scopes::PreviewWidgetList const& widgets) override;
     virtual void push(std::string const& key, unity::scopes::Variant const& value) override;
     virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;

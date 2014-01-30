@@ -1,5 +1,5 @@
 include(FindPkgConfig)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.2.0)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.2.8)
 
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 

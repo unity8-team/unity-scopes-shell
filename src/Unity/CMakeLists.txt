@@ -5,7 +5,7 @@ include(Plugins)
 include(FindPkgConfig)
 pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
 pkg_check_modules(UNITYCORE REQUIRED unity-core-6.0>=7.1.1)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.2.0)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.2.8)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
