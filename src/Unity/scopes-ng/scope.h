@@ -25,6 +25,7 @@
 #include <QString>
 #include <QTimer>
 #include <QMetaType>
+#include <QPointer>
 
 // scopes
 #include <unity/scopes/Scope.h>
@@ -34,6 +35,8 @@ namespace scopes_ng
 {
 
 class Categories;
+class PushEvent;
+class PreviewModel;
 
 class Q_DECL_EXPORT Scope : public QObject
 {
@@ -47,7 +50,6 @@ class Q_DECL_EXPORT Scope : public QObject
     Q_PROPERTY(bool searchInProgress READ searchInProgress NOTIFY searchInProgressChanged)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(QString shortcut READ shortcut NOTIFY shortcutChanged)
-    Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
     Q_PROPERTY(scopes_ng::Categories* categories READ categories NOTIFY categoriesChanged)
     //Q_PROPERTY(Filters* filters READ filters NOTIFY filtersChanged)
 
@@ -70,7 +72,6 @@ public:
     QString searchHint() const;
     bool visible() const;
     QString shortcut() const;
-    bool connected() const;
     bool searchInProgress() const;
     Categories* categories() const;
     //Filters* filters() const;
@@ -85,12 +86,8 @@ public:
     void setFormFactor(const QString& form_factor);
     void setActive(const bool);
 
-    Q_INVOKABLE void activate(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-                              const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-                              const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
-    Q_INVOKABLE void preview(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-                              const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-                              const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata);
+    Q_INVOKABLE void activate(QVariant const& result);
+    Q_INVOKABLE scopes_ng::PreviewModel* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;
@@ -105,7 +102,6 @@ Q_SIGNALS:
     void searchInProgressChanged();
     void visibleChanged(bool);
     void shortcutChanged(const std::string&);
-    void connectedChanged(bool);
     void categoriesChanged();
     //void filtersChanged();
     void searchQueryChanged();
@@ -114,7 +110,7 @@ Q_SIGNALS:
     void isActiveChanged(bool);
 
     // signals triggered by activate(..) or preview(..) requests.
-    //void previewReady(Preview *preview);
+    void previewReady(scopes_ng::PreviewModel* preview);
     void showDash();
     void hideDash();
     void gotoUri(const QString &uri);
@@ -126,9 +122,16 @@ private Q_SLOTS:
     void flushUpdates();
 
 private:
+    void processSearchChunk(PushEvent* pushEvent);
+    void processPreviewChunk(PushEvent* pushEvent);
+
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
+    void invalidateLastPreview();
+    PreviewModel* dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
+
+    void activateUri(QString const& uri);
 
     QString m_scopeId;
     QString m_searchQuery;
@@ -138,9 +141,13 @@ private:
     bool m_searchInProgress;
 
     unity::scopes::ScopeProxy m_proxy;
-    std::shared_ptr<unity::scopes::ScopeMetadata> m_scopeMetadata;
-    unity::scopes::QueryCtrlProxy m_lastQuery;
-    unity::scopes::SearchListener::SPtr m_lastReceiver;
+    unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
+    unity::scopes::SearchListener::SPtr m_lastSearch;
+    unity::scopes::QueryCtrlProxy m_lastSearchQuery;
+    unity::scopes::PreviewListener::SPtr m_lastPreview;
+    unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
+    unity::scopes::ActivationListener::SPtr m_lastActivation;
+    QPointer<PreviewModel> m_preview;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;

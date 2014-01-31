@@ -32,7 +32,7 @@ ResultsModel::ResultsModel(QObject* parent)
     m_roles[ResultsModel::RoleUri] = "uri";
     m_roles[ResultsModel::RoleCategoryId] = "categoryId";
     m_roles[ResultsModel::RoleDndUri] = "dndUri";
-    m_roles[ResultsModel::RoleMetadata] = "metadata";
+    m_roles[ResultsModel::RoleResult] = "result";
     m_roles[ResultsModel::RoleTitle] = "title";
     m_roles[ResultsModel::RoleArt] = "art";
     m_roles[ResultsModel::RoleSubtitle] = "subtitle";
@@ -136,6 +136,23 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     return QString::fromStdString(v.get_string());
 }
 
+QVariant ResultsModel::get(int row) const
+{
+    if (row >= m_results.size() || row < 0) return QVariantMap();
+
+    QVariantMap result;
+    QModelIndex modelIndex(index(row));
+    QHashIterator<int, QByteArray> it(roleNames());
+    while (it.hasNext()) {
+        it.next();
+        QVariant val(data(modelIndex, it.key()));
+        if (val.isNull()) continue;
+        result[it.value()] = val;
+    }
+
+    return result;
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
@@ -148,8 +165,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
             return QString::fromStdString(result->category()->id());
         case RoleDndUri:
             return QString::fromStdString(result->dnd_uri());
-        case RoleMetadata:
-            return QVariantMap(); // FIXME! would be great to keep it opaque, so it isn't misused
+        case RoleResult:
+            return QVariant::fromValue(std::static_pointer_cast<unity::scopes::Result>(m_results.at(index.row())));
         case RoleTitle:
             return componentValue(result, "title");
         case RoleArt: {

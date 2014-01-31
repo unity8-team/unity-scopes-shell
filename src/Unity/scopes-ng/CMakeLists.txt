@@ -11,9 +11,12 @@ include_directories(
 
 set(PLUGIN_SRC
     categories.cpp
+    collectors.cpp
+    preview.cpp
     resultsmodel.cpp
     scope.cpp
     scopes.cpp
+    utils.cpp
 )
 
 add_library(ScopesNG-qml OBJECT ${PLUGIN_SRC})

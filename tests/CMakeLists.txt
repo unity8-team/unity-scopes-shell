@@ -59,4 +59,5 @@ run_tests(
     filtersbindingstest
     resultstest
     resultstest-ng
+    utilstest-ng
     )

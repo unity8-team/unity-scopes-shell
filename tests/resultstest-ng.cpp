@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2013-2014 Canonical, Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <scopes-ng/scope.h>
 #include <scopes-ng/categories.h>
 #include <scopes-ng/resultsmodel.h>
+#include <scopes-ng/preview.h>
 
 #define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
 
@@ -104,6 +105,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString(""));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // ensure categories have > 0 rows
@@ -115,6 +117,14 @@ private Q_SLOTS:
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
         QVERIFY(results->rowCount() > 0);
+
+        // test also the ResultsModel::get() method
+        QVariantMap result_data(results->get(0).toMap());
+        QVERIFY(result_data.size() > 0);
+        QVERIFY(result_data.contains("uri"));
+        QVERIFY(result_data.contains("categoryId"));
+        QVERIFY(result_data.contains("result"));
+        QVERIFY(result_data.contains("title"));
     }
 
     void testScopesGet()
@@ -144,6 +154,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString(""));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // ensure categories have > 0 rows
@@ -166,6 +177,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString(""));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // get ResultsModel instance
@@ -190,6 +202,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString("metadata"));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // get ResultsModel instance
@@ -223,6 +236,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString("metadata"));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // get ResultsModel instance
@@ -250,6 +264,7 @@ private Q_SLOTS:
         // perform a search
         m_scope->setSearchQuery(QString("rating"));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // get ResultsModel instance
@@ -270,6 +285,7 @@ private Q_SLOTS:
         // this search return minimal category definition, defaults should kick in
         m_scope->setSearchQuery(QString("minimal"));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         auto categories = m_scope->categories();
@@ -314,6 +330,7 @@ private Q_SLOTS:
     {
         m_scope->setSearchQuery(QString(""));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         auto categories = m_scope->categories();
@@ -325,6 +342,7 @@ private Q_SLOTS:
         // should at least change components
         m_scope->setSearchQuery(QString("metadata"));
         QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
         QTRY_COMPARE(m_scope->searchInProgress(), false);
 
         // expecting a few dataChanged signals, count and components changes
@@ -337,6 +355,84 @@ private Q_SLOTS:
         }
 
         QCOMPARE(componentsChanged, true);
+    }
+
+    void testScopePreview()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString(""));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+
+        qRegisterMetaType<scopes_ng::PreviewModel*>();
+        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
+
+        auto preview = m_scope->preview(result_var);
+        QVERIFY(spy.wait());
+        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+
+        QCOMPARE(preview->rowCount(), 2);
+        QVariantMap props;
+        QModelIndex idx;
+
+        idx = preview->index(0);
+        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("hdr"));
+        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("header"));
+        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
+        QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
+        QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
+
+        idx = preview->index(1);
+        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("img"));
+        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("image"));
+        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        QVERIFY(props.contains("source"));
+        QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
+        QVERIFY(props.contains("zoomable"));
+        QCOMPARE(props[QString("zoomable")].toBool(), false);
+    }
+
+    void testScopeActivation()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString(""));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+
+        QSignalSpy spy(m_scope, SIGNAL(hideDash()));
+        m_scope->activate(result_var);
+        QVERIFY(spy.wait());
     }
 };
 

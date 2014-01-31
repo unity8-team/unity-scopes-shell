@@ -64,6 +64,6 @@ private:
     unity::dash::Preview::Ptr m_preview;
 };
 
-Q_DECLARE_METATYPE(Result *)
+Q_DECLARE_METATYPE(Result*)
 
 #endif

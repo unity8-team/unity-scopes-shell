@@ -22,7 +22,8 @@
 
 // local
 #include "categories.h"
-//#include "preview.h"
+#include "collectors.h"
+#include "preview.h"
 
 // Qt
 #include <QUrl>
@@ -35,6 +36,9 @@
 #include <QMutexLocker>
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QScopedPointer>
+#include <QFileInfo>
+#include <QDir>
 
 #include <libintl.h>
 #include <glib.h>
@@ -42,6 +46,7 @@
 #include <unity/scopes/ListenerBase.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
+#include <unity/scopes/PreviewWidget.h>
 
 namespace scopes_ng
 {
@@ -50,161 +55,90 @@ using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
 
-class ResultCollector: public QObject
-{
-public:
-    enum CollectionStatus { INCOMPLETE, FINISHED, CANCELLED };
-
-    ResultCollector(): QObject(nullptr), m_status(CollectionStatus::INCOMPLETE), m_posted(false)
-    {
-        m_timer.start();
-    }
-
-    // Returns bool indicating whether this resultset was already posted
-    bool addResult(std::shared_ptr<scopes::CategorisedResult> const& result)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_results.append(result);
-
-        return m_posted;
-    }
-
-    QList<std::shared_ptr<scopes::CategorisedResult>> collect(CollectionStatus& out_status)
-    {
-        QList<std::shared_ptr<scopes::CategorisedResult>> results;
-
-        QMutexLocker locker(&m_mutex);
-        if (m_status == CollectionStatus::INCOMPLETE) {
-            // allow re-posting this collector if !resultset.finished()
-            m_posted = false;
-        }
-        out_status = m_status;
-        m_results.swap(results);
-
-        return results;
-    }
-
-    /* Returns bool indicating whether the collector should be sent to the UI thread */
-    bool submit(CollectionStatus status = CollectionStatus::INCOMPLETE)
-    {
-        QMutexLocker locker(&m_mutex);
-        if (m_status == CollectionStatus::INCOMPLETE) m_status = status;
-        if (m_posted) return false;
-
-        m_posted = true;
-
-        return true;
-    }
-
-    void invalidate()
-    {
-        QMutexLocker locker(&m_mutex);
-        m_status = CollectionStatus::CANCELLED;
-    }
-
-    qint64 msecsSinceStart() const
-    {
-        return m_timer.elapsed();
-    }
-
-private:
-    QMutex m_mutex;
-    QList<std::shared_ptr<scopes::CategorisedResult>> m_results;
-    CollectionStatus m_status;
-    bool m_posted;
-    // not locked
-    QElapsedTimer m_timer;
-};
-
-class PushEvent: public QEvent
-{
-public:
-    static const QEvent::Type eventType;
-
-    PushEvent(QSharedPointer<ResultCollector> collector):
-        QEvent(PushEvent::eventType),
-        m_collector(collector)
-    {
-    }
-
-    QList<std::shared_ptr<scopes::CategorisedResult>> collect(ResultCollector::CollectionStatus& out_status)
-    {
-        return m_collector->collect(out_status);
-    }
-
-private:
-    QSharedPointer<ResultCollector> m_collector;
-};
-
-const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
-
-class ResultReceiver: public scopes::SearchListener
-{
-public:
-    // this will be called from non-main thread, (might even be multiple different threads)
-    virtual void push(scopes::CategorisedResult result) override
-    {
-        auto res = std::make_shared<scopes::CategorisedResult>(std::move(result));
-        bool posted = m_collector->addResult(res);
-        // posting as soon as possible means we minimize delay
-        if (!posted) {
-            postCollectedResults();
-        }
-    }
-
-    // this might be called from any thread (might be main, might be any other thread)
-    virtual void finished(scopes::ListenerBase::Reason reason, std::string const& error_msg) override
-    {
-        Q_UNUSED(error_msg);
-        ResultCollector::CollectionStatus status = reason == scopes::ListenerBase::Reason::Cancelled ?
-            ResultCollector::CollectionStatus::CANCELLED : ResultCollector::CollectionStatus::FINISHED;
-
-        postCollectedResults(status);
-    }
-
-    void invalidate()
-    {
-        m_collector->invalidate();
-        QMutexLocker locker(&m_mutex);
-        m_receiver = nullptr;
-    }
-
-    ResultReceiver(QObject* receiver):
-        m_collector(new ResultCollector), m_receiver(receiver)
-    {
-    }
-
-private:
-    void postCollectedResults(ResultCollector::CollectionStatus status = ResultCollector::CollectionStatus::INCOMPLETE)
-    {
-        if (m_collector->submit(status)) {
-            auto pushEvent = new PushEvent(m_collector);
-            QMutexLocker locker(&m_mutex);
-            // posting the event steals the ownership
-            if (m_receiver == nullptr) return;
-            QCoreApplication::postEvent(m_receiver, pushEvent);
-        }
-    }
-
-    QSharedPointer<ResultCollector> m_collector;
-    QMutex m_mutex;
-    QObject* m_receiver;
-};
-
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
 {
     m_categories = new Categories(this);
+
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
 }
 
 Scope::~Scope()
 {
-    if (m_lastReceiver) {
-        std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
+    if (m_lastSearch) {
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastSearch)->invalidate();
+    }
+    if (m_lastPreview) {
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastPreview)->invalidate();
+    }
+    if (m_lastActivation) {
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
+    }
+}
+
+void Scope::processSearchChunk(PushEvent* pushEvent)
+{
+    CollectorBase::Status status;
+    QList<std::shared_ptr<scopes::CategorisedResult>> results;
+
+    status = pushEvent->collectSearchResults(results);
+    if (status == CollectorBase::Status::CANCELLED) {
+        return;
+    }
+
+    // qint64 inProgressMs = collector->msecsSinceStart();
+    // FIXME: should we push immediately if this search is already taking a while?
+    //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
+    //   yet if we do, we risk getting more results right after this one
+
+    if (m_cachedResults.empty()) {
+        m_cachedResults.swap(results);
+    } else {
+        m_cachedResults.append(results);
+    }
+
+    if (status == CollectorBase::Status::INCOMPLETE) {
+        if (!m_aggregatorTimer.isActive()) {
+            m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
+        }
+    } else { // status in [FINISHED, ERROR]
+        m_aggregatorTimer.stop();
+
+        flushUpdates();
+
+        if (m_searchInProgress) {
+            m_searchInProgress = false;
+            Q_EMIT searchInProgressChanged();
+        }
+    }
+}
+
+void Scope::processPreviewChunk(PushEvent* pushEvent)
+{
+    CollectorBase::Status status;
+    scopes::PreviewWidgetList widgets;
+    QHash<QString, QVariant> preview_data;
+
+    status = pushEvent->collectPreviewData(widgets, preview_data);
+    if (status == CollectorBase::Status::CANCELLED) {
+        return;
+    }
+
+    if (m_preview) {
+        m_preview->addWidgetDefinitions(widgets);
+        m_preview->updatePreviewData(preview_data);
+    }
+
+    // status in [FINISHED, ERROR]
+    if (status != CollectorBase::Status::INCOMPLETE) {
+        if (m_preview) {
+            // FIXME: do something special when preview finishes with error?
+            Q_EMIT previewReady(m_preview);
+            m_preview.clear();
+        }
     }
 }
 
@@ -213,40 +147,34 @@ bool Scope::event(QEvent* ev)
     if (ev->type() == PushEvent::eventType) {
         PushEvent* pushEvent = static_cast<PushEvent*>(ev);
 
-        ResultCollector::CollectionStatus status;
-        auto results = pushEvent->collect(status);
-        if (status == ResultCollector::CollectionStatus::CANCELLED) {
-            return true;
-        }
-
-        // qint64 inProgressMs = collector->msecsSinceStart();
-        // FIXME: should we push immediately if this search is already taking a while?
-        //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
-        //   yet if we do, we risk getting more results right after this one
-
-        if (m_cachedResults.empty()) {
-            m_cachedResults.swap(results);
-        } else {
-            m_cachedResults.append(results);
-        }
-
-        if (status == ResultCollector::CollectionStatus::INCOMPLETE) {
-            if (!m_aggregatorTimer.isActive()) {
-                m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
+        switch (pushEvent->type()) {
+            case PushEvent::SEARCH:
+                processSearchChunk(pushEvent);
+                return true;
+            case PushEvent::PREVIEW:
+                processPreviewChunk(pushEvent);
+                return true;
+            case PushEvent::ACTIVATION: {
+                std::shared_ptr<scopes::ActivationResponse> response;
+                std::shared_ptr<scopes::Result> result;
+                pushEvent->collectActivationResponse(response, result);
+                if (response) {
+                    switch (response->status()) {
+                        case scopes::ActivationResponse::NotHandled:
+                            activateUri(QString::fromStdString(result->uri()));
+                            break;
+                        case scopes::ActivationResponse::Handled:
+                            Q_EMIT hideDash();
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
-        } else {
-            // FINISHED or ERRORed collection
-            m_aggregatorTimer.stop();
-
-            flushUpdates();
-
-            if (m_searchInProgress) {
-                m_searchInProgress = false;
-                Q_EMIT searchInProgressChanged();
-            }
+            default:
+                qWarning("Unknown PushEvent type!");
+                return false;
         }
-
-        return true;
     }
     return QObject::event(ev);
 }
@@ -291,13 +219,13 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
 
 void Scope::invalidateLastSearch()
 {
-    if (m_lastReceiver) {
-        std::dynamic_pointer_cast<ResultReceiver>(m_lastReceiver)->invalidate();
-        m_lastReceiver.reset();
+    if (m_lastSearch) {
+        std::dynamic_pointer_cast<SearchResultReceiver>(m_lastSearch)->invalidate();
+        m_lastSearch.reset();
     }
-    if (m_lastQuery) {
-        m_lastQuery->cancel();
-        m_lastQuery.reset();
+    if (m_lastSearchQuery) {
+        m_lastSearchQuery->cancel();
+        m_lastSearchQuery.reset();
     }
     if (m_aggregatorTimer.isActive()) {
         m_aggregatorTimer.stop();
@@ -308,14 +236,29 @@ void Scope::invalidateLastSearch()
     m_categories->clearAll();
 }
 
+void Scope::invalidateLastPreview()
+{
+    if (m_lastPreview) {
+        std::dynamic_pointer_cast<PreviewDataReceiver>(m_lastPreview)->invalidate();
+        m_lastPreview.reset();
+    }
+    if (m_lastPreviewQuery) {
+        m_lastPreviewQuery->cancel();
+        m_lastPreviewQuery.reset();
+    }
+    if (m_preview) {
+        m_preview.clear();
+    }
+}
+
 void Scope::dispatchSearch()
 {
     /* There are a few objects associated with searches:
-     * 1) ResultReceiver    2) ResultCollector    3) PushEvent
+     * 1) SearchResultReceiver    2) ResultCollector    3) PushEvent
      *
-     * ResultReceiver is associated with the search and has methods that get called
+     * SearchResultReceiver is associated with the search and has methods that get called
      * by the scopes framework when results / categories / annotations are received.
-     * Since the notification methods (push(...)) of ResultReceiver are called
+     * Since the notification methods (push(...)) of SearchResultReceiver are called
      * from different thread(s), it uses ResultCollector to collect multiple results
      * in a thread-safe manner.
      * Once a couple of results are collected, the collector is sent via a PushEvent
@@ -323,16 +266,39 @@ void Scope::dispatchSearch()
      * the collector continues to collect more results, and uses another PushEvent to post them.
      *
      * If a new query is submitted the previous one is marked as cancelled by invoking
-     * ResultReceiver::invalidate() and any PushEvent that is waiting to be processed
+     * SearchResultReceiver::invalidate() and any PushEvent that is waiting to be processed
      * will be discarded as the collector will also be marked as invalid.
-     * The new query will have new instances of ResultReceiver and ResultCollector.
+     * The new query will have new instances of SearchResultReceiver and ResultCollector.
      */
 
     if (m_proxy) {
         scopes::VariantMap vm;
-        m_lastReceiver.reset(new ResultReceiver(this));
-        m_lastQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastReceiver);
+        m_lastSearch.reset(new SearchResultReceiver(this));
+        try {
+            m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
+        } catch (...) {
+            qWarning("Caught exception from create_query()");
+        }
     }
+}
+
+PreviewModel* Scope::dispatchPreview(std::shared_ptr<scopes::Result> const& result)
+{
+    PreviewModel* preview = nullptr;
+    if (m_proxy) {
+        scopes::VariantMap vm;
+        m_lastPreview.reset(new PreviewDataReceiver(this));
+        preview = new PreviewModel(this);
+        preview->setResult(result);
+        // FIXME: don't block
+        try {
+            m_lastPreviewQuery = m_proxy->preview(*(result.get()), vm, m_lastPreview);
+        } catch (...) {
+            qWarning("Caught exception from preview()");
+        }
+    }
+
+    return preview;
 }
 
 void Scope::setScopeData(scopes::ScopeMetadata const& data)
@@ -398,12 +364,6 @@ QString Scope::shortcut() const
     }
 
     return QString::fromStdString(hotkey);
-}
-
-bool Scope::connected() const
-{
-    // FIXME: get from scope proxy?
-    return false;
 }
 
 Categories* Scope::categories() const
@@ -483,41 +443,101 @@ void Scope::setActive(const bool active) {
     }
 }
 
-// FIXME: Change to use row index.
-void Scope::activate(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-                     const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-                     const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata)
+void Scope::activate(QVariant const& result_var)
 {
-    Q_UNUSED(uri);
-    Q_UNUSED(icon_hint);
-    Q_UNUSED(category);
-    Q_UNUSED(result_type);
-    Q_UNUSED(mimetype);
-    Q_UNUSED(title);
-    Q_UNUSED(comment);
-    Q_UNUSED(dnd_uri);
-    Q_UNUSED(metadata);
+    if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
+        qWarning("Cannot activate result, unable to convert");
+        return;
+    }
+
+    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+    if (!result) {
+        qWarning("Cannot activate null result");
+        return;
+    }
+
+    if (result->direct_activation()) {
+        activateUri(QString::fromStdString(result->uri()));
+    } else if (m_scopeMetadata) {
+        try {
+            // this needs to be hidden from the clients, straight proxy->activate() should suffice
+            auto scope_name = result->activation_scope_name();
+            if (scope_name == m_scopeMetadata->scope_name()) {
+                // FIXME: don't block
+                m_lastActivation.reset(new ActivationReceiver(this, result));
+                m_proxy->activate(*(result.get()), scopes::VariantMap(), m_lastActivation);
+            } else {
+                // FIXME: shouldn't be necessary in the future
+                qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
+            }
+        } catch (...) {
+            qWarning("Caught an error while activating result");
+        }
+    } else {
+        qWarning("Unable to activate result");
+    }
 }
 
-// FIXME: Change to use row index.
-void Scope::preview(const QVariant &uri, const QVariant &icon_hint, const QVariant &category,
-             const QVariant &result_type, const QVariant &mimetype, const QVariant &title,
-             const QVariant &comment, const QVariant &dnd_uri, const QVariant &metadata)
+PreviewModel* Scope::preview(QVariant const& result_var)
 {
-    Q_UNUSED(uri);
-    Q_UNUSED(icon_hint);
-    Q_UNUSED(category);
-    Q_UNUSED(result_type);
-    Q_UNUSED(mimetype);
-    Q_UNUSED(title);
-    Q_UNUSED(comment);
-    Q_UNUSED(dnd_uri);
-    Q_UNUSED(metadata);
-    // FIXME: handle overridden results
+    if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
+        qWarning("Cannot preview result, unable to convert");
+        return nullptr;
+    }
+
+    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+    if (!result) {
+        qWarning("Cannot preview null result");
+        return nullptr;
+    }
+
+    // TODO: figure out if the result can produce a preview without sending a request to the scope
+    // if (result->has_early_preview()) { ... }
+    if (m_scopeMetadata) {
+        // this needs to be hidden from the clients, straight proxy->preview() should suffice
+        auto scope_name = result->activation_scope_name();
+        invalidateLastPreview();
+        if (scope_name == m_scopeMetadata->scope_name()) {
+            m_preview = dispatchPreview(result);
+        } else {
+            // FIXME: shouldn't be necessary in the future
+            qWarning("UNIMPLEMENTED: result needs to be previewed by '%s'", scope_name.c_str());
+        }
+    } else {
+        qWarning("Unable to activate result");
+    }
+    return m_preview;
 }
 
 void Scope::cancelActivation()
 {
+}
+
+void Scope::activateUri(QString const& uri)
+{
+    /* Tries various methods to trigger a sensible action for the given 'uri'.
+       If it has no understanding of the given scheme it falls back on asking
+       Qt to open the uri.
+    */
+    QUrl url(uri);
+    if (url.scheme() == "application") {
+        QString path(url.path().isEmpty() ? url.authority() : url.path());
+        if (path.startsWith("/")) {
+            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
+                if (path.startsWith(dir)) {
+                    path.remove(0, dir.length());
+                    path.replace('/', '-');
+                    break;
+                }
+            }
+        }
+
+        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
+    } else {
+        qDebug() << "Trying to open" << uri;
+        /* Try our luck */
+        QDesktopServices::openUrl(url);
+    }
 }
 
 } // namespace scopes_ng
