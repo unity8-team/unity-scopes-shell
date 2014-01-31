@@ -170,6 +170,7 @@ bool Scope::event(QEvent* ev)
                             break;
                     }
                 }
+                break;
             }
             default:
                 qWarning("Unknown PushEvent type!");
