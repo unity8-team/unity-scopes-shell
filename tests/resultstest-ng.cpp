@@ -230,6 +230,29 @@ private Q_SLOTS:
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
     }
 
+    void testAlbumArtResult()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("music"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // get ResultsModel instance
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleUri).toString(), QString("file:///tmp/foo.mp3"));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"music\""));
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString("image://albumart/artist=Foo&album=FooAlbum"));
+    }
+
     void testCategoryOverride()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
