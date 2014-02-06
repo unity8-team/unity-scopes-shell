@@ -40,6 +40,7 @@
 #include "scopes-ng/scope.h"
 #include "scopes-ng/categories.h"
 #include "scopes-ng/resultsmodel.h"
+#include "scopes-ng/preview.h"
 
 // libqtdee
 #include "deelistmodel.h"
@@ -73,6 +74,7 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterType<scopes_ng::Scopes>(uri, 0, 2, "Scopes");
     qmlRegisterType<scopes_ng::Categories>(uri, 0, 2, "Categories");
     qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 2, "ResultsModel", "Can't create new Results Model in QML. Get them from Categories instance.");
+    qmlRegisterUncreatableType<scopes_ng::PreviewModel>(uri, 0, 2, "PreviewModel", "Can't create new Results Model in QML. Get them from Categories instance.");
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
