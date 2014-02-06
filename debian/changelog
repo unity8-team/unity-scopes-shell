@@ -1,3 +1,11 @@
+unity-scopes-shell (0.2.8+14.04.20140206.1-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Register PreviewModel, so it's exposed to QML.
+  * Reintroduce album art hack.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 06 Feb 2014 15:11:05 +0000
+
 unity-scopes-shell (0.2.8+14.04.20140131.2-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
