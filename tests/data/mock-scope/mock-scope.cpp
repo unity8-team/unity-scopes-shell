@@ -62,8 +62,8 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
-            res["subtitle"] = Variant("subtitle");
-            res["icon"] = Variant("emblem");
+            res["subtitle"] = "subtitle";
+            res["icon"] = "emblem";
             reply->push(res);
         }
         else if (query_ == "rating")
@@ -75,7 +75,7 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
-            res["rating"] = Variant("***");
+            res["rating"] = "***";
             reply->push(res);
         }
         else if (query_ == "minimal")
@@ -87,6 +87,19 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
+            reply->push(res);
+        }
+        else if (query_ == "music")
+        {
+            CategoryRenderer music_rndr(R"({"schema-version": 1, "components": {"title": "title", "art": "empty"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", music_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("file:///tmp/foo.mp3");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_dnd_uri("file:///tmp/foo.mp3");
+            res["mimetype"] = "audio/mp3";
+            res["artist"] = "Foo";
+            res["album"] = "FooAlbum";
             reply->push(res);
         }
         else
