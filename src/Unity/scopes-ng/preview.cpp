@@ -129,7 +129,7 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
     for (auto it = data.begin(); it != data.end(); ++it) {
         m_allData.insert(it.key(), it.value());
         auto map_it = m_dataToWidgetMap.constFind(it.key());
-        while (map_it != m_dataToWidgetMap.end() && map_it.key() == it.key()) {
+        while (map_it != m_dataToWidgetMap.constEnd() && map_it.key() == it.key()) {
             changedWidgets.insert(map_it.value());
             ++map_it;
         }
