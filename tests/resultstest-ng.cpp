@@ -344,9 +344,21 @@ private Q_SLOTS:
         countObject->setCount(1);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 1);
 
+        qRegisterMetaType<QVector<int>>();
+        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+
         countObject->setCountAsync(13);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 1);
         QTRY_COMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 13);
+
+        // expecting a few dataChanged signals, count should have changed
+        bool countChanged = false;
+        while (!spy.empty() && !countChanged) {
+            QList<QVariant> arguments = spy.takeFirst();
+            auto roles = arguments.at(2).value<QVector<int>>();
+            countChanged |= roles.contains(Categories::Roles::RoleCount);
+        }
+        QCOMPARE(countChanged, true);
     }
 
     void testCategoryWithRating()
