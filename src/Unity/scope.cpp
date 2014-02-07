@@ -300,7 +300,7 @@ void Scope::fallbackActivate(const QString& uri)
             }
         }
 
-        Q_EMIT activateApplication(QFileInfo(path).baseName());
+        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
         return;
     }
 
