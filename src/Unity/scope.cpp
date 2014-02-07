@@ -32,6 +32,8 @@
 #include <QDebug>
 #include <QtGui/QDesktopServices>
 #include <QQmlEngine>
+#include <QFileInfo>
+#include <QDir>
 
 #include <UnityCore/Variant.h>
 #include <UnityCore/GLibWrapper.h>
@@ -287,25 +289,18 @@ void Scope::fallbackActivate(const QString& uri)
         return;
     }
     if (url.scheme() == "application") {
-        // get the full path to the desktop file
         QString path(url.path().isEmpty() ? url.authority() : url.path());
-        if (path.startsWith("/")) {
-            Q_EMIT activateApplication(path);
-        } else {
-            // TODO: use the new desktop file finder/parser when it's ready
-            gchar* full_path = nullptr;
-            GKeyFile* key_file = g_key_file_new();
-            QString apps_path = "applications/" + path;
-            if (g_key_file_load_from_data_dirs(key_file, apps_path.toLocal8Bit().constData(), &full_path,
-                                               G_KEY_FILE_NONE, nullptr)) {
-                path = full_path;
-                Q_EMIT activateApplication(path);
-            } else {
-                qWarning() << "Unable to activate " << path;
+        if (path.startsWith('/')) {
+            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
+                if (path.startsWith(dir)) {
+                    path.remove(dir);
+                    path.replace('/', '-');
+                    break;
+                }
             }
-            g_key_file_free(key_file);
-            g_free(full_path);
         }
+
+        Q_EMIT activateApplication(QFileInfo(path).baseName());
         return;
     }
 
