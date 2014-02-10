@@ -186,10 +186,10 @@ public:
 
     virtual void stop() override {}
 
-    virtual QueryBase::UPtr create_query(string const& q, VariantMap const&) override
+    virtual QueryBase::UPtr create_query(Query const& q, VariantMap const&) override
     {
-        QueryBase::UPtr query(new MyQuery(q));
-        cout << "scope-A: created query: \"" << q << "\"" << endl;
+        QueryBase::UPtr query(new MyQuery(q.query_string()));
+        cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
 
