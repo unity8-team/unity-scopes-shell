@@ -186,21 +186,21 @@ public:
 
     virtual void stop() override {}
 
-    virtual QueryBase::UPtr create_query(Query const& q, VariantMap const&) override
+    virtual QueryBase::UPtr create_query(Query const& q, SearchMetadata const&) override
     {
         QueryBase::UPtr query(new MyQuery(q.query_string()));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
 
-    virtual QueryBase::UPtr preview(Result const& result, VariantMap const&) override
+    virtual QueryBase::UPtr preview(Result const& result, ActionMetadata const&) override
     {
         QueryBase::UPtr query(new MyPreview(result));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
     }
 
-    virtual ActivationBase::UPtr activate(Result const& result, VariantMap const&) override
+    virtual ActivationBase::UPtr activate(Result const& result, ActionMetadata const&) override
     {
         return ActivationBase::UPtr(new MyActivation(result));
     }
