@@ -169,7 +169,7 @@ public:
 
     virtual ActivationResponse activate() override
     {
-        return ActivationResponse(ActivationResponse::Handled);
+        return ActivationResponse(ActivationResponse::HideDash);
     }
 
 private:
