@@ -4,7 +4,7 @@ pkg_check_modules(LIBUNITYPROTO REQUIRED unity-protocol-private)
 pkg_check_modules(LIBUNITY REQUIRED unity)
 pkg_check_modules(LIBSIGCPP REQUIRED sigc++-2.0)
 pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.2.8)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.3.1)
 
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
