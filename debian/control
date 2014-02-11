@@ -30,7 +30,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          qtdeclarative5-dee-plugin,
-         libunity-scopes0 (>= 0.2.8~),
+         libunity-scopes0 (>= 0.3.1~),
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
 Breaks: unity8-private (<< 7.84)
