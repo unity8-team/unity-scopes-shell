@@ -1,3 +1,9 @@
+unity-scopes-shell (0.3.1-0ubuntu1) UNRELEASED; urgency=low
+
+  * Updated for libunity-scopes 0.3.1.
+
+ -- Pawel Stolowski <pawel.stolowski@ubuntu.com>  Tue, 11 Feb 2014 14:42:10 +0100
+
 unity-scopes-shell (0.2.8+14.04.20140206.1-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
