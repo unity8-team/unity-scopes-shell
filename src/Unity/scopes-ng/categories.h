@@ -62,6 +62,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json);
+    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject);
 
     ResultsModel* lookupCategory(std::string const& category_id);
     void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
@@ -69,13 +70,15 @@ public:
     void clearAll();
 
 private Q_SLOTS:
+    void countChanged();
 
 private:
-    QVector<int> collectChangedAttributes(unity::scopes::Category::SCPtr old_category, unity::scopes::Category::SCPtr category);
+    int getCategoryIndex(QString const& categoryId) const;
 
     QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<CategoryData>> m_categories;
     QMap<std::string, ResultsModel*> m_categoryResults;
+    QMap<QObject*, QString> m_countObjects;
 };
 
 } // namespace scopes_ng

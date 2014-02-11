@@ -27,6 +27,7 @@
 #include <QJsonParseError>
 #include <QHash>
 #include <QDebug>
+#include <QPointer>
 
 #include <unity/scopes/CategoryRenderer.h>
 
@@ -45,6 +46,13 @@ public:
         setCategory(category);
     }
 
+    // constructor for special (shell-overriden) categories
+    CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
+        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_resultsModel(nullptr), m_countObject(countObject)
+    {
+        parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
+    }
+
     void setCategory(scopes::Category::SCPtr const& category)
     {
         m_category = category;
@@ -53,9 +61,22 @@ public:
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
     }
 
-    scopes::Category::SCPtr category() const
+    QString categoryId() const
     {
-        return m_category;
+        return m_category ?
+            QString::fromStdString(m_category->id()) : m_catId;
+    }
+
+    QString title() const
+    {
+        return m_category ?
+            QString::fromStdString(m_category->title()) : m_catTitle;
+    }
+
+    QString icon() const
+    {
+        return m_category ?
+            QString::fromStdString(m_category->icon()) : m_catIcon;
     }
 
     std::string rawTemplate() const
@@ -144,13 +165,30 @@ public:
         return m_resultsModel;
     }
 
+    int resultsModelCount() const
+    {
+        if (m_resultsModel) {
+            return m_resultsModel->rowCount(QModelIndex());
+        }
+        if (m_countObject) {
+            QVariant count(m_countObject->property("count"));
+            return count.toInt();
+        }
+
+        return 0;
+    }
+
 private:
     static QJsonValue* DEFAULTS;
     scopes::Category::SCPtr m_category;
+    QString m_catId;
+    QString m_catTitle;
+    QString m_catIcon;
     std::string m_rawTemplate;
     QJsonValue m_rendererTemplate;
     QJsonValue m_components;
     ResultsModel* m_resultsModel;
+    QPointer<QObject> m_countObject;
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
@@ -162,7 +200,7 @@ private:
         QJsonParseError parseError;
         QJsonDocument category_doc = QJsonDocument::fromJson(QByteArray(raw_template.c_str()), &parseError);
         if (parseError.error != QJsonParseError::NoError || !category_doc.isObject()) {
-            qWarning() << "Unable to parse category JSON: %s" << parseError.errorString();
+            qWarning() << "Unable to parse category JSON: " << parseError.errorString();
             return false;
         }
 
@@ -242,16 +280,22 @@ ResultsModel* Categories::lookupCategory(std::string const& category_id)
     return m_categoryResults[category_id];
 }
 
+int Categories::getCategoryIndex(QString const& categoryId) const
+{
+    // there shouldn't be too many categories, linear search should be fine
+    for (int i = 0; i < m_categories.size(); i++) {
+        if (m_categories[i]->categoryId() == categoryId) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel* resultsModel)
 {
     // do we already have a category with this id?
-    int index = -1;
-    for (int i = 0; i < m_categories.size(); i++) {
-        if (m_categories[i]->category()->id() == category->id()) {
-            index = i;
-            break;
-        }
-    }
+    int index = getCategoryIndex(QString::fromStdString(category->id()));
     if (index >= 0) {
         CategoryData* catData = m_categories[index].data();
         // check if any attributes of the category changed
@@ -322,14 +366,7 @@ void Categories::clearAll()
 
 bool Categories::overrideCategoryJson(QString const& categoryId, QString const& json)
 {
-    int idx = -1;
-    for (int i = 0; i < m_categories.count(); i++) {
-        if (m_categories[i]->category()->id() == categoryId.toStdString()) {
-            idx = i;
-            break;
-        }
-    }
-
+    int idx = getCategoryIndex(categoryId);
     if (idx >= 0) {
         CategoryData* catData = m_categories.at(idx).data();
         if (!catData->overrideTemplate(json.toStdString())) {
@@ -351,20 +388,55 @@ bool Categories::overrideCategoryJson(QString const& categoryId, QString const& 
     return false;
 }
 
+void Categories::addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject)
+{
+    int index = getCategoryIndex(categoryId);
+    if (index >= 0) {
+        qWarning("ERROR! Category with id \"%s\" already exists!", categoryId.toStdString().c_str());
+    } else {
+        CategoryData* catData = new CategoryData(categoryId, name, icon, rawTemplate, countObject);
+        // prepend the category
+        beginInsertRows(QModelIndex(), 0, 0);
+        m_categories.prepend(QSharedPointer<CategoryData>(catData));
+        endInsertRows();
+
+        if (countObject) {
+            m_countObjects[countObject] = categoryId;
+            QObject::connect(countObject, SIGNAL(countChanged()), this, SLOT(countChanged()));
+        }
+    }
+}
+
+void Categories::countChanged()
+{
+    QObject* countObject = sender();
+    if (countObject != nullptr) {
+        QString catId(m_countObjects[countObject]);
+        if (catId.isEmpty()) return;
+        int idx = getCategoryIndex(catId);
+        if (idx < 0) return;
+
+        QVector<int> roles;
+        roles.append(RoleCount);
+
+        QModelIndex changedIndex(index(idx));
+        dataChanged(changedIndex, changedIndex, roles);
+    }
+}
+
 QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
     CategoryData* catData = m_categories.at(index.row()).data();
-    scopes::Category::SCPtr cat(catData->category());
     ResultsModel* resultsModel = catData->resultsModel();
 
     switch (role) {
         case RoleCategoryId:
-            return QString::fromStdString(cat->id());
+            return catData->categoryId();
         case RoleName:
-            return QString::fromStdString(cat->title());
+            return catData->title();
         case RoleIcon:
-            return QString::fromStdString(cat->icon());
+            return catData->icon();
         case RoleRawRendererTemplate:
             return QString::fromStdString(catData->rawTemplate());
         case RoleRenderer:
@@ -376,7 +448,7 @@ Categories::data(const QModelIndex& index, int role) const
         case RoleResults:
             return QVariant::fromValue(resultsModel);
         case RoleCount:
-            return QVariant(resultsModel ? resultsModel->rowCount(QModelIndex()) : 0);
+            return catData->resultsModelCount();
         default:
             return QVariant();
     }

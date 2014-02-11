@@ -39,6 +39,47 @@
 
 using namespace scopes_ng;
 
+class CountObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+public:
+    explicit CountObject(QObject* parent = nullptr) : QObject(parent), m_count(0)
+    {
+        connect(&m_timer, &QTimer::timeout, this, &CountObject::asyncTimeout);
+    }
+
+Q_SIGNALS:
+    void countChanged();
+
+private Q_SLOTS:
+    void asyncTimeout() { setCount(m_waitingCount); }
+
+public:
+    int count() const { return m_count; }
+
+    void setCount(int newCount)
+    {
+        if (newCount != m_count) {
+            m_count = newCount;
+            Q_EMIT countChanged();
+        }
+    }
+
+    void setCountAsync(int newCount)
+    {
+        m_waitingCount = newCount;
+        m_timer.setSingleShot(true);
+        m_timer.start(1);
+    }
+
+private:
+    int m_count;
+    int m_waitingCount;
+    QTimer m_timer;
+};
+
 class ResultsTestNg : public QObject
 {
     Q_OBJECT
@@ -286,6 +327,38 @@ private Q_SLOTS:
         // check that the model has the art
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleArt).toString(), QString("art"));
+    }
+
+    void testSpecialCategory()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+
+        auto categories = m_scope->categories();
+        QString rawTemplate(R"({"schema-version": 1, "template": {"category-layout": "special"}})");
+        CountObject* countObject = new CountObject(m_scope);
+        categories->addSpecialCategory("special", "Special", "", rawTemplate, countObject);
+
+        // should have 1 category now
+        QCOMPARE(categories->rowCount(), 1);
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 0);
+        countObject->setCount(1);
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 1);
+
+        qRegisterMetaType<QVector<int>>();
+        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+
+        countObject->setCountAsync(13);
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 1);
+        QTRY_COMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 13);
+
+        // expecting a few dataChanged signals, count should have changed
+        bool countChanged = false;
+        while (!spy.empty() && !countChanged) {
+            QList<QVariant> arguments = spy.takeFirst();
+            auto roles = arguments.at(2).value<QVector<int>>();
+            countChanged |= roles.contains(Categories::Roles::RoleCount);
+        }
+        QCOMPARE(countChanged, true);
     }
 
     void testCategoryWithRating()
