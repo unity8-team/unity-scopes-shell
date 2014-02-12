@@ -37,6 +37,7 @@ namespace scopes_ng
 class Categories;
 class PushEvent;
 class PreviewModel;
+class PreviewStack;
 
 class Q_DECL_EXPORT Scope : public QObject
 {
@@ -87,7 +88,7 @@ public:
     void setActive(const bool);
 
     Q_INVOKABLE void activate(QVariant const& result);
-    Q_INVOKABLE scopes_ng::PreviewModel* preview(QVariant const& result);
+    Q_INVOKABLE scopes_ng::PreviewStack* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
     //unity::dash::Scope::Ptr unityScope() const;

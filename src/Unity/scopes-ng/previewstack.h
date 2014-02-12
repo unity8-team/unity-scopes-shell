@@ -19,8 +19,8 @@
  */
 
 
-#ifndef NG_PREVIEW_H
-#define NG_PREVIEW_H
+#ifndef NG_PREVIEW_STACK_H
+#define NG_PREVIEW_STACK_H
 
 #include <QAbstractListModel>
 #include <QSet>
@@ -33,47 +33,50 @@
 namespace scopes_ng
 {
 
-class PreviewData;
+class PreviewModel;
 
-class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
+class Q_DECL_EXPORT PreviewStack : public QAbstractListModel
 {
     Q_OBJECT
 
     Q_ENUMS(Roles)
 
+    Q_PROPERTY(int widgetColumnCount READ widgetColumnCount WRITE setWidgetColumnCount NOTIFY widgetColumnCountChanged)
+
 public:
-    explicit PreviewModel(QObject* parent = 0);
+    explicit PreviewStack(QObject* parent = 0);
+    explicit PreviewStack(PreviewModel* previewModel, QObject* parent = 0);
 
     enum Roles {
-        RoleWidgetId,
-        RoleType,
-        RoleProperties
+        RolePreviewModel
     };
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void setResult(std::shared_ptr<unity::scopes::Result> const&);
+    Q_INVOKABLE scopes_ng::PreviewModel* get(int index) const;
 
-    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
-    void updatePreviewData(QHash<QString, QVariant> const&);
+    void setResult(std::shared_ptr<unity::scopes::Result> const&);
+    void addPreviewModel();
+
+    void setWidgetColumnCount(int columnCount);
+    int widgetColumnCount() const;
+
+Q_SIGNALS:
+    void widgetColumnCountChanged();
 
 private Q_SLOTS:
 
 private:
-    void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
-
-    QHash<int, QByteArray> m_roles;
-    QList<QSharedPointer<PreviewData>> m_previewWidgets;
-    QMap<QString, QVariant> m_allData;
-    QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
+    int m_widgetColumnCount;
+    QList<PreviewModel*> m_previews;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };
 
 } // namespace scopes_ng
 
-Q_DECLARE_METATYPE(scopes_ng::PreviewModel*)
+Q_DECLARE_METATYPE(scopes_ng::PreviewStack*)
 
-#endif // NG_CATEGORIES_H
+#endif // NG_PREVIEW_STACK_H

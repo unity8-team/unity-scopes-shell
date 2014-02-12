@@ -23,7 +23,8 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "preview.h"
+#include "previewmodel.h"
+#include "previewstack.h"
 
 // Qt
 #include <QUrl>
@@ -119,15 +120,19 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 void Scope::processPreviewChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
+    scopes::ColumnLayoutList columns;
     scopes::PreviewWidgetList widgets;
     QHash<QString, QVariant> preview_data;
 
-    status = pushEvent->collectPreviewData(widgets, preview_data);
+    status = pushEvent->collectPreviewData(columns, widgets, preview_data);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     if (m_preview) {
+        if (!columns.empty()) {
+            m_preview->setColumnLayouts(columns);
+        }
         m_preview->addWidgetDefinitions(widgets);
         m_preview->updatePreviewData(preview_data);
     }
@@ -479,7 +484,7 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-PreviewModel* Scope::preview(QVariant const& result_var)
+PreviewStack* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview result, unable to convert");
@@ -507,7 +512,8 @@ PreviewModel* Scope::preview(QVariant const& result_var)
     } else {
         qWarning("Unable to activate result");
     }
-    return m_preview;
+    PreviewStack* stack = new PreviewStack(nullptr, m_preview);
+    return stack;
 }
 
 void Scope::cancelActivation()
