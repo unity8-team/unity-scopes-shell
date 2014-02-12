@@ -507,7 +507,7 @@ PreviewStack* Scope::preview(QVariant const& result_var)
     } else {
         qWarning("Unable to activate result");
     }
-    PreviewStack* stack = new PreviewStack(nullptr, m_preview);
+    PreviewStack* stack = new PreviewStack(m_preview, nullptr);
     return stack;
 }
 

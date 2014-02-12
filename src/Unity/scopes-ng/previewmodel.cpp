@@ -227,6 +227,11 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
     }
 }
 
+void PreviewModel::triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data)
+{
+    // TODO!
+}
+
 int PreviewModel::rowCount(const QModelIndex&) const
 {
     return m_previewWidgetModels.size();

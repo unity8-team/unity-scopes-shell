@@ -33,7 +33,9 @@
 #include <scopes-ng/scope.h>
 #include <scopes-ng/categories.h>
 #include <scopes-ng/resultsmodel.h>
-#include <scopes-ng/preview.h>
+#include <scopes-ng/previewmodel.h>
+#include <scopes-ng/previewstack.h>
+#include <scopes-ng/previewwidgetmodel.h>
 
 #define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
 
@@ -485,26 +487,28 @@ private Q_SLOTS:
         qRegisterMetaType<scopes_ng::PreviewModel*>();
         QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
 
-        auto preview = m_scope->preview(result_var);
+        auto preview_stack = m_scope->preview(result_var);
+        auto preview = preview_stack->get(0);
         QVERIFY(spy.wait());
         QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
 
-        QCOMPARE(preview->rowCount(), 2);
+        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(preview_widgets->rowCount(), 2);
         QVariantMap props;
         QModelIndex idx;
 
-        idx = preview->index(0);
-        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("hdr"));
-        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("header"));
-        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        idx = preview_widgets->index(0);
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("hdr"));
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("header"));
+        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
         QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
         QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
         QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
 
-        idx = preview->index(1);
-        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("img"));
-        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("image"));
-        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        idx = preview_widgets->index(1);
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
+        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
         QVERIFY(props.contains("source"));
         QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
         QVERIFY(props.contains("zoomable"));
