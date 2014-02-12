@@ -1,3 +1,13 @@
+unity-scopes-shell (0.3.1+14.04.20140211.1-0ubuntu1) trusty; urgency=low
+
+  [ Pawel Stolowski ]
+  * Updated for libunity-scopes 0.3.1.
+
+  [ Michal Hruby ]
+  * Added support for shell-defined categories
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 11 Feb 2014 17:57:23 +0000
+
 unity-scopes-shell (0.2.8+14.04.20140206.1-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]

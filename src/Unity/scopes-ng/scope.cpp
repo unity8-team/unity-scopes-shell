@@ -48,6 +48,8 @@
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
 #include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/SearchMetadata.h>
+#include <unity/scopes/ActionMetadata.h>
 
 namespace scopes_ng
 {
@@ -168,8 +170,11 @@ bool Scope::event(QEvent* ev)
                         case scopes::ActivationResponse::NotHandled:
                             activateUri(QString::fromStdString(result->uri()));
                             break;
-                        case scopes::ActivationResponse::Handled:
+                        case scopes::ActivationResponse::HideDash:
                             Q_EMIT hideDash();
+                            break;
+                        case scopes::ActivationResponse::ShowDash:
+                            Q_EMIT showDash();
                             break;
                         default:
                             break;
@@ -278,7 +283,7 @@ void Scope::dispatchSearch()
      */
 
     if (m_proxy) {
-        scopes::VariantMap vm;
+        scopes::SearchMetadata vm("C", "phone"); //FIXME
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
             m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
@@ -288,17 +293,17 @@ void Scope::dispatchSearch()
     }
 }
 
-PreviewModel* Scope::dispatchPreview(std::shared_ptr<scopes::Result> const& result)
+PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::shared_ptr<scopes::Result> const& result)
 {
     PreviewModel* preview = nullptr;
-    if (m_proxy) {
-        scopes::VariantMap vm;
+    if (proxy) {
+        scopes::ActionMetadata vm("C", "phone"); //FIXME
         m_lastPreview.reset(new PreviewDataReceiver(this));
         preview = new PreviewModel(this);
         preview->setResult(result);
         // FIXME: don't block
         try {
-            m_lastPreviewQuery = m_proxy->preview(*(result.get()), vm, m_lastPreview);
+            m_lastPreviewQuery = proxy->preview(*(result.get()), vm, m_lastPreview);
         } catch (...) {
             qWarning("Caught exception from preview()");
         }
@@ -466,16 +471,11 @@ void Scope::activate(QVariant const& result_var)
         activateUri(QString::fromStdString(result->uri()));
     } else if (m_scopeMetadata) {
         try {
-            // this needs to be hidden from the clients, straight proxy->activate() should suffice
-            auto scope_name = result->activation_scope_name();
-            if (scope_name == m_scopeMetadata->scope_name()) {
-                // FIXME: don't block
-                m_lastActivation.reset(new ActivationReceiver(this, result));
-                m_proxy->activate(*(result.get()), scopes::VariantMap(), m_lastActivation);
-            } else {
-                // FIXME: shouldn't be necessary in the future
-                qWarning("UNIMPLEMENTED: result needs to be activated by '%s'", scope_name.c_str());
-            }
+            auto proxy = result->target_scope_proxy();
+            // FIXME: don't block
+            unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
+            m_lastActivation.reset(new ActivationReceiver(this, result));
+            proxy->activate(*(result.get()), metadata, m_lastActivation);
         } catch (...) {
             qWarning("Caught an error while activating result");
         }
@@ -501,14 +501,9 @@ PreviewStack* Scope::preview(QVariant const& result_var)
     // if (result->has_early_preview()) { ... }
     if (m_scopeMetadata) {
         // this needs to be hidden from the clients, straight proxy->preview() should suffice
-        auto scope_name = result->activation_scope_name();
+        auto proxy = result->target_scope_proxy();
         invalidateLastPreview();
-        if (scope_name == m_scopeMetadata->scope_name()) {
-            m_preview = dispatchPreview(result);
-        } else {
-            // FIXME: shouldn't be necessary in the future
-            qWarning("UNIMPLEMENTED: result needs to be previewed by '%s'", scope_name.c_str());
-        }
+        m_preview = dispatchPreview(proxy, result);
     } else {
         qWarning("Unable to activate result");
     }

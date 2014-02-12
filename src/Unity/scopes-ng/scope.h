@@ -130,7 +130,7 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
     void invalidateLastPreview();
-    PreviewModel* dispatchPreview(std::shared_ptr<unity::scopes::Result> const& result);
+    PreviewModel* dispatchPreview(unity::scopes::ScopeProxy proxy, std::shared_ptr<unity::scopes::Result> const& result);
 
     void activateUri(QString const& uri);
 
