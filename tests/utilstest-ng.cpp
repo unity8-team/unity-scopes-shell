@@ -67,6 +67,45 @@ private Q_SLOTS:
         QCOMPARE(dict.value("2").toInt(), 7);
         QCOMPARE(dict.value("last").toBool(), true);
     }
+
+    void testInvertedConversions()
+    {
+        scopes::Variant v1("foo");
+        QVariant qv1(scopeVariantToQVariant(v1));
+        QCOMPARE(qVariantToScopeVariant(qv1), v1);
+        scopes::Variant v2(7);
+        QVariant qv2(scopeVariantToQVariant(v2));
+        QCOMPARE(qVariantToScopeVariant(qv2), v2);
+        scopes::Variant v3(true);
+        QVariant qv3(scopeVariantToQVariant(v3));
+        QCOMPARE(qVariantToScopeVariant(qv3), v3);
+        scopes::Variant v4(3.25);
+        QVariant qv4(scopeVariantToQVariant(v4));
+        QCOMPARE(qVariantToScopeVariant(qv4), v4);
+        scopes::Variant v5;
+        QVariant qv5(scopeVariantToQVariant(v5));
+        QCOMPARE(qVariantToScopeVariant(qv5), v5);
+
+        scopes::VariantArray arr;
+        arr.push_back(v1);
+        arr.push_back(v3);
+        arr.push_back(v2);
+        QVariantList list = scopeVariantToQVariant(scopes::Variant(arr)).toList();
+        QCOMPARE(list.size(), 3);
+        QCOMPARE(qVariantToScopeVariant(list[0]), v1);
+        QCOMPARE(qVariantToScopeVariant(list[1]), v3);
+        QCOMPARE(qVariantToScopeVariant(list[2]), v2);
+
+        scopes::VariantMap vm;
+        vm["first"] = v1;
+        vm["2"] = v2;
+        vm["last"] = v3;
+        QVariantMap dict = scopeVariantToQVariant(scopes::Variant(vm)).toMap();
+        QCOMPARE(dict.size(), 3);
+        QCOMPARE(qVariantToScopeVariant(dict.value("first")), v1);
+        QCOMPARE(qVariantToScopeVariant(dict.value("2")), v2);
+        QCOMPARE(qVariantToScopeVariant(dict.value("last")), v3);
+    }
 };
 
 QTEST_MAIN(UtilsTestNg)

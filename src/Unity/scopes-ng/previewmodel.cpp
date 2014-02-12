@@ -22,7 +22,9 @@
 #include "previewmodel.h"
 
 // local
+#include "scope.h"
 #include "previewwidgetmodel.h"
+#include "resultsmodel.h"
 #include "utils.h"
 
 // Qt
@@ -35,10 +37,18 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
+// really want QPointer to Scope, but can't be in header cause it'd create circular dependency
+struct PreviewModel::Private
+{
+    QPointer<scopes_ng::Scope> m_associatedScope;
+};
+
+PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1), m_priv(new Private)
 {
     // we have one column by default
-    m_previewWidgetModels.append(new PreviewWidgetModel(this));
+    PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
+    m_previewWidgetModels.append(columnModel);
+    connect(columnModel, &PreviewWidgetModel::triggered, this, &PreviewModel::widgetTriggered);
 }
 
 QHash<int, QByteArray> PreviewModel::roleNames() const
@@ -55,6 +65,11 @@ void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
     m_previewedResult = result;
 }
 
+void PreviewModel::setAssociatedScope(scopes_ng::Scope* scope)
+{
+    m_priv->m_associatedScope = scope;
+}
+
 void PreviewModel::setWidgetColumnCount(int count)
 {
     if (count != m_widgetColumnCount && count > 0) {
@@ -69,7 +84,9 @@ void PreviewModel::setWidgetColumnCount(int count)
             // create new PreviewWidgetModel(s)
             beginInsertRows(QModelIndex(), oldCount, count - 1);
             for (int i = oldCount; i < count; i++) {
-                m_previewWidgetModels.append(new PreviewWidgetModel(this));
+                PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
+                m_previewWidgetModels.append(columnModel);
+                connect(columnModel, &PreviewWidgetModel::triggered, this, &PreviewModel::widgetTriggered);
             }
             endInsertRows();
         } else {
@@ -227,9 +244,17 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
     }
 }
 
+void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& props)
+{
+    triggerAction(widgetId, actionId, props);
+}
+
 void PreviewModel::triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
     // TODO!
+    if (m_priv->m_associatedScope) {
+        m_priv->m_associatedScope->performPreviewAction(QVariant::fromValue(m_previewedResult), widgetId, actionId, data);
+    }
 }
 
 int PreviewModel::rowCount(const QModelIndex&) const

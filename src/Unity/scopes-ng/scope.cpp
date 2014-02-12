@@ -25,6 +25,7 @@
 #include "collectors.h"
 #include "previewmodel.h"
 #include "previewstack.h"
+#include "utils.h"
 
 // Qt
 #include <QUrl>
@@ -312,6 +313,31 @@ PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::share
     return preview;
 }
 
+void Scope::performPreviewAction(QVariant const& result_var, QString const& widgetId, QString const& actionId, QVariantMap const& props)
+{
+    if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
+        qWarning("Cannot activate result, unable to convert");
+        return;
+    }
+
+    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+    if (!result) {
+        qWarning("Cannot activate null result");
+        return;
+    }
+
+    try {
+        auto proxy = result->target_scope_proxy();
+        // FIXME: don't block
+        unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        metadata.set_scope_data(qVariantToScopeVariant(props));
+        //m_lastActivation.reset(new ActivationReceiver(this, result));
+        proxy->perform_action(*(result.get()), metadata, widgetId.toStdString(), actionId.toStdString(), nullptr);
+    } catch (...) {
+        qWarning("Caught an error while activating result");
+    }
+}
+
 void Scope::setScopeData(scopes::ScopeMetadata const& data)
 {
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
@@ -469,7 +495,7 @@ void Scope::activate(QVariant const& result_var)
 
     if (result->direct_activation()) {
         activateUri(QString::fromStdString(result->uri()));
-    } else if (m_scopeMetadata) {
+    } else {
         try {
             auto proxy = result->target_scope_proxy();
             // FIXME: don't block
@@ -479,8 +505,6 @@ void Scope::activate(QVariant const& result_var)
         } catch (...) {
             qWarning("Caught an error while activating result");
         }
-    } else {
-        qWarning("Unable to activate result");
     }
 }
 
@@ -499,15 +523,17 @@ PreviewStack* Scope::preview(QVariant const& result_var)
 
     // TODO: figure out if the result can produce a preview without sending a request to the scope
     // if (result->has_early_preview()) { ... }
-    if (m_scopeMetadata) {
-        // this needs to be hidden from the clients, straight proxy->preview() should suffice
+    try {
         auto proxy = result->target_scope_proxy();
         invalidateLastPreview();
         m_preview = dispatchPreview(proxy, result);
-    } else {
-        qWarning("Unable to activate result");
+    } catch (...) {
+        qWarning("Caught an error while previewing result");
     }
+
     PreviewStack* stack = new PreviewStack(m_preview, nullptr);
+    stack->setResult(result);
+    m_currentStack = stack;
     return stack;
 }
 

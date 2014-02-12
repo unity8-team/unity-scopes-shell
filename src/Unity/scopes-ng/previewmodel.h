@@ -48,6 +48,7 @@ struct PreviewData
 };
 
 class PreviewWidgetModel;
+class Scope;
 
 class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
 {
@@ -71,6 +72,7 @@ public:
     Q_INVOKABLE void triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data);
 
     void setResult(std::shared_ptr<unity::scopes::Result> const&);
+    void setAssociatedScope(scopes_ng::Scope*);
     void setWidgetColumnCount(int count);
     int widgetColumnCount();
 
@@ -82,6 +84,7 @@ Q_SIGNALS:
     void widgetColumnCountChanged();
 
 private Q_SLOTS:
+    void widgetTriggered(QString const&, QString const&, QVariantMap const&);
 
 private:
     void addWidgetToColumnModel(QSharedPointer<PreviewData> const&);
@@ -93,6 +96,9 @@ private:
     QList<PreviewWidgetModel*> m_previewWidgetModels;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
     QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
+
+    class Private;
+    std::shared_ptr<Private> m_priv;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

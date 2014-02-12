@@ -60,4 +60,41 @@ QVariant scopeVariantToQVariant(scopes::Variant const& variant)
     }
 }
 
+scopes::Variant qVariantToScopeVariant(QVariant const& variant)
+{
+    if (variant.isNull()) {
+        return scopes::Variant();
+    }
+
+    switch (variant.type()) {
+        case QMetaType::Bool:
+            return scopes::Variant(variant.toBool());
+        case QMetaType::Int:
+            return scopes::Variant(variant.toInt());
+        case QMetaType::Double:
+            return scopes::Variant(variant.toDouble());
+        case QMetaType::QString:
+            return scopes::Variant(variant.toString().toStdString());
+        case QMetaType::QVariantMap: {
+            scopes::VariantMap vm;
+            QVariantMap m(variant.toMap());
+            for (auto it = m.begin(); it != m.end(); ++it) {
+                vm[it.key().toStdString()] = qVariantToScopeVariant(it.value());
+            }
+            return scopes::Variant(vm);
+        }
+        case QMetaType::QVariantList: {
+            QVariantList l(variant.toList());
+            scopes::VariantArray arr;
+            for (int i = 0; i < l.size(); i++) {
+                arr.push_back(qVariantToScopeVariant(l[i]));
+            }
+            return scopes::Variant(arr);
+        }
+        default:
+            qWarning("Unhandled QVariant type: %s", variant.typeName());
+            return scopes::Variant();
+    }
+}
+
 } // namespace scopes_ng

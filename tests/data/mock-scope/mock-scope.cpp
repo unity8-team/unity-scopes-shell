@@ -25,6 +25,7 @@
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/CategoryRenderer.h>
 #include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/ColumnLayout.h>
 
 #include <iostream>
 
@@ -102,6 +103,15 @@ public:
             res["album"] = "FooAlbum";
             reply->push(res);
         }
+        else if (query_ == "layout")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:layout");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -137,6 +147,30 @@ public:
 
     virtual void run(PreviewReplyProxy const& reply) override
     {
+        if (result_.uri().find("layout") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute("source", Variant("foo.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute("title", Variant("Preview title"));
+            PreviewWidget w3("desc", "text");
+            w3.add_attribute("text", Variant("Lorum ipsum..."));
+
+            ColumnLayout l1(1);
+            l1.add_column({"img", "hdr", "desc"});
+            ColumnLayout l2(2);
+            l2.add_column({"img"});
+            l2.add_column({"hdr", "desc"});
+
+            reply->register_layout({l1, l2});
+            PreviewWidgetList widgets;
+            widgets.push_back(w1);
+            widgets.push_back(w2);
+            widgets.push_back(w3);
+            reply->push(widgets);
+            return;
+        }
+
         PreviewWidgetList widgets;
         PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri", "attribute-1": "extra-data"}})");
         PreviewWidget w2(R"({"id": "img", "type": "image", "components": {"source": "art"}, "zoomable": false})");

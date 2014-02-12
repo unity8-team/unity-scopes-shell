@@ -91,7 +91,7 @@ public:
     Q_INVOKABLE scopes_ng::PreviewStack* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
-    //unity::dash::Scope::Ptr unityScope() const;
+    void performPreviewAction(QVariant const&, QString const&, QString const&, QVariantMap const&);
     void setScopeData(unity::scopes::ScopeMetadata const& data);
 
 Q_SIGNALS:
@@ -149,6 +149,7 @@ private:
     unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
     unity::scopes::ActivationListener::SPtr m_lastActivation;
     QPointer<PreviewModel> m_preview;
+    QPointer<PreviewStack> m_currentStack;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;

@@ -35,12 +35,12 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewStack::PreviewStack(QObject* parent) : QAbstractListModel(parent)
+PreviewStack::PreviewStack(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
 {
     m_previews.append(new PreviewModel(this));
 }
 
-PreviewStack::PreviewStack(PreviewModel* previewModel, QObject* parent) : QAbstractListModel(parent)
+PreviewStack::PreviewStack(PreviewModel* previewModel, QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
 {
     if (previewModel != nullptr) {
         previewModel->setParent(this);
