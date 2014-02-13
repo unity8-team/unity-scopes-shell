@@ -51,7 +51,7 @@ QHash<int, QByteArray> PreviewWidgetModel::roleNames() const
 
 void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewData> const& widget, int position)
 {
-    int insertPos = position >= 0 ? position : m_previewWidgets.count();
+    int insertPos = position >= 0 && position <= m_previewWidgets.count() ? position : m_previewWidgets.count();
     beginInsertRows(QModelIndex(), insertPos, insertPos);
 
     m_previewWidgets.insert(insertPos, widget);

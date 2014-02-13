@@ -61,9 +61,6 @@ public:
     void clearWidgets();
     //void updatePreviewData(QHash<QString, QVariant> const&);
 
-Q_SIGNALS:
-    void triggered(QString const&, QString const&, QVariantMap const&);
-
 private Q_SLOTS:
 
 private:

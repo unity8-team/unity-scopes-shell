@@ -82,6 +82,7 @@ public:
 
 Q_SIGNALS:
     void widgetColumnCountChanged();
+    void triggered(QString const&, QString const&, QVariantMap const&);
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);

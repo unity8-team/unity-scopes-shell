@@ -300,8 +300,9 @@ PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::share
     if (proxy) {
         scopes::ActionMetadata vm("C", "phone"); //FIXME
         m_lastPreview.reset(new PreviewDataReceiver(this));
-        preview = new PreviewModel(this);
+        preview = new PreviewModel(nullptr);
         preview->setResult(result);
+        preview->setAssociatedScope(this);
         // FIXME: don't block
         try {
             m_lastPreviewQuery = proxy->preview(*(result.get()), vm, m_lastPreview);
@@ -331,10 +332,13 @@ void Scope::performPreviewAction(QVariant const& result_var, QString const& widg
         // FIXME: don't block
         unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
         metadata.set_scope_data(qVariantToScopeVariant(props));
-        //m_lastActivation.reset(new ActivationReceiver(this, result));
-        proxy->perform_action(*(result.get()), metadata, widgetId.toStdString(), actionId.toStdString(), nullptr);
+        // FIXME: don't fire and forget
+        ActivationReceiver::SPtr act(new ActivationReceiver(this, result));
+        proxy->perform_action(*(result.get()), metadata, widgetId.toStdString(), actionId.toStdString(), act);
+    } catch (std::exception& e) {
+        qWarning("Caught an error while performing preview action: %s", e.what());
     } catch (...) {
-        qWarning("Caught an error while activating result");
+        qWarning("Caught an error while performing preview action");
     }
 }
 
@@ -502,6 +506,8 @@ void Scope::activate(QVariant const& result_var)
             unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
             m_lastActivation.reset(new ActivationReceiver(this, result));
             proxy->activate(*(result.get()), metadata, m_lastActivation);
+        } catch (std::exception& e) {
+            qWarning("Caught an error while activating result: %s", e.what());
         } catch (...) {
             qWarning("Caught an error while activating result");
         }
@@ -527,6 +533,8 @@ PreviewStack* Scope::preview(QVariant const& result_var)
         auto proxy = result->target_scope_proxy();
         invalidateLastPreview();
         m_preview = dispatchPreview(proxy, result);
+    } catch (std::exception& e) {
+        qWarning("Caught an error while previewing result: %s", e.what());
     } catch (...) {
         qWarning("Caught an error while previewing result");
     }

@@ -48,7 +48,8 @@ PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widg
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
     m_previewWidgetModels.append(columnModel);
-    connect(columnModel, &PreviewWidgetModel::triggered, this, &PreviewModel::widgetTriggered);
+
+    connect(this, &PreviewModel::triggered, this, &PreviewModel::widgetTriggered);
 }
 
 QHash<int, QByteArray> PreviewModel::roleNames() const
@@ -86,7 +87,6 @@ void PreviewModel::setWidgetColumnCount(int count)
             for (int i = oldCount; i < count; i++) {
                 PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
                 m_previewWidgetModels.append(columnModel);
-                connect(columnModel, &PreviewWidgetModel::triggered, this, &PreviewModel::widgetTriggered);
             }
             endInsertRows();
         } else {
