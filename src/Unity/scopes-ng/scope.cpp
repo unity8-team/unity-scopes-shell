@@ -321,13 +321,13 @@ PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::share
 void Scope::performPreviewAction(QVariant const& result_var, QString const& widgetId, QString const& actionId, QVariantMap const& props)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot activate result, unable to convert");
+        qWarning("Cannot perform action, unable to convert %s to Result", result_var.typeName());
         return;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
-        qWarning("Cannot activate null result");
+        qWarning("performPreviewAction(): received null result");
         return;
     }
 
@@ -491,13 +491,13 @@ void Scope::setActive(const bool active) {
 void Scope::activate(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot activate result, unable to convert");
+        qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
         return;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
-        qWarning("Cannot activate null result");
+        qWarning("activate(): received null result");
         return;
     }
 
@@ -521,13 +521,13 @@ void Scope::activate(QVariant const& result_var)
 PreviewStack* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot preview result, unable to convert");
+        qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
         return nullptr;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
-        qWarning("Cannot preview null result");
+        qWarning("preview(): received null result");
         return nullptr;
     }
 
