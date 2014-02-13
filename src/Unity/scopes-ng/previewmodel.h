@@ -27,6 +27,7 @@
 #include <QSharedPointer>
 #include <QMultiMap>
 #include <QStringList>
+#include <QPointer>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
@@ -97,9 +98,7 @@ private:
     QList<PreviewWidgetModel*> m_previewWidgetModels;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
     QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
-
-    class Private;
-    std::shared_ptr<Private> m_priv;
+    QPointer<scopes_ng::Scope> m_associatedScope;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

@@ -37,13 +37,7 @@ namespace scopes_ng
 
 using namespace unity;
 
-// really want QPointer to Scope, but can't be in header cause it'd create circular dependency
-struct PreviewModel::Private
-{
-    QPointer<scopes_ng::Scope> m_associatedScope;
-};
-
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1), m_priv(new Private)
+PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
 {
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
@@ -68,7 +62,7 @@ void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
 
 void PreviewModel::setAssociatedScope(scopes_ng::Scope* scope)
 {
-    m_priv->m_associatedScope = scope;
+    m_associatedScope = scope;
 }
 
 void PreviewModel::setWidgetColumnCount(int count)
@@ -252,9 +246,9 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
 
 void PreviewModel::triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
-    if (m_priv->m_associatedScope) {
+    if (m_associatedScope) {
         // FIXME: talk to PreviewStack, not the scope
-        m_priv->m_associatedScope->performPreviewAction(QVariant::fromValue(m_previewedResult), widgetId, actionId, data);
+        m_associatedScope->performPreviewAction(QVariant::fromValue(m_previewedResult), widgetId, actionId, data);
     }
 }
 
