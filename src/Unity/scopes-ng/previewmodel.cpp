@@ -234,12 +234,13 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
         if (changedWidgets.contains(widget)) {
             // re-process attributes and emit dataChanged
             processComponents(widget->component_map, widget->data);
-            /* FIXME!!
-            QModelIndex changedIndex(index(i));
-            QVector<int> changedRoles;
-            changedRoles.append(PreviewModel::RoleProperties);
-            dataChanged(changedIndex, changedIndex, changedRoles);
-            */
+
+            for (int j = 0; j < m_previewWidgetModels.size(); j++) {
+                // returns true if the notification was emitted
+                if (m_previewWidgetModels[j]->widgetChanged(widget)) {
+                    break;
+                }
+            }
         }
     }
 }
@@ -251,8 +252,8 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
 
 void PreviewModel::triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
-    // TODO!
     if (m_priv->m_associatedScope) {
+        // FIXME: talk to PreviewStack, not the scope
         m_priv->m_associatedScope->performPreviewAction(QVariant::fromValue(m_previewedResult), widgetId, actionId, data);
     }
 }

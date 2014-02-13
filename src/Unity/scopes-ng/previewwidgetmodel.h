@@ -57,9 +57,9 @@ public:
     void insertWidget(QSharedPointer<PreviewData> const&, int);
     void addWidgets(QList<QSharedPointer<PreviewData>> const&);
     void adoptWidgets(QList<QSharedPointer<PreviewData>> const&);
+    bool widgetChanged(PreviewData*);
 
     void clearWidgets();
-    //void updatePreviewData(QHash<QString, QVariant> const&);
 
 private Q_SLOTS:
 

@@ -87,6 +87,22 @@ void PreviewWidgetModel::clearWidgets()
     endRemoveRows();
 }
 
+bool PreviewWidgetModel::widgetChanged(PreviewData* widget)
+{
+    for (int i = 0; i < m_previewWidgets.size(); i++) {
+        if (m_previewWidgets[i].data() == widget) {
+            QModelIndex changedIndex(index(i));
+            QVector<int> changedRoles;
+            changedRoles.append(PreviewWidgetModel::RoleProperties);
+            dataChanged(changedIndex, changedIndex, changedRoles);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 int PreviewWidgetModel::rowCount(const QModelIndex&) const
 {
     return m_previewWidgets.size();
