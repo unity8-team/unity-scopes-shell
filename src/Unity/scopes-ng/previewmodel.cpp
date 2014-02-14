@@ -111,6 +111,11 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
 void PreviewModel::setDelayedClear()
 {
     m_delayedClear = true;
+    // signal right away that the preview is "dirty"
+    if (m_loaded) {
+        m_loaded = false;
+        Q_EMIT loadedChanged();
+    }
 }
 
 void PreviewModel::clearAll()
