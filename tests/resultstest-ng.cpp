@@ -562,8 +562,11 @@ private Q_SLOTS:
         QCOMPARE(preview->rowCount(), 1);
 
         QSignalSpy spy(preview, SIGNAL(loadedChanged()));
-        Q_EMIT preview->triggered(QString("actions"), QString("download"), QVariantMap());
+        QVariantMap hints;
+        hints["session-id"] = QString("qoo");
+        Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
         QVERIFY(spy.wait());
+        QTRY_COMPARE(preview->loaded(), true);
     }
 };
 
