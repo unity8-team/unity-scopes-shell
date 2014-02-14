@@ -484,7 +484,7 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        auto preview_stack = m_scope->preview(result_var);
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
@@ -494,6 +494,7 @@ private Q_SLOTS:
         QTRY_COMPARE(preview_model->loaded(), true);
 
         auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QVERIFY(!preview_widgets->roleNames().isEmpty());
         QCOMPARE(preview_widgets->rowCount(), 2);
         QVariantMap props;
         QModelIndex idx;
@@ -538,7 +539,7 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        auto preview_stack = m_scope->preview(result_var);
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
@@ -609,7 +610,7 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        auto preview_stack = m_scope->preview(result_var);
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
