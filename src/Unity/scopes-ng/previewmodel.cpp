@@ -22,6 +22,7 @@
 #include "previewmodel.h"
 
 // local
+#include "collectors.h"
 #include "scope.h"
 #include "previewwidgetmodel.h"
 #include "resultsmodel.h"
@@ -37,13 +38,11 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
+PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_loaded(false), m_delayedClear(false), m_widgetColumnCount(1)
 {
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
     m_previewWidgetModels.append(columnModel);
-
-    connect(this, &PreviewModel::triggered, this, &PreviewModel::widgetTriggered);
 }
 
 QHash<int, QByteArray> PreviewModel::roleNames() const
@@ -60,9 +59,81 @@ void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
     m_previewedResult = result;
 }
 
-void PreviewModel::setAssociatedScope(scopes_ng::Scope* scope)
+bool PreviewModel::event(QEvent* ev)
 {
-    m_associatedScope = scope;
+    if (ev->type() == PushEvent::eventType) {
+        PushEvent* pushEvent = static_cast<PushEvent*>(ev);
+
+        switch (pushEvent->type()) {
+            case PushEvent::PREVIEW:
+                processPreviewChunk(pushEvent);
+                return true;
+            default:
+                qWarning("PreviewModel: Unhandled PushEvent type");
+                break;
+        }
+    }
+
+    return false;
+}
+
+void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
+{
+    CollectorBase::Status status;
+    scopes::ColumnLayoutList columns;
+    scopes::PreviewWidgetList widgets;
+    QHash<QString, QVariant> preview_data;
+
+    status = pushEvent->collectPreviewData(columns, widgets, preview_data);
+    if (status == CollectorBase::Status::CANCELLED) {
+        return;
+    }
+
+    if (m_delayedClear) {
+        clearAll();
+        m_delayedClear = false;
+    }
+
+    if (!columns.empty()) {
+        setColumnLayouts(columns);
+    }
+    addWidgetDefinitions(widgets);
+    updatePreviewData(preview_data);
+
+    // status in [FINISHED, ERROR]
+    if (status != CollectorBase::Status::INCOMPLETE) {
+        // FIXME: do something special when preview finishes with error?
+        m_loaded = true;
+        Q_EMIT loadedChanged();
+    }
+}
+
+void PreviewModel::setDelayedClear()
+{
+    m_delayedClear = true;
+}
+
+void PreviewModel::clearAll()
+{
+    // clear column models
+    if (!m_previewWidgetModels.empty()) {
+        beginRemoveRows(QModelIndex(), 0, m_previewWidgetModels.size() - 1);
+
+        while (!m_previewWidgetModels.empty()) {
+            delete m_previewWidgetModels.takeFirst();
+        }
+
+        endRemoveRows();
+    }
+    m_allData.clear();
+    m_columnLayouts.clear();
+    m_previewWidgets.clear();
+    m_dataToWidgetMap.clear();
+
+    if (m_loaded) {
+        m_loaded = false;
+        Q_EMIT loadedChanged();
+    }
 }
 
 void PreviewModel::setWidgetColumnCount(int count)
@@ -103,6 +174,11 @@ void PreviewModel::setWidgetColumnCount(int count)
 int PreviewModel::widgetColumnCount()
 {
     return m_widgetColumnCount;
+}
+
+bool PreviewModel::loaded()
+{
+    return m_loaded;
 }
 
 void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
@@ -236,19 +312,6 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
                 }
             }
         }
-    }
-}
-
-void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& props)
-{
-    triggerAction(widgetId, actionId, props);
-}
-
-void PreviewModel::triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data)
-{
-    if (m_associatedScope) {
-        // FIXME: talk to PreviewStack, not the scope
-        m_associatedScope->performPreviewAction(QVariant::fromValue(m_previewedResult), widgetId, actionId, data);
     }
 }
 

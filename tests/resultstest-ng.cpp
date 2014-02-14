@@ -484,20 +484,16 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        qRegisterMetaType<scopes_ng::PreviewModel*>();
-        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
-
         auto preview_stack = m_scope->preview(result_var);
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview = preview_stack->get(0);
-        QCOMPARE(preview, preview_var.value<scopes_ng::PreviewModel*>());
-        QCOMPARE(preview->widgetColumnCount(), 1);
-        QVERIFY(spy.wait());
-        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+        auto preview_model = preview_stack->get(0);
+        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
+        QCOMPARE(preview_model->widgetColumnCount(), 1);
+        QTRY_COMPARE(preview_model->loaded(), true);
 
-        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
         QCOMPARE(preview_widgets->rowCount(), 2);
         QVariantMap props;
         QModelIndex idx;
@@ -542,15 +538,11 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        qRegisterMetaType<scopes_ng::PreviewModel*>();
-        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
-
         auto preview_stack = m_scope->preview(result_var);
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
-        QVERIFY(spy.wait());
-        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+        QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
         auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
         QCOMPARE(col_model1->rowCount(), 4);
@@ -617,20 +609,16 @@ private Q_SLOTS:
         QCOMPARE(result_var.isNull(), false);
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
 
-        qRegisterMetaType<scopes_ng::PreviewModel*>();
-        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
-
         auto preview_stack = m_scope->preview(result_var);
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
-        QVERIFY(spy.wait());
-        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+        QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
 
-        QSignalSpy scopeSpy(m_scope, SIGNAL(hideDash()));
+        QSignalSpy spy(m_scope, SIGNAL(hideDash()));
         Q_EMIT preview->triggered(QString("actions"), QString("open"), QVariantMap());
-        QVERIFY(scopeSpy.wait());
+        QVERIFY(spy.wait());
     }
 };
 

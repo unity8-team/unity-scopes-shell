@@ -23,7 +23,6 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "previewmodel.h"
 #include "previewstack.h"
 #include "utils.h"
 
@@ -75,9 +74,6 @@ Scope::~Scope()
     if (m_lastSearch) {
         std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastSearch)->invalidate();
     }
-    if (m_lastPreview) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastPreview)->invalidate();
-    }
     if (m_lastActivation) {
         std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
     }
@@ -120,36 +116,6 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     }
 }
 
-void Scope::processPreviewChunk(PushEvent* pushEvent)
-{
-    CollectorBase::Status status;
-    scopes::ColumnLayoutList columns;
-    scopes::PreviewWidgetList widgets;
-    QHash<QString, QVariant> preview_data;
-
-    status = pushEvent->collectPreviewData(columns, widgets, preview_data);
-    if (status == CollectorBase::Status::CANCELLED) {
-        return;
-    }
-
-    if (m_preview) {
-        if (!columns.empty()) {
-            m_preview->setColumnLayouts(columns);
-        }
-        m_preview->addWidgetDefinitions(widgets);
-        m_preview->updatePreviewData(preview_data);
-    }
-
-    // status in [FINISHED, ERROR]
-    if (status != CollectorBase::Status::INCOMPLETE) {
-        if (m_preview) {
-            // FIXME: do something special when preview finishes with error?
-            Q_EMIT previewReady(m_preview);
-            m_preview.clear();
-        }
-    }
-}
-
 bool Scope::event(QEvent* ev)
 {
     if (ev->type() == PushEvent::eventType) {
@@ -159,29 +125,14 @@ bool Scope::event(QEvent* ev)
             case PushEvent::SEARCH:
                 processSearchChunk(pushEvent);
                 return true;
-            case PushEvent::PREVIEW:
-                processPreviewChunk(pushEvent);
-                return true;
             case PushEvent::ACTIVATION: {
                 std::shared_ptr<scopes::ActivationResponse> response;
                 std::shared_ptr<scopes::Result> result;
                 pushEvent->collectActivationResponse(response, result);
                 if (response) {
-                    switch (response->status()) {
-                        case scopes::ActivationResponse::NotHandled:
-                            activateUri(QString::fromStdString(result->uri()));
-                            break;
-                        case scopes::ActivationResponse::HideDash:
-                            Q_EMIT hideDash();
-                            break;
-                        case scopes::ActivationResponse::ShowDash:
-                            Q_EMIT showDash();
-                            break;
-                        default:
-                            break;
-                    }
+                    handleActivation(response, result);
                 }
-                break;
+                return true;
             }
             default:
                 qWarning("Unknown PushEvent type!");
@@ -189,6 +140,26 @@ bool Scope::event(QEvent* ev)
         }
     }
     return QObject::event(ev);
+}
+
+void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result)
+{
+    switch (response->status()) {
+        case scopes::ActivationResponse::NotHandled:
+            activateUri(QString::fromStdString(result->uri()));
+            break;
+        case scopes::ActivationResponse::HideDash:
+            Q_EMIT hideDash();
+            break;
+        case scopes::ActivationResponse::ShowDash:
+            Q_EMIT showDash();
+            break;
+        case scopes::ActivationResponse::ShowPreview:
+            Q_EMIT previewRequested(QVariant::fromValue(result));
+            break;
+        default:
+            break;
+    }
 }
 
 void Scope::flushUpdates()
@@ -248,21 +219,6 @@ void Scope::invalidateLastSearch()
     m_categories->clearAll();
 }
 
-void Scope::invalidateLastPreview()
-{
-    if (m_lastPreview) {
-        std::dynamic_pointer_cast<PreviewDataReceiver>(m_lastPreview)->invalidate();
-        m_lastPreview.reset();
-    }
-    if (m_lastPreviewQuery) {
-        m_lastPreviewQuery->cancel();
-        m_lastPreviewQuery.reset();
-    }
-    if (m_preview) {
-        m_preview.clear();
-    }
-}
-
 void Scope::dispatchSearch()
 {
     /* There are a few objects associated with searches:
@@ -293,56 +249,6 @@ void Scope::dispatchSearch()
         } catch (...) {
             qWarning("Caught an error from create_query()");
         }
-    }
-}
-
-PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::shared_ptr<scopes::Result> const& result)
-{
-    PreviewModel* preview = nullptr;
-    if (proxy) {
-        scopes::ActionMetadata vm("C", "phone"); //FIXME
-        m_lastPreview.reset(new PreviewDataReceiver(this));
-        preview = new PreviewModel(nullptr);
-        preview->setResult(result);
-        preview->setAssociatedScope(this);
-        // FIXME: don't block
-        try {
-            m_lastPreviewQuery = proxy->preview(*(result.get()), vm, m_lastPreview);
-        } catch (std::exception& e) {
-            qWarning("Caught an error from preview(): %s", e.what());
-        } catch (...) {
-            qWarning("Caught an error from preview()");
-        }
-    }
-
-    return preview;
-}
-
-void Scope::performPreviewAction(QVariant const& result_var, QString const& widgetId, QString const& actionId, QVariantMap const& props)
-{
-    if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot perform action, unable to convert %s to Result", result_var.typeName());
-        return;
-    }
-
-    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
-    if (!result) {
-        qWarning("performPreviewAction(): received null result");
-        return;
-    }
-
-    try {
-        auto proxy = result->target_scope_proxy();
-        // FIXME: don't block
-        unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
-        metadata.set_scope_data(qVariantToScopeVariant(props));
-        // FIXME: don't fire and forget
-        ActivationReceiver::SPtr act(new ActivationReceiver(this, result));
-        proxy->perform_action(*(result.get()), metadata, widgetId.toStdString(), actionId.toStdString(), act);
-    } catch (std::exception& e) {
-        qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
-    } catch (...) {
-        qWarning("Caught an error from perform_action()");
     }
 }
 
@@ -525,26 +431,24 @@ PreviewStack* Scope::preview(QVariant const& result_var)
         return nullptr;
     }
 
-    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+    scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
         qWarning("preview(): received null result");
         return nullptr;
     }
 
-    // TODO: figure out if the result can produce a preview without sending a request to the scope
-    // if (result->has_early_preview()) { ... }
-    auto proxy = result->target_scope_proxy();
-    invalidateLastPreview();
-    m_preview = dispatchPreview(proxy, result);
-
-    PreviewStack* stack = new PreviewStack(m_preview, nullptr);
-    stack->setResult(result);
-    m_currentStack = stack;
+    PreviewStack* stack = new PreviewStack(nullptr);
+    stack->setAssociatedScope(this);
+    stack->loadForResult(result);
     return stack;
 }
 
 void Scope::cancelActivation()
 {
+    if (m_lastActivation) {
+        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
+        m_lastActivation.reset();
+    }
 }
 
 void Scope::activateUri(QString const& uri)

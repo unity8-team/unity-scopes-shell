@@ -49,6 +49,7 @@ struct PreviewData
 };
 
 class PreviewWidgetModel;
+class PushEvent;
 class Scope;
 
 class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
@@ -58,6 +59,7 @@ class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
     Q_ENUMS(Roles)
 
     Q_PROPERTY(int widgetColumnCount READ widgetColumnCount WRITE setWidgetColumnCount NOTIFY widgetColumnCountChanged)
+    Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
 
 public:
     explicit PreviewModel(QObject* parent = 0);
@@ -70,35 +72,39 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    Q_INVOKABLE void triggerAction(QString const& widgetId, QString const& actionId, QVariantMap const& data);
+    virtual bool event(QEvent* ev) override;
 
     void setResult(std::shared_ptr<unity::scopes::Result> const&);
     void setAssociatedScope(scopes_ng::Scope*);
+
     void setWidgetColumnCount(int count);
     int widgetColumnCount();
+    bool loaded();
 
-    void setColumnLayouts(unity::scopes::ColumnLayoutList const&);
-    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
-    void updatePreviewData(QHash<QString, QVariant> const&);
+    void setDelayedClear();
+    void clearAll();
 
 Q_SIGNALS:
     void widgetColumnCountChanged();
+    void loadedChanged();
     void triggered(QString const&, QString const&, QVariantMap const&);
 
-private Q_SLOTS:
-    void widgetTriggered(QString const&, QString const&, QVariantMap const&);
-
 private:
+    void processPreviewChunk(PushEvent* pushEvent);
+    void setColumnLayouts(unity::scopes::ColumnLayoutList const&);
+    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
+    void updatePreviewData(QHash<QString, QVariant> const&);
     void addWidgetToColumnModel(QSharedPointer<PreviewData> const&);
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
 
+    bool m_loaded;
+    bool m_delayedClear;
     int m_widgetColumnCount;
     QMap<QString, QVariant> m_allData;
     QHash<int, QList<QStringList>> m_columnLayouts;
     QList<PreviewWidgetModel*> m_previewWidgetModels;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
     QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
-    QPointer<scopes_ng::Scope> m_associatedScope;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

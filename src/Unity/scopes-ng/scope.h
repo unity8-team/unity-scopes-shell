@@ -28,6 +28,8 @@
 #include <QPointer>
 
 // scopes
+#include <unity/scopes/ActivationResponse.h>
+#include <unity/scopes/Result.h>
 #include <unity/scopes/Scope.h>
 #include <unity/scopes/ScopeMetadata.h>
 
@@ -36,7 +38,6 @@ namespace scopes_ng
 
 class Categories;
 class PushEvent;
-class PreviewModel;
 class PreviewStack;
 
 class Q_DECL_EXPORT Scope : public QObject
@@ -91,8 +92,8 @@ public:
     Q_INVOKABLE scopes_ng::PreviewStack* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
 
-    void performPreviewAction(QVariant const&, QString const&, QString const&, QVariantMap const&);
     void setScopeData(unity::scopes::ScopeMetadata const& data);
+    void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
 
 Q_SIGNALS:
     void idChanged();
@@ -111,11 +112,11 @@ Q_SIGNALS:
     void isActiveChanged(bool);
 
     // signals triggered by activate(..) or preview(..) requests.
-    void previewReady(scopes_ng::PreviewModel* preview);
     void showDash();
     void hideDash();
     void gotoUri(const QString &uri);
     void activated();
+    void previewRequested(QVariant const&);
 
     void activateApplication(const QString &desktop);
 
@@ -124,13 +125,10 @@ private Q_SLOTS:
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
-    void processPreviewChunk(PushEvent* pushEvent);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
-    void invalidateLastPreview();
-    PreviewModel* dispatchPreview(unity::scopes::ScopeProxy proxy, std::shared_ptr<unity::scopes::Result> const& result);
 
     void activateUri(QString const& uri);
 
@@ -145,11 +143,7 @@ private:
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
     unity::scopes::SearchListener::SPtr m_lastSearch;
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
-    unity::scopes::PreviewListener::SPtr m_lastPreview;
-    unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
     unity::scopes::ActivationListener::SPtr m_lastActivation;
-    QPointer<PreviewModel> m_preview;
-    QPointer<PreviewStack> m_currentStack;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
