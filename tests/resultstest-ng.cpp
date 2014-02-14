@@ -560,6 +560,8 @@ private Q_SLOTS:
         auto preview = preview_stack->get(0);
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
+        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(preview_widgets->rowCount(), 4);
 
         QSignalSpy spy(preview, SIGNAL(loadedChanged()));
         QVariantMap hints;
@@ -567,6 +569,9 @@ private Q_SLOTS:
         Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
         QVERIFY(spy.wait());
         QTRY_COMPARE(preview->loaded(), true);
+        // refresh widget model
+        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(preview_widgets->rowCount(), 5);
     }
 };
 

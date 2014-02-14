@@ -116,14 +116,8 @@ void PreviewModel::setDelayedClear()
 void PreviewModel::clearAll()
 {
     // clear column models
-    if (!m_previewWidgetModels.empty()) {
-        beginRemoveRows(QModelIndex(), 0, m_previewWidgetModels.size() - 1);
-
-        while (!m_previewWidgetModels.empty()) {
-            delete m_previewWidgetModels.takeFirst();
-        }
-
-        endRemoveRows();
+    for (int i = 0; i < m_previewWidgetModels.size(); i++) {
+        m_previewWidgetModels[i]->clearWidgets();
     }
     m_allData.clear();
     m_columnLayouts.clear();
