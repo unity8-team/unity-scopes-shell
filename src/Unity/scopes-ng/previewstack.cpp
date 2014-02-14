@@ -172,6 +172,7 @@ void PreviewStack::processActionResponse(PushEvent* pushEvent)
     switch (response->status()) {
         case scopes::ActivationResponse::ShowPreview:
             // replace current preview
+            m_activePreview->setDelayedClear();
             dispatchPreview(scopes::Variant(response->hints()));
             break;
         // TODO: case to nest preview (once such API is available)

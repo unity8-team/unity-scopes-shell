@@ -255,6 +255,10 @@ public:
         {
             return ActivationBase::UPtr(new MyActivation(result));
         }
+        else if (widget_id == "actions" && action_id == "download")
+        {
+            return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::ShowPreview));
+        }
         return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
     }
 

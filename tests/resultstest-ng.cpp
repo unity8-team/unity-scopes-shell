@@ -90,6 +90,40 @@ private:
     Scope* m_scope;
     QScopedPointer<QProcess> m_registry;
 
+    void checkedFirstResult(Scope* scope, unity::scopes::Result::SPtr& result, bool& success)
+    {
+        // ensure categories have > 0 rows
+        auto categories = scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+        success = true;
+    }
+
+    bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result)
+    {
+        bool success = false;
+        checkedFirstResult(scope, result, success);
+        return success;
+    }
+
+    void performSearch(Scope* scope, QString const& searchString)
+    {
+        QCOMPARE(scope->searchInProgress(), false);
+        // perform a search
+        scope->setSearchQuery(searchString);
+        QCOMPARE(scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(scope->searchInProgress(), false);
+    }
+
 private Q_SLOTS:
     void initTestCase()
     {
@@ -144,12 +178,7 @@ private Q_SLOTS:
 
     void testScopeCommunication()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
@@ -193,22 +222,14 @@ private Q_SLOTS:
 
     void testTwoSearches()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         auto categories_count = categories->rowCount();
         QVERIFY(categories_count > 0);
 
-        m_scope->setSearchQuery(QString("foo"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("foo"));
 
         // shouldn't create more nor fewer categories
         QVERIFY(categories->rowCount() == categories_count);
@@ -216,12 +237,7 @@ private Q_SLOTS:
 
     void testBasicResultData()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
         // get ResultsModel instance
         auto categories = m_scope->categories();
@@ -241,12 +257,7 @@ private Q_SLOTS:
 
     void testResultMetadata()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("metadata"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("metadata"));
 
         // get ResultsModel instance
         auto categories = m_scope->categories();
@@ -275,12 +286,7 @@ private Q_SLOTS:
 
     void testAlbumArtResult()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("music"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("music"));
 
         // get ResultsModel instance
         auto categories = m_scope->categories();
@@ -298,12 +304,7 @@ private Q_SLOTS:
 
     void testCategoryOverride()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("metadata"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("metadata"));
 
         // get ResultsModel instance
         auto categories = m_scope->categories();
@@ -365,12 +366,7 @@ private Q_SLOTS:
 
     void testCategoryWithRating()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("rating"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("rating"));
 
         // get ResultsModel instance
         auto categories = m_scope->categories();
@@ -388,10 +384,7 @@ private Q_SLOTS:
     void testCategoryDefaults()
     {
         // this search return minimal category definition, defaults should kick in
-        m_scope->setSearchQuery(QString("minimal"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("minimal"));
 
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -433,10 +426,7 @@ private Q_SLOTS:
 
     void testCategoryDefinitionChange()
     {
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -445,10 +435,7 @@ private Q_SLOTS:
         QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
 
         // should at least change components
-        m_scope->setSearchQuery(QString("metadata"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("metadata"));
 
         // expecting a few dataChanged signals, count and components changes
         // ensure we get the components one
@@ -464,27 +451,12 @@ private Q_SLOTS:
 
     void testScopePreview()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
-        // ensure categories have > 0 rows
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
 
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
@@ -519,27 +491,12 @@ private Q_SLOTS:
 
     void testPreviewLayouts()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("layout"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("layout"));
 
-        // ensure categories have > 0 rows
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
 
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
@@ -563,54 +520,23 @@ private Q_SLOTS:
 
     void testScopeActivation()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString(""));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString(""));
 
-        // ensure categories have > 0 rows
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
-
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
 
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
-        m_scope->activate(result_var);
+        m_scope->activate(QVariant::fromValue(result));
         QVERIFY(spy.wait());
     }
 
     void testPreviewAction()
     {
-        QCOMPARE(m_scope->searchInProgress(), false);
-        // perform a search
-        m_scope->setSearchQuery(QString("layout"));
-        QCOMPARE(m_scope->searchInProgress(), true);
-        // wait for the search to finish
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        performSearch(m_scope, QString("layout"));
 
-        // ensure categories have > 0 rows
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
-
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(result_var));
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview = preview_stack->get(0);
@@ -619,6 +545,24 @@ private Q_SLOTS:
 
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
         Q_EMIT preview->triggered(QString("actions"), QString("open"), QVariantMap());
+        QVERIFY(spy.wait());
+    }
+
+    void testPreviewReplacingPreview()
+    {
+        performSearch(m_scope, QString("layout"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
+        QCOMPARE(preview_stack->rowCount(), 1);
+        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+        auto preview = preview_stack->get(0);
+        QTRY_COMPARE(preview->loaded(), true);
+        QCOMPARE(preview->rowCount(), 1);
+
+        QSignalSpy spy(preview, SIGNAL(loadedChanged()));
+        Q_EMIT preview->triggered(QString("actions"), QString("download"), QVariantMap());
         QVERIFY(spy.wait());
     }
 };
