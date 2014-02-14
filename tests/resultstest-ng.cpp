@@ -209,6 +209,14 @@ private Q_SLOTS:
         QVERIFY(scope_var.isNull());
         scope_var = m_scopes->get(-1);
         QVERIFY(scope_var.isNull());
+
+        // try to get by scope id
+        scope_var = m_scopes->get(QString("mock-scope"));
+        QVERIFY(!scope_var.isNull());
+        QVERIFY(scope_var.canConvert<scopes_ng::Scope*>());
+
+        scope_var = m_scopes->get(QString("non-existing"));
+        QVERIFY(scope_var.isNull());
     }
 
     void testScopeProperties()
