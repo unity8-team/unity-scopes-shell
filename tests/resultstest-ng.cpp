@@ -218,6 +218,13 @@ private Q_SLOTS:
         QCOMPARE(m_scope->iconHint(), QString("mock.Icon"));
         QCOMPARE(m_scope->description(), QString("mock.Description"));
         QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
+        QCOMPARE(m_scope->visible(), true);
+        QCOMPARE(m_scope->shortcut(), QString(""));
+        QCOMPARE(m_scope->searchQuery(), QString());
+
+        QCOMPARE(m_scope->isActive(), false);
+        m_scope->setActive(true);
+        QCOMPARE(m_scope->isActive(), true);
     }
 
     void testTwoSearches()
