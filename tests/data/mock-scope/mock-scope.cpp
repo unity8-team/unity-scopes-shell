@@ -133,8 +133,8 @@ private:
 class MyPreview : public PreviewQuery
 {
 public:
-    MyPreview(Result const& result) :
-        result_(result)
+    MyPreview(Result const& result, Variant const& scope_data = Variant()) :
+        result_(result), scope_data_(scope_data)
     {
     }
 
@@ -170,13 +170,19 @@ public:
             w4.add_attribute("actions", builder.end());
 
             ColumnLayout l1(1);
-            l1.add_column({"img", "hdr", "desc", "actions"});
+            l1.add_column({"img", "hdr", "desc", "actions", "extra"});
             ColumnLayout l2(2);
             l2.add_column({"img"});
             l2.add_column({"hdr", "desc", "actions"});
 
             reply->register_layout({l1, l2});
-            reply->push({w1, w2, w3, w4});
+            PreviewWidgetList widgets({w1, w2, w3, w4});
+            if (!scope_data_.is_null()) {
+                PreviewWidget extra("extra", "text");
+                extra.add_attribute("text", Variant("got scope data"));
+                widgets.push_back(extra);
+            }
+            reply->push(widgets);
             return;
         }
 
@@ -192,6 +198,7 @@ public:
 
 private:
     Result result_;
+    Variant scope_data_;
 };
 
 class MyActivation : public ActivationBase
@@ -211,16 +218,26 @@ public:
     {
     }
 
+    void setExtraData(Variant const& extra)
+    {
+        extra_data_ = extra;
+    }
+
     virtual void cancelled() override
     {
     }
 
     virtual ActivationResponse activate() override
     {
-        return ActivationResponse(status_);
+        auto resp = ActivationResponse(status_);
+        if (extra_data_.which() == Variant::Dict) {
+            resp.setHints(extra_data_.get_dict());
+        }
+        return resp;
     }
 
 private:
+    Variant extra_data_;
     Result result_;
     ActivationResponse::Status status_;
 };
@@ -242,18 +259,24 @@ public:
         return query;
     }
 
-    virtual QueryBase::UPtr preview(Result const& result, ActionMetadata const&) override
+    virtual QueryBase::UPtr preview(Result const& result, ActionMetadata const& metadata) override
     {
-        QueryBase::UPtr query(new MyPreview(result));
+        QueryBase::UPtr query(new MyPreview(result, metadata.scope_data()));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
     }
 
-    virtual ActivationBase::UPtr perform_action(Result const& result, ActionMetadata const&, std::string const& widget_id, std::string const& action_id)
+    virtual ActivationBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
     {
         if (widget_id == "actions" && action_id == "open")
         {
             return ActivationBase::UPtr(new MyActivation(result));
+        }
+        else if (widget_id == "actions" && action_id == "download")
+        {
+            MyActivation* response = new MyActivation(result, ActivationResponse::ShowPreview);
+            response->setExtraData(meta.scope_data());
+            return ActivationBase::UPtr(response);
         }
         return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
     }

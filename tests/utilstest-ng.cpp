@@ -95,6 +95,7 @@ private Q_SLOTS:
         QCOMPARE(qVariantToScopeVariant(list[0]), v1);
         QCOMPARE(qVariantToScopeVariant(list[1]), v3);
         QCOMPARE(qVariantToScopeVariant(list[2]), v2);
+        QCOMPARE(qVariantToScopeVariant(list), scopes::Variant(arr));
 
         scopes::VariantMap vm;
         vm["first"] = v1;
@@ -105,6 +106,7 @@ private Q_SLOTS:
         QCOMPARE(qVariantToScopeVariant(dict.value("first")), v1);
         QCOMPARE(qVariantToScopeVariant(dict.value("2")), v2);
         QCOMPARE(qVariantToScopeVariant(dict.value("last")), v3);
+        QCOMPARE(qVariantToScopeVariant(dict), scopes::Variant(vm));
     }
 };
 

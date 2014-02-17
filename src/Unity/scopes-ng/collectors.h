@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef NG_COLLECTORS_H
+#define NG_COLLECTORS_H
+
 // Qt
 #include <QDebug>
 #include <QEvent>
@@ -135,3 +138,5 @@ private:
 };
 
 } // namespace scopes_ng
+
+#endif // NG_COLLECTORS_H

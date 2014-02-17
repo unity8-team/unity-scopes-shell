@@ -20,15 +20,19 @@
 
 // self
 #include "previewstack.h"
-#include "previewmodel.h"
 
 // local
+#include "previewmodel.h"
+#include "scope.h"
 #include "utils.h"
 
 // Qt
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+
+#include <unity/scopes/ActionMetadata.h>
+#include <unity/scopes/Scope.h>
 
 namespace scopes_ng
 {
@@ -37,16 +41,17 @@ using namespace unity;
 
 PreviewStack::PreviewStack(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
 {
-    m_previews.append(new PreviewModel(this));
 }
 
-PreviewStack::PreviewStack(PreviewModel* previewModel, QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
+PreviewStack::~PreviewStack()
 {
-    if (previewModel != nullptr) {
-        previewModel->setParent(this);
-        m_previews.append(previewModel);
-    } else {
-        m_previews.append(new PreviewModel(this));
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); ++it) {
+        auto listener = it.value().lock();
+        if (listener) listener->invalidate();
+    }
+
+    if (m_lastActivation) {
+        m_lastActivation->invalidate();
     }
 }
 
@@ -59,9 +64,124 @@ QHash<int, QByteArray> PreviewStack::roleNames() const
     return roles;
 }
 
-void PreviewStack::setResult(std::shared_ptr<scopes::Result> const& result)
+bool PreviewStack::event(QEvent* ev)
+{
+    if (ev->type() == PushEvent::eventType) {
+        PushEvent* pushEvent = static_cast<PushEvent*>(ev);
+
+        switch (pushEvent->type()) {
+            case PushEvent::ACTIVATION:
+                processActionResponse(pushEvent);
+                return true;
+            default:
+                qWarning("PreviewStack: Unhandled PushEvent type");
+                break;
+        }
+    }
+
+    return false;
+}
+
+void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope)
+{
+    m_associatedScope = scope;
+}
+
+void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
 {
     m_previewedResult = result;
+
+    beginResetModel();
+
+    // invalidate all listeners
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); ++it) {
+        auto listener = it.value().lock();
+        if (listener) listener->invalidate();
+    }
+    // clear any previews
+    while (!m_previews.empty()) {
+        delete m_previews.takeFirst();
+    }
+    // create active preview
+    m_activePreview = new PreviewModel(this);
+    m_activePreview->setResult(m_previewedResult);
+    connect(m_activePreview, &PreviewModel::triggered, this, &PreviewStack::widgetTriggered);
+    m_previews.append(m_activePreview);
+
+    endResetModel();
+
+    dispatchPreview();
+}
+
+void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
+{
+    // TODO: figure out if the result can produce a preview without sending a request to the scope
+    // if (m_previewedResult->has_early_preview()) { ... }
+    try {
+        auto proxy = m_previewedResult->target_scope_proxy();
+
+        scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        if (!extra_data.is_null()) {
+            metadata.set_scope_data(extra_data);
+        }
+
+        std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(m_activePreview));
+        std::weak_ptr<ScopeDataReceiverBase> wl(listener);
+        // invalidate previous listener (if any)
+        auto prev_listener = m_listeners.take(m_activePreview).lock();
+        if (prev_listener) prev_listener->invalidate();
+        m_listeners[m_activePreview] = wl;
+
+        // FIXME: don't block
+        m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from preview(): %s", e.what());
+    } catch (...) {
+        qWarning("Caught an error from preview()");
+    }
+}
+
+void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
+{
+    try {
+        auto proxy = m_previewedResult->target_scope_proxy();
+        scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        metadata.set_scope_data(qVariantToScopeVariant(data));
+
+        if (m_lastActivation) {
+            m_lastActivation->invalidate();
+        }
+        std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
+        m_lastActivation = listener;
+        // FIXME: don't block
+        proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
+    } catch (...) {
+        qWarning("Caught an error from perform_action()");
+    }
+}
+
+void PreviewStack::processActionResponse(PushEvent* pushEvent)
+{
+    std::shared_ptr<scopes::ActivationResponse> response;
+    scopes::Result::SPtr result;
+    pushEvent->collectActivationResponse(response, result);
+    if (!response) return;
+
+    switch (response->status()) {
+        case scopes::ActivationResponse::ShowPreview:
+            // replace current preview
+            m_activePreview->setDelayedClear();
+            dispatchPreview(scopes::Variant(response->hints()));
+            break;
+        // TODO: case to nest preview (once such API is available)
+        default:
+            if (m_associatedScope) {
+                m_associatedScope->handleActivation(response, result);
+            }
+            break;
+    }
 }
 
 void PreviewStack::setWidgetColumnCount(int columnCount)
