@@ -588,6 +588,19 @@ private Q_SLOTS:
         preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
         QCOMPARE(preview_widgets->rowCount(), 5);
     }
+
+    void testScopeActivationWithQuery()
+    {
+        performSearch(m_scope, QString("perform-query"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+
+        QSignalSpy spy(m_scope, SIGNAL(gotoScope(QString)));
+        m_scope->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+    }
+
 };
 
 QTEST_MAIN(ResultsTestNg)
