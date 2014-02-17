@@ -1,3 +1,12 @@
+unity-scopes-shell (0.3.1+14.04.20140217-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Split PreviewModel into 3 separate models, preliminary support for
+    preview actions.
+  * Allow preview actions replacing current preview.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 17 Feb 2014 12:45:42 +0000
+
 unity-scopes-shell (0.3.1+14.04.20140214-0ubuntu1) trusty; urgency=low
 
   [ Stephen M. Webb ]
