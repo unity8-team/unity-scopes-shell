@@ -29,6 +29,7 @@
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
 #include <unity/scopes/ScopeProxyFwd.h>
+#include <unity/scopes/ScopeMetadata.h>
 
 namespace scopes_ng
 {
@@ -58,7 +59,11 @@ public:
     Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
     Q_INVOKABLE QVariant get(int row) const;
-    Q_INVOKABLE QVariant get(const QString& scope_id) const;
+    Q_INVOKABLE QVariant get(QString const& scopeId) const;
+
+    Scope* getScopeById(QString const& scopeId) const;
+    unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
+    void refreshScopeMetadata();
 
     QHash<int, QByteArray> roleNames() const;
 
@@ -76,6 +81,7 @@ private:
 
     QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
+    QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     QThread* m_listThread;
     bool m_loaded;
 

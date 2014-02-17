@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMetaType>
 #include <QPointer>
+#include <QSet>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -114,11 +115,13 @@ Q_SIGNALS:
     // signals triggered by activate(..) or preview(..) requests.
     void showDash();
     void hideDash();
-    void gotoUri(const QString &uri);
+    void gotoUri(QString const& uri);
     void activated();
     void previewRequested(QVariant const&);
+    void gotoScope(QString const& scopeId);
+    void openScope(scopes_ng::Scope*);
 
-    void activateApplication(const QString &desktop);
+    void activateApplication(QString const& desktop);
 
 private Q_SLOTS:
     void flushUpdates();
@@ -147,6 +150,7 @@ private:
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
+    QSet<scopes_ng::Scope*> m_tempScopes;
 };
 
 } // namespace scopes_ng

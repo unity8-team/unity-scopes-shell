@@ -153,6 +153,11 @@ void Scopes::discoveryFinished()
         }
     }
 
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
     endResetModel();
 
     m_loaded = true;
@@ -187,15 +192,36 @@ QVariant Scopes::get(int row) const
     return data(QAbstractListModel::index(row), RoleScope);
 }
 
-QVariant Scopes::get(const QString& scope_id) const
+QVariant Scopes::get(const QString& scopeId) const
+{
+    Scope* scope = getScopeById(scopeId);
+    return scope != nullptr ? QVariant::fromValue(scope) : QVariant();
+}
+
+Scope* Scopes::getScopeById(QString const& scopeId) const
 {
     Q_FOREACH(Scope* scope, m_scopes) {
-        if (scope->id() == scope_id) {
-            return QVariant::fromValue(scope);
+        if (scope->id() == scopeId) {
+            return scope;
         }
     }
 
-    return QVariant();
+    return nullptr;
+}
+
+scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) const
+{
+    auto it = m_cachedMetadata.constFind(scopeId);
+    if (it != m_cachedMetadata.constEnd()) {
+        return it.value();
+    }
+
+    return scopes::ScopeMetadata::SPtr();
+}
+
+void Scopes::refreshScopeMetadata()
+{
+    // TODO!
 }
 
 bool Scopes::loaded() const

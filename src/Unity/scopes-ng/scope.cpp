@@ -25,6 +25,7 @@
 #include "collectors.h"
 #include "previewstack.h"
 #include "utils.h"
+#include "scopes.h"
 
 // Qt
 #include <QUrl>
@@ -157,6 +158,31 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
         case scopes::ActivationResponse::ShowPreview:
             Q_EMIT previewRequested(QVariant::fromValue(result));
             break;
+         case scopes::ActivationResponse::PerformQuery: {
+            scopes::Query q(response->query());
+            QString scopeId(QString::fromStdString(q.scope_name()));
+            // figure out if this scope is already favourited
+            scopes_ng::Scopes* scopes = qobject_cast<scopes_ng::Scopes*>(parent());
+            if (scopes != nullptr && scopes->getScopeById(scopeId) != nullptr) {
+                // TODO: change department, filters, query_string?
+                Q_EMIT gotoScope(scopeId);
+            } else if (scopes != nullptr) {
+                // create temp dash page
+                auto meta_sptr = scopes->getCachedMetadata(scopeId);
+                if (meta_sptr) {
+                    Scope* temp_page = new scopes_ng::Scope(this);
+                    temp_page->setScopeData(*meta_sptr);
+                    m_tempScopes.insert(temp_page);
+                    Q_EMIT openScope(temp_page);
+                } else {
+                    // TODO: request registry refresh to get the missing metadata
+                    scopes->refreshScopeMetadata();
+                }
+            } else {
+                qWarning("Scope instance %p doesn't have Scopes as a parent", static_cast<void*>(this));
+            }
+            break;
+         }
         default:
             break;
     }
