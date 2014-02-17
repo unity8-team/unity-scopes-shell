@@ -130,7 +130,15 @@ public:
         return m_posted;
     }
 
-    Status collect(scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
+    bool setColumnLayoutList(scopes::ColumnLayoutList const& columns)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_columnLayouts = columns;
+
+        return m_posted;
+    }
+
+    Status collect(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
     {
         Status status;
 
@@ -140,6 +148,7 @@ public:
             m_posted = false;
         }
         status = m_status;
+        m_columnLayouts.swap(out_columns);
         m_widgets.swap(out_widgets);
         m_previewData.swap(out_data);
 
@@ -147,6 +156,7 @@ public:
     }
 
 private:
+    scopes::ColumnLayoutList m_columnLayouts;
     scopes::PreviewWidgetList m_widgets;
     QHash<QString, QVariant> m_previewData;
 };
@@ -204,10 +214,10 @@ CollectorBase::Status PushEvent::collectSearchResults(QList<std::shared_ptr<scop
     return collector->collect(out_results);
 }
 
-CollectorBase::Status PushEvent::collectPreviewData(scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
+CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
 {
     auto collector = std::dynamic_pointer_cast<PreviewDataCollector>(m_collector);
-    return collector->collect(out_widgets, out_data);
+    return collector->collect(out_columns, out_widgets, out_data);
 }
 
 CollectorBase::Status PushEvent::collectActivationResponse(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result)
@@ -276,8 +286,10 @@ PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
 // this will be called from non-main thread, (might even be multiple different threads)
 void PreviewDataReceiver::push(unity::scopes::ColumnLayoutList const& layouts)
 {
-    // TODO: add support for this!
-    Q_UNUSED(layouts);
+    bool posted = m_collector->setColumnLayoutList(layouts);
+    if (!posted) {
+        postCollectedResults();
+    }
 }
 
 void PreviewDataReceiver::push(scopes::PreviewWidgetList const& widgets)

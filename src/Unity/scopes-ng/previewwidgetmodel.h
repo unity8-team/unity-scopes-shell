@@ -19,8 +19,8 @@
  */
 
 
-#ifndef NG_PREVIEW_H
-#define NG_PREVIEW_H
+#ifndef NG_PREVIEW_WIDGET_MODEL_H
+#define NG_PREVIEW_WIDGET_MODEL_H
 
 #include <QAbstractListModel>
 #include <QSet>
@@ -30,19 +30,19 @@
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
 
+#include "previewmodel.h"
+
 namespace scopes_ng
 {
 
-class PreviewData;
-
-class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
+class Q_DECL_EXPORT PreviewWidgetModel : public QAbstractListModel
 {
     Q_OBJECT
 
     Q_ENUMS(Roles)
 
 public:
-    explicit PreviewModel(QObject* parent = 0);
+    explicit PreviewWidgetModel(QObject* parent = 0);
 
     enum Roles {
         RoleWidgetId,
@@ -54,26 +54,23 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void setResult(std::shared_ptr<unity::scopes::Result> const&);
+    void insertWidget(QSharedPointer<PreviewData> const&, int);
+    void addWidgets(QList<QSharedPointer<PreviewData>> const&);
+    void adoptWidgets(QList<QSharedPointer<PreviewData>> const&);
+    bool widgetChanged(PreviewData*);
 
-    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
-    void updatePreviewData(QHash<QString, QVariant> const&);
+    void clearWidgets();
 
 private Q_SLOTS:
 
 private:
-    void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
-
-    QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<PreviewData>> m_previewWidgets;
-    QMap<QString, QVariant> m_allData;
-    QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };
 
 } // namespace scopes_ng
 
-Q_DECLARE_METATYPE(scopes_ng::PreviewModel*)
+Q_DECLARE_METATYPE(scopes_ng::PreviewWidgetModel*)
 
-#endif // NG_CATEGORIES_H
+#endif // NG_PREVIEW_WIDGET_MODEL_H

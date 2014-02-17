@@ -25,6 +25,8 @@
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/CategoryRenderer.h>
 #include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/ColumnLayout.h>
+#include <unity/scopes/VariantBuilder.h>
 
 #include <iostream>
 
@@ -102,6 +104,15 @@ public:
             res["album"] = "FooAlbum";
             reply->push(res);
         }
+        else if (query_ == "layout")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:layout");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -137,6 +148,38 @@ public:
 
     virtual void run(PreviewReplyProxy const& reply) override
     {
+        if (result_.uri().find("layout") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute("source", Variant("foo.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute("title", Variant("Preview title"));
+            PreviewWidget w3("desc", "text");
+            w3.add_attribute("text", Variant("Lorum ipsum..."));
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("open")},
+                {"label", Variant("Open")}
+            });
+            builder.add_tuple({
+                {"id", Variant("download")},
+                {"label", Variant("Download")}
+            });
+            w4.add_attribute("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"img", "hdr", "desc", "actions"});
+            ColumnLayout l2(2);
+            l2.add_column({"img"});
+            l2.add_column({"hdr", "desc", "actions"});
+
+            reply->register_layout({l1, l2});
+            reply->push({w1, w2, w3, w4});
+            return;
+        }
+
         PreviewWidgetList widgets;
         PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri", "attribute-1": "extra-data"}})");
         PreviewWidget w2(R"({"id": "img", "type": "image", "components": {"source": "art"}, "zoomable": false})");
@@ -155,7 +198,12 @@ class MyActivation : public ActivationBase
 {
 public:
     MyActivation(Result const& result) :
-        result_(result)
+        result_(result), status_(ActivationResponse::HideDash)
+    {
+    }
+
+    MyActivation(Result const& result, ActivationResponse::Status status) :
+        result_(result), status_(status)
     {
     }
 
@@ -169,11 +217,12 @@ public:
 
     virtual ActivationResponse activate() override
     {
-        return ActivationResponse(ActivationResponse::HideDash);
+        return ActivationResponse(status_);
     }
 
 private:
     Result result_;
+    ActivationResponse::Status status_;
 };
 
 class MyScope : public ScopeBase
@@ -198,6 +247,15 @@ public:
         QueryBase::UPtr query(new MyPreview(result));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
+    }
+
+    virtual ActivationBase::UPtr perform_action(Result const& result, ActionMetadata const&, std::string const& widget_id, std::string const& action_id)
+    {
+        if (widget_id == "actions" && action_id == "open")
+        {
+            return ActivationBase::UPtr(new MyActivation(result));
+        }
+        return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
     }
 
     virtual ActivationBase::UPtr activate(Result const& result, ActionMetadata const&) override

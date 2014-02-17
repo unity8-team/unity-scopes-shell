@@ -12,7 +12,9 @@ include_directories(
 set(PLUGIN_SRC
     categories.cpp
     collectors.cpp
-    preview.cpp
+    previewmodel.cpp
+    previewstack.cpp
+    previewwidgetmodel.cpp
     resultsmodel.cpp
     scope.cpp
     scopes.cpp

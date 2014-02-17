@@ -33,7 +33,9 @@
 #include <scopes-ng/scope.h>
 #include <scopes-ng/categories.h>
 #include <scopes-ng/resultsmodel.h>
-#include <scopes-ng/preview.h>
+#include <scopes-ng/previewmodel.h>
+#include <scopes-ng/previewstack.h>
+#include <scopes-ng/previewwidgetmodel.h>
 
 #define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
 
@@ -485,30 +487,85 @@ private Q_SLOTS:
         qRegisterMetaType<scopes_ng::PreviewModel*>();
         QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
 
-        auto preview = m_scope->preview(result_var);
+        auto preview_stack = m_scope->preview(result_var);
+        QCOMPARE(preview_stack->rowCount(), 1);
+        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
+        auto preview = preview_stack->get(0);
+        QCOMPARE(preview, preview_var.value<scopes_ng::PreviewModel*>());
+        QCOMPARE(preview->widgetColumnCount(), 1);
         QVERIFY(spy.wait());
         QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
 
-        QCOMPARE(preview->rowCount(), 2);
+        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(preview_widgets->rowCount(), 2);
         QVariantMap props;
         QModelIndex idx;
 
-        idx = preview->index(0);
-        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("hdr"));
-        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("header"));
-        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        idx = preview_widgets->index(0);
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("hdr"));
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("header"));
+        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
         QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
         QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
         QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
 
-        idx = preview->index(1);
-        QCOMPARE(preview->data(idx, PreviewModel::RoleWidgetId).toString(), QString("img"));
-        QCOMPARE(preview->data(idx, PreviewModel::RoleType).toString(), QString("image"));
-        props = preview->data(idx, PreviewModel::RoleProperties).toMap();
+        idx = preview_widgets->index(1);
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
+        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
+        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
         QVERIFY(props.contains("source"));
         QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
         QVERIFY(props.contains("zoomable"));
         QCOMPARE(props[QString("zoomable")].toBool(), false);
+    }
+
+    void testPreviewLayouts()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("layout"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+
+        qRegisterMetaType<scopes_ng::PreviewModel*>();
+        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
+
+        auto preview_stack = m_scope->preview(result_var);
+        QCOMPARE(preview_stack->rowCount(), 1);
+        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+        auto preview = preview_stack->get(0);
+        QVERIFY(spy.wait());
+        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+        QCOMPARE(preview->rowCount(), 1);
+        auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(col_model1->rowCount(), 4);
+
+        // switch the layout
+        preview_stack->setWidgetColumnCount(2);
+        QCOMPARE(preview->rowCount(), 2);
+        QCOMPARE(col_model1->rowCount(), 1);
+        auto col_model2 = preview->data(preview->index(1), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+        QCOMPARE(col_model2->rowCount(), 3);
+
+        // switch back
+        preview_stack->setWidgetColumnCount(1);
+        QCOMPARE(preview->rowCount(), 1);
+        QCOMPARE(col_model1->rowCount(), 4);
     }
 
     void testScopeActivation()
@@ -536,6 +593,44 @@ private Q_SLOTS:
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
         m_scope->activate(result_var);
         QVERIFY(spy.wait());
+    }
+
+    void testPreviewAction()
+    {
+        QCOMPARE(m_scope->searchInProgress(), false);
+        // perform a search
+        m_scope->setSearchQuery(QString("layout"));
+        QCOMPARE(m_scope->searchInProgress(), true);
+        // wait for the search to finish
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+
+        // ensure results have some data
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+        QCOMPARE(result_var.isNull(), false);
+        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+
+        qRegisterMetaType<scopes_ng::PreviewModel*>();
+        QSignalSpy spy(m_scope, SIGNAL(previewReady(scopes_ng::PreviewModel*)));
+
+        auto preview_stack = m_scope->preview(result_var);
+        QCOMPARE(preview_stack->rowCount(), 1);
+        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+        auto preview = preview_stack->get(0);
+        QVERIFY(spy.wait());
+        QCOMPARE(preview, spy.takeFirst().at(0).value<scopes_ng::PreviewModel*>());
+        QCOMPARE(preview->rowCount(), 1);
+
+        QSignalSpy scopeSpy(m_scope, SIGNAL(hideDash()));
+        Q_EMIT preview->triggered(QString("actions"), QString("open"), QVariantMap());
+        QVERIFY(scopeSpy.wait());
     }
 };
 

@@ -23,7 +23,9 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "preview.h"
+#include "previewmodel.h"
+#include "previewstack.h"
+#include "utils.h"
 
 // Qt
 #include <QUrl>
@@ -121,15 +123,19 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 void Scope::processPreviewChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
+    scopes::ColumnLayoutList columns;
     scopes::PreviewWidgetList widgets;
     QHash<QString, QVariant> preview_data;
 
-    status = pushEvent->collectPreviewData(widgets, preview_data);
+    status = pushEvent->collectPreviewData(columns, widgets, preview_data);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     if (m_preview) {
+        if (!columns.empty()) {
+            m_preview->setColumnLayouts(columns);
+        }
         m_preview->addWidgetDefinitions(widgets);
         m_preview->updatePreviewData(preview_data);
     }
@@ -282,8 +288,10 @@ void Scope::dispatchSearch()
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
             m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
-            qWarning("Caught exception from create_query()");
+            qWarning("Caught an error from create_query()");
         }
     }
 }
@@ -294,17 +302,48 @@ PreviewModel* Scope::dispatchPreview(unity::scopes::ScopeProxy proxy, std::share
     if (proxy) {
         scopes::ActionMetadata vm("C", "phone"); //FIXME
         m_lastPreview.reset(new PreviewDataReceiver(this));
-        preview = new PreviewModel(this);
+        preview = new PreviewModel(nullptr);
         preview->setResult(result);
+        preview->setAssociatedScope(this);
         // FIXME: don't block
         try {
             m_lastPreviewQuery = proxy->preview(*(result.get()), vm, m_lastPreview);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from preview(): %s", e.what());
         } catch (...) {
-            qWarning("Caught exception from preview()");
+            qWarning("Caught an error from preview()");
         }
     }
 
     return preview;
+}
+
+void Scope::performPreviewAction(QVariant const& result_var, QString const& widgetId, QString const& actionId, QVariantMap const& props)
+{
+    if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
+        qWarning("Cannot perform action, unable to convert %s to Result", result_var.typeName());
+        return;
+    }
+
+    std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+    if (!result) {
+        qWarning("performPreviewAction(): received null result");
+        return;
+    }
+
+    try {
+        auto proxy = result->target_scope_proxy();
+        // FIXME: don't block
+        unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        metadata.set_scope_data(qVariantToScopeVariant(props));
+        // FIXME: don't fire and forget
+        ActivationReceiver::SPtr act(new ActivationReceiver(this, result));
+        proxy->perform_action(*(result.get()), metadata, widgetId.toStdString(), actionId.toStdString(), act);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
+    } catch (...) {
+        qWarning("Caught an error from perform_action()");
+    }
 }
 
 void Scope::setScopeData(scopes::ScopeMetadata const& data)
@@ -452,57 +491,56 @@ void Scope::setActive(const bool active) {
 void Scope::activate(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot activate result, unable to convert");
+        qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
         return;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
-        qWarning("Cannot activate null result");
+        qWarning("activate(): received null result");
         return;
     }
 
     if (result->direct_activation()) {
         activateUri(QString::fromStdString(result->uri()));
-    } else if (m_scopeMetadata) {
+    } else {
         try {
             auto proxy = result->target_scope_proxy();
             // FIXME: don't block
             unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
             m_lastActivation.reset(new ActivationReceiver(this, result));
             proxy->activate(*(result.get()), metadata, m_lastActivation);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from activate(): %s", e.what());
         } catch (...) {
-            qWarning("Caught an error while activating result");
+            qWarning("Caught an error from activate()");
         }
-    } else {
-        qWarning("Unable to activate result");
     }
 }
 
-PreviewModel* Scope::preview(QVariant const& result_var)
+PreviewStack* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
-        qWarning("Cannot preview result, unable to convert");
+        qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
         return nullptr;
     }
 
     std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
-        qWarning("Cannot preview null result");
+        qWarning("preview(): received null result");
         return nullptr;
     }
 
     // TODO: figure out if the result can produce a preview without sending a request to the scope
     // if (result->has_early_preview()) { ... }
-    if (m_scopeMetadata) {
-        // this needs to be hidden from the clients, straight proxy->preview() should suffice
-        auto proxy = result->target_scope_proxy();
-        invalidateLastPreview();
-        m_preview = dispatchPreview(proxy, result);
-    } else {
-        qWarning("Unable to activate result");
-    }
-    return m_preview;
+    auto proxy = result->target_scope_proxy();
+    invalidateLastPreview();
+    m_preview = dispatchPreview(proxy, result);
+
+    PreviewStack* stack = new PreviewStack(m_preview, nullptr);
+    stack->setResult(result);
+    m_currentStack = stack;
+    return stack;
 }
 
 void Scope::cancelActivation()

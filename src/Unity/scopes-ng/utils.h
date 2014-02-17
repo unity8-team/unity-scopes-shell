@@ -29,6 +29,7 @@ namespace scopes_ng
 {
 
 Q_DECL_EXPORT QVariant scopeVariantToQVariant(unity::scopes::Variant const& variant);
+Q_DECL_EXPORT unity::scopes::Variant qVariantToScopeVariant(QVariant const& variant);
 
 } // namespace scopes_ng
 
