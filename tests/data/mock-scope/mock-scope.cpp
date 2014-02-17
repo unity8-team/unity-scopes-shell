@@ -120,6 +120,7 @@ public:
             CategorisedResult res(cat);
             res.set_uri("test:perform-query");
             res.set_title("result for: \"" + query_ + "\"");
+            res.set_intercept_activation();
             reply->push(res);
         }
         else
