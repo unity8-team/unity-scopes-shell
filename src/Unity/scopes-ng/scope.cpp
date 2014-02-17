@@ -477,6 +477,13 @@ void Scope::cancelActivation()
     }
 }
 
+void Scope::closeScope(scopes_ng::Scope* scope)
+{
+    if (m_tempScopes.remove(scope)) {
+        delete scope;
+    }
+}
+
 void Scope::activateUri(QString const& uri)
 {
     /* Tries various methods to trigger a sensible action for the given 'uri'.

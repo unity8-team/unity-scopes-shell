@@ -92,6 +92,7 @@ public:
     Q_INVOKABLE void activate(QVariant const& result);
     Q_INVOKABLE scopes_ng::PreviewStack* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
+    Q_INVOKABLE void closeScope(scopes_ng::Scope*);
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
