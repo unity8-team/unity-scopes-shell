@@ -120,6 +120,18 @@ public:
             CategorisedResult res(cat);
             res.set_uri("test:perform-query");
             res.set_title("result for: \"" + query_ + "\"");
+            res["scope-id"] = "mock-scope";
+            res.set_intercept_activation();
+            reply->push(res);
+        }
+        else if (query_ == "perform-query2")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:perform-query");
+            res.set_title("result for: \"" + query_ + "\"");
+            res["scope-id"] = "nonexisting-scope";
             res.set_intercept_activation();
             reply->push(res);
         }
@@ -240,7 +252,7 @@ public:
     virtual ActivationResponse activate() override
     {
         if (status_ == ActivationResponse::Status::PerformQuery) {
-            auto resp = ActivationResponse(Query("mock-scope"));
+            auto resp = ActivationResponse(Query(result_["scope-id"].get_string()));
             return resp;
         } else {
             auto resp = ActivationResponse(status_);
