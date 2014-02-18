@@ -118,9 +118,9 @@ Q_SIGNALS:
     void hideDash();
     void gotoUri(QString const& uri);
     void activated();
-    void previewRequested(QVariant const&);
+    void previewRequested(QVariant const& result);
     void gotoScope(QString const& scopeId);
-    void openScope(scopes_ng::Scope*);
+    void openScope(scopes_ng::Scope* scope);
 
     void activateApplication(QString const& desktop);
 
