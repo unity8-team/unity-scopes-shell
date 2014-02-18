@@ -71,10 +71,12 @@ public:
 
 Q_SIGNALS:
     void loadedChanged(bool loaded);
+    void metadataRefreshed();
 
 private Q_SLOTS:
     void populateScopes();
     void discoveryFinished();
+    void refreshFinished();
 
 private:
     static int LIST_DELAY;

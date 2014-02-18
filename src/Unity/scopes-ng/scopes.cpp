@@ -100,8 +100,8 @@ Scopes::Scopes(QObject *parent)
 Scopes::~Scopes()
 {
     if (m_listThread && !m_listThread->isFinished()) {
-        // FIXME: wait indefinitely once libunity-scopes supports timeouts
-        m_listThread->wait(5000);
+        // libunity-scopes supports timeouts, so this shouldn't block forever
+        m_listThread->wait();
     }
 }
 
@@ -170,6 +170,23 @@ void Scopes::discoveryFinished()
 
     m_loaded = true;
     Q_EMIT loadedChanged(m_loaded);
+    Q_EMIT metadataRefreshed();
+
+    m_listThread = nullptr;
+}
+
+void Scopes::refreshFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+
+    auto scopes = thread->metadataMap();
+
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
+    Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
 }
@@ -229,7 +246,16 @@ scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) co
 
 void Scopes::refreshScopeMetadata()
 {
-    // TODO!
+    // make sure there's just one listing in-progress at any given time
+    if (m_listThread == nullptr && m_scopesRuntime) {
+        auto thread = new ScopeListWorker;
+        thread->setRuntime(m_scopesRuntime);
+        QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::refreshFinished);
+        QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
+
+        m_listThread = thread;
+        m_listThread->start();
+    }
 }
 
 bool Scopes::loaded() const
