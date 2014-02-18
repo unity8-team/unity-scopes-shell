@@ -185,6 +185,8 @@ private Q_SLOTS:
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ResultsModel*>());
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
 
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
