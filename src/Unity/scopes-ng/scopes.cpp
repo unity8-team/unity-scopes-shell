@@ -42,7 +42,10 @@ void ScopeListWorker::run()
     try
     {
         // m_runtimeConfig should be null in most cases, and empty string is for system-wide fallback
-        m_scopesRuntime = scopes::Runtime::create(m_runtimeConfig.toStdString());
+        if (!m_scopesRuntime) {
+            scopes::Runtime::UPtr runtime_uptr = scopes::Runtime::create(m_runtimeConfig.toStdString());
+            m_scopesRuntime = std::move(runtime_uptr);
+        }
         auto registry = m_scopesRuntime->registry();
         m_metadataMap = registry->list();
     }
@@ -58,9 +61,14 @@ void ScopeListWorker::setRuntimeConfig(QString const& config)
     m_runtimeConfig = config;
 }
 
-scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
+void ScopeListWorker::setRuntime(scopes::Runtime::SPtr const& runtime)
 {
-    return std::move(m_scopesRuntime);
+    m_scopesRuntime = runtime;
+}
+
+scopes::Runtime::SPtr ScopeListWorker::getRuntime() const
+{
+    return m_scopesRuntime;
 }
 
 scopes::MetadataMap ScopeListWorker::metadataMap() const
@@ -125,7 +133,7 @@ void Scopes::discoveryFinished()
 {
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
-    m_scopesRuntime = thread->takeRuntime();
+    m_scopesRuntime = thread->getRuntime();
     auto scopes = thread->metadataMap();
 
     // FIXME: use a dconf setting for this

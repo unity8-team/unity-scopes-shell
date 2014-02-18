@@ -85,7 +85,7 @@ private:
     QThread* m_listThread;
     bool m_loaded;
 
-    unity::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::scopes::Runtime::SPtr m_scopesRuntime;
 };
 
 class ScopeListWorker: public QThread
@@ -93,9 +93,10 @@ class ScopeListWorker: public QThread
     Q_OBJECT
 
 public:
+    void setRuntime(unity::scopes::Runtime::SPtr const& runtime);
     void setRuntimeConfig(QString const& config);
     void run() override;
-    unity::scopes::Runtime::UPtr takeRuntime();
+    unity::scopes::Runtime::SPtr getRuntime() const;
     unity::scopes::MetadataMap metadataMap() const;
 
 Q_SIGNALS:
@@ -103,7 +104,7 @@ Q_SIGNALS:
 
 private:
     QString m_runtimeConfig;
-    unity::scopes::Runtime::UPtr m_scopesRuntime;
+    unity::scopes::Runtime::SPtr m_scopesRuntime;
     unity::scopes::MetadataMap m_metadataMap;
 };
 
