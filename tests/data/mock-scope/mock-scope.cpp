@@ -80,6 +80,17 @@ public:
             res["rating"] = "***";
             reply->push(res);
         }
+        else if (query_ == "background")
+        {
+            CategoryRenderer bkgr_rndr(R"({"schema-version": 1, "template": {"card-background": "color:///black"}, "components": {"title": "title", "background": "background"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", bkgr_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_dnd_uri("test:dnd_uri");
+            res["background"] = "gradient:///green/#ff00aa33";
+            reply->push(res);
+        }
         else if (query_ == "minimal")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
