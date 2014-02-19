@@ -588,6 +588,36 @@ private Q_SLOTS:
         preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
         QCOMPARE(preview_widgets->rowCount(), 5);
     }
+
+    void testScopeActivationWithQuery()
+    {
+        performSearch(m_scope, QString("perform-query"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+
+        QSignalSpy spy(m_scope, SIGNAL(gotoScope(QString)));
+        m_scope->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+    }
+
+    void testScopeActivationWithQuery2()
+    {
+        performSearch(m_scope, QString("perform-query2"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+
+        QSignalSpy spy(m_scopes.data(), SIGNAL(metadataRefreshed()));
+        QSignalSpy spy2(m_scope, SIGNAL(gotoScope(QString)));
+        QSignalSpy spy3(m_scope, SIGNAL(openScope(scopes_ng::Scope*)));
+        // this tries to activate non-existing scope
+        m_scope->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+        QCOMPARE(spy2.count(), 0);
+        QCOMPARE(spy3.count(), 0);
+    }
+
 };
 
 QTEST_MAIN(ResultsTestNg)

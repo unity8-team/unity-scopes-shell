@@ -113,6 +113,28 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "perform-query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:perform-query");
+            res.set_title("result for: \"" + query_ + "\"");
+            res["scope-id"] = "mock-scope";
+            res.set_intercept_activation();
+            reply->push(res);
+        }
+        else if (query_ == "perform-query2")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:perform-query");
+            res.set_title("result for: \"" + query_ + "\"");
+            res["scope-id"] = "nonexisting-scope";
+            res.set_intercept_activation();
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -229,11 +251,16 @@ public:
 
     virtual ActivationResponse activate() override
     {
-        auto resp = ActivationResponse(status_);
-        if (extra_data_.which() == Variant::Dict) {
-            resp.setHints(extra_data_.get_dict());
+        if (status_ == ActivationResponse::Status::PerformQuery) {
+            auto resp = ActivationResponse(Query(result_["scope-id"].get_string()));
+            return resp;
+        } else {
+            auto resp = ActivationResponse(status_);
+            if (extra_data_.which() == Variant::Dict) {
+                resp.setHints(extra_data_.get_dict());
+            }
+            return resp;
         }
-        return resp;
     }
 
 private:
@@ -283,6 +310,9 @@ public:
 
     virtual ActivationBase::UPtr activate(Result const& result, ActionMetadata const&) override
     {
+        if (result.uri().find("perform-query") != std::string::npos) {
+            return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::PerformQuery));
+        }
         return ActivationBase::UPtr(new MyActivation(result));
     }
 };

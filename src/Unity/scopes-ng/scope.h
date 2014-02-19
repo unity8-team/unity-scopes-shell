@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMetaType>
 #include <QPointer>
+#include <QSet>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -91,6 +92,7 @@ public:
     Q_INVOKABLE void activate(QVariant const& result);
     Q_INVOKABLE scopes_ng::PreviewStack* preview(QVariant const& result);
     Q_INVOKABLE void cancelActivation();
+    Q_INVOKABLE void closeScope(scopes_ng::Scope* scope);
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
@@ -114,17 +116,21 @@ Q_SIGNALS:
     // signals triggered by activate(..) or preview(..) requests.
     void showDash();
     void hideDash();
-    void gotoUri(const QString &uri);
+    void gotoUri(QString const& uri);
     void activated();
-    void previewRequested(QVariant const&);
+    void previewRequested(QVariant const& result);
+    void gotoScope(QString const& scopeId);
+    void openScope(scopes_ng::Scope* scope);
 
-    void activateApplication(const QString &desktop);
+    void activateApplication(QString const& desktop);
 
 private Q_SLOTS:
     void flushUpdates();
+    void metadataRefreshed();
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
+    void processPerformQuery(std::shared_ptr<unity::scopes::ActivationResponse> const& response, bool allowDelayedActivation);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
@@ -144,9 +150,11 @@ private:
     unity::scopes::SearchListener::SPtr m_lastSearch;
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::ActivationListener::SPtr m_lastActivation;
+    std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
+    QSet<scopes_ng::Scope*> m_tempScopes;
 };
 
 } // namespace scopes_ng
