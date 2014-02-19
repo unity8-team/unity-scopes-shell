@@ -52,16 +52,16 @@ set(QMLPLUGIN_SRC
 
 add_subdirectory(scopes-ng)
 
-add_library(Unity-qml SHARED ${QMLPLUGIN_SRC} $<TARGET_OBJECTS:ScopesNG-qml>)
+add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
 
 target_link_libraries(Unity-qml
     ${QTDEE_LDFLAGS}
     ${UNITYCORE_LDFLAGS}
     ${SCOPESLIB_LDFLAGS}
-    ${Qt5Gui_LIBRARIES}
+    ScopesNG-qml
     )
 
-qt5_use_modules(Unity-qml Qml)
+qt5_use_modules(Unity-qml Qml Gui DBus)
 
 # export the qmldir qmltypes and plugin files
 export_qmlfiles(Unity Unity)

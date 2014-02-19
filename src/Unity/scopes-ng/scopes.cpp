@@ -26,6 +26,7 @@
 // Qt
 #include <QDebug>
 #include <QTimer>
+#include <QDBusConnection>
 
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
@@ -95,6 +96,8 @@ Scopes::Scopes(QObject *parent)
         LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
     }
     QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
+
+    QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 }
 
 Scopes::~Scopes()
@@ -189,6 +192,14 @@ void Scopes::refreshFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+}
+
+void Scopes::invalidateScopeResults(QString const& scopeName)
+{
+    Scope* scope = getScopeById(scopeName);
+    if (scope == nullptr) return;
+
+    scope->invalidateResults();
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const

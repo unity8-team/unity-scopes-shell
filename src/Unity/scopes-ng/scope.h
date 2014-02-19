@@ -96,6 +96,7 @@ public:
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
+    void invalidateResults();
 
 Q_SIGNALS:
     void idChanged();
@@ -144,6 +145,7 @@ private:
     QString m_formFactor;
     bool m_isActive;
     bool m_searchInProgress;
+    bool m_resultsDirty;
 
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;

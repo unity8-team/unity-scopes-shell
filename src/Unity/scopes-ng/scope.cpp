@@ -63,6 +63,7 @@ Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
+    , m_resultsDirty(false)
 {
     m_categories = new Categories(this);
 
@@ -290,8 +291,15 @@ void Scope::dispatchSearch()
      * The new query will have new instances of SearchResultReceiver and ResultCollector.
      */
 
+    m_resultsDirty = false;
+
+    if (!m_searchInProgress) {
+        m_searchInProgress = true;
+        Q_EMIT searchInProgressChanged();
+    }
+
     if (m_proxy) {
-        scopes::SearchMetadata vm("C", "phone"); //FIXME
+        scopes::SearchMetadata vm("C", m_formFactor.toStdString()); //FIXME
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
             m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
@@ -300,6 +308,12 @@ void Scope::dispatchSearch()
         } catch (...) {
             qWarning("Caught an error from create_query()");
         }
+    }
+
+    if (!m_lastSearchQuery) {
+        // something went wrong, reset search state
+        m_searchInProgress = false;
+        Q_EMIT searchInProgressChanged();
     }
 }
 
@@ -416,10 +430,6 @@ void Scope::setSearchQuery(const QString& search_query)
         dispatchSearch();
 
         Q_EMIT searchQueryChanged();
-        if (!m_searchInProgress) {
-            m_searchInProgress = true;
-            Q_EMIT searchInProgressChanged();
-        }
     }
 }
 
@@ -442,6 +452,11 @@ void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
         Q_EMIT isActiveChanged(m_isActive);
+
+        if (active && m_resultsDirty) {
+            invalidateLastSearch();
+            dispatchSearch();
+        }
     }
 }
 
@@ -464,7 +479,7 @@ void Scope::activate(QVariant const& result_var)
         try {
             auto proxy = result->target_scope_proxy();
             // FIXME: don't block
-            unity::scopes::ActionMetadata metadata("C", "phone"); //FIXME
+            unity::scopes::ActionMetadata metadata("C", m_formFactor.toStdString()); //FIXME
             m_lastActivation.reset(new ActivationReceiver(this, result));
             proxy->activate(*(result.get()), metadata, m_lastActivation);
         } catch (std::exception& e) {
@@ -499,6 +514,17 @@ void Scope::cancelActivation()
     if (m_lastActivation) {
         std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
         m_lastActivation.reset();
+    }
+}
+
+void Scope::invalidateResults()
+{
+    if (m_isActive) {
+        invalidateLastSearch();
+        dispatchSearch();
+    } else {
+        // mark the results as dirty, so next setActive() re-sends the query
+        m_resultsDirty = true;
     }
 }
 

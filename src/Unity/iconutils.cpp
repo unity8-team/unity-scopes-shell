@@ -96,7 +96,7 @@ QString gIconToDeclarativeImageProviderString(QString const &giconString)
 
 QString uriToThumbnailerProviderString(QString const &uri, QString const &mimetype, QVariantHash const &metadata)
 {
-    if (uri.startsWith(QLatin1String("file:///"))) {
+    if (uri.startsWith(QLatin1String("file:///")) || uri.startsWith(QLatin1String("album://"))) {
         bool isAudio = mimetype.startsWith(QLatin1String("audio/"));
         QString thumbnailerUri;
         if (isAudio) {
