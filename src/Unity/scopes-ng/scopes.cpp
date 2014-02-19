@@ -42,7 +42,10 @@ void ScopeListWorker::run()
     try
     {
         // m_runtimeConfig should be null in most cases, and empty string is for system-wide fallback
-        m_scopesRuntime = scopes::Runtime::create(m_runtimeConfig.toStdString());
+        if (!m_scopesRuntime) {
+            scopes::Runtime::UPtr runtime_uptr = scopes::Runtime::create(m_runtimeConfig.toStdString());
+            m_scopesRuntime = std::move(runtime_uptr);
+        }
         auto registry = m_scopesRuntime->registry();
         m_metadataMap = registry->list();
     }
@@ -58,9 +61,14 @@ void ScopeListWorker::setRuntimeConfig(QString const& config)
     m_runtimeConfig = config;
 }
 
-scopes::Runtime::UPtr ScopeListWorker::takeRuntime()
+void ScopeListWorker::setRuntime(scopes::Runtime::SPtr const& runtime)
 {
-    return std::move(m_scopesRuntime);
+    m_scopesRuntime = runtime;
+}
+
+scopes::Runtime::SPtr ScopeListWorker::getRuntime() const
+{
+    return m_scopesRuntime;
 }
 
 scopes::MetadataMap ScopeListWorker::metadataMap() const
@@ -92,8 +100,8 @@ Scopes::Scopes(QObject *parent)
 Scopes::~Scopes()
 {
     if (m_listThread && !m_listThread->isFinished()) {
-        // FIXME: wait indefinitely once libunity-scopes supports timeouts
-        m_listThread->wait(5000);
+        // libunity-scopes supports timeouts, so this shouldn't block forever
+        m_listThread->wait();
     }
 }
 
@@ -125,7 +133,7 @@ void Scopes::discoveryFinished()
 {
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
-    m_scopesRuntime = thread->takeRuntime();
+    m_scopesRuntime = thread->getRuntime();
     auto scopes = thread->metadataMap();
 
     // FIXME: use a dconf setting for this
@@ -153,10 +161,32 @@ void Scopes::discoveryFinished()
         }
     }
 
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
     endResetModel();
 
     m_loaded = true;
     Q_EMIT loadedChanged(m_loaded);
+    Q_EMIT metadataRefreshed();
+
+    m_listThread = nullptr;
+}
+
+void Scopes::refreshFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+
+    auto scopes = thread->metadataMap();
+
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
+    Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
 }
@@ -187,15 +217,45 @@ QVariant Scopes::get(int row) const
     return data(QAbstractListModel::index(row), RoleScope);
 }
 
-QVariant Scopes::get(const QString& scope_id) const
+QVariant Scopes::get(const QString& scopeId) const
+{
+    Scope* scope = getScopeById(scopeId);
+    return scope != nullptr ? QVariant::fromValue(scope) : QVariant();
+}
+
+Scope* Scopes::getScopeById(QString const& scopeId) const
 {
     Q_FOREACH(Scope* scope, m_scopes) {
-        if (scope->id() == scope_id) {
-            return QVariant::fromValue(scope);
+        if (scope->id() == scopeId) {
+            return scope;
         }
     }
 
-    return QVariant();
+    return nullptr;
+}
+
+scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) const
+{
+    auto it = m_cachedMetadata.constFind(scopeId);
+    if (it != m_cachedMetadata.constEnd()) {
+        return it.value();
+    }
+
+    return scopes::ScopeMetadata::SPtr();
+}
+
+void Scopes::refreshScopeMetadata()
+{
+    // make sure there's just one listing in-progress at any given time
+    if (m_listThread == nullptr && m_scopesRuntime) {
+        auto thread = new ScopeListWorker;
+        thread->setRuntime(m_scopesRuntime);
+        QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::refreshFinished);
+        QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
+
+        m_listThread = thread;
+        m_listThread->start();
+    }
 }
 
 bool Scopes::loaded() const
