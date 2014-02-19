@@ -77,6 +77,7 @@ private Q_SLOTS:
     void populateScopes();
     void discoveryFinished();
     void refreshFinished();
+    void invalidateScopeResults(QString const&);
 
 private:
     static int LIST_DELAY;

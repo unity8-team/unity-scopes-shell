@@ -28,6 +28,7 @@
 #include <QThread>
 #include <QScopedPointer>
 #include <QSignalSpy>
+#include <QDBusConnection>
 
 #include <scopes-ng/scopes.h>
 #include <scopes-ng/scope.h>
@@ -299,6 +300,25 @@ private Q_SLOTS:
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltPrice).isNull());
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleRating).isNull());
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
+    }
+
+    void testResultsInvalidation()
+    {
+        if (!QDBusConnection::sessionBus().isConnected()) {
+            QSKIP("DBus unavailable, skipping test");
+        }
+
+        performSearch(m_scope, QString(""));
+        m_scope->setActive(true);
+
+        QStringList args;
+        args << "/com/canonical/unity/scopes";
+        args << "com.canonical.unity.scopes.InvalidateResults";
+        args << "string:mock-scope";
+        QProcess::execute("dbus-send", args);
+
+        QTRY_COMPARE(m_scope->searchInProgress(), true);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
     }
 
     void testAlbumArtResult()
