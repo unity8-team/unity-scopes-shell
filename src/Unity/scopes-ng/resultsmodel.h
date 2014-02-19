@@ -57,7 +57,8 @@ public:
         RoleAltPrice,
         RoleRating,
         RoleAltRating,
-        RoleSummary
+        RoleSummary,
+        RoleBackground
     };
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

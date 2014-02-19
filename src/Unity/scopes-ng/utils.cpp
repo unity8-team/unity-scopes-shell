@@ -20,6 +20,8 @@
 // self
 #include "utils.h"
 
+#include <QStringList>
+
 namespace scopes_ng
 {
 
@@ -94,6 +96,30 @@ scopes::Variant qVariantToScopeVariant(QVariant const& variant)
         default:
             qWarning("Unhandled QVariant type: %s", variant.typeName());
             return scopes::Variant();
+    }
+}
+
+QVariant backgroundUriToVariant(QString const& uri)
+{
+    if (uri.startsWith(QLatin1String("color:///"))) {
+        QVariantList elements;
+        elements.append(uri.mid(9));
+        QVariantMap m;
+        m["type"] = QString("color");
+        m["elements"] = elements;
+        return m;
+    } else if (uri.startsWith(QLatin1String("gradient:///"))) {
+        QStringList parts = uri.mid(12).split("/", QString::SkipEmptyParts);
+        QVariantList elements;
+        for (int i = 0; i < parts.size(); i++) {
+            elements.append(parts[i]);
+        }
+        QVariantMap m;
+        m["type"] = QString("gradient");
+        m["elements"] = elements;
+        return m;
+    } else {
+        return QVariant(uri);
     }
 }
 

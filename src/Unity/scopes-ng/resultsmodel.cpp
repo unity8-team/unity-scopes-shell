@@ -46,6 +46,7 @@ ResultsModel::ResultsModel(QObject* parent)
     m_roles[ResultsModel::RoleRating] = "rating";
     m_roles[ResultsModel::RoleAltRating] = "altRating";
     m_roles[ResultsModel::RoleSummary] = "summary";
+    m_roles[ResultsModel::RoleBackground] = "background";
 }
 
 QString ResultsModel::categoryId() const
@@ -218,6 +219,13 @@ ResultsModel::data(const QModelIndex& index, int role) const
             return componentValue(result, "alt-rating");
         case RoleSummary:
             return componentValue(result, "summary");
+        case RoleBackground: {
+            QVariant backgroundVariant(componentValue(result, "background"));
+            if (backgroundVariant.isNull()) {
+                return backgroundVariant;
+            }
+            return backgroundUriToVariant(backgroundVariant.toString());
+        }
         default:
             return QVariant();
     }
