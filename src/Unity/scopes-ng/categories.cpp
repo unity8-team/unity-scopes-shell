@@ -21,6 +21,9 @@
 // self
 #include "categories.h"
 
+// local
+#include "utils.h"
+
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -36,7 +39,7 @@ using namespace unity;
 namespace scopes_ng {
 
 // FIXME: this should be in a common place
-#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"medium","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "old-price":null, "price":null, "alt-price":null, "rating":null, "alt-rating":null, "summary":null }, "resources":{}})"
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"medium","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "old-price":null, "price":null, "alt-price":null, "rating":null, "alt-rating":null, "summary":null, "background": null }, "resources":{}})"
 
 class CategoryData
 {
@@ -205,6 +208,17 @@ private:
         }
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_doc.object()).toObject();
+        // fixup parts we mangle
+        QJsonValueRef templateRef = category_root["template"];
+        QJsonObject templateObj(templateRef.toObject());
+        if (templateObj.contains("card-background")) {
+            QJsonValueRef cardBackgroundRef = templateObj["card-background"];
+            if (cardBackgroundRef.isString()) {
+                QString background(cardBackgroundRef.toString());
+                cardBackgroundRef = QJsonValue::fromVariant(backgroundUriToVariant(background));
+                templateRef = templateObj;
+            }
+        }
         // FIXME: validate the merged json
         *renderer = category_root.value(QString("template"));
         *components = category_root.value(QString("components"));

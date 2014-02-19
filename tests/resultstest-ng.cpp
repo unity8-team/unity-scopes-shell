@@ -185,6 +185,8 @@ private Q_SLOTS:
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ResultsModel*>());
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
 
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
@@ -394,6 +396,34 @@ private Q_SLOTS:
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"rating\""));
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleRating).toString(), QString("***"));
+    }
+
+    void testCategoryWithBackground()
+    {
+        performSearch(m_scope, QString("background"));
+
+        // get ResultsModel instance
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant renderer_var = categories->data(categories->index(0), Categories::Roles::RoleRenderer);
+        QVariantMap renderer(renderer_var.toMap());
+        QVERIFY(renderer.contains("card-background"));
+        QVERIFY(renderer["card-background"].canConvert<QVariantMap>());
+        QVariantMap cardBackground(renderer["card-background"].toMap());
+        QCOMPARE(cardBackground["type"], QVariant(QString("color")));
+        QCOMPARE(cardBackground["elements"], QVariant(QVariantList({QString("black")})));
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"background\""));
+        QVariant background(results->data(idx, ResultsModel::Roles::RoleBackground));
+        QVERIFY(background.canConvert<QVariantMap>());
+        QVariantMap map(background.toMap());
+        QCOMPARE(map["type"], QVariant(QString("gradient")));
+        QCOMPARE(map["elements"], QVariant(QVariantList({QString("green"), QString("#ff00aa33")})));
     }
 
     void testCategoryDefaults()
