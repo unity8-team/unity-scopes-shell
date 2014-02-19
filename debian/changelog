@@ -1,3 +1,12 @@
+unity-scopes-shell (0.3.1+14.04.20140219-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Implement signals for scope activation.
+  * Expose background role to shell.
+  * Added support for result invalidation.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 19 Feb 2014 18:25:48 +0000
+
 unity-scopes-shell (0.3.1+14.04.20140217-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
