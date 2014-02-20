@@ -153,6 +153,12 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
         }
         std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
         m_lastActivation = listener;
+
+        // should be always coming from active preview
+        if (m_activePreview) {
+            m_activePreview->setProcessingAction(true);
+        }
+
         // FIXME: don't block
         proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
     } catch (std::exception& e) {
@@ -173,12 +179,17 @@ void PreviewStack::processActionResponse(PushEvent* pushEvent)
         case scopes::ActivationResponse::ShowPreview:
             // replace current preview
             m_activePreview->setDelayedClear();
+            // the preview is marked as processing action, leave the flag on until the preview is updated
             dispatchPreview(scopes::Variant(response->hints()));
             break;
         // TODO: case to nest preview (once such API is available)
         default:
             if (m_associatedScope) {
                 m_associatedScope->handleActivation(response, result);
+            }
+
+            if (m_activePreview) {
+                m_activePreview->setProcessingAction(false);
             }
             break;
     }

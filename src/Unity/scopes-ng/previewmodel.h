@@ -60,6 +60,7 @@ class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
 
     Q_PROPERTY(int widgetColumnCount READ widgetColumnCount WRITE setWidgetColumnCount NOTIFY widgetColumnCountChanged)
     Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
+    Q_PROPERTY(bool processingAction READ processingAction NOTIFY processingActionChanged)
 
 public:
     explicit PreviewModel(QObject* parent = 0);
@@ -78,8 +79,10 @@ public:
     void setAssociatedScope(scopes_ng::Scope*);
 
     void setWidgetColumnCount(int count);
-    int widgetColumnCount();
-    bool loaded();
+    int widgetColumnCount() const;
+    bool loaded() const;
+    bool processingAction() const;
+    void setProcessingAction(bool processing);
 
     void setDelayedClear();
     void clearAll();
@@ -87,6 +90,7 @@ public:
 Q_SIGNALS:
     void widgetColumnCountChanged();
     void loadedChanged();
+    void processingActionChanged();
     void triggered(QString const&, QString const&, QVariantMap const&);
 
 private:
@@ -98,6 +102,7 @@ private:
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
 
     bool m_loaded;
+    bool m_processingAction;
     bool m_delayedClear;
     int m_widgetColumnCount;
     QMap<QString, QVariant> m_allData;

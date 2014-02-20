@@ -38,7 +38,11 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_loaded(false), m_delayedClear(false), m_widgetColumnCount(1)
+PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent),
+    m_loaded(false),
+    m_processingAction(false),
+    m_delayedClear(false),
+    m_widgetColumnCount(1)
 {
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
@@ -92,6 +96,8 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
     if (m_delayedClear) {
         clearAll();
         m_delayedClear = false;
+
+        setProcessingAction(false);
     }
 
     if (!columns.empty()) {
@@ -170,14 +176,27 @@ void PreviewModel::setWidgetColumnCount(int count)
     }
 }
 
-int PreviewModel::widgetColumnCount()
+int PreviewModel::widgetColumnCount() const
 {
     return m_widgetColumnCount;
 }
 
-bool PreviewModel::loaded()
+bool PreviewModel::loaded() const
 {
     return m_loaded;
+}
+
+bool PreviewModel::processingAction() const
+{
+    return m_processingAction;
+}
+
+void PreviewModel::setProcessingAction(bool processing)
+{
+    if (processing != m_processingAction) {
+        m_processingAction = processing;
+        Q_EMIT processingActionChanged();
+    }
 }
 
 void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
