@@ -610,7 +610,9 @@ private Q_SLOTS:
 
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
         Q_EMIT preview->triggered(QString("actions"), QString("open"), QVariantMap());
+        QCOMPARE(preview->processingAction(), true);
         QVERIFY(spy.wait());
+        QCOMPARE(preview->processingAction(), false);
     }
 
     void testPreviewReplacingPreview()
@@ -632,8 +634,14 @@ private Q_SLOTS:
         QVariantMap hints;
         hints["session-id"] = QString("qoo");
         Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
+        QCOMPARE(preview->processingAction(), true);
+        // wait for loaded to become false
         QVERIFY(spy.wait());
+        QCOMPARE(preview->loaded(), false);
+        // a bit of gray area, preview was just marked as "about-to-be-replaced", so it kinda is processing the action?
+        QCOMPARE(preview->processingAction(), true);
         QTRY_COMPARE(preview->loaded(), true);
+        QCOMPARE(preview->processingAction(), false);
         // refresh widget model
         preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
         QCOMPARE(preview_widgets->rowCount(), 5);
