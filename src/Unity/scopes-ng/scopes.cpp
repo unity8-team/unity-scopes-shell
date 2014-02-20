@@ -196,6 +196,13 @@ void Scopes::refreshFinished()
 
 void Scopes::invalidateScopeResults(QString const& scopeName)
 {
+    // HACK! mediascanner invalidates local media scopes, but those are aggregated, so let's "forward" the call
+    if (scopeName == "mediascanner-music") {
+        invalidateScopeResults("musicaggregator");
+    } else if (scopeName == "mediascanner-video") {
+        invalidateScopeResults("videoaggregator");
+    }
+
     Scope* scope = getScopeById(scopeName);
     if (scope == nullptr) return;
 
