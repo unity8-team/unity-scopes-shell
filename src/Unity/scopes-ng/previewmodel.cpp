@@ -38,7 +38,11 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent), m_loaded(false), m_processingAction(false), m_delayedClear(false), m_widgetColumnCount(1)
+PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent),
+    m_loaded(false),
+    m_processingAction(false),
+    m_delayedClear(false),
+    m_widgetColumnCount(1)
 {
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
