@@ -146,6 +146,7 @@ private:
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
+    bool m_delayedClear;
 
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
@@ -155,6 +156,7 @@ private:
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
+    QTimer m_clearTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QSet<scopes_ng::Scope*> m_tempScopes;
 };

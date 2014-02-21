@@ -208,6 +208,12 @@ PushEvent::Type PushEvent::type()
     return m_eventType;
 }
 
+
+qint64 PushEvent::msecsSinceStart() const
+{
+    return m_collector->msecsSinceStart();
+}
+
 CollectorBase::Status PushEvent::collectSearchResults(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
 {
     auto collector = std::dynamic_pointer_cast<ResultCollector>(m_collector);
