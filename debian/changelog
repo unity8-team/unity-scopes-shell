@@ -1,3 +1,12 @@
+unity-scopes-shell (0.3.1+14.04.20140221.2-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Change default card-size to small, so if not specified by scope,
+    small will be used.
+  * Don't clear results immediately, wait a bit first.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 21 Feb 2014 15:56:32 +0000
+
 unity-scopes-shell (0.3.1+14.04.20140220-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
