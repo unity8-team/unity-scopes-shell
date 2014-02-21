@@ -471,7 +471,7 @@ private Q_SLOTS:
         }
         QCOMPARE(num_active_components, 1);
         QVERIFY(renderer.contains("card-size"));
-        QCOMPARE(renderer.value("card-size"), QJsonValue(QString("medium")));
+        QCOMPARE(renderer.value("card-size"), QJsonValue(QString("small")));
         QVERIFY(renderer.contains("card-layout"));
         QCOMPARE(renderer.value("card-layout"), QJsonValue(QString("vertical")));
         QVERIFY(renderer.contains("category-layout"));
