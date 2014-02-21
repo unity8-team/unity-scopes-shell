@@ -58,17 +58,21 @@ namespace scopes_ng
 using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
+const int CLEAR_TIMEOUT = 240;
 
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
+    , m_delayedClear(false)
 {
     m_categories = new Categories(this);
 
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    m_clearTimer.setSingleShot(true);
+    QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
 }
 
 Scope::~Scope()
@@ -91,11 +95,6 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         return;
     }
 
-    // qint64 inProgressMs = collector->msecsSinceStart();
-    // FIXME: should we push immediately if this search is already taking a while?
-    //   if we don't, we're just delaying the results by another AGGREGATION_TIMEOUT ms,
-    //   yet if we do, we risk getting more results right after this one
-
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
     } else {
@@ -104,7 +103,10 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
     if (status == CollectorBase::Status::INCOMPLETE) {
         if (!m_aggregatorTimer.isActive()) {
-            m_aggregatorTimer.start(AGGREGATION_TIMEOUT);
+            // the longer we've been waiting for the results, the shorter the timeout
+            qint64 inProgressMs = pushEvent->msecsSinceStart();
+            double mult = 1.0 / std::max(1, static_cast<int>((inProgressMs / 150) + 1));
+            m_aggregatorTimer.start(AGGREGATION_TIMEOUT * mult);
         }
     } else { // status in [FINISHED, ERROR]
         m_aggregatorTimer.stop();
@@ -216,6 +218,16 @@ void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> cons
 
 void Scope::flushUpdates()
 {
+    if (m_delayedClear) {
+        // TODO: here we could do resultset diffs
+        m_categories->clearAll();
+        m_delayedClear = false;
+    }
+
+    if (m_clearTimer.isActive()) {
+        m_clearTimer.stop();
+    }
+
     processResultSet(m_cachedResults); // clears the result list
 }
 
@@ -266,13 +278,13 @@ void Scope::invalidateLastSearch()
         m_aggregatorTimer.stop();
     }
     m_cachedResults.clear();
-
-    // TODO: not the best idea to put the clearAll() here, can cause flicker
-    m_categories->clearAll();
 }
 
 void Scope::dispatchSearch()
 {
+    invalidateLastSearch();
+    m_delayedClear = true;
+    m_clearTimer.start(CLEAR_TIMEOUT);
     /* There are a few objects associated with searches:
      * 1) SearchResultReceiver    2) ResultCollector    3) PushEvent
      *
@@ -425,7 +437,6 @@ void Scope::setSearchQuery(const QString& search_query)
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
         m_searchQuery = search_query;
 
-        invalidateLastSearch();
         // FIXME: use a timeout
         dispatchSearch();
 
@@ -454,7 +465,6 @@ void Scope::setActive(const bool active) {
         Q_EMIT isActiveChanged(m_isActive);
 
         if (active && m_resultsDirty) {
-            invalidateLastSearch();
             dispatchSearch();
         }
     }
@@ -520,7 +530,6 @@ void Scope::cancelActivation()
 void Scope::invalidateResults()
 {
     if (m_isActive) {
-        invalidateLastSearch();
         dispatchSearch();
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
