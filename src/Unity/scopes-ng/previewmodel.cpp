@@ -333,6 +333,18 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
     }
 }
 
+PreviewWidgetData* PreviewModel::getWidgetData(QString const& widgetId) const
+{
+    for (int i = 0; i < m_previewWidgets.size(); i++) {
+        PreviewWidgetData* widgetData = m_previewWidgets[i].data();
+        if (widgetData->id == widgetId) {
+            return widgetData;
+        }
+    }
+
+    return nullptr;
+}
+
 int PreviewModel::rowCount(const QModelIndex&) const
 {
     return m_previewWidgetModels.size();

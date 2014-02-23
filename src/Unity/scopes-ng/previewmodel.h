@@ -85,6 +85,7 @@ public:
 
     void setDelayedClear();
     void clearAll();
+    PreviewWidgetData* getWidgetData(QString const& widgetId) const;
 
 Q_SIGNALS:
     void widgetColumnCountChanged();
