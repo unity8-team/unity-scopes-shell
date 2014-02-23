@@ -36,14 +36,14 @@
 namespace scopes_ng
 {
 
-struct PreviewData
+struct PreviewWidgetData
 {
     QString id;
     QString type;
     QHash<QString, QString> component_map;
     QVariantMap data;
 
-    PreviewData(QString const& id_, QString const& type_, QHash<QString, QString> const& components, QVariantMap const& data_): id(id_), type(type_), component_map(components), data(data_)
+    PreviewWidgetData(QString const& id_, QString const& type_, QHash<QString, QString> const& components, QVariantMap const& data_): id(id_), type(type_), component_map(components), data(data_)
     {
     }
 };
@@ -76,7 +76,6 @@ public:
     virtual bool event(QEvent* ev) override;
 
     void setResult(std::shared_ptr<unity::scopes::Result> const&);
-    void setAssociatedScope(scopes_ng::Scope*);
 
     void setWidgetColumnCount(int count);
     int widgetColumnCount() const;
@@ -98,7 +97,7 @@ private:
     void setColumnLayouts(unity::scopes::ColumnLayoutList const&);
     void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
     void updatePreviewData(QHash<QString, QVariant> const&);
-    void addWidgetToColumnModel(QSharedPointer<PreviewData> const&);
+    void addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const&);
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
 
     bool m_loaded;
@@ -108,8 +107,8 @@ private:
     QMap<QString, QVariant> m_allData;
     QHash<int, QList<QStringList>> m_columnLayouts;
     QList<PreviewWidgetModel*> m_previewWidgetModels;
-    QList<QSharedPointer<PreviewData>> m_previewWidgets;
-    QMultiMap<QString, PreviewData*> m_dataToWidgetMap;
+    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets;
+    QMultiMap<QString, PreviewWidgetData*> m_dataToWidgetMap;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };
