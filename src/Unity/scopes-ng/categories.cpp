@@ -44,16 +44,23 @@ namespace scopes_ng {
 class CategoryData
 {
 public:
-    CategoryData(scopes::Category::SCPtr const& category): m_resultsModel(nullptr)
+    CategoryData(scopes::Category::SCPtr const& category): m_resultsModel(nullptr), m_isSpecial(false)
     {
         setCategory(category);
     }
 
     // constructor for special (shell-overriden) categories
     CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
-        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_resultsModel(nullptr), m_countObject(countObject)
+        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_resultsModel(nullptr), m_countObject(countObject), m_isSpecial(true)
     {
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
+    }
+
+    ~CategoryData()
+    {
+        if (m_resultsModel) {
+            delete m_resultsModel;
+        }
     }
 
     void setCategory(scopes::Category::SCPtr const& category)
@@ -181,6 +188,11 @@ public:
         return 0;
     }
 
+    bool isSpecial() const
+    {
+        return m_isSpecial;
+    }
+
 private:
     static QJsonValue* DEFAULTS;
     scopes::Category::SCPtr m_category;
@@ -192,6 +204,7 @@ private:
     QJsonValue m_components;
     ResultsModel* m_resultsModel;
     QPointer<QObject> m_countObject;
+    bool m_isSpecial;
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
@@ -306,22 +319,57 @@ int Categories::getCategoryIndex(QString const& categoryId) const
     return -1;
 }
 
+int Categories::getFirstEmptyCategoryIndex() const
+{
+    for (int i = 0; i < m_categories.size(); i++) {
+        if (m_categories[i]->isSpecial()) {
+            continue;
+        }
+        if (m_categories[i]->resultsModelCount() == 0) {
+            return i;
+        }
+    }
+
+    return m_categories.size();
+}
+
 void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel* resultsModel)
 {
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
     if (index >= 0) {
-        CategoryData* catData = m_categories[index].data();
-        // check if any attributes of the category changed
-        QVector<int> changedRoles(catData->updateAttributes(category));
+        int emptyIndex = getFirstEmptyCategoryIndex();
+        if (emptyIndex < index) {
+            QSharedPointer<CategoryData> catData;
+            // we could do real move, but the view doesn't like it much
+            beginRemoveRows(QModelIndex(), index, index);
+            catData = m_categories.takeAt(index);
+            endRemoveRows();
 
-        if (changedRoles.size() > 0) {
-            resultsModel = catData->resultsModel();
-            if (resultsModel) {
-                resultsModel->setComponentsMapping(catData->getComponentsMapping());
+            // check if any attributes of the category changed
+            QVector<int> changedRoles(catData->updateAttributes(category));
+            if (changedRoles.size() > 0) {
+                resultsModel = catData->resultsModel();
+                if (resultsModel) {
+                    resultsModel->setComponentsMapping(catData->getComponentsMapping());
+                }
             }
-            QModelIndex changedIndex(this->index(index));
-            dataChanged(changedIndex, changedIndex, changedRoles);
+            beginInsertRows(QModelIndex(), emptyIndex, emptyIndex);
+            m_categories.insert(emptyIndex, catData);
+            endInsertRows();
+        } else {
+            CategoryData* catData = m_categories[index].data();
+            // check if any attributes of the category changed
+            QVector<int> changedRoles(catData->updateAttributes(category));
+
+            if (changedRoles.size() > 0) {
+                resultsModel = catData->resultsModel();
+                if (resultsModel) {
+                    resultsModel->setComponentsMapping(catData->getComponentsMapping());
+                }
+                QModelIndex changedIndex(this->index(index));
+                dataChanged(changedIndex, changedIndex, changedRoles);
+            }
         }
     } else {
         CategoryData* catData = new CategoryData(category);

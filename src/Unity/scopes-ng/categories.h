@@ -74,6 +74,7 @@ private Q_SLOTS:
 
 private:
     int getCategoryIndex(QString const& categoryId) const;
+    int getFirstEmptyCategoryIndex() const;
 
     QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<CategoryData>> m_categories;

@@ -514,6 +514,29 @@ private Q_SLOTS:
         QCOMPARE(componentsChanged, true);
     }
 
+    void testCategoryOrderChange()
+    {
+        performSearch(m_scope, QString("two-categories"));
+
+        auto categories = m_scope->categories();
+        QCOMPARE(categories->rowCount(), 2);
+
+        QStringList order1;
+        order1 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
+        order1 << categories->data(categories->index(1), Categories::Roles::RoleCategoryId).toString();
+
+        // should at least change components
+        performSearch(m_scope, QString("two-categories-reversed"));
+        QCOMPARE(categories->rowCount(), 2);
+
+        QStringList order2;
+        order2 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
+        order2 << categories->data(categories->index(1), Categories::Roles::RoleCategoryId).toString();
+
+        QCOMPARE(order1[0], order2[1]);
+        QCOMPARE(order1[1], order2[0]);
+    }
+
     void testScopePreview()
     {
         performSearch(m_scope, QString(""));
