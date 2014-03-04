@@ -146,6 +146,34 @@ public:
             res.set_intercept_activation();
             reply->push(res);
         }
+        else if (query_ == "two-categories")
+        {
+            auto cat1 = reply->register_category("cat1", "Category 1", "");
+            auto cat2 = reply->register_category("cat2", "Category 2", "");
+            CategorisedResult res1(cat1);
+            res1.set_uri("test:uri");
+            res1.set_title("result for: \"" + query_ + "\"");
+            reply->push(res1);
+
+            CategorisedResult res2(cat2);
+            res2.set_uri("test:uri");
+            res2.set_title("result for: \"" + query_ + "\"");
+            reply->push(res2);
+        }
+        else if (query_ == "two-categories-reversed")
+        {
+            auto cat2 = reply->register_category("cat2", "Category 2", "");
+            auto cat1 = reply->register_category("cat1", "Category 1", "");
+            CategorisedResult res2(cat2);
+            res2.set_uri("test:uri");
+            res2.set_title("result for: \"" + query_ + "\"");
+            reply->push(res2);
+
+            CategorisedResult res1(cat1);
+            res1.set_uri("test:uri");
+            res1.set_title("result for: \"" + query_ + "\"");
+            reply->push(res1);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
