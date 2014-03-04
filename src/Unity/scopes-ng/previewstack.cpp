@@ -143,6 +143,21 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 
 void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
+    PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
+    if (previewModel != nullptr) {
+        PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
+        if (widgetData != nullptr) {
+            if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
+                if (m_associatedScope) {
+                    m_associatedScope->activateUri(data.value("uri").toString());
+                    return;
+                }
+            }
+        } else {
+            qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
+        }
+    }
+
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
         scopes::ActionMetadata metadata("C", "phone"); //FIXME

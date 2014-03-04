@@ -222,11 +222,16 @@ public:
             VariantBuilder builder;
             builder.add_tuple({
                 {"id", Variant("open")},
-                {"label", Variant("Open")}
+                {"label", Variant("Open")},
+                {"uri", Variant("application:///tmp/non-existent.desktop")}
             });
             builder.add_tuple({
                 {"id", Variant("download")},
                 {"label", Variant("Download")}
+            });
+            builder.add_tuple({
+                {"id", Variant("hide")},
+                {"label", Variant("Hide")}
             });
             w4.add_attribute("actions", builder.end());
 
@@ -334,7 +339,7 @@ public:
 
     virtual ActivationBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
     {
-        if (widget_id == "actions" && action_id == "open")
+        if (widget_id == "actions" && action_id == "hide")
         {
             return ActivationBase::UPtr(new MyActivation(result));
         }

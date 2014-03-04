@@ -636,10 +636,36 @@ private Q_SLOTS:
         QCOMPARE(preview->rowCount(), 1);
 
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
-        Q_EMIT preview->triggered(QString("actions"), QString("open"), QVariantMap());
+        Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
         QCOMPARE(preview->processingAction(), true);
         QVERIFY(spy.wait());
         QCOMPARE(preview->processingAction(), false);
+    }
+
+    void testPreviewUriAction()
+    {
+        performSearch(m_scope, QString("layout"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
+        QCOMPARE(preview_stack->rowCount(), 1);
+        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+        auto preview = preview_stack->get(0);
+        QTRY_COMPARE(preview->loaded(), true);
+        QCOMPARE(preview->rowCount(), 1);
+
+        QSignalSpy spy(m_scope, SIGNAL(activateApplication(QString)));
+        QVariantMap hints;
+        hints["uri"] = QString("application:///tmp/non-existent.desktop");
+        Q_EMIT preview->triggered(QString("actions"), QString("open"), hints);
+        // this is likely to be invoked synchronously
+        if (spy.count() == 0) {
+            QVERIFY(spy.wait());
+        }
+        QList<QVariant> arguments = spy.takeFirst();
+        auto desktopFile = arguments.at(0).value<QString>();
+        QCOMPARE(desktopFile, QString("non-existent"));
     }
 
     void testPreviewReplacingPreview()

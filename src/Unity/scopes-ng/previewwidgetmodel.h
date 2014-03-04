@@ -54,17 +54,17 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void insertWidget(QSharedPointer<PreviewData> const&, int);
-    void addWidgets(QList<QSharedPointer<PreviewData>> const&);
-    void adoptWidgets(QList<QSharedPointer<PreviewData>> const&);
-    bool widgetChanged(PreviewData*);
+    void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);
+    void addWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
+    void adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
+    bool widgetChanged(PreviewWidgetData*);
 
     void clearWidgets();
 
 private Q_SLOTS:
 
 private:
-    QList<QSharedPointer<PreviewData>> m_previewWidgets;
+    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

@@ -96,6 +96,7 @@ public:
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
+    void activateUri(QString const& uri);
     void invalidateResults();
 
 Q_SIGNALS:
@@ -136,8 +137,6 @@ private:
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
     void invalidateLastSearch();
-
-    void activateUri(QString const& uri);
 
     QString m_scopeId;
     QString m_searchQuery;
