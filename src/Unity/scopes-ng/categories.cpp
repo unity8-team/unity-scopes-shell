@@ -338,6 +338,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
     if (index >= 0) {
+        // re-registering an existing category will move it after the first non-empty category
         int emptyIndex = getFirstEmptyCategoryIndex();
         if (emptyIndex < index) {
             QSharedPointer<CategoryData> catData;
