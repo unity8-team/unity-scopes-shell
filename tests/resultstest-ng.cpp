@@ -533,6 +533,10 @@ private Q_SLOTS:
         order2 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
         order2 << categories->data(categories->index(1), Categories::Roles::RoleCategoryId).toString();
 
+        QCOMPARE(order1[0], QString("cat1"));
+        QCOMPARE(order1[1], QString("cat2"));
+        QCOMPARE(order2[0], QString("cat2"));
+        QCOMPARE(order2[1], QString("cat1"));
         QCOMPARE(order1[0], order2[1]);
         QCOMPARE(order1[1], order2[0]);
     }
