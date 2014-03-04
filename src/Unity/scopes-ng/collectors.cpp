@@ -324,7 +324,7 @@ void PreviewDataReceiver::finished(scopes::ListenerBase::Reason reason, std::str
     postCollectedResults(status);
 }
 
-void ActivationReceiver::activation_response(scopes::ActivationResponse const& response)
+void ActivationReceiver::activated(scopes::ActivationResponse const& response)
 {
     m_collector->setResponse(response);
 }

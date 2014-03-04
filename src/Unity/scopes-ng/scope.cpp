@@ -190,8 +190,8 @@ void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> cons
     }
 
     if (response->status() == scopes::ActivationResponse::PerformQuery) {
-        scopes::Query q(response->query());
-        QString scopeId(QString::fromStdString(q.scope_name()));
+        scopes::CannedQuery q(response->query());
+        QString scopeId(QString::fromStdString(q.scope_id()));
         // figure out if this scope is already favourited
         if (scopes->getScopeById(scopeId) != nullptr) {
             // TODO: change department, filters, query_string?
@@ -210,7 +210,7 @@ void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> cons
                 QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
                 scopes->refreshScopeMetadata();
             } else {
-                qWarning("Unable to find scope \"%s\" after metadata refresh", q.scope_name().c_str());
+                qWarning("Unable to find scope \"%s\" after metadata refresh", q.scope_id().c_str());
             }
         }
     }
@@ -311,10 +311,10 @@ void Scope::dispatchSearch()
     }
 
     if (m_proxy) {
-        scopes::SearchMetadata vm("C", m_formFactor.toStdString()); //FIXME
+        scopes::SearchMetadata meta("C", m_formFactor.toStdString()); //FIXME
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
-            m_lastSearchQuery = m_proxy->create_query(m_searchQuery.toStdString(), vm, m_lastSearch);
+            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), meta, m_lastSearch);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
@@ -337,7 +337,7 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
 
 QString Scope::id() const
 {
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->scope_name() : "");
+    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->scope_id() : "");
 }
 
 QString Scope::name() const

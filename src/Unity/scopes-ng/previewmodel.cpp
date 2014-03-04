@@ -232,13 +232,13 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
         QVariantMap attributes;
 
         // collect all components and map their values if present in result
-        for (auto const& kv_pair : widget.components()) {
+        for (auto const& kv_pair : widget.attribute_mappings()) {
             components[QString::fromStdString(kv_pair.first)] = QString::fromStdString(kv_pair.second);
         }
         processComponents(components, attributes);
 
         // collect all attributes and their values
-        for (auto const& attr_pair : widget.attributes()) {
+        for (auto const& attr_pair : widget.attribute_values()) {
             attributes[QString::fromStdString(attr_pair.first)] = scopeVariantToQVariant(attr_pair.second);
         }
 

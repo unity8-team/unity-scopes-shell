@@ -149,9 +149,9 @@ private:
 
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
-    unity::scopes::SearchListener::SPtr m_lastSearch;
+    unity::scopes::SearchListenerBase::SPtr m_lastSearch;
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
-    unity::scopes::ActivationListener::SPtr m_lastActivation;
+    unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     Categories* m_categories;
     QTimer m_aggregatorTimer;

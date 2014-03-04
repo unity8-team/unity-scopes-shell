@@ -17,16 +17,7 @@
  *  Michal Hruby <michal.hruby@canonical.com>
  */
 
-#include <unity/scopes/ScopeBase.h>
-#include <unity/scopes/SearchReply.h>
-#include <unity/scopes/PreviewReply.h>
-#include <unity/scopes/ActivationBase.h>
-#include <unity/scopes/Category.h>
-#include <unity/scopes/CategorisedResult.h>
-#include <unity/scopes/CategoryRenderer.h>
-#include <unity/scopes/PreviewWidget.h>
-#include <unity/scopes/ColumnLayout.h>
-#include <unity/scopes/VariantBuilder.h>
+#include <unity-scopes.h>
 
 #include <iostream>
 
@@ -37,7 +28,7 @@ using namespace unity::scopes;
 
 // Example scope A: replies synchronously to a query. (Replies are returned before returning from the run() method.)
 
-class MyQuery : public SearchQuery
+class MyQuery : public SearchQueryBase
 {
 public:
     MyQuery(string const& query) :
@@ -191,7 +182,7 @@ private:
     string query_;
 };
 
-class MyPreview : public PreviewQuery
+class MyPreview : public PreviewQueryBase
 {
 public:
     MyPreview(Result const& result, Variant const& scope_data = Variant()) :
@@ -212,11 +203,11 @@ public:
         if (result_.uri().find("layout") != std::string::npos)
         {
             PreviewWidget w1("img", "image");
-            w1.add_attribute("source", Variant("foo.png"));
+            w1.add_attribute_value("source", Variant("foo.png"));
             PreviewWidget w2("hdr", "header");
-            w2.add_attribute("title", Variant("Preview title"));
+            w2.add_attribute_value("title", Variant("Preview title"));
             PreviewWidget w3("desc", "text");
-            w3.add_attribute("text", Variant("Lorum ipsum..."));
+            w3.add_attribute_value("text", Variant("Lorum ipsum..."));
             PreviewWidget w4("actions", "actions");
 
             VariantBuilder builder;
@@ -233,7 +224,7 @@ public:
                 {"id", Variant("hide")},
                 {"label", Variant("Hide")}
             });
-            w4.add_attribute("actions", builder.end());
+            w4.add_attribute_value("actions", builder.end());
 
             ColumnLayout l1(1);
             l1.add_column({"img", "hdr", "desc", "actions", "extra"});
@@ -245,7 +236,7 @@ public:
             PreviewWidgetList widgets({w1, w2, w3, w4});
             if (!scope_data_.is_null()) {
                 PreviewWidget extra("extra", "text");
-                extra.add_attribute("text", Variant("got scope data"));
+                extra.add_attribute_value("text", Variant("got scope data"));
                 widgets.push_back(extra);
             }
             reply->push(widgets);
@@ -267,7 +258,7 @@ private:
     Variant scope_data_;
 };
 
-class MyActivation : public ActivationBase
+class MyActivation : public ActivationQueryBase
 {
 public:
     MyActivation(Result const& result) :
@@ -296,13 +287,11 @@ public:
     virtual ActivationResponse activate() override
     {
         if (status_ == ActivationResponse::Status::PerformQuery) {
-            auto resp = ActivationResponse(Query(result_["scope-id"].get_string()));
+            auto resp = ActivationResponse(CannedQuery(result_["scope-id"].get_string()));
             return resp;
         } else {
             auto resp = ActivationResponse(status_);
-            if (extra_data_.which() == Variant::Dict) {
-                resp.setHints(extra_data_.get_dict());
-            }
+            resp.set_scope_data(extra_data_);
             return resp;
         }
     }
@@ -323,41 +312,41 @@ public:
 
     virtual void stop() override {}
 
-    virtual QueryBase::UPtr create_query(Query const& q, SearchMetadata const&) override
+    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
     {
-        QueryBase::UPtr query(new MyQuery(q.query_string()));
+        SearchQueryBase::UPtr query(new MyQuery(q.query_string()));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
 
-    virtual QueryBase::UPtr preview(Result const& result, ActionMetadata const& metadata) override
+    virtual PreviewQueryBase::UPtr preview(Result const& result, ActionMetadata const& metadata) override
     {
-        QueryBase::UPtr query(new MyPreview(result, metadata.scope_data()));
+        PreviewQueryBase::UPtr query(new MyPreview(result, metadata.scope_data()));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
     }
 
-    virtual ActivationBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
+    virtual ActivationQueryBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
     {
         if (widget_id == "actions" && action_id == "hide")
         {
-            return ActivationBase::UPtr(new MyActivation(result));
+            return ActivationQueryBase::UPtr(new MyActivation(result));
         }
         else if (widget_id == "actions" && action_id == "download")
         {
             MyActivation* response = new MyActivation(result, ActivationResponse::ShowPreview);
             response->setExtraData(meta.scope_data());
-            return ActivationBase::UPtr(response);
+            return ActivationQueryBase::UPtr(response);
         }
-        return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
+        return ActivationQueryBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
     }
 
-    virtual ActivationBase::UPtr activate(Result const& result, ActionMetadata const&) override
+    virtual ActivationQueryBase::UPtr activate(Result const& result, ActionMetadata const&) override
     {
         if (result.uri().find("perform-query") != std::string::npos) {
-            return ActivationBase::UPtr(new MyActivation(result, ActivationResponse::PerformQuery));
+            return ActivationQueryBase::UPtr(new MyActivation(result, ActivationResponse::PerformQuery));
         }
-        return ActivationBase::UPtr(new MyActivation(result));
+        return ActivationQueryBase::UPtr(new MyActivation(result));
     }
 };
 

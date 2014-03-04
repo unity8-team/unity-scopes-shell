@@ -195,7 +195,7 @@ void PreviewStack::processActionResponse(PushEvent* pushEvent)
             // replace current preview
             m_activePreview->setDelayedClear();
             // the preview is marked as processing action, leave the flag on until the preview is updated
-            dispatchPreview(scopes::Variant(response->hints()));
+            dispatchPreview(scopes::Variant(response->scope_data()));
             break;
         // TODO: case to nest preview (once such API is available)
         default:
