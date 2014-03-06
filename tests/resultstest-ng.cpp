@@ -122,7 +122,9 @@ private:
         scope->setSearchQuery(searchString);
         QCOMPARE(scope->searchInProgress(), true);
         // wait for the search to finish
-        QTRY_COMPARE(scope->searchInProgress(), false);
+        QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+        QVERIFY(spy.wait());
+        QCOMPARE(scope->searchInProgress(), false);
     }
 
 private Q_SLOTS:
@@ -159,8 +161,11 @@ private Q_SLOTS:
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
+        QCOMPARE(m_scopes->loaded(), false);
+        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged(bool)));
         // wait till the registry spawns
-        QTRY_COMPARE(m_scopes->loaded(), true);
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scopes->loaded(), true);
         // should have one scope now
         QCOMPARE(m_scopes->rowCount(), 1);
 
@@ -317,8 +322,12 @@ private Q_SLOTS:
         args << "string:mock-scope";
         QProcess::execute("dbus-send", args);
 
-        QTRY_COMPARE(m_scope->searchInProgress(), true);
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        QCOMPARE(m_scope->searchInProgress(), false);
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), true);
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
     }
 
     void testAlbumArtResult()
