@@ -96,6 +96,7 @@ public:
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
+    void activateUri(QString const& uri);
     void invalidateResults();
 
 Q_SIGNALS:
@@ -137,8 +138,6 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
 
-    void activateUri(QString const& uri);
-
     QString m_scopeId;
     QString m_searchQuery;
     QString m_noResultsHint;
@@ -150,9 +149,9 @@ private:
 
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
-    unity::scopes::SearchListener::SPtr m_lastSearch;
+    unity::scopes::SearchListenerBase::SPtr m_lastSearch;
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
-    unity::scopes::ActivationListener::SPtr m_lastActivation;
+    unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     Categories* m_categories;
     QTimer m_aggregatorTimer;

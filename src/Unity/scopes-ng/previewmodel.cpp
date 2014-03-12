@@ -232,22 +232,22 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
         QVariantMap attributes;
 
         // collect all components and map their values if present in result
-        for (auto const& kv_pair : widget.components()) {
+        for (auto const& kv_pair : widget.attribute_mappings()) {
             components[QString::fromStdString(kv_pair.first)] = QString::fromStdString(kv_pair.second);
         }
         processComponents(components, attributes);
 
         // collect all attributes and their values
-        for (auto const& attr_pair : widget.attributes()) {
+        for (auto const& attr_pair : widget.attribute_values()) {
             attributes[QString::fromStdString(attr_pair.first)] = scopeVariantToQVariant(attr_pair.second);
         }
 
         if (!widget_type.isEmpty()) {
-            auto preview_data = new PreviewData(id, widget_type, components, attributes);
+            auto preview_data = new PreviewWidgetData(id, widget_type, components, attributes);
             for (auto attr_it = components.begin(); attr_it != components.end(); ++attr_it) {
                 m_dataToWidgetMap.insert(attr_it.value(), preview_data);
             }
-            QSharedPointer<PreviewData> widgetData(preview_data);
+            QSharedPointer<PreviewWidgetData> widgetData(preview_data);
             m_previewWidgets.append(widgetData);
 
             addWidgetToColumnModel(widgetData);
@@ -275,7 +275,7 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
     }
 }
 
-void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewData> const& widgetData)
+void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
 {
     int destinationColumnIndex = -1;
     int destinationRowIndex = -1;
@@ -307,7 +307,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewData> const& wid
 
 void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
 {
-    QSet<PreviewData*> changedWidgets;
+    QSet<PreviewWidgetData*> changedWidgets;
     for (auto it = data.begin(); it != data.end(); ++it) {
         m_allData.insert(it.key(), it.value());
         auto map_it = m_dataToWidgetMap.constFind(it.key());
@@ -318,7 +318,7 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
     }
 
     for (int i = 0; i < m_previewWidgets.size(); i++) {
-        PreviewData* widget = m_previewWidgets.at(i).data();
+        PreviewWidgetData* widget = m_previewWidgets.at(i).data();
         if (changedWidgets.contains(widget)) {
             // re-process attributes and emit dataChanged
             processComponents(widget->component_map, widget->data);
@@ -331,6 +331,18 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
             }
         }
     }
+}
+
+PreviewWidgetData* PreviewModel::getWidgetData(QString const& widgetId) const
+{
+    for (int i = 0; i < m_previewWidgets.size(); i++) {
+        PreviewWidgetData* widgetData = m_previewWidgets[i].data();
+        if (widgetData->id == widgetId) {
+            return widgetData;
+        }
+    }
+
+    return nullptr;
 }
 
 int PreviewModel::rowCount(const QModelIndex&) const

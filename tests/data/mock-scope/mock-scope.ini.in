@@ -5,3 +5,4 @@ Art = mock.Art
 Icon = mock.Icon
 SearchHint = mock.SearchHint
 HotKey = mock.HotKey
+Author = mock.Author

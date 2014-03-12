@@ -26,10 +26,9 @@
 #include <QMutex>
 #include <QElapsedTimer>
 
-#include <unity/scopes/ListenerBase.h>
-#include <unity/scopes/ActivationListener.h>
-#include <unity/scopes/SearchListener.h>
-#include <unity/scopes/PreviewListener.h>
+#include <unity/scopes/ActivationListenerBase.h>
+#include <unity/scopes/SearchListenerBase.h>
+#include <unity/scopes/PreviewListenerBase.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
 #include <unity/scopes/PreviewWidget.h>
@@ -101,7 +100,7 @@ private:
     std::shared_ptr<CollectorBase> m_collector;
 };
 
-class SearchResultReceiver: public unity::scopes::SearchListener, public ScopeDataReceiverBase
+class SearchResultReceiver: public unity::scopes::SearchListenerBase, public ScopeDataReceiverBase
 {
 public:
     virtual void push(unity::scopes::CategorisedResult result) override;
@@ -113,7 +112,7 @@ private:
     std::shared_ptr<ResultCollector> m_collector;
 };
 
-class PreviewDataReceiver: public unity::scopes::PreviewListener, public ScopeDataReceiverBase
+class PreviewDataReceiver: public unity::scopes::PreviewListenerBase, public ScopeDataReceiverBase
 {
 public:
     virtual void push(unity::scopes::ColumnLayoutList const& layouts) override;
@@ -127,10 +126,10 @@ private:
     std::shared_ptr<PreviewDataCollector> m_collector;
 };
 
-class ActivationReceiver: public unity::scopes::ActivationListener, public ScopeDataReceiverBase
+class ActivationReceiver: public unity::scopes::ActivationListenerBase, public ScopeDataReceiverBase
 {
 public:
-    virtual void activation_response(unity::scopes::ActivationResponse const&) override;
+    virtual void activated(unity::scopes::ActivationResponse const&) override;
     virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
 
     ActivationReceiver(QObject* receiver, std::shared_ptr<unity::scopes::Result> const& result);

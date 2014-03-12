@@ -49,7 +49,7 @@ QHash<int, QByteArray> PreviewWidgetModel::roleNames() const
     return roles;
 }
 
-void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewData> const& widget, int position)
+void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
 {
     int insertPos = position >= 0 && position <= m_previewWidgets.count() ? position : m_previewWidgets.count();
     beginInsertRows(QModelIndex(), insertPos, insertPos);
@@ -59,7 +59,7 @@ void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewData> const& widget,
     endInsertRows();
 }
 
-void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewData>> const& widgetList)
+void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
 {
     if (widgetList.size() == 0) return;
 
@@ -70,7 +70,7 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewData>> const& wi
     endInsertRows();
 }
 
-void PreviewWidgetModel::adoptWidgets(QList<QSharedPointer<PreviewData>> const& widgetList)
+void PreviewWidgetModel::adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
 {
     beginResetModel();
 
@@ -87,7 +87,7 @@ void PreviewWidgetModel::clearWidgets()
     endRemoveRows();
 }
 
-bool PreviewWidgetModel::widgetChanged(PreviewData* widget)
+bool PreviewWidgetModel::widgetChanged(PreviewWidgetData* widget)
 {
     for (int i = 0; i < m_previewWidgets.size(); i++) {
         if (m_previewWidgets[i].data() == widget) {

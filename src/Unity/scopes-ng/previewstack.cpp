@@ -143,6 +143,21 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 
 void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
+    PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
+    if (previewModel != nullptr) {
+        PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
+        if (widgetData != nullptr) {
+            if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
+                if (m_associatedScope) {
+                    m_associatedScope->activateUri(data.value("uri").toString());
+                    return;
+                }
+            }
+        } else {
+            qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
+        }
+    }
+
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
         scopes::ActionMetadata metadata("C", "phone"); //FIXME
@@ -180,7 +195,7 @@ void PreviewStack::processActionResponse(PushEvent* pushEvent)
             // replace current preview
             m_activePreview->setDelayedClear();
             // the preview is marked as processing action, leave the flag on until the preview is updated
-            dispatchPreview(scopes::Variant(response->hints()));
+            dispatchPreview(scopes::Variant(response->scope_data()));
             break;
         // TODO: case to nest preview (once such API is available)
         default:
