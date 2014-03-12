@@ -192,18 +192,22 @@ void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> cons
     if (response->status() == scopes::ActivationResponse::PerformQuery) {
         scopes::CannedQuery q(response->query());
         QString scopeId(QString::fromStdString(q.scope_id()));
+        QString searchString(QString::fromStdString(q.query_string()));
         // figure out if this scope is already favourited
-        if (scopes->getScopeById(scopeId) != nullptr) {
+        Scope* scope = scopes->getScopeById(scopeId);
+        if (scope != nullptr) {
             // TODO: change department, filters, query_string?
+            scope->setSearchQuery(searchString);
             Q_EMIT gotoScope(scopeId);
         } else {
             // create temp dash page
             auto meta_sptr = scopes->getCachedMetadata(scopeId);
             if (meta_sptr) {
-                Scope* temp_page = new scopes_ng::Scope(this);
-                temp_page->setScopeData(*meta_sptr);
-                m_tempScopes.insert(temp_page);
-                Q_EMIT openScope(temp_page);
+                scope = new scopes_ng::Scope(this);
+                scope->setScopeData(*meta_sptr);
+                scope->setSearchQuery(searchString);
+                m_tempScopes.insert(scope);
+                Q_EMIT openScope(scope);
             } else if (allowDelayedActivation) {
                 // request registry refresh to get the missing metadata
                 m_delayedActivation = response;
