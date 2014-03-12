@@ -1,8 +1,14 @@
-unity-scopes-shell (0.4.0-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.4.0+14.04.20140312.1-0ubuntu1) trusty; urgency=medium
 
+  [ Michal Hruby ]
   * Updated for libunity-scopes 0.4.0.
+  * Set searchString before emitting gotoScope/openScope.
 
- -- Michal Hruby <michal.hruby@canonical.com>  Tue, 04 Mar 2014 18:04:16 +0000
+  [ Michael Zanetti ]
+  * Activate applications by the appId instead of the path to the
+    desktop file to align it with how the rest of unity8 works.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 12 Mar 2014 17:04:50 +0000
 
 unity-scopes-shell (0.3.1+14.04.20140221.2-0ubuntu1) trusty; urgency=low
 
