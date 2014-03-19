@@ -3,6 +3,14 @@
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
+
+DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+ifneq (,$(findstring powerpc,$(DEB_HOST_GNU_TYPE)))
+# Work around pointer equality problem with -Bsymbolic-functions:
+#   http://lists.linaro.org/pipermail/linaro-toolchain/2014-January/003944.html
+export DEB_BUILD_MAINT_OPTIONS := hardening=+pie
+endif
+
 export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 
 %:
