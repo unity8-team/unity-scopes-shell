@@ -1,3 +1,9 @@
+unity-scopes-shell (0.4.0+14.04.20140319-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Changed debian rules file to fix linker issue on ppc.
+
+ -- Michal Hruby <michal.hruby@canonical.com>  Thu, 20 Mar 2014 08:40:44 +0000
+
 unity-scopes-shell (0.4.0+14.04.20140312.3-0ubuntu1) trusty; urgency=low
 
   * New rebuild forced
