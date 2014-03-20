@@ -534,7 +534,6 @@ private Q_SLOTS:
         order1 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
         order1 << categories->data(categories->index(1), Categories::Roles::RoleCategoryId).toString();
 
-        // should at least change components
         performSearch(m_scope, QString("two-categories-reversed"));
         QCOMPARE(categories->rowCount(), 2);
 
@@ -548,6 +547,30 @@ private Q_SLOTS:
         QCOMPARE(order2[1], QString("cat1"));
         QCOMPARE(order1[0], order2[1]);
         QCOMPARE(order1[1], order2[0]);
+    }
+
+    void testCategoryOrderChange2()
+    {
+        performSearch(m_scope, QString("two-categories-one-result"));
+
+        auto categories = m_scope->categories();
+        QCOMPARE(categories->rowCount(), 1);
+
+        QStringList order1;
+        order1 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
+
+        // should at least change components
+        performSearch(m_scope, QString("two-categories-reversed"));
+        QCOMPARE(categories->rowCount(), 2);
+
+        QStringList order2;
+        order2 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
+        order2 << categories->data(categories->index(1), Categories::Roles::RoleCategoryId).toString();
+
+        QCOMPARE(order1[0], QString("cat1"));
+        QCOMPARE(order2[0], QString("cat2"));
+        QCOMPARE(order2[1], QString("cat1"));
+        QCOMPARE(order1[0], order2[1]);
     }
 
     void testScopePreview()
