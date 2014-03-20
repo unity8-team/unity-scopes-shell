@@ -337,9 +337,9 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
 {
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
+    int emptyIndex = getFirstEmptyCategoryIndex();
     if (index >= 0) {
         // re-registering an existing category will move it after the first non-empty category
-        int emptyIndex = getFirstEmptyCategoryIndex();
         if (emptyIndex < index) {
             QSharedPointer<CategoryData> catData;
             // we could do real move, but the view doesn't like it much
@@ -379,10 +379,9 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         }
         catData->setResultsModel(resultsModel);
 
-        auto last_index = m_categories.size();
-        beginInsertRows(QModelIndex(), last_index, last_index);
+        beginInsertRows(QModelIndex(), emptyIndex, emptyIndex);
 
-        m_categories.append(QSharedPointer<CategoryData>(catData));
+        m_categories.insert(emptyIndex, QSharedPointer<CategoryData>(catData));
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
         resultsModel->setComponentsMapping(catData->getComponentsMapping());
         m_categoryResults[category->id()] = resultsModel;
