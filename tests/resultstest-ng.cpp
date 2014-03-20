@@ -559,7 +559,6 @@ private Q_SLOTS:
         QStringList order1;
         order1 << categories->data(categories->index(0), Categories::Roles::RoleCategoryId).toString();
 
-        // should at least change components
         performSearch(m_scope, QString("two-categories-reversed"));
         QCOMPARE(categories->rowCount(), 2);
 
