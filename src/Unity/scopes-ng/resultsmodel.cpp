@@ -40,12 +40,8 @@ ResultsModel::ResultsModel(QObject* parent)
     m_roles[ResultsModel::RoleSubtitle] = "subtitle";
     m_roles[ResultsModel::RoleMascot] = "mascot";
     m_roles[ResultsModel::RoleEmblem] = "emblem";
-    m_roles[ResultsModel::RoleOldPrice] = "oldPrice";
-    m_roles[ResultsModel::RolePrice] = "price";
-    m_roles[ResultsModel::RoleAltPrice] = "altPrice";
-    m_roles[ResultsModel::RoleRating] = "rating";
-    m_roles[ResultsModel::RoleAltRating] = "altRating";
     m_roles[ResultsModel::RoleSummary] = "summary";
+    m_roles[ResultsModel::RoleAttributes] = "attributes";
     m_roles[ResultsModel::RoleBackground] = "background";
 }
 
@@ -139,6 +135,45 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     return QString::fromStdString(v.get_string());
 }
 
+QVariant
+ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
+{
+    auto mappingIt = m_componentMapping.find("attributes");
+    if (mappingIt == m_componentMapping.end()) {
+        return QVariant();
+    }
+    std::string const& realFieldName = mappingIt->second;
+    if (!result->contains(realFieldName)) {
+        return QVariant();
+    }
+    scopes::Variant const& v = result->value(realFieldName);
+    if (v.which() != scopes::Variant::Type::Array) {
+        return QVariant();
+    }
+
+    QVariantList attributes;
+    scopes::VariantArray arr(v.get_array());
+    for (unsigned i = 0; i < arr.size(); i++) {
+        if (arr[i].which() != scopes::Variant::Type::Dict) {
+            continue;
+        }
+        QVariantMap attribute(scopeVariantToQVariant(arr[i]).toMap());
+        if (!attribute.contains("value")) {
+            continue;
+        }
+        QVariant valueVar(attribute.value("value"));
+        if (valueVar.type() == QVariant::String && valueVar.toString().trimmed().isEmpty()) {
+            continue;
+        }
+        if (!attribute.contains("style")) {
+            attribute["style"] = QString("default");
+        }
+        attributes << QVariant(attribute);
+    }
+
+    return attributes;
+}
+
 QVariant ResultsModel::get(int row) const
 {
     if (row >= m_results.size() || row < 0) return QVariantMap();
@@ -207,16 +242,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
             return componentValue(result, "mascot");
         case RoleEmblem:
             return componentValue(result, "emblem");
-        case RoleOldPrice:
-            return componentValue(result, "old-price");
-        case RolePrice:
-            return componentValue(result, "price");
-        case RoleAltPrice:
-            return componentValue(result, "alt-price");
-        case RoleRating:
-            return componentValue(result, "rating");
-        case RoleAltRating:
-            return componentValue(result, "alt-rating");
+        case RoleAttributes:
+            return attributesValue(result);
         case RoleSummary:
             return componentValue(result, "summary");
         case RoleBackground: {

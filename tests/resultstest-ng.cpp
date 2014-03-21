@@ -299,11 +299,7 @@ private Q_SLOTS:
         // mapped but not present in the result
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleMascot).toString(), QString());
         // unmapped
-        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltRating).isNull());
-        QVERIFY(results->data(idx, ResultsModel::Roles::RoleOldPrice).isNull());
-        QVERIFY(results->data(idx, ResultsModel::Roles::RolePrice).isNull());
-        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAltPrice).isNull());
-        QVERIFY(results->data(idx, ResultsModel::Roles::RoleRating).isNull());
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleAttributes).isNull());
         QVERIFY(results->data(idx, ResultsModel::Roles::RoleSummary).isNull());
     }
 
@@ -424,7 +420,9 @@ private Q_SLOTS:
 
         auto idx = results->index(0);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(), QString("result for: \"rating\""));
-        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleRating).toString(), QString("***"));
+        auto attributes = results->data(idx, ResultsModel::Roles::RoleAttributes).toList();
+        QVERIFY(attributes.size() >= 1);
+        QCOMPARE(attributes[0].toMap().value("value").toString(), QString("21 reviews"));
     }
 
     void testCategoryWithBackground()
