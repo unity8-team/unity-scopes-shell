@@ -165,6 +165,15 @@ public:
             res1.set_title("result for: \"" + query_ + "\"");
             reply->push(res1);
         }
+        else if (query_ == "two-categories-one-result")
+        {
+            auto cat1 = reply->register_category("cat1", "Category 1", "");
+            auto cat2 = reply->register_category("cat2", "Category 2", "");
+            CategorisedResult res1(cat1);
+            res1.set_uri("test:uri");
+            res1.set_title("result for: \"" + query_ + "\"");
+            reply->push(res1);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
