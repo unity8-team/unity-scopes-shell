@@ -1,3 +1,11 @@
+unity-scopes-shell (0.4.0+14.04.20140324-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Ensure proper ordering when registering new categories. (LP:
+    #1295135)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 24 Mar 2014 13:09:22 +0000
+
 unity-scopes-shell (0.4.0+14.04.20140320-0ubuntu1) trusty; urgency=medium
 
   [ Michal Hruby ]
