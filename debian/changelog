@@ -1,3 +1,9 @@
+unity-scopes-shell (0.4.0+14.04.20140325-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Drop support for unity-core based scopes
+
+ -- Michal Hruby <michal.hruby@canonical.com>  Tue, 25 Mar 2014 16:48:16 +0000
+
 unity-scopes-shell (0.4.0+14.04.20140324-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
