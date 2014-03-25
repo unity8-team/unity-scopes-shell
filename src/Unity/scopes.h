@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2011 Canonical, Ltd.
+ * Copyright (C) 2013 Canonical, Ltd.
  *
  * Authors:
- *  Florian Boucault <florian.boucault@canonical.com>
+ *  Michal Hruby <michal.hruby@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,29 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCOPES_H
-#define SCOPES_H
+#ifndef NG_SCOPES_H
+#define NG_SCOPES_H
 
 // Qt
 #include <QAbstractListModel>
 #include <QList>
+#include <QThread>
 
-// libunity-core
-#include <UnityCore/Scope.h>
-#include <UnityCore/GSettingsScopes.h>
+#include <unity/scopes/Runtime.h>
+#include <unity/scopes/Registry.h>
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ScopeProxyFwd.h>
+#include <unity/scopes/ScopeMetadata.h>
 
-namespace unity
+namespace scopes_ng
 {
-namespace dash
-{
-class Scopes;
-}
-}
 
-class Hotkey;
 class Scope;
 
-class Scopes : public QAbstractListModel
+class Q_DECL_EXPORT Scopes : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -49,7 +46,7 @@ class Scopes : public QAbstractListModel
 
 public:
     explicit Scopes(QObject *parent = 0);
-    ~Scopes() = default;
+    ~Scopes();
 
     enum Roles {
         RoleScope,
@@ -62,34 +59,59 @@ public:
     Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
     Q_INVOKABLE QVariant get(int row) const;
-    Q_INVOKABLE QVariant get(const QString& scope_id) const;
+    Q_INVOKABLE QVariant get(QString const& scopeId) const;
+
+    Scope* getScopeById(QString const& scopeId) const;
+    unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
+    void refreshScopeMetadata();
 
     QHash<int, QByteArray> roleNames() const;
 
     bool loaded() const;
 
 Q_SIGNALS:
-    void activateScopeRequested(const QString& scope_id);
     void loadedChanged(bool loaded);
-    void scopeRemoved(const QString& scope_id, int index);
+    void metadataRefreshed();
 
 private Q_SLOTS:
-    void onScopesLoaded();
-    void onScopeAdded(const unity::dash::Scope::Ptr& scope, int position);
-    void onScopeRemoved(const unity::dash::Scope::Ptr& scope);
-    void onScopesReordered(const unity::dash::Scopes::ScopeList& scopes);
-    void onScopePropertyChanged();
+    void populateScopes();
+    void discoveryFinished();
+    void refreshFinished();
+    void invalidateScopeResults(QString const&);
 
 private:
-    unity::dash::GSettingsScopesReader::Ptr m_scopesReader;
-    unity::dash::Scopes::Ptr m_unityScopes;
-    QList<Scope*> m_scopes;
+    static int LIST_DELAY;
+
     QHash<int, QByteArray> m_roles;
+    QList<Scope*> m_scopes;
+    QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
+    QThread* m_listThread;
     bool m_loaded;
 
-    void addUnityScope(const unity::dash::Scope::Ptr& unity_scope);
-    void removeUnityScope(int index);
-    int findScopeById(const QString& scope_id);
+    unity::scopes::Runtime::SPtr m_scopesRuntime;
 };
 
-#endif // SCOPES_H
+class ScopeListWorker: public QThread
+{
+    Q_OBJECT
+
+public:
+    void setRuntime(unity::scopes::Runtime::SPtr const& runtime);
+    void setRuntimeConfig(QString const& config);
+    void run() override;
+    unity::scopes::Runtime::SPtr getRuntime() const;
+    unity::scopes::MetadataMap metadataMap() const;
+
+Q_SIGNALS:
+    void discoveryFinished();
+
+private:
+    QString m_runtimeConfig;
+    unity::scopes::Runtime::SPtr m_scopesRuntime;
+    unity::scopes::MetadataMap m_metadataMap;
+};
+
+
+} // namespace scopes_ng
+
+#endif // NG_SCOPES_H

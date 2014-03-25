@@ -3,66 +3,36 @@ include(Plugins)
 
 # Dependencies
 include(FindPkgConfig)
-pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
-pkg_check_modules(UNITYCORE REQUIRED unity-core-6.0>=7.1.1)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.3.1)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${QTDEE_INCLUDE_DIRS}
-    ${UNITYCORE_INCLUDE_DIRS}
     ${SCOPESLIB_INCLUDE_DIRS}
 )
 
 set(QMLPLUGIN_SRC
-    abstractfilteroption.cpp
+    categories.cpp
+    collectors.cpp
+    previewmodel.cpp
+    previewstack.cpp
+    previewwidgetmodel.cpp
+    resultsmodel.cpp
     scope.cpp
     scopes.cpp
-    categories.cpp
-    checkoptionfilter.cpp
-    filter.cpp
-    filteroption.cpp
-    filters.cpp
-    genericoptionsmodel.cpp
-    ratingoptionsmodel.cpp
-    unityoptionsmodel.cpp
-    categoryresults.cpp
+    utils.cpp
     plugin.cpp
-    multirangefilter.cpp
-    radiooptionfilter.cpp
-    ratingsfilter.cpp
-    ratingfilteroption.cpp
-    applicationpreview.cpp
-    genericpreview.cpp
-    moviepreview.cpp
-    musicpreview.cpp
-    musicpreviewtrackmodel.cpp
-    preview.cpp
-    previewaction.cpp
-    previewinfohint.cpp
-    result.cpp
-    showallfilteroption.cpp
-    signalslist.cpp
-    socialpreview.cpp
-    socialpreviewcomment.cpp
     iconutils.cpp
-    variantutils.cpp
 )
-
-add_subdirectory(scopes-ng)
 
 add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
 
 target_link_libraries(Unity-qml
-    ${QTDEE_LDFLAGS}
-    ${UNITYCORE_LDFLAGS}
     ${SCOPESLIB_LDFLAGS}
-    ScopesNG-qml
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)
 
 # export the qmldir qmltypes and plugin files
 export_qmlfiles(Unity Unity)
-export_qmlplugin(Unity 0.1 Unity TARGETS Unity-qml)
+export_qmlplugin(Unity 0.2 Unity TARGETS Unity-qml)

@@ -22,7 +22,7 @@
 
 // local
 #include "utils.h"
-#include "../iconutils.h"
+#include "iconutils.h"
 
 namespace scopes_ng {
 

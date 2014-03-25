@@ -23,7 +23,7 @@
 #include <QScopedPointer>
 #include <QSignalSpy>
 
-#include <scopes-ng/utils.h>
+#include <utils.h>
 #include <unity/scopes/Variant.h>
 
 using namespace scopes_ng;

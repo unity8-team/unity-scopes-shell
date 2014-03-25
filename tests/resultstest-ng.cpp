@@ -30,13 +30,13 @@
 #include <QSignalSpy>
 #include <QDBusConnection>
 
-#include <scopes-ng/scopes.h>
-#include <scopes-ng/scope.h>
-#include <scopes-ng/categories.h>
-#include <scopes-ng/resultsmodel.h>
-#include <scopes-ng/previewmodel.h>
-#include <scopes-ng/previewstack.h>
-#include <scopes-ng/previewwidgetmodel.h>
+#include <scopes.h>
+#include <scope.h>
+#include <categories.h>
+#include <resultsmodel.h>
+#include <previewmodel.h>
+#include <previewstack.h>
+#include <previewwidgetmodel.h>
 
 #define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
 
