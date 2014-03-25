@@ -27,25 +27,17 @@
 #define BASE_THUMBNAILER_URI "image://thumbnailer/"
 #define BASE_ALBUMART_URI "image://albumart/"
 
-QString uriToThumbnailerProviderString(QString const &uri, QString const &mimetype, QVariantHash const &metadata)
+QString uriToThumbnailerProviderString(QString const &uri, QVariantHash const &metadata)
 {
     if (uri.startsWith(QLatin1String("file:///")) || uri.startsWith(QLatin1String("album://"))) {
-        bool isAudio = mimetype.startsWith(QLatin1String("audio/"));
+        bool isAlbum = metadata.contains("album") && metadata.contains("artist");
         QString thumbnailerUri;
-        if (isAudio) {
+        if (isAlbum) {
             thumbnailerUri = BASE_ALBUMART_URI;
-            if (metadata.contains("content")) {
-                QVariantHash contentHash = metadata["content"].toHash();
-                if (contentHash.contains("content")) { // nested content in Home?
-                    contentHash = contentHash["content"].toHash();
-                }
-                if (contentHash.contains("album") && contentHash.contains("artist")) {
-                    QUrlQuery query;
-                    query.addQueryItem(QStringLiteral("artist"), contentHash["artist"].toString());
-                    query.addQueryItem(QStringLiteral("album"), contentHash["album"].toString());
-                    thumbnailerUri.append(query.toString());
-                }
-            }
+            QUrlQuery query;
+            query.addQueryItem(QStringLiteral("artist"), metadata["artist"].toString());
+            query.addQueryItem(QStringLiteral("album"), metadata["album"].toString());
+            thumbnailerUri.append(query.toString());
         } else {
             thumbnailerUri = BASE_THUMBNAILER_URI;
             thumbnailerUri.append(uri.midRef(7));
