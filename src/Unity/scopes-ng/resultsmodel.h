@@ -52,12 +52,8 @@ public:
         RoleSubtitle,
         RoleMascot,
         RoleEmblem,
-        RoleOldPrice,
-        RolePrice,
-        RoleAltPrice,
-        RoleRating,
-        RoleAltRating,
         RoleSummary,
+        RoleAttributes,
         RoleBackground
     };
 
@@ -84,6 +80,7 @@ Q_SIGNALS:
 
 private:
     QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
+    QVariant attributesValue(unity::scopes::CategorisedResult const* result) const;
 
     QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;

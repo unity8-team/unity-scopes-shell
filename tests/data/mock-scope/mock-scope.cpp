@@ -61,14 +61,33 @@ public:
         }
         else if (query_ == "rating")
         {
-            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "rating": {"field": "rating", "type": "stars"}}})");
+            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "attributes": "attributes"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", rating_rndr);
             CategorisedResult res(cat);
             res.set_uri("test:uri");
             res.set_title("result for: \"" + query_ + "\"");
             res.set_art("art");
             res.set_dnd_uri("test:dnd_uri");
-            res["rating"] = "***";
+            VariantBuilder attribute_builder;
+            attribute_builder.add_tuple({{"value", Variant("21 reviews")}});
+            res["attributes"] = attribute_builder.end();
+            reply->push(res);
+        }
+        else if (query_ == "attributes")
+        {
+            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "attributes": "attributes"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", rating_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            res.set_dnd_uri("test:dnd_uri");
+            VariantBuilder attribute_builder;
+            attribute_builder.add_tuple({{"value", Variant("21 reviews")}});
+            attribute_builder.add_tuple({{"value", Variant("4 comments")}});
+            attribute_builder.add_tuple({{"value", Variant("28 stars")}});
+            attribute_builder.add_tuple({{"value", Variant("foobar")}});
+            res["attributes"] = attribute_builder.end();
             reply->push(res);
         }
         else if (query_ == "background")
