@@ -28,6 +28,8 @@ namespace scopes_ng {
 
 using namespace unity;
 
+const int MAX_ATTRIBUTES = 3;
+
 ResultsModel::ResultsModel(QObject* parent)
     : QAbstractListModel(parent)
 {
@@ -169,6 +171,10 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
             attribute["style"] = QString("default");
         }
         attributes << QVariant(attribute);
+        // we'll limit the number of attributes
+        if (attributes.size() >= MAX_ATTRIBUTES) {
+            break;
+        }
     }
 
     return attributes;
