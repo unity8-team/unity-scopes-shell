@@ -1,8 +1,10 @@
-unity-scopes-shell (0.4.0+14.04.20140325-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.4.0+14.04.20140331-0ubuntu1) trusty; urgency=medium
 
+  [ Michal Hruby ]
   * Drop support for unity-core based scopes
+  * Expose attributes to shell.
 
- -- Michal Hruby <michal.hruby@canonical.com>  Tue, 25 Mar 2014 16:48:16 +0000
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 31 Mar 2014 11:33:38 +0000
 
 unity-scopes-shell (0.4.0+14.04.20140324-0ubuntu1) trusty; urgency=low
 
