@@ -3,17 +3,14 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
-               libdee-qt5-dev (>= 3.2),
-               libglib2.0-dev,
                libunity-api-dev,
-               libunity-core-6.0-dev (>= 7.1.2+14.04.20140213),
                libunity-scopes-dev (>= 0.4.0~),
                pkg-config,
                qt5-default,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
                qtdeclarative5-qtquick2-plugin,
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
 # if you don't have have commit access to this branch but would like to upload
@@ -28,7 +25,6 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         qtdeclarative5-dee-plugin,
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
 Breaks: unity8-private (<< 7.84)

@@ -2,7 +2,7 @@
  * Copyright (C) 2011 Canonical, Ltd.
  *
  * Authors:
- *  Florian Boucault <florian.boucault@canonical.com>
+ *  Michal Hruby <michal.hruby@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,63 @@
 
 // Qt
 #include <QDebug>
-#include <QtCore/QStringList>
-#include <QtGui/QKeySequence>
+#include <QTimer>
+#include <QDBusConnection>
+
+#include <unity/scopes/Registry.h>
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ScopeProxyFwd.h>
+#include <unity/UnityExceptions.h>
+
+namespace scopes_ng
+{
+
+using namespace unity;
+
+void ScopeListWorker::run()
+{
+    try
+    {
+        // m_runtimeConfig should be null in most cases, and empty string is for system-wide fallback
+        if (!m_scopesRuntime) {
+            scopes::Runtime::UPtr runtime_uptr = scopes::Runtime::create(m_runtimeConfig.toStdString());
+            m_scopesRuntime = std::move(runtime_uptr);
+        }
+        auto registry = m_scopesRuntime->registry();
+        m_metadataMap = registry->list();
+    }
+    catch (unity::Exception const& err)
+    {
+        qWarning("ERROR! Caught %s", err.to_string().c_str());
+    }
+    Q_EMIT discoveryFinished();
+}
+
+void ScopeListWorker::setRuntimeConfig(QString const& config)
+{
+    m_runtimeConfig = config;
+}
+
+void ScopeListWorker::setRuntime(scopes::Runtime::SPtr const& runtime)
+{
+    m_scopesRuntime = runtime;
+}
+
+scopes::Runtime::SPtr ScopeListWorker::getRuntime() const
+{
+    return m_scopesRuntime;
+}
+
+scopes::MetadataMap ScopeListWorker::metadataMap() const
+{
+    return m_metadataMap;
+}
+
+int Scopes::LIST_DELAY = -1;
 
 Scopes::Scopes(QObject *parent)
     : QAbstractListModel(parent)
-    , m_unityScopes(std::make_shared<unity::dash::GSettingsScopes>())
+    , m_listThread(nullptr)
     , m_loaded(false)
 {
     m_roles[Scopes::RoleScope] = "scope";
@@ -38,10 +89,23 @@ Scopes::Scopes(QObject *parent)
     m_roles[Scopes::RoleVisible] = "visible";
     m_roles[Scopes::RoleTitle] = "title";
 
-    m_unityScopes->scope_added.connect(sigc::mem_fun(this, &Scopes::onScopeAdded));
-    m_unityScopes->scope_removed.connect(sigc::mem_fun(this, &Scopes::onScopeRemoved));
-    m_unityScopes->scopes_reordered.connect(sigc::mem_fun(this, &Scopes::onScopesReordered));
-    m_unityScopes->LoadScopes();
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    if (LIST_DELAY < 0) {
+        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
+        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    }
+    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
+
+    QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
+}
+
+Scopes::~Scopes()
+{
+    if (m_listThread && !m_listThread->isFinished()) {
+        // libunity-scopes supports timeouts, so this shouldn't block forever
+        m_listThread->wait();
+    }
 }
 
 QHash<int, QByteArray> Scopes::roleNames() const
@@ -56,43 +120,165 @@ int Scopes::rowCount(const QModelIndex& parent) const
     return m_scopes.count();
 }
 
-QVariant Scopes::data(const QModelIndex& index, int role) const
+void Scopes::populateScopes()
 {
-    Q_UNUSED(role)
+    auto thread = new ScopeListWorker;
+    QByteArray runtimeConfig = qgetenv("UNITY_SCOPES_RUNTIME_PATH");
+    thread->setRuntimeConfig(QString::fromLocal8Bit(runtimeConfig));
+    QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::discoveryFinished);
+    QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
 
-    if (!index.isValid()) {
-        return QVariant();
+    m_listThread = thread;
+    m_listThread->start();
+}
+
+void Scopes::discoveryFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+
+    m_scopesRuntime = thread->getRuntime();
+    auto scopes = thread->metadataMap();
+
+    // FIXME: use a dconf setting for this
+    QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
+
+    beginResetModel();
+
+    if (!enabledScopes.isNull()) {
+        QList<QByteArray> scopeList = enabledScopes.split(';');
+        for (int i = 0; i < scopeList.size(); i++) {
+            std::string scope_name(scopeList[i].constData());
+            auto it = scopes.find(scope_name);
+            if (it != scopes.end()) {
+                auto scope = new Scope(this);
+                scope->setScopeData(it->second);
+                m_scopes.append(scope);
+            }
+        }
+    } else {
+        // add all the scopes
+        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+            auto scope = new Scope(this);
+            scope->setScopeData(it->second);
+            m_scopes.append(scope);
+        }
     }
 
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
+    endResetModel();
+
+    m_loaded = true;
+    Q_EMIT loadedChanged(m_loaded);
+    Q_EMIT metadataRefreshed();
+
+    m_listThread = nullptr;
+}
+
+void Scopes::refreshFinished()
+{
+    ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
+
+    auto scopes = thread->metadataMap();
+
+    // cache all the metadata
+    for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+        m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
+    }
+
+    Q_EMIT metadataRefreshed();
+
+    m_listThread = nullptr;
+}
+
+void Scopes::invalidateScopeResults(QString const& scopeName)
+{
+    // HACK! mediascanner invalidates local media scopes, but those are aggregated, so let's "forward" the call
+    if (scopeName == "mediascanner-music") {
+        invalidateScopeResults("musicaggregator");
+    } else if (scopeName == "mediascanner-video") {
+        invalidateScopeResults("videoaggregator");
+    } else if (scopeName == "smart-scopes") {
+        // emitted when smart scopes proxy discovers new scopes
+        Q_FOREACH(Scope* scope, m_scopes) {
+            scope->invalidateResults();
+        }
+    }
+
+    Scope* scope = getScopeById(scopeName);
+    if (scope == nullptr) return;
+
+    scope->invalidateResults();
+}
+
+QVariant Scopes::data(const QModelIndex& index, int role) const
+{
     Scope* scope = m_scopes.at(index.row());
 
-    if (role == Scopes::RoleScope) {
-        return QVariant::fromValue(scope);
-    } else if (role == Scopes::RoleId) {
-        return QVariant::fromValue(scope->id());
-    } else if (role == Scopes::RoleVisible) {
-        return QVariant::fromValue(scope->visible());
-    } else if (role == Scopes::RoleTitle) {
-        return QVariant::fromValue(scope->name());
-    } else {
-        return QVariant();
+    switch (role) {
+        case Scopes::RoleScope:
+            return QVariant::fromValue(scope);
+        case Scopes::RoleId:
+            return QString(scope->id());
+        case Scopes::RoleVisible:
+            return QVariant::fromValue(scope->visible());
+        case Scopes::RoleTitle:
+            return QString(scope->name());
+        default:
+            return QVariant();
     }
 }
 
 QVariant Scopes::get(int row) const
 {
-    return data(QAbstractListModel::index(row), 0);
+    if (row >= m_scopes.size() || row < 0) {
+        return QVariant();
+    }
+    return data(QAbstractListModel::index(row), RoleScope);
 }
 
-QVariant Scopes::get(const QString& scope_id) const
+QVariant Scopes::get(const QString& scopeId) const
+{
+    Scope* scope = getScopeById(scopeId);
+    return scope != nullptr ? QVariant::fromValue(scope) : QVariant();
+}
+
+Scope* Scopes::getScopeById(QString const& scopeId) const
 {
     Q_FOREACH(Scope* scope, m_scopes) {
-        if (scope->id() == scope_id) {
-            return QVariant::fromValue(scope);
+        if (scope->id() == scopeId) {
+            return scope;
         }
     }
 
-    return QVariant();
+    return nullptr;
+}
+
+scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) const
+{
+    auto it = m_cachedMetadata.constFind(scopeId);
+    if (it != m_cachedMetadata.constEnd()) {
+        return it.value();
+    }
+
+    return scopes::ScopeMetadata::SPtr();
+}
+
+void Scopes::refreshScopeMetadata()
+{
+    // make sure there's just one listing in-progress at any given time
+    if (m_listThread == nullptr && m_scopesRuntime) {
+        auto thread = new ScopeListWorker;
+        thread->setRuntime(m_scopesRuntime);
+        QObject::connect(thread, &ScopeListWorker::discoveryFinished, this, &Scopes::refreshFinished);
+        QObject::connect(thread, &ScopeListWorker::finished, thread, &QObject::deleteLater);
+
+        m_listThread = thread;
+        m_listThread->start();
+    }
 }
 
 bool Scopes::loaded() const
@@ -100,80 +286,4 @@ bool Scopes::loaded() const
     return m_loaded;
 }
 
-void Scopes::onScopeAdded(const unity::dash::Scope::Ptr& scope, int /*position*/)
-{
-    int index = m_scopes.count();
-    beginInsertRows(QModelIndex(), index, index);
-    addUnityScope(scope);
-    endInsertRows();
-
-    // FIXME: do only once after all loaded?
-    m_loaded = true;
-    Q_EMIT loadedChanged(m_loaded);
-}
-
-void Scopes::onScopesLoaded()
-{
-}
-
-void Scopes::onScopeRemoved(const unity::dash::Scope::Ptr& scope)
-{
-    auto id = QString::fromStdString(scope->id);
-    auto index = findScopeById(id);
-    if (index >= 0) {
-        beginRemoveRows(QModelIndex(), index, index);
-        removeUnityScope(index);
-        endRemoveRows();
-
-        Q_EMIT scopeRemoved(id, index);
-    }
-}
-
-void Scopes::onScopesReordered(const unity::dash::Scopes::ScopeList& scopes)
-{
-    // FIXME Should use beginMoveRows()/endMoveRows() to not recreate the UI for every scope.
-    beginResetModel();
-
-    // remove existing scopes
-    for (auto i=m_scopes.count()-1; i>=0; i--) {
-        removeUnityScope(i);
-    }
-
-    // re-create scopes
-    for (uint i=0; i<scopes.size(); i++) {
-        addUnityScope(scopes[i]);
-    }
-    endResetModel();
-}
-
-void Scopes::onScopePropertyChanged()
-{
-    QModelIndex scopeIndex = index(m_scopes.indexOf(qobject_cast<Scope*>(sender())));
-    Q_EMIT dataChanged(scopeIndex, scopeIndex);
-}
-
-void Scopes::addUnityScope(const unity::dash::Scope::Ptr& unity_scope)
-{
-    Scope* scope = new Scope(this);
-    scope->setUnityScope(unity_scope);
-    /* DOCME */
-    QObject::connect(scope, SIGNAL(visibleChanged(bool)), this, SLOT(onScopePropertyChanged()));
-    m_scopes.append(scope);
-}
-
-void Scopes::removeUnityScope(int index)
-{
-    Scope* scope = m_scopes.takeAt(index);
-
-    delete scope;
-}
-
-int Scopes::findScopeById(const QString& scope_id)
-{
-    for (int i=0; i<m_scopes.count(); i++) {
-        if (m_scopes[i]->id() == scope_id) {
-            return i;
-        }
-    }
-    return -1;
-}
+} // namespace scopes_ng

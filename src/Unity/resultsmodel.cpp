@@ -22,7 +22,7 @@
 
 // local
 #include "utils.h"
-#include "../iconutils.h"
+#include "iconutils.h"
 
 namespace scopes_ng {
 
@@ -218,24 +218,12 @@ ResultsModel::data(const QModelIndex& index, int role) const
             if (image.isEmpty()) {
                 QString uri(QString::fromStdString(result->uri()));
                 // FIXME: figure out a better way and get rid of this, it's an awful hack
-                QString mimetype;
                 QVariantHash result_meta;
-                if (result->contains("mimetype")) {
-                    mimetype = scopeVariantToQVariant(result->value("mimetype")).toString();
-                    // if we have mimetype, we might have some more
-                    QVariantHash album_meta;
-                    if (result->contains("artist")) {
-                        album_meta["artist"] = scopeVariantToQVariant(result->value("artist"));
-                    }
-                    if (result->contains("album")) {
-                        album_meta["album"] = scopeVariantToQVariant(result->value("album"));
-                    }
-                    // nest the data, so we're compatible with the way old scopes did this
-                    if (album_meta.size() > 0) {
-                        result_meta["content"] = album_meta;
-                    }
+                if (result->contains("artist") && result->contains("album")) {
+                    result_meta["artist"] = scopeVariantToQVariant(result->value("artist"));
+                    result_meta["album"] = scopeVariantToQVariant(result->value("album"));
                 }
-                QString thumbnailerUri(uriToThumbnailerProviderString(uri, mimetype, result_meta));
+                QString thumbnailerUri(uriToThumbnailerProviderString(uri, result_meta));
                 if (!thumbnailerUri.isNull()) {
                     return thumbnailerUri;
                 }

@@ -19,23 +19,24 @@
  */
 
 
-#ifndef CATEGORIES_H
-#define CATEGORIES_H
+#ifndef NG_CATEGORIES_H
+#define NG_CATEGORIES_H
 
-// unity-core
-#include <UnityCore/Scope.h>
-
-// dee-qt
-#include "deelistmodel.h"
-
-#include <QPointer>
+#include <QAbstractListModel>
 #include <QSet>
 #include <QTimer>
+#include <QSharedPointer>
 
-// local
-#include "signalslist.h"
+#include <unity/scopes/Category.h>
 
-class Categories : public DeeListModel
+#include "resultsmodel.h"
+
+namespace scopes_ng
+{
+
+struct CategoryData;
+
+class Q_DECL_EXPORT Categories : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -48,48 +49,41 @@ public:
         RoleCategoryId,
         RoleName,
         RoleIcon,
+        RoleRawRendererTemplate,
         RoleRenderer,
-        RoleContentType,
-        RoleRendererHint,
-        RoleProgressSource,
-        RoleHints,
+        RoleComponents,
+        RoleProgressSource, // maybe
         RoleResults,
         RoleCount
     };
 
-    Q_INVOKABLE void overrideResults(const QString& categoryId, QAbstractItemModel* model);
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+    Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json);
+    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject);
 
-    QHash<int, QByteArray> roleNames() const;
-
-    /* setters */
-    void setUnityScope(const unity::dash::Scope::Ptr& scope);
+    ResultsModel* lookupCategory(std::string const& category_id);
+    void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
+    void updateResultCount(ResultsModel* resultsModel);
+    void clearAll();
 
 private Q_SLOTS:
-    void onCountChanged();
-    void onRowCountChanged();
-    void onEmitCountChanged();
-    void onOverrideModelDestroyed();
+    void countChanged();
 
 private:
-    void onCategoriesModelChanged(unity::glib::Object<DeeModel> model);
-    void onCategoryOrderChanged(const std::vector<unsigned int>& cat_order);
+    int getCategoryIndex(QString const& categoryId) const;
+    int getFirstEmptyCategoryIndex() const;
 
-    DeeListModel* getResults(int index) const;
-
-    unity::dash::Scope::Ptr m_unityScope;
-    QTimer m_timer;
-    QSet<int> m_updatedCategories;
     QHash<int, QByteArray> m_roles;
-    QMap<QString, QAbstractItemModel*> m_overriddenCategories;
-    mutable QMap<int, DeeListModel*> m_results;
-    SignalsList m_signals;
-
-    /* Category order array contains indices of actual categories in the underlying DeeListModel.
-       It's used internally to reflect category order reported by scope.
-     */
-    mutable QList<unsigned int> m_categoryOrder;
+    QList<QSharedPointer<CategoryData>> m_categories;
+    QMap<std::string, ResultsModel*> m_categoryResults;
+    QMap<QObject*, QString> m_countObjects;
 };
 
-#endif // CATEGORIES_H
+} // namespace scopes_ng
+
+Q_DECLARE_METATYPE(scopes_ng::Categories*)
+
+#endif // NG_CATEGORIES_H

@@ -1,10 +1,5 @@
 include(FindPkgConfig)
-pkg_check_modules(UNITYCORE REQUIRED unity-core-6.0>=7.1.1)
-pkg_check_modules(LIBUNITYPROTO REQUIRED unity-protocol-private)
-pkg_check_modules(LIBUNITY REQUIRED unity)
-pkg_check_modules(LIBSIGCPP REQUIRED sigc++-2.0)
-pkg_check_modules(QTDEE REQUIRED libdee-qt5>=3.2)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.3.1)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
@@ -15,11 +10,6 @@ include_directories(
     ${Unity-qml_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Unity
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${LIBUNITYPROTO_INCLUDE_DIRS}
-    ${LIBUNITY_INCLUDE_DIRS}
-    ${LIBSIGCPP_INCLUDE_DIRS}
-    ${UNITYCORE_INCLUDE_DIRS}
-    ${QTDEE_INCLUDE_DIRS}
     ${SCOPESLIB_INCLUDE_DIRS}
     )
 
@@ -41,11 +31,6 @@ macro(run_tests)
 
         target_link_libraries(${_test}Exec
             Unity-qml
-            ${UNITYCORE_LDFLAGS}
-            ${LIBUNITY_LDFLAGS}
-            ${LIBUNITYPROTO_LDFLAGS}
-            ${LIBSIGCPP_LDFLAGS}
-            ${QTDEE_LDFLAGS}
             ${SCOPESLIB_LDFLAGS}
             )
 
@@ -54,10 +39,6 @@ macro(run_tests)
 endmacro(run_tests)
 
 run_tests(
-    signalslisttest
-    previewbindingstest
-    filtersbindingstest
-    resultstest
     resultstest-ng
     utilstest-ng
     )
