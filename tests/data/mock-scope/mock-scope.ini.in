@@ -1,8 +1,8 @@
 [ScopeConfig]
 DisplayName = mock.DisplayName
 Description = mock.Description
-Art = mock.Art
-Icon = mock.Icon
+Art = /mock.Art
+Icon = /mock.Icon
 SearchHint = mock.SearchHint
 HotKey = mock.HotKey
 Author = mock.Author

@@ -231,7 +231,7 @@ private Q_SLOTS:
     {
         QCOMPARE(m_scope->id(), QString("mock-scope"));
         QCOMPARE(m_scope->name(), QString("mock.DisplayName"));
-        QCOMPARE(m_scope->iconHint(), QString("mock.Icon"));
+        QCOMPARE(m_scope->iconHint(), QString("/mock.Icon"));
         QCOMPARE(m_scope->description(), QString("mock.Description"));
         QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
         QCOMPARE(m_scope->shortcut(), QString("mock.HotKey"));
