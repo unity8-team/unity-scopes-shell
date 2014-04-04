@@ -1,3 +1,13 @@
+unity-scopes-shell (0.4.0+14.04.20140404.1-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Rebuild with latest libunity-scopes.so
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 04 Apr 2014 15:26:36 +0000
+
 unity-scopes-shell (0.4.0+14.04.20140331-0ubuntu1) trusty; urgency=medium
 
   [ Michal Hruby ]
