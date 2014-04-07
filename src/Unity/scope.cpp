@@ -68,6 +68,7 @@ Scope::Scope(QObject *parent) : QObject(parent)
 {
     m_categories = new Categories(this);
     m_settings = new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this);
+    QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
@@ -175,6 +176,15 @@ void Scope::metadataRefreshed()
     response.swap(m_delayedActivation);
 
     processPerformQuery(response, false);
+}
+
+void Scope::internetFlagChanged(QString const& key)
+{
+    if (key != "remoteContentSearch") {
+        return;
+    }
+
+    invalidateResults();
 }
 
 void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> const& response, bool allowDelayedActivation)

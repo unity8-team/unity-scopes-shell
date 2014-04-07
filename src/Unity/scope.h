@@ -130,6 +130,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void flushUpdates();
     void metadataRefreshed();
+    void internetFlagChanged(QString const& key);
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
