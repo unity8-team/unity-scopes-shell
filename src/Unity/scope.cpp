@@ -317,7 +317,7 @@ void Scope::dispatchSearch()
     if (m_proxy) {
         scopes::SearchMetadata meta("C", m_formFactor.toStdString()); //FIXME
         QVariant remoteSearch(m_settings->get("remote-content-search"));
-        if (remoteSearch.toBool()) {
+        if (remoteSearch.toString() == QString("none")) {
             meta["no-internet"] = true;
         }
         m_lastSearch.reset(new SearchResultReceiver(this));
