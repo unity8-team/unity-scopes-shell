@@ -27,6 +27,7 @@
 #include <QMetaType>
 #include <QPointer>
 #include <QSet>
+#include <QGSettings>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -153,6 +154,7 @@ private:
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
+    QGSettings* m_settings;
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;

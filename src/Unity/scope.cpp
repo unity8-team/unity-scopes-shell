@@ -67,6 +67,7 @@ Scope::Scope(QObject *parent) : QObject(parent)
     , m_delayedClear(false)
 {
     m_categories = new Categories(this);
+    m_settings = new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this);
 
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
@@ -315,6 +316,10 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta("C", m_formFactor.toStdString()); //FIXME
+        QVariant remoteSearch(m_settings->get("remote-content-search"));
+        if (remoteSearch.toBool()) {
+            meta["no-internet"] = true;
+        }
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
             m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), meta, m_lastSearch);
