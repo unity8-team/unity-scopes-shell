@@ -1,5 +1,6 @@
 include(FindPkgConfig)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
+pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
@@ -11,6 +12,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Unity
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
+    ${GSETTINGSQT_INCLUDE_DIRS}
     )
 
 macro(run_tests)
@@ -32,6 +34,7 @@ macro(run_tests)
         target_link_libraries(${_test}Exec
             Unity-qml
             ${SCOPESLIB_LDFLAGS}
+            ${GSETTINGSQT_LDFLAGS}
             )
 
         set(_test_list "${_test_list};${_test}")

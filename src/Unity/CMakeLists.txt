@@ -4,11 +4,13 @@ include(Plugins)
 # Dependencies
 include(FindPkgConfig)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
+pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
+    ${GSETTINGSQT_INCLUDE_DIRS}
 )
 
 set(QMLPLUGIN_SRC
@@ -29,6 +31,7 @@ add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
 
 target_link_libraries(Unity-qml
     ${SCOPESLIB_LDFLAGS}
+    ${GSETTINGSQT_LDFLAGS}
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)

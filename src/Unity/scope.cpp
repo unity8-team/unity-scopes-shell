@@ -68,6 +68,9 @@ Scope::Scope(QObject *parent) : QObject(parent)
 {
     m_categories = new Categories(this);
 
+    m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
+    QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
+
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_clearTimer.setSingleShot(true);
@@ -174,6 +177,15 @@ void Scope::metadataRefreshed()
     response.swap(m_delayedActivation);
 
     processPerformQuery(response, false);
+}
+
+void Scope::internetFlagChanged(QString const& key)
+{
+    if (key != "remoteContentSearch") {
+        return;
+    }
+
+    invalidateResults();
 }
 
 void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> const& response, bool allowDelayedActivation)
@@ -315,6 +327,12 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta("C", m_formFactor.toStdString()); //FIXME
+        if (m_settings) {
+            QVariant remoteSearch(m_settings->get("remote-content-search"));
+            if (remoteSearch.toString() == QString("none")) {
+                meta["no-internet"] = true;
+            }
+        }
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
             m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), meta, m_lastSearch);
