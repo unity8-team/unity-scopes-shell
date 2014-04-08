@@ -1,3 +1,10 @@
+unity-scopes-shell (0.4.0+14.04.20140408-0ubuntu1) trusty; urgency=low
+
+  [ Michal Hruby ]
+  * Pass internet-disabled flag to scopes as a temporary measure.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 08 Apr 2014 13:47:36 +0000
+
 unity-scopes-shell (0.4.0+14.04.20140404.1-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
