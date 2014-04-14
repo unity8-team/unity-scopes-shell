@@ -1,3 +1,9 @@
+unity-scopes-shell (0.4.0+14.04.20140408-0ubuntu2) trusty; urgency=medium
+
+  * No-change rebuild for shlib changes in qtbase and qtdeclarative.
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Mon, 14 Apr 2014 15:42:59 -0300
+
 unity-scopes-shell (0.4.0+14.04.20140408-0ubuntu1) trusty; urgency=low
 
   [ Michal Hruby ]
