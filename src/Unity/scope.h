@@ -134,7 +134,7 @@ private Q_SLOTS:
 
 private:
     void processSearchChunk(PushEvent* pushEvent);
-    void processPerformQuery(std::shared_ptr<unity::scopes::ActivationResponse> const& response, bool allowDelayedActivation);
+    void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();

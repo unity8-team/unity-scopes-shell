@@ -164,7 +164,7 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
             Q_EMIT previewRequested(QVariant::fromValue(result));
             break;
          case scopes::ActivationResponse::PerformQuery:
-            processPerformQuery(response, true);
+            executeCannedQuery(response->query(), true);
             break;
         default:
             break;
@@ -176,7 +176,13 @@ void Scope::metadataRefreshed()
     std::shared_ptr<scopes::ActivationResponse> response;
     response.swap(m_delayedActivation);
 
-    processPerformQuery(response, false);
+    if (!response) {
+        return;
+    }
+
+    if (response->status() == scopes::ActivationResponse::PerformQuery) {
+        executeCannedQuery(response->query(), false);
+    }
 }
 
 void Scope::internetFlagChanged(QString const& key)
@@ -188,7 +194,7 @@ void Scope::internetFlagChanged(QString const& key)
     invalidateResults();
 }
 
-void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> const& response, bool allowDelayedActivation)
+void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
 {
     scopes_ng::Scopes* scopes = qobject_cast<scopes_ng::Scopes*>(parent());
     if (scopes == nullptr) {
@@ -196,37 +202,30 @@ void Scope::processPerformQuery(std::shared_ptr<scopes::ActivationResponse> cons
         return;
     }
 
-    if (!response) {
-        return;
-    }
-
-    if (response->status() == scopes::ActivationResponse::PerformQuery) {
-        scopes::CannedQuery q(response->query());
-        QString scopeId(QString::fromStdString(q.scope_id()));
-        QString searchString(QString::fromStdString(q.query_string()));
-        // figure out if this scope is already favourited
-        Scope* scope = scopes->getScopeById(scopeId);
-        if (scope != nullptr) {
-            // TODO: change department, filters, query_string?
+    QString scopeId(QString::fromStdString(query.scope_id()));
+    QString searchString(QString::fromStdString(query.query_string()));
+    // figure out if this scope is already favourited
+    Scope* scope = scopes->getScopeById(scopeId);
+    if (scope != nullptr) {
+        // TODO: change department, filters?
+        scope->setSearchQuery(searchString);
+        Q_EMIT gotoScope(scopeId);
+    } else {
+        // create temp dash page
+        auto meta_sptr = scopes->getCachedMetadata(scopeId);
+        if (meta_sptr) {
+            scope = new scopes_ng::Scope(this);
+            scope->setScopeData(*meta_sptr);
             scope->setSearchQuery(searchString);
-            Q_EMIT gotoScope(scopeId);
+            m_tempScopes.insert(scope);
+            Q_EMIT openScope(scope);
+        } else if (allowDelayedActivation) {
+            // request registry refresh to get the missing metadata
+            m_delayedActivation = std::make_shared<scopes::ActivationResponse>(query);
+            QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
+            scopes->refreshScopeMetadata();
         } else {
-            // create temp dash page
-            auto meta_sptr = scopes->getCachedMetadata(scopeId);
-            if (meta_sptr) {
-                scope = new scopes_ng::Scope(this);
-                scope->setScopeData(*meta_sptr);
-                scope->setSearchQuery(searchString);
-                m_tempScopes.insert(scope);
-                Q_EMIT openScope(scope);
-            } else if (allowDelayedActivation) {
-                // request registry refresh to get the missing metadata
-                m_delayedActivation = response;
-                QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
-                scopes->refreshScopeMetadata();
-            } else {
-                qWarning("Unable to find scope \"%s\" after metadata refresh", q.scope_id().c_str());
-            }
+            qWarning("Unable to find scope \"%s\" after metadata refresh", query.scope_id().c_str());
         }
     }
 }
@@ -572,7 +571,7 @@ void Scope::activateUri(QString const& uri)
        Qt to open the uri.
     */
     QUrl url(uri);
-    if (url.scheme() == "application") {
+    if (url.scheme() == QLatin1String("application")) {
         QString path(url.path().isEmpty() ? url.authority() : url.path());
         if (path.startsWith("/")) {
             Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
@@ -585,6 +584,14 @@ void Scope::activateUri(QString const& uri)
         }
 
         Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
+    } else if (url.scheme() == QLatin1String("scope")) {
+        qDebug() << "Got scope URI" << uri;
+        try {
+            scopes::CannedQuery q(scopes::CannedQuery::from_uri(uri.toStdString()));
+            executeCannedQuery(q, true);
+        } catch (...) {
+            qWarning("Unable to parse scope uri!");
+        }
     } else {
         qDebug() << "Trying to open" << uri;
         /* Try our luck */
