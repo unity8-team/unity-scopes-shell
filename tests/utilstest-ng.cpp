@@ -110,5 +110,5 @@ private Q_SLOTS:
     }
 };
 
-QTEST_MAIN(UtilsTestNg)
+QTEST_GUILESS_MAIN(UtilsTestNg)
 #include <utilstest-ng.moc>

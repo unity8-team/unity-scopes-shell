@@ -781,5 +781,5 @@ private Q_SLOTS:
 
 };
 
-QTEST_MAIN(ResultsTestNg)
+QTEST_GUILESS_MAIN(ResultsTestNg)
 #include <resultstest-ng.moc>
