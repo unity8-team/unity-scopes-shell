@@ -27,6 +27,7 @@
 #include "utils.h"
 
 // Qt
+#include <QLocale>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -120,7 +121,7 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
 
-        scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), "phone"); //FIXME
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
         }
@@ -132,7 +133,6 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
         if (prev_listener) prev_listener->invalidate();
         m_listeners[m_activePreview] = wl;
 
-        // FIXME: don't block
         m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
     } catch (std::exception& e) {
         qWarning("Caught an error from preview(): %s", e.what());
@@ -160,7 +160,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
 
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
-        scopes::ActionMetadata metadata("C", "phone"); //FIXME
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), "phone"); //FIXME
         metadata.set_scope_data(qVariantToScopeVariant(data));
 
         if (m_lastActivation) {
