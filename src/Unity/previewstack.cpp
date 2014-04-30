@@ -121,7 +121,8 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
 
-        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), "phone"); //FIXME
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
         }
@@ -160,7 +161,8 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
 
     try {
         auto proxy = m_previewedResult->target_scope_proxy();
-        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), "phone"); //FIXME
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         metadata.set_scope_data(qVariantToScopeVariant(data));
 
         if (m_lastActivation) {
