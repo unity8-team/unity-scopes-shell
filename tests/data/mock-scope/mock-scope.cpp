@@ -156,6 +156,15 @@ public:
             res.set_intercept_activation();
             reply->push(res);
         }
+        else if (query_ == "scope-uri")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("scope://mock-scope?q=next-scope-uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else if (query_ == "two-categories")
         {
             auto cat1 = reply->register_category("cat1", "Category 1", "");
