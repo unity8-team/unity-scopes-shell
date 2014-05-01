@@ -779,7 +779,23 @@ private Q_SLOTS:
         QCOMPARE(spy3.count(), 0);
     }
 
+    void testScopeResultWithScopeUri()
+    {
+        performSearch(m_scope, QString("scope-uri"));
+
+        unity::scopes::Result::SPtr result;
+        QVERIFY(getFirstResult(m_scope, result));
+
+        QSignalSpy spy(m_scope, SIGNAL(gotoScope(QString)));
+        m_scope->activate(QVariant::fromValue(result));
+        // this is likely to be invoked synchronously
+        if (spy.count() == 0) {
+            QVERIFY(spy.wait());
+        }
+        QVERIFY(spy.count() > 0);
+    }
+
 };
 
-QTEST_MAIN(ResultsTestNg)
+QTEST_GUILESS_MAIN(ResultsTestNg)
 #include <resultstest-ng.moc>
