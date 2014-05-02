@@ -1,4 +1,5 @@
 add_subdirectory(mock-scope)
+add_subdirectory(mock-scope-ttl)
 
 configure_file(Runtime.ini.in Runtime.ini @ONLY)
 configure_file(Registry.ini.in Registry.ini @ONLY)

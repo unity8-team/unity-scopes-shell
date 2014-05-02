@@ -83,6 +83,12 @@ add_definitions(-DQT_NO_KEYWORDS)
 # Tests
 include(CTest)
 enable_testing()
+ADD_CUSTOM_TARGET(
+    check
+    ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --verbose 
+)
+
+#--output-on-failure
 
 # add subdirectories to build
 add_subdirectory(src)

@@ -98,6 +98,10 @@ public:
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
     void activateUri(QString const& uri);
+
+    bool resultsDirty() const;
+
+public Q_SLOTS:
     void invalidateResults();
 
 Q_SIGNALS:
@@ -127,6 +131,8 @@ Q_SIGNALS:
 
     void activateApplication(QString const& desktop);
 
+    void resultsDirtyChanged(bool resultsDirty);
+
 private Q_SLOTS:
     void flushUpdates();
     void metadataRefreshed();
@@ -141,7 +147,6 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
 
-    QString m_scopeId;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
@@ -160,6 +165,7 @@ private:
     Categories* m_categories;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
+    QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QSet<scopes_ng::Scope*> m_tempScopes;
 };
