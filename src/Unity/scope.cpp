@@ -116,10 +116,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
         flushUpdates();
 
-        if (m_searchInProgress) {
-            m_searchInProgress = false;
-            Q_EMIT searchInProgressChanged();
-        }
+        setSearchInProgress(false);
     }
 }
 
@@ -295,6 +292,14 @@ void Scope::invalidateLastSearch()
     m_cachedResults.clear();
 }
 
+void Scope::setSearchInProgress(bool searchInProgress)
+{
+    if (m_searchInProgress != searchInProgress) {
+        m_searchInProgress = searchInProgress;
+        Q_EMIT searchInProgressChanged();
+    }
+}
+
 void Scope::dispatchSearch()
 {
     invalidateLastSearch();
@@ -320,10 +325,7 @@ void Scope::dispatchSearch()
 
     m_resultsDirty = false;
 
-    if (!m_searchInProgress) {
-        m_searchInProgress = true;
-        Q_EMIT searchInProgressChanged();
-    }
+    setSearchInProgress(true);
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
@@ -345,8 +347,7 @@ void Scope::dispatchSearch()
 
     if (!m_lastSearchQuery) {
         // something went wrong, reset search state
-        m_searchInProgress = false;
-        Q_EMIT searchInProgressChanged();
+        setSearchInProgress(false);
     }
 }
 

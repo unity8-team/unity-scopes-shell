@@ -133,6 +133,7 @@ private Q_SLOTS:
     void internetFlagChanged(QString const& key);
 
 private:
+    void setSearchInProgress(bool searchInProgress);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
