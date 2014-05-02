@@ -27,7 +27,7 @@ macro(run_tests)
         add_executable(${_test}Exec ${_test}.cpp)
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
-                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5")
+                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5" RUN_SERIAL TRUE)
         set_target_properties(${_test}Exec
                 PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 
