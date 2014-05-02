@@ -29,7 +29,7 @@
 using namespace scopes_ng;
 using namespace unity;
 
-class UtilsTestNg : public QObject
+class UtilsTest : public QObject
 {
     Q_OBJECT
 
@@ -110,5 +110,5 @@ private Q_SLOTS:
     }
 };
 
-QTEST_GUILESS_MAIN(UtilsTestNg)
-#include <utilstest-ng.moc>
+QTEST_GUILESS_MAIN(UtilsTest)
+#include <utilstest.moc>

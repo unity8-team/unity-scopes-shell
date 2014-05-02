@@ -19,12 +19,8 @@
 
 #include <QObject>
 #include <QTest>
-#include <QFile>
-#include <QFileInfo>
-#include <QDir>
 #include <QJsonValue>
 #include <QJsonObject>
-#include <QProcess>
 #include <QThread>
 #include <QScopedPointer>
 #include <QSignalSpy>
@@ -38,7 +34,8 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
+#include "registry-spawner.h"
+#include "test-utils.h"
 
 using namespace scopes_ng;
 
@@ -83,77 +80,23 @@ private:
     QTimer m_timer;
 };
 
-class ResultsTestNg : public QObject
+class ResultsTest : public QObject
 {
     Q_OBJECT
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
-    QScopedPointer<QProcess> m_registry;
-
-    void checkedFirstResult(Scope* scope, unity::scopes::Result::SPtr& result, bool& success)
-    {
-        // ensure categories have > 0 rows
-        auto categories = scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
-
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-        success = true;
-    }
-
-    bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result)
-    {
-        bool success = false;
-        checkedFirstResult(scope, result, success);
-        return success;
-    }
-
-    void performSearch(Scope* scope, QString const& searchString)
-    {
-        QCOMPARE(scope->searchInProgress(), false);
-        // perform a search
-        scope->setSearchQuery(searchString);
-        QCOMPARE(scope->searchInProgress(), true);
-        // wait for the search to finish
-        QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
-        QVERIFY(spy.wait());
-        QCOMPARE(scope->searchInProgress(), false);
-    }
+    QScopedPointer<RegistrySpawner> m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        QDir endpointdir(QFileInfo(TEST_RUNTIME_CONFIG).dir());
-        endpointdir.cd(QString("endpoints"));
-        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
-        // symlinking to workaround "File name too long" issue
-        QVERIFY2(QFile::link(endpointdir.absolutePath(), SCOPES_TMP_ENDPOINT_DIR),
-            "Unable to create symlink " SCOPES_TMP_ENDPOINT_DIR);
-        // startup our private scope registry
-        QString registryBin(TEST_SCOPEREGISTRY_BIN);
-        QStringList arguments;
-        arguments << TEST_RUNTIME_CONFIG;
-
-        m_registry.reset(new QProcess(nullptr));
-        m_registry->start(registryBin, arguments);
+        m_registry.reset(new RegistrySpawner);
     }
 
     void cleanupTestCase()
     {
-        if (m_registry) {
-            m_registry->terminate();
-            if (!m_registry->waitForFinished()) {
-                m_registry->kill();
-            }
-        }
-        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
+        m_registry.reset();
     }
 
     void init()
@@ -591,75 +534,6 @@ private Q_SLOTS:
         QCOMPARE(order1[0], order2[1]);
     }
 
-    void testScopePreview()
-    {
-        performSearch(m_scope, QString(""));
-
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview_model = preview_stack->get(0);
-        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
-        QCOMPARE(preview_model->widgetColumnCount(), 1);
-        QTRY_COMPARE(preview_model->loaded(), true);
-
-        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QVERIFY(!preview_widgets->roleNames().isEmpty());
-        QCOMPARE(preview_widgets->rowCount(), 2);
-        QVariantMap props;
-        QModelIndex idx;
-
-        idx = preview_widgets->index(0);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("hdr"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("header"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
-        QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
-        QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
-
-        idx = preview_widgets->index(1);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QVERIFY(props.contains("source"));
-        QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
-        QVERIFY(props.contains("zoomable"));
-        QCOMPARE(props[QString("zoomable")].toBool(), false);
-    }
-
-    void testPreviewLayouts()
-    {
-        performSearch(m_scope, QString("layout"));
-
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-        auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(col_model1->rowCount(), 4);
-
-        // switch the layout
-        preview_stack->setWidgetColumnCount(2);
-        QCOMPARE(preview->rowCount(), 2);
-        QCOMPARE(col_model1->rowCount(), 1);
-        auto col_model2 = preview->data(preview->index(1), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(col_model2->rowCount(), 3);
-
-        // switch back
-        preview_stack->setWidgetColumnCount(1);
-        QCOMPARE(preview->rowCount(), 1);
-        QCOMPARE(col_model1->rowCount(), 4);
-    }
-
     void testScopeActivation()
     {
         performSearch(m_scope, QString(""));
@@ -670,84 +544,6 @@ private Q_SLOTS:
         QSignalSpy spy(m_scope, SIGNAL(hideDash()));
         m_scope->activate(QVariant::fromValue(result));
         QVERIFY(spy.wait());
-    }
-
-    void testPreviewAction()
-    {
-        performSearch(m_scope, QString("layout"));
-
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-
-        QSignalSpy spy(m_scope, SIGNAL(hideDash()));
-        Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
-        QCOMPARE(preview->processingAction(), true);
-        QVERIFY(spy.wait());
-        QCOMPARE(preview->processingAction(), false);
-    }
-
-    void testPreviewUriAction()
-    {
-        performSearch(m_scope, QString("layout"));
-
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-
-        QSignalSpy spy(m_scope, SIGNAL(activateApplication(QString)));
-        QVariantMap hints;
-        hints["uri"] = QString("application:///tmp/non-existent.desktop");
-        Q_EMIT preview->triggered(QString("actions"), QString("open"), hints);
-        // this is likely to be invoked synchronously
-        if (spy.count() == 0) {
-            QVERIFY(spy.wait());
-        }
-        QList<QVariant> arguments = spy.takeFirst();
-        auto desktopFile = arguments.at(0).value<QString>();
-        QCOMPARE(desktopFile, QString("non-existent"));
-    }
-
-    void testPreviewReplacingPreview()
-    {
-        performSearch(m_scope, QString("layout"));
-
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
-        QScopedPointer<PreviewStack> preview_stack(m_scope->preview(QVariant::fromValue(result)));
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(preview_widgets->rowCount(), 4);
-
-        QSignalSpy spy(preview, SIGNAL(loadedChanged()));
-        QVariantMap hints;
-        hints["session-id"] = QString("qoo");
-        Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
-        QCOMPARE(preview->processingAction(), true);
-        // wait for loaded to become false
-        QVERIFY(spy.wait());
-        QCOMPARE(preview->loaded(), false);
-        // a bit of gray area, preview was just marked as "about-to-be-replaced", so it kinda is processing the action?
-        QCOMPARE(preview->processingAction(), true);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->processingAction(), false);
-        // refresh widget model
-        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(preview_widgets->rowCount(), 5);
     }
 
     void testScopeActivationWithQuery()
@@ -797,5 +593,5 @@ private Q_SLOTS:
 
 };
 
-QTEST_GUILESS_MAIN(ResultsTestNg)
-#include <resultstest-ng.moc>
+QTEST_GUILESS_MAIN(ResultsTest)
+#include <resultstest.moc>
