@@ -29,7 +29,7 @@ macro(run_tests)
         set_tests_properties(test${CLASSNAME}${_test}
                 PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5")
         set_target_properties(${_test}Exec
-                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"' -DTEST_SCOPES_RUNTIME_PATH='\"${SCOPES_TEST_RUNTIME}\"'")
+                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 
         target_link_libraries(${_test}Exec
             Unity-qml

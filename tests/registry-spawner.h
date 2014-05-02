@@ -48,7 +48,7 @@ public:
         m_registry.reset(new QProcess(nullptr));
         m_registry->start(registryBin, arguments);
 
-        qputenv("UNITY_SCOPES_RUNTIME_PATH", TEST_SCOPES_RUNTIME_PATH);
+        qputenv("UNITY_SCOPES_RUNTIME_PATH", TEST_RUNTIME_CONFIG);
     }
 
     ~RegistrySpawner()
