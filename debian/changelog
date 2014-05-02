@@ -1,3 +1,14 @@
+unity-scopes-shell (0.4.0+14.10.20140502.1-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Fix tests after click support added to framework
+
+  [ Michal Hruby ]
+  * Pass correct locale and form factor to scopes. (LP: #1314702)
+  * Reorganize the tests a bit.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 02 May 2014 13:44:04 +0000
+
 unity-scopes-shell (0.4.0+14.10.20140501-0ubuntu1) utopic; urgency=low
 
   [ Michal Hruby ]
