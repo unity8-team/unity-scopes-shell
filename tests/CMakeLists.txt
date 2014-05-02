@@ -27,7 +27,7 @@ macro(run_tests)
         add_executable(${_test}Exec ${_test}.cpp)
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
-                PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=minimal;LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/plugins/Unity:${LIBUNITYPROTO_LIBRARY_DIRS};UNITY_SCOPES_RUNTIME_PATH=${SCOPES_TEST_RUNTIME};UNITY_SCOPES_LIST_DELAY=5")
+                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5" RUN_SERIAL TRUE)
         set_target_properties(${_test}Exec
                 PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 
@@ -42,6 +42,7 @@ macro(run_tests)
 endmacro(run_tests)
 
 run_tests(
-    resultstest-ng
-    utilstest-ng
+    resultstest
+    previewtest
+    utilstest
     )
