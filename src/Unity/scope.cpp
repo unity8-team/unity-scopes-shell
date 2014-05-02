@@ -41,6 +41,7 @@
 #include <QScopedPointer>
 #include <QFileInfo>
 #include <QDir>
+#include <QLocale>
 
 #include <libintl.h>
 
@@ -325,7 +326,7 @@ void Scope::dispatchSearch()
     }
 
     if (m_proxy) {
-        scopes::SearchMetadata meta("C", m_formFactor.toStdString()); //FIXME
+        scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
             if (remoteSearch.toString() == QString("none")) {
@@ -509,7 +510,7 @@ void Scope::activate(QVariant const& result_var)
         try {
             auto proxy = result->target_scope_proxy();
             // FIXME: don't block
-            unity::scopes::ActionMetadata metadata("C", m_formFactor.toStdString()); //FIXME
+            unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
             m_lastActivation.reset(new ActivationReceiver(this, result));
             proxy->activate(*(result.get()), metadata, m_lastActivation);
         } catch (std::exception& e) {
