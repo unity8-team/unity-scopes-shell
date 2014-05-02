@@ -19,24 +19,24 @@
 #include <tests/scope-test-interface.h>
 #include <TestInterfaceAdaptor.h>
 #include <QDBusConnection>
+#include <QTest>
 
 ScopeTestInterface::ScopeTestInterface() :
         m_adaptor(new TestAdaptor(this))
 {
-    qDebug()
-            << QDBusConnection::sessionBus().registerObject(
-                    "/com/canonical/scopes/test", this);
-    qDebug()
-            << QDBusConnection::sessionBus().registerService(
-                    "com.canonical.scopes.test");
+    QVERIFY(
+            QDBusConnection::sessionBus().registerObject(
+                    "/com/canonical/scopes/test", this));
+    QVERIFY(
+            QDBusConnection::sessionBus().registerService(
+                    "com.canonical.scopes.test"));
 }
 
 ScopeTestInterface::~ScopeTestInterface()
 {
     QDBusConnection::sessionBus().unregisterObject(
             "/com/canonical/scopes/test");
-    qDebug()
-            << QDBusConnection::sessionBus().unregisterService(
-                    "com.canonical.scopes.test");
+    QDBusConnection::sessionBus().unregisterService(
+            "com.canonical.scopes.test");
 }
 

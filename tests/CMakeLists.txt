@@ -40,6 +40,7 @@ add_library(
 qt5_use_modules(test-interface
     Core
     DBus
+    Test
     )
 
 macro(run_tests)
