@@ -85,10 +85,8 @@ include(CTest)
 enable_testing()
 ADD_CUSTOM_TARGET(
     check
-    ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --verbose 
+    ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure 
 )
-
-#--output-on-failure
 
 # add subdirectories to build
 add_subdirectory(src)
