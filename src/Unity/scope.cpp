@@ -60,13 +60,14 @@ using namespace unity;
 const int AGGREGATION_TIMEOUT = 110;
 const int CLEAR_TIMEOUT = 240;
 
-Scope::Scope(QObject *parent) : QObject(parent)
-    , m_formFactor("phone")
+Scope::Scope(QObject *parent) : m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
     , m_delayedClear(false)
 {
+    setParent(parent);
+
     m_categories = new Categories(this);
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
@@ -415,7 +416,7 @@ QString Scope::shortcut() const
     return QString::fromStdString(hotkey);
 }
 
-Categories* Scope::categories() const
+unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
     return m_categories;
 }
@@ -521,7 +522,7 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-PreviewStack* Scope::preview(QVariant const& result_var)
+unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -558,7 +559,7 @@ void Scope::invalidateResults()
     }
 }
 
-void Scope::closeScope(scopes_ng::Scope* scope)
+void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
     if (m_tempScopes.remove(scope)) {
         delete scope;

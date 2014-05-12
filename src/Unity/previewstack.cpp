@@ -40,8 +40,9 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewStack::PreviewStack(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
+PreviewStack::PreviewStack(QObject* parent) : m_widgetColumnCount(1)
 {
+    setParent(parent);
 }
 
 PreviewStack::~PreviewStack()
@@ -234,7 +235,7 @@ int PreviewStack::rowCount(const QModelIndex&) const
     return m_previews.size();
 }
 
-PreviewModel* PreviewStack::get(int index) const
+unity::shell::scopes::PreviewModelInterface* PreviewStack::get(int index) const
 {
     if (index >= m_previews.size()) {
         return nullptr;

@@ -31,8 +31,9 @@ using namespace unity;
 const int MAX_ATTRIBUTES = 3;
 
 ResultsModel::ResultsModel(QObject* parent)
-    : QAbstractListModel(parent)
 {
+    setParent(parent);
+
     m_roles[ResultsModel::RoleUri] = "uri";
     m_roles[ResultsModel::RoleCategoryId] = "categoryId";
     m_roles[ResultsModel::RoleDndUri] = "dndUri";

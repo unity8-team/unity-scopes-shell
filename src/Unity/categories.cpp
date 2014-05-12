@@ -276,8 +276,9 @@ private:
 QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
-    : QAbstractListModel(parent)
 {
+    setParent(parent);
+
     m_roles[Categories::RoleCategoryId] = "categoryId";
     m_roles[Categories::RoleName] = "name";
     m_roles[Categories::RoleIcon] = "icon";

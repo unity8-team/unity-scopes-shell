@@ -80,10 +80,11 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 int Scopes::LIST_DELAY = -1;
 
 Scopes::Scopes(QObject *parent)
-    : QAbstractListModel(parent)
-    , m_listThread(nullptr)
+    : m_listThread(nullptr)
     , m_loaded(false)
 {
+    setParent(parent);
+
     m_roles[Scopes::RoleScope] = "scope";
     m_roles[Scopes::RoleId] = "id";
     m_roles[Scopes::RoleVisible] = "visible";

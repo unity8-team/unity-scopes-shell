@@ -34,8 +34,9 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewWidgetModel::PreviewWidgetModel(QObject* parent) : QAbstractListModel(parent)
+PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
 {
+    setParent(parent);
 }
 
 QHash<int, QByteArray> PreviewWidgetModel::roleNames() const
