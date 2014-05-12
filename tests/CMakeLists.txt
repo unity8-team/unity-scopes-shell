@@ -5,6 +5,7 @@ pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 set(SCOPES_BIN_DIR "${SCOPESLIB_LIBDIR}/unity-scopes")
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
 set(SCOPEREGISTRY_EXE "${SCOPES_BIN_DIR}/scoperegistry")
+set(SCOPERUNNER_EXE "${SCOPES_BIN_DIR}/scoperunner")
 
 add_subdirectory(data)
 

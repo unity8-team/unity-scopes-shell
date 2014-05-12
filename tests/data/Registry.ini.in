@@ -3,4 +3,4 @@ Middleware = Zmq
 Zmq.ConfigFile = @CMAKE_CURRENT_BINARY_DIR@/Zmq.ini
 Scope.InstallDir = @CMAKE_CURRENT_BINARY_DIR@
 Click.InstallDir = /unused
-Scoperunner.Path = @SCOPES_BIN_DIR@/scoperunner
+Scoperunner.Path = @SCOPERUNNER_EXE@
