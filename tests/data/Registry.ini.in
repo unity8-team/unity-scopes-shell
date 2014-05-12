@@ -1,7 +1,5 @@
 [Registry]
 Middleware = Zmq
-Zmq.Endpoint = ipc:///tmp/scopes-test-endpoints/Registry
-Zmq.EndpointDir = /tmp/scopes-test-endpoints
 Zmq.ConfigFile = @CMAKE_CURRENT_BINARY_DIR@/Zmq.ini
 Scope.InstallDir = @CMAKE_CURRENT_BINARY_DIR@
 Click.InstallDir = /unused
