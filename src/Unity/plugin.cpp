@@ -39,7 +39,7 @@ void UnityPlugin::registerTypes(const char *uri)
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scope>(uri, 0, 2, "Scope");
     qmlRegisterType<scopes_ng::Scopes>(uri, 0, 2, "Scopes");
-    qmlRegisterType<unity::shell::scopes::CategoriesInterface>(uri, 0, 2, "Categories");
+    qmlRegisterUncreatableType<unity::shell::scopes::CategoriesInterface>(uri, 0, 2, "Categories", "Can't create Categories object in QML. Get them from Scope instance.");
     qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 2, "ResultsModel", "Can't create new ResultsModel in QML. Get them from Categories instance.");
     qmlRegisterUncreatableType<scopes_ng::PreviewModel>(uri, 0, 2, "PreviewModel", "Can't create new PreviewModel in QML. Get them from PreviewStack instance.");
     qmlRegisterUncreatableType<scopes_ng::PreviewWidgetModel>(uri, 0, 2, "PreviewWidgetModel", "Can't create new PreviewWidgetModel in QML. Get them from PreviewModel instance.");
