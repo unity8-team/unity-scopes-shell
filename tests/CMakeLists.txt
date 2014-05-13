@@ -2,7 +2,9 @@ include(FindPkgConfig)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
-set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
+_pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
+_pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
+
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
 
 add_subdirectory(data)
@@ -29,7 +31,7 @@ macro(run_tests)
         set_tests_properties(test${CLASSNAME}${_test}
                 PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5" RUN_SERIAL TRUE)
         set_target_properties(${_test}Exec
-                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPES_BIN_DIR}/scoperegistry/scoperegistry\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
+                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPESLIB_SCOPEREGISTRY_BIN}\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 
         target_link_libraries(${_test}Exec
             Unity-qml

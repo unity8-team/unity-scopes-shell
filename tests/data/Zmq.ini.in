@@ -1,3 +1,2 @@
 [Zmq]
-EndpointDir.Public = /tmp/scopes-test-endpoints
-EndpointDir.Private = /tmp/scopes-test-endpoints
+EndpointDir = /tmp/scopes-test-endpoints
