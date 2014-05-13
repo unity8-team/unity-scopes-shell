@@ -54,8 +54,6 @@ public:
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     void refreshScopeMetadata();
 
-    QHash<int, QByteArray> roleNames() const;
-
     bool loaded() const override;
 
 Q_SIGNALS:
@@ -70,7 +68,6 @@ private Q_SLOTS:
 private:
     static int LIST_DELAY;
 
-    QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     QThread* m_listThread;

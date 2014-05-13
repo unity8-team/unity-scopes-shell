@@ -278,22 +278,6 @@ QJsonValue* CategoryData::DEFAULTS = nullptr;
 Categories::Categories(QObject* parent)
 {
     setParent(parent);
-
-    m_roles[Categories::RoleCategoryId] = "categoryId";
-    m_roles[Categories::RoleName] = "name";
-    m_roles[Categories::RoleIcon] = "icon";
-    m_roles[Categories::RoleRawRendererTemplate] = "rawRendererTemplate";
-    m_roles[Categories::RoleRenderer] = "renderer";
-    m_roles[Categories::RoleComponents] = "components";
-    m_roles[Categories::RoleProgressSource] = "progressSource";
-    m_roles[Categories::RoleResults] = "results";
-    m_roles[Categories::RoleCount] = "count";
-}
-
-QHash<int, QByteArray>
-Categories::roleNames() const
-{
-    return m_roles;
 }
 
 int Categories::rowCount(const QModelIndex& parent) const
@@ -506,8 +490,6 @@ Categories::data(const QModelIndex& index, int role) const
             return catData->rendererTemplate().toVariant();
         case RoleComponents:
             return catData->components().toVariant();
-        case RoleProgressSource:
-            return QVariant();
         case RoleResults:
             return QVariant::fromValue(resultsModel);
         case RoleCount:

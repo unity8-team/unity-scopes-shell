@@ -44,7 +44,6 @@ public:
     explicit PreviewWidgetModel(QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);

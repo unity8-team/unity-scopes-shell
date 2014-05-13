@@ -50,15 +50,6 @@ PreviewModel::PreviewModel(QObject* parent) : m_loaded(false),
     m_previewWidgetModels.append(columnModel);
 }
 
-QHash<int, QByteArray> PreviewModel::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-
-    roles[Roles::RoleColumnModel] = "columnModel";
-
-    return roles;
-}
-
 void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
 {
     m_previewedResult = result;

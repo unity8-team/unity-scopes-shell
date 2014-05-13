@@ -39,17 +39,6 @@ PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
     setParent(parent);
 }
 
-QHash<int, QByteArray> PreviewWidgetModel::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-
-    roles[Roles::RoleWidgetId] = "widgetId";
-    roles[Roles::RoleType] = "type";
-    roles[Roles::RoleProperties] = "properties";
-
-    return roles;
-}
-
 void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
 {
     int insertPos = position >= 0 && position <= m_previewWidgets.count() ? position : m_previewWidgets.count();

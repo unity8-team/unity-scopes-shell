@@ -85,11 +85,6 @@ Scopes::Scopes(QObject *parent)
 {
     setParent(parent);
 
-    m_roles[Scopes::RoleScope] = "scope";
-    m_roles[Scopes::RoleId] = "id";
-    m_roles[Scopes::RoleVisible] = "visible";
-    m_roles[Scopes::RoleTitle] = "title";
-
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
     if (LIST_DELAY < 0) {
@@ -107,11 +102,6 @@ Scopes::~Scopes()
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
     }
-}
-
-QHash<int, QByteArray> Scopes::roleNames() const
-{
-    return m_roles;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const

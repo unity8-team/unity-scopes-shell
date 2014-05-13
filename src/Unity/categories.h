@@ -45,7 +45,6 @@ public:
     explicit Categories(QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json) override;
@@ -63,7 +62,6 @@ private:
     int getCategoryIndex(QString const& categoryId) const;
     int getFirstEmptyCategoryIndex() const;
 
-    QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<CategoryData>> m_categories;
     QMap<std::string, ResultsModel*> m_categoryResults;
     QMap<QObject*, QString> m_countObjects;

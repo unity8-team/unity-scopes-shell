@@ -57,15 +57,6 @@ PreviewStack::~PreviewStack()
     }
 }
 
-QHash<int, QByteArray> PreviewStack::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-
-    roles[Roles::RolePreviewModel] = "previewModel";
-
-    return roles;
-}
-
 bool PreviewStack::event(QEvent* ev)
 {
     if (ev->type() == PushEvent::eventType) {

@@ -38,7 +38,6 @@ public:
     explicit ResultsModel(QObject* parent = 0);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     Q_INVOKABLE QVariant get(int row) const override;
@@ -58,7 +57,6 @@ private:
     QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
     QVariant attributesValue(unity::scopes::CategorisedResult const* result) const;
 
-    QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
     QString m_categoryId;
