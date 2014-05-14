@@ -10,18 +10,7 @@ set(SCOPE_SOURCES
     mock-scope-ttl.cpp
     )
 
-qt5_add_dbus_interface(
-    SCOPE_SOURCES
-    ${TEST_INTERFACE_XML}
-    TestInterface
-    )
-
 add_library(mock-scope-ttl MODULE ${SCOPE_SOURCES})
 target_link_libraries(mock-scope-ttl ${SCOPESLIB_LDFLAGS})
-
-qt5_use_modules(mock-scope-ttl
-    Core
-    DBus
-    )
 
 configure_file(mock-scope-ttl.ini.in mock-scope-ttl.ini)

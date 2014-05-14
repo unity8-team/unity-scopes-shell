@@ -37,7 +37,6 @@
 
 #include "registry-spawner.h"
 #include "test-utils.h"
-#include <tests/scope-test-interface.h>
 
 using namespace scopes_ng;
 
@@ -279,44 +278,41 @@ private Q_SLOTS:
 
     void testActiveTtlScope()
     {
-        if (!QDBusConnection::sessionBus().isConnected())
-        {
-            QSKIP("DBus unavailable, skipping test");
-        }
-
         m_scope_ttl->setActive(true);
-
-        ScopeTestInterface interface;
-        QSignalSpy searchSpy(&interface, SIGNAL(Search(const QString &)));
         performSearch(m_scope_ttl, "query text");
-        if (searchSpy.isEmpty())
-        {
-            QVERIFY(searchSpy.wait());
-        }
 
-        QList<QVariantList> expected;
-        expected << (QVariantList() << "query text");
-        QVERIFY(searchSpy == expected);
+        // get ResultsModel instance
+        auto categories = m_scope_ttl->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0),
+                Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text0"));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
-        QVERIFY(searchSpy.wait());
-        expected << (QVariantList() << "query text");
-        QVERIFY(searchSpy == expected);
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text1"));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
-        QVERIFY(searchSpy.wait());
-        expected << (QVariantList() << "query text");
-        QVERIFY(searchSpy == expected);
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text2"));
+        QVERIFY(!m_scope_ttl->resultsDirty());
+
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text3"));
         QVERIFY(!m_scope_ttl->resultsDirty());
     }
 
     void testInactiveTtlScope()
     {
-        if (!QDBusConnection::sessionBus().isConnected())
-        {
-            QSKIP("DBus unavailable, skipping test");
-        }
-
         QSignalSpy dirtySpy(m_scope_ttl, SIGNAL(resultsDirtyChanged(bool)));
 
         m_scope_ttl->setActive(false);

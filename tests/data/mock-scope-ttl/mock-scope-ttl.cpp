@@ -16,12 +16,14 @@
  * Authored by: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/ScopeBase.h>
+#include <unity/scopes/SearchReply.h>
 
 #include <iostream>
 #include <thread>
-
-#include <TestInterface.h>
+#include <atomic>
+#include <sstream>
 
 #define EXPORT __attribute__ ((visibility ("default")))
 
@@ -31,7 +33,8 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery()
+    MyQuery(string const& result) :
+            result_(result)
     {
     }
 
@@ -43,14 +46,27 @@ public:
     {
     }
 
-    virtual void run(SearchReplyProxy const&) override
+    virtual void run(SearchReplyProxy const& reply) override
     {
+        auto cat = reply->register_category("cat1", "Category 1", "");
+        CategorisedResult res(cat);
+        res.set_uri("test:uri");
+        res.set_title(result_);
+        reply->push(res);
     }
+
+protected:
+    string result_;
 };
 
 class MyScope : public ScopeBase
 {
 public:
+    MyScope() :
+            counter_(0)
+    {
+    }
+
     virtual int start(string const&, RegistryProxy const&) override
     {
         return VERSION;
@@ -61,16 +77,20 @@ public:
 
     virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
     {
-        ComCanonicalScopesTestInterface interface("com.canonical.scopes.test",
-                "/com/canonical/scopes/test", QDBusConnection::sessionBus());
-        interface.Search(QString::fromStdString(q.query_string()));
-        return SearchQueryBase::UPtr(new MyQuery);
+        stringstream builder;
+        builder << q.query_string();
+        builder << counter_++;
+
+        return SearchQueryBase::UPtr(new MyQuery(builder.str()));
     }
 
     virtual PreviewQueryBase::UPtr preview(Result const&, ActionMetadata const&) override
     {
         return nullptr;
     }
+
+protected:
+    atomic<unsigned int> counter_;
 };
 
 extern "C"

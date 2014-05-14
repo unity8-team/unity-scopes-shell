@@ -73,6 +73,18 @@ void performSearch(Scope* scope, QString const& searchString)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
+void waitForResultsChange(Scope* scope)
+{
+    QCOMPARE(scope->searchInProgress(), false);
+    // wait for the search to finish
+    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+    QVERIFY(spy.wait());
+    if(spy.size() == 1) {
+        QVERIFY(spy.wait());
+    }
+    QCOMPARE(scope->searchInProgress(), false);
+}
+
 bool previewForFirstResult(Scope* scope, QString const& searchString, QScopedPointer<PreviewStack>& preview_stack)
 {
     performSearch(scope, searchString);

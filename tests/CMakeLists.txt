@@ -7,7 +7,6 @@ _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoper
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
 
 set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
-set(TEST_INTERFACE_XML "${CMAKE_CURRENT_SOURCE_DIR}/data/com.canonical.scopes.test.xml")
 
 add_subdirectory(data)
 
@@ -17,30 +16,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
-    )
-
-set(TEST_INTERFACE_SOURCES
-    scope-test-interface.cpp
-    )
-
-qt5_add_dbus_adaptor(
-    TEST_INTERFACE_SOURCES
-    ${TEST_INTERFACE_XML}
-    tests/scope-test-interface.h
-    ScopeTestInterface
-    TestInterfaceAdaptor
-)
-
-add_library(
-    test-interface
-    STATIC
-    ${TEST_INTERFACE_SOURCES}
-    )
-    
-qt5_use_modules(test-interface
-    Core
-    DBus
-    Test
     )
 
 macro(run_tests)
@@ -73,8 +48,4 @@ run_tests(
     resultstest
     previewtest
     utilstest
-    )
-
-target_link_libraries(resultstestExec
-    test-interface
     )
