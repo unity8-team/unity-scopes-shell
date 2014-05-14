@@ -123,6 +123,11 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         flushUpdates();
 
         setSearchInProgress(false);
+
+        // Don't schedule a refresh if the query suffered an error
+        if (status == CollectorBase::Status::FINISHED) {
+            startTtlTimer();
+        }
     }
 }
 
@@ -298,13 +303,8 @@ void Scope::invalidateLastSearch()
     m_cachedResults.clear();
 }
 
-void Scope::setSearchInProgress(bool searchInProgress)
+void Scope::startTtlTimer()
 {
-    if (m_searchInProgress != searchInProgress) {
-        m_searchInProgress = searchInProgress;
-        Q_EMIT searchInProgressChanged();
-    }
-
     if (!m_searchInProgress && m_scopeMetadata) {
         int ttl = 0;
         switch (m_scopeMetadata->results_ttl()) {
@@ -327,6 +327,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
             }
             m_invalidateTimer.start(ttl);
         }
+    }
+}
+
+void Scope::setSearchInProgress(bool searchInProgress)
+{
+    if (m_searchInProgress != searchInProgress) {
+        m_searchInProgress = searchInProgress;
+        Q_EMIT searchInProgressChanged();
     }
 }
 
