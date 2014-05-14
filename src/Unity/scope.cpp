@@ -305,7 +305,7 @@ void Scope::invalidateLastSearch()
 
 void Scope::startTtlTimer()
 {
-    if (!m_searchInProgress && m_scopeMetadata) {
+    if (m_scopeMetadata) {
         int ttl = 0;
         switch (m_scopeMetadata->results_ttl()) {
         case (scopes::ScopeMetadata::ResultsTtl::none):
