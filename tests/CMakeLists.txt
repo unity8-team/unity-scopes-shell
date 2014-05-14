@@ -1,7 +1,6 @@
 include(FindPkgConfig)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-find_package(Qt5DBus)
 
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
