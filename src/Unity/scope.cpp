@@ -60,14 +60,13 @@ using namespace unity;
 const int AGGREGATION_TIMEOUT = 110;
 const int CLEAR_TIMEOUT = 240;
 
-Scope::Scope(QObject *parent) : m_formFactor("phone")
+Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
+    , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
     , m_delayedClear(false)
 {
-    setParent(parent);
-
     m_categories = new Categories(this);
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;

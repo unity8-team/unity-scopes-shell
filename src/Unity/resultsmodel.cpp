@@ -31,8 +31,8 @@ using namespace unity;
 const int MAX_ATTRIBUTES = 3;
 
 ResultsModel::ResultsModel(QObject* parent)
+ : unity::shell::scopes::ResultsModelInterface(parent)
 {
-    setParent(parent);
 }
 
 QString ResultsModel::categoryId() const

@@ -276,8 +276,8 @@ private:
 QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
+    : unity::shell::scopes::CategoriesInterface(parent)
 {
-    setParent(parent);
 }
 
 int Categories::rowCount(const QModelIndex& parent) const

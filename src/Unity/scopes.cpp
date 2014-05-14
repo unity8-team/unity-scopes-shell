@@ -80,11 +80,10 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 int Scopes::LIST_DELAY = -1;
 
 Scopes::Scopes(QObject *parent)
-    : m_listThread(nullptr)
+    : unity::shell::scopes::ScopesInterface(parent)
+    , m_listThread(nullptr)
     , m_loaded(false)
 {
-    setParent(parent);
-
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
     if (LIST_DELAY < 0) {

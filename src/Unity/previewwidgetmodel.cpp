@@ -35,8 +35,8 @@ namespace scopes_ng
 using namespace unity;
 
 PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
+ : unity::shell::scopes::PreviewWidgetModelInterface(parent)
 {
-    setParent(parent);
 }
 
 void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)

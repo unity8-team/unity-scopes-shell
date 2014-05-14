@@ -40,9 +40,10 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewStack::PreviewStack(QObject* parent) : m_widgetColumnCount(1)
+PreviewStack::PreviewStack(QObject* parent)
+ : unity::shell::scopes::PreviewStackInterface(parent)
+ , m_widgetColumnCount(1)
 {
-    setParent(parent);
 }
 
 PreviewStack::~PreviewStack()
