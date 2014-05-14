@@ -6,4 +6,4 @@ Icon = /mock-ttl.Icon
 SearchHint = mock-ttl.SearchHint
 HotKey = mock-ttl.HotKey
 Author = mock-ttl.Author
-ResultsTTL = small
+ResultsTtlType = small
