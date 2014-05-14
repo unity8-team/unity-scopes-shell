@@ -307,16 +307,16 @@ void Scope::startTtlTimer()
 {
     if (m_scopeMetadata) {
         int ttl = 0;
-        switch (m_scopeMetadata->results_ttl()) {
-        case (scopes::ScopeMetadata::ResultsTtl::none):
+        switch (m_scopeMetadata->results_ttl_type()) {
+        case (scopes::ScopeMetadata::ResultsTtlType::None):
             break;
-        case (scopes::ScopeMetadata::ResultsTtl::small):
+        case (scopes::ScopeMetadata::ResultsTtlType::Small):
             ttl = RESULTS_TTL_SMALL;
             break;
-        case (scopes::ScopeMetadata::ResultsTtl::medium):
+        case (scopes::ScopeMetadata::ResultsTtlType::Medium):
             ttl = RESULTS_TTL_MEDIUM;
             break;
-        case (scopes::ScopeMetadata::ResultsTtl::large):
+        case (scopes::ScopeMetadata::ResultsTtlType::Large):
             ttl = RESULTS_TTL_LARGE;
             break;
         }
