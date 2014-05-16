@@ -295,6 +295,9 @@ private Q_SLOTS:
                 QString("query text0"));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
+
+        // The scope should refresh every 250 ms, and increment the query
+        // counter each time.
         waitForResultsChange(m_scope_ttl);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
                 QString("query text1"));
@@ -323,6 +326,7 @@ private Q_SLOTS:
             QVERIFY(dirtySpy.wait());
         }
 
+        // Model should go dirty
         QList<QVariantList> expected;
         expected << (QVariantList() << true);
         QVERIFY(dirtySpy == expected);
