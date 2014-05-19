@@ -92,7 +92,7 @@ private Q_SLOTS:
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
         auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview_model = preview_stack->get(0);
+        auto preview_model = preview_stack->getPreviewModel(0);
         QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
         QCOMPARE(preview_model->widgetColumnCount(), 1);
         QTRY_COMPARE(preview_model->loaded(), true);
@@ -128,7 +128,7 @@ private Q_SLOTS:
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
+        auto preview = preview_stack->getPreviewModel(0);
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
         auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
@@ -154,7 +154,7 @@ private Q_SLOTS:
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
+        auto preview = preview_stack->getPreviewModel(0);
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
 
@@ -172,7 +172,7 @@ private Q_SLOTS:
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
+        auto preview = preview_stack->getPreviewModel(0);
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
 
@@ -196,7 +196,7 @@ private Q_SLOTS:
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->get(0);
+        auto preview = preview_stack->getPreviewModel(0);
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
         auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();

@@ -53,7 +53,7 @@ public:
 
     virtual bool event(QEvent* ev) override;
 
-    Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* get(int index) const override;
+    Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* getPreviewModel(int index) const override;
 
     void loadForResult(unity::scopes::Result::SPtr const&);
 

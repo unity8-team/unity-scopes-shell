@@ -47,8 +47,8 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    Q_INVOKABLE QVariant get(int row) const override;
-    Q_INVOKABLE QVariant get(QString const& scopeId) const override;
+    Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
+    Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
 
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;

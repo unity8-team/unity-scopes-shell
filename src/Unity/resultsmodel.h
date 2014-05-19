@@ -40,8 +40,6 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE QVariant get(int row) const override;
-
     void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 

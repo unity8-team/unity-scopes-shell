@@ -140,34 +140,25 @@ private Q_SLOTS:
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
         QVERIFY(results->rowCount() > 0);
-
-        // test also the ResultsModel::get() method
-        QVariantMap result_data(results->get(0).toMap());
-        QVERIFY(result_data.size() > 0);
-        QVERIFY(result_data.contains("uri"));
-        QVERIFY(result_data.contains("categoryId"));
-        QVERIFY(result_data.contains("result"));
-        QVERIFY(result_data.contains("title"));
     }
 
     void testScopesGet()
     {
-        QVariant scope_var = m_scopes->get(0);
-        QVERIFY(scope_var.canConvert<scopes_ng::Scope*>());
+        unity::shell::scopes::ScopeInterface* scope = m_scopes->getScope(0);
+        QVERIFY(scope);
 
         // try incorrect index as well
-        scope_var = m_scopes->get(65536);
-        QVERIFY(scope_var.isNull());
-        scope_var = m_scopes->get(-1);
-        QVERIFY(scope_var.isNull());
+        scope = m_scopes->getScope(65536);
+        QVERIFY(!scope);
+        scope = m_scopes->getScope(-1);
+        QVERIFY(!scope);
 
         // try to get by scope id
-        scope_var = m_scopes->get(QString("mock-scope"));
-        QVERIFY(!scope_var.isNull());
-        QVERIFY(scope_var.canConvert<scopes_ng::Scope*>());
+        scope = m_scopes->getScope(QString("mock-scope"));
+        QVERIFY(scope);
 
-        scope_var = m_scopes->get(QString("non-existing"));
-        QVERIFY(scope_var.isNull());
+        scope = m_scopes->getScope(QString("non-existing"));
+        QVERIFY(!scope);
     }
 
     void testScopeProperties()

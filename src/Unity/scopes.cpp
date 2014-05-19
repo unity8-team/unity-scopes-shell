@@ -222,18 +222,17 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
     }
 }
 
-QVariant Scopes::get(int row) const
+unity::shell::scopes::ScopeInterface* Scopes::getScope(int row) const
 {
     if (row >= m_scopes.size() || row < 0) {
-        return QVariant();
+        return nullptr;
     }
-    return data(QAbstractListModel::index(row), RoleScope);
+    return m_scopes[row];
 }
 
-QVariant Scopes::get(const QString& scopeId) const
+unity::shell::scopes::ScopeInterface* Scopes::getScope(const QString& scopeId) const
 {
-    Scope* scope = getScopeById(scopeId);
-    return scope != nullptr ? QVariant::fromValue(scope) : QVariant();
+    return getScopeById(scopeId);
 }
 
 Scope* Scopes::getScopeById(QString const& scopeId) const
