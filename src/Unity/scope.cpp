@@ -59,6 +59,9 @@ using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
 const int CLEAR_TIMEOUT = 240;
+const int RESULTS_TTL_SMALL = 30000; // 30 seconds
+const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
+const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
 Scope::Scope(QObject *parent) : QObject(parent)
     , m_formFactor("phone")
@@ -76,6 +79,9 @@ Scope::Scope(QObject *parent) : QObject(parent)
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_clearTimer.setSingleShot(true);
     QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    m_invalidateTimer.setSingleShot(true);
+    m_invalidateTimer.setTimerType(Qt::VeryCoarseTimer);
+    QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
 }
 
 Scope::~Scope()
@@ -116,9 +122,11 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
         flushUpdates();
 
-        if (m_searchInProgress) {
-            m_searchInProgress = false;
-            Q_EMIT searchInProgressChanged();
+        setSearchInProgress(false);
+
+        // Don't schedule a refresh if the query suffered an error
+        if (status == CollectorBase::Status::FINISHED) {
+            startTtlTimer();
         }
     }
 }
@@ -295,6 +303,41 @@ void Scope::invalidateLastSearch()
     m_cachedResults.clear();
 }
 
+void Scope::startTtlTimer()
+{
+    if (m_scopeMetadata) {
+        int ttl = 0;
+        switch (m_scopeMetadata->results_ttl_type()) {
+        case (scopes::ScopeMetadata::ResultsTtlType::None):
+            break;
+        case (scopes::ScopeMetadata::ResultsTtlType::Small):
+            ttl = RESULTS_TTL_SMALL;
+            break;
+        case (scopes::ScopeMetadata::ResultsTtlType::Medium):
+            ttl = RESULTS_TTL_MEDIUM;
+            break;
+        case (scopes::ScopeMetadata::ResultsTtlType::Large):
+            ttl = RESULTS_TTL_LARGE;
+            break;
+        }
+        if (ttl > 0) {
+            if (qEnvironmentVariableIsSet("UNITY_SCOPES_RESULTS_TTL_OVERRIDE")) {
+                ttl = QString::fromUtf8(
+                        qgetenv("UNITY_SCOPES_RESULTS_TTL_OVERRIDE")).toInt();
+            }
+            m_invalidateTimer.start(ttl);
+        }
+    }
+}
+
+void Scope::setSearchInProgress(bool searchInProgress)
+{
+    if (m_searchInProgress != searchInProgress) {
+        m_searchInProgress = searchInProgress;
+        Q_EMIT searchInProgressChanged();
+    }
+}
+
 void Scope::dispatchSearch()
 {
     invalidateLastSearch();
@@ -318,12 +361,13 @@ void Scope::dispatchSearch()
      * The new query will have new instances of SearchResultReceiver and ResultCollector.
      */
 
-    m_resultsDirty = false;
-
-    if (!m_searchInProgress) {
-        m_searchInProgress = true;
-        Q_EMIT searchInProgressChanged();
+    if (m_resultsDirty)
+    {
+        m_resultsDirty = false;
+        resultsDirtyChanged(false);
     }
+
+    setSearchInProgress(true);
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
@@ -345,8 +389,7 @@ void Scope::dispatchSearch()
 
     if (!m_lastSearchQuery) {
         // something went wrong, reset search state
-        m_searchInProgress = false;
-        Q_EMIT searchInProgressChanged();
+        setSearchInProgress(false);
     }
 }
 
@@ -554,7 +597,11 @@ void Scope::invalidateResults()
         dispatchSearch();
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
-        m_resultsDirty = true;
+        if (!m_resultsDirty)
+        {
+            m_resultsDirty = true;
+            resultsDirtyChanged(true);
+        }
     }
 }
 
@@ -563,6 +610,10 @@ void Scope::closeScope(scopes_ng::Scope* scope)
     if (m_tempScopes.remove(scope)) {
         delete scope;
     }
+}
+
+bool Scope::resultsDirty() const {
+    return m_resultsDirty;
 }
 
 void Scope::activateUri(QString const& uri)

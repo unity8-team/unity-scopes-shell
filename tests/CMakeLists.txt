@@ -29,7 +29,7 @@ macro(run_tests)
         add_executable(${_test}Exec ${_test}.cpp)
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
-                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5" RUN_SERIAL TRUE)
+                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5;UNITY_SCOPES_RESULTS_TTL_OVERRIDE=250" RUN_SERIAL TRUE)
         set_target_properties(${_test}Exec
                 PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPESLIB_SCOPEREGISTRY_BIN}\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
 

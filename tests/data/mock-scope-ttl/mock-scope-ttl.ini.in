@@ -1,0 +1,9 @@
+[ScopeConfig]
+DisplayName = mock-ttl.DisplayName
+Description = mock-ttl.Description
+Art = /mock-ttl.Art
+Icon = /mock-ttl.Icon
+SearchHint = mock-ttl.SearchHint
+HotKey = mock-ttl.HotKey
+Author = mock-ttl.Author
+ResultsTtlType = Small

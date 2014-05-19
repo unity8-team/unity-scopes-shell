@@ -67,7 +67,7 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
         // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 1);
+        QCOMPARE(m_scopes->rowCount(), 2);
 
         QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
         QVERIFY(scope_var.canConvert<Scope*>());
