@@ -1,8 +1,6 @@
 include(FindPkgConfig)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 
-set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
-
 include_directories(${SCOPESLIB_INCLUDE_DIRS})
 
 add_library(mock-scope MODULE mock-scope.cpp)

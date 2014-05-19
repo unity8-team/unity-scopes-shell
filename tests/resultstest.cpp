@@ -45,7 +45,7 @@ class CountObject : public QObject
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    explicit CountObject(QObject* parent = nullptr) : QObject(parent), m_count(0)
+    explicit CountObject(QObject* parent = nullptr) : QObject(parent), m_count(0), m_waitingCount(0)
     {
         connect(&m_timer, &QTimer::timeout, this, &CountObject::asyncTimeout);
     }
