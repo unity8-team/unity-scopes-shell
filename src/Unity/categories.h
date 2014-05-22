@@ -22,7 +22,8 @@
 #ifndef NG_CATEGORIES_H
 #define NG_CATEGORIES_H
 
-#include <QAbstractListModel>
+#include <unity/shell/scopes/CategoriesInterface.h>
+
 #include <QSet>
 #include <QTimer>
 #include <QSharedPointer>
@@ -36,33 +37,18 @@ namespace scopes_ng
 
 struct CategoryData;
 
-class Q_DECL_EXPORT Categories : public QAbstractListModel
+class Q_DECL_EXPORT Categories : public unity::shell::scopes::CategoriesInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
 
 public:
     explicit Categories(QObject* parent = 0);
 
-    enum Roles {
-        RoleCategoryId,
-        RoleName,
-        RoleIcon,
-        RoleRawRendererTemplate,
-        RoleRenderer,
-        RoleComponents,
-        RoleProgressSource, // maybe
-        RoleResults,
-        RoleCount
-    };
-
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json);
-    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject);
+    Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json) override;
+    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
     ResultsModel* lookupCategory(std::string const& category_id);
     void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
@@ -76,7 +62,6 @@ private:
     int getCategoryIndex(QString const& categoryId) const;
     int getFirstEmptyCategoryIndex() const;
 
-    QHash<int, QByteArray> m_roles;
     QList<QSharedPointer<CategoryData>> m_categories;
     QMap<std::string, ResultsModel*> m_categoryResults;
     QMap<QObject*, QString> m_countObjects;

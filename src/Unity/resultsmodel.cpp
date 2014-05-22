@@ -31,20 +31,8 @@ using namespace unity;
 const int MAX_ATTRIBUTES = 3;
 
 ResultsModel::ResultsModel(QObject* parent)
-    : QAbstractListModel(parent)
+ : unity::shell::scopes::ResultsModelInterface(parent)
 {
-    m_roles[ResultsModel::RoleUri] = "uri";
-    m_roles[ResultsModel::RoleCategoryId] = "categoryId";
-    m_roles[ResultsModel::RoleDndUri] = "dndUri";
-    m_roles[ResultsModel::RoleResult] = "result";
-    m_roles[ResultsModel::RoleTitle] = "title";
-    m_roles[ResultsModel::RoleArt] = "art";
-    m_roles[ResultsModel::RoleSubtitle] = "subtitle";
-    m_roles[ResultsModel::RoleMascot] = "mascot";
-    m_roles[ResultsModel::RoleEmblem] = "emblem";
-    m_roles[ResultsModel::RoleSummary] = "summary";
-    m_roles[ResultsModel::RoleAttributes] = "attributes";
-    m_roles[ResultsModel::RoleBackground] = "background";
 }
 
 QString ResultsModel::categoryId() const
@@ -98,12 +86,6 @@ void ResultsModel::clearResults()
     endRemoveRows();
 
     Q_EMIT countChanged();
-}
-
-QHash<int, QByteArray>
-ResultsModel::roleNames() const
-{
-    return m_roles;
 }
 
 int ResultsModel::rowCount(const QModelIndex& parent) const
@@ -178,23 +160,6 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
     }
 
     return attributes;
-}
-
-QVariant ResultsModel::get(int row) const
-{
-    if (row >= m_results.size() || row < 0) return QVariantMap();
-
-    QVariantMap result;
-    QModelIndex modelIndex(index(row));
-    QHashIterator<int, QByteArray> it(roleNames());
-    while (it.hasNext()) {
-        it.next();
-        QVariant val(data(modelIndex, it.key()));
-        if (val.isNull()) continue;
-        result[it.value()] = val;
-    }
-
-    return result;
 }
 
 QVariant

@@ -92,7 +92,7 @@ bool previewForFirstResult(Scope* scope, QString const& searchString, QScopedPoi
     unity::scopes::Result::SPtr result;
     if (!getFirstResult(scope, result))
         return false;
-    preview_stack.reset(scope->preview(QVariant::fromValue(result)));
+    preview_stack.reset(static_cast<PreviewStack*>(scope->preview(QVariant::fromValue(result))));
 
     return true;
 }

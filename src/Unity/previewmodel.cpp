@@ -38,7 +38,8 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent),
+PreviewModel::PreviewModel(QObject* parent) :
+    unity::shell::scopes::PreviewModelInterface (parent),
     m_loaded(false),
     m_processingAction(false),
     m_delayedClear(false),
@@ -47,15 +48,6 @@ PreviewModel::PreviewModel(QObject* parent) : QAbstractListModel(parent),
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
     m_previewWidgetModels.append(columnModel);
-}
-
-QHash<int, QByteArray> PreviewModel::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-
-    roles[Roles::RoleColumnModel] = "columnModel";
-
-    return roles;
 }
 
 void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)

@@ -21,7 +21,8 @@
 #ifndef NG_CATEGORY_RESULTS_H
 #define NG_CATEGORY_RESULTS_H
 
-#include <QAbstractListModel>
+#include <unity/shell/scopes/ResultsModelInterface.h>
+
 #include <QHash>
 
 #include <unity/scopes/CategorisedResult.h>
@@ -29,60 +30,31 @@
 
 namespace scopes_ng {
 
-class Q_DECL_EXPORT ResultsModel : public QAbstractListModel
+class Q_DECL_EXPORT ResultsModel : public unity::shell::scopes::ResultsModelInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
-
-    Q_PROPERTY(QString categoryId READ categoryId WRITE setCategoryId NOTIFY categoryIdChanged)
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     explicit ResultsModel(QObject* parent = 0);
 
-    enum Roles {
-        RoleUri,
-        RoleCategoryId,
-        RoleDndUri,
-        RoleResult,
-        // card components
-        RoleTitle,
-        RoleArt,
-        RoleSubtitle,
-        RoleMascot,
-        RoleEmblem,
-        RoleSummary,
-        RoleAttributes,
-        RoleBackground
-    };
-
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-    Q_INVOKABLE QVariant get(int row) const;
 
     void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 
     /* getters */
-    QString categoryId() const;
-    int count() const;
+    QString categoryId() const override;
+    int count() const override;
 
     /* setters */
-    void setCategoryId(QString const& id);
+    void setCategoryId(QString const& id) override;
     void setComponentsMapping(QHash<QString, QString> const& mapping);
-
-Q_SIGNALS:
-    void categoryIdChanged();
-    void countChanged();
 
 private:
     QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
     QVariant attributesValue(unity::scopes::CategorisedResult const* result) const;
 
-    QHash<int, QByteArray> m_roles;
     std::unordered_map<std::string, std::string> m_componentMapping;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
     QString m_categoryId;

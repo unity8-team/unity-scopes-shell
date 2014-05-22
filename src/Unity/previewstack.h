@@ -22,7 +22,8 @@
 #ifndef NG_PREVIEW_STACK_H
 #define NG_PREVIEW_STACK_H
 
-#include <QAbstractListModel>
+#include <unity/shell/scopes/PreviewStackInterface.h>
+
 #include <QSet>
 #include <QSharedPointer>
 #include <QMultiMap>
@@ -39,38 +40,26 @@ namespace scopes_ng
 class PreviewModel;
 class Scope;
 
-class Q_DECL_EXPORT PreviewStack : public QAbstractListModel
+class Q_DECL_EXPORT PreviewStack : public unity::shell::scopes::PreviewStackInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
-
-    Q_PROPERTY(int widgetColumnCount READ widgetColumnCount WRITE setWidgetColumnCount NOTIFY widgetColumnCountChanged)
 
 public:
     explicit PreviewStack(QObject* parent = 0);
     virtual ~PreviewStack();
 
-    enum Roles {
-        RolePreviewModel
-    };
-
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     virtual bool event(QEvent* ev) override;
 
-    Q_INVOKABLE scopes_ng::PreviewModel* get(int index) const;
+    Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* getPreviewModel(int index) const override;
 
     void loadForResult(unity::scopes::Result::SPtr const&);
 
-    void setWidgetColumnCount(int columnCount);
-    int widgetColumnCount() const;
+    void setWidgetColumnCount(int columnCount) override;
+    int widgetColumnCount() const override;
     void setAssociatedScope(scopes_ng::Scope*);
-
-Q_SIGNALS:
-    void widgetColumnCountChanged();
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);

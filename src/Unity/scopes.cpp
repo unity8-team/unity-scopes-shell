@@ -80,15 +80,10 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 int Scopes::LIST_DELAY = -1;
 
 Scopes::Scopes(QObject *parent)
-    : QAbstractListModel(parent)
+    : unity::shell::scopes::ScopesInterface(parent)
     , m_listThread(nullptr)
     , m_loaded(false)
 {
-    m_roles[Scopes::RoleScope] = "scope";
-    m_roles[Scopes::RoleId] = "id";
-    m_roles[Scopes::RoleVisible] = "visible";
-    m_roles[Scopes::RoleTitle] = "title";
-
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
     if (LIST_DELAY < 0) {
@@ -106,11 +101,6 @@ Scopes::~Scopes()
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
     }
-}
-
-QHash<int, QByteArray> Scopes::roleNames() const
-{
-    return m_roles;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -232,18 +222,17 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
     }
 }
 
-QVariant Scopes::get(int row) const
+unity::shell::scopes::ScopeInterface* Scopes::getScope(int row) const
 {
     if (row >= m_scopes.size() || row < 0) {
-        return QVariant();
+        return nullptr;
     }
-    return data(QAbstractListModel::index(row), RoleScope);
+    return m_scopes[row];
 }
 
-QVariant Scopes::get(const QString& scopeId) const
+unity::shell::scopes::ScopeInterface* Scopes::getScope(const QString& scopeId) const
 {
-    Scope* scope = getScopeById(scopeId);
-    return scope != nullptr ? QVariant::fromValue(scope) : QVariant();
+    return getScopeById(scopeId);
 }
 
 Scope* Scopes::getScopeById(QString const& scopeId) const

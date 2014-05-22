@@ -1,4 +1,5 @@
 include(FindPkgConfig)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
@@ -26,7 +27,10 @@ macro(run_tests)
                 -o -,txt)
         add_test(NAME test${CLASSNAME}${_test} COMMAND ${testCommand})
         add_custom_target(${_test} ${testCommand})
-        add_executable(${_test}Exec ${_test}.cpp)
+        add_executable(${_test}Exec
+                       ${_test}.cpp 
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
+                      )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
                 PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5;UNITY_SCOPES_RESULTS_TTL_OVERRIDE=250" RUN_SERIAL TRUE)

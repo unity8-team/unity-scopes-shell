@@ -22,7 +22,8 @@
 #ifndef NG_PREVIEW_MODEL_H
 #define NG_PREVIEW_MODEL_H
 
-#include <QAbstractListModel>
+#include <unity/shell/scopes/PreviewModelInterface.h>
+
 #include <QSet>
 #include <QSharedPointer>
 #include <QMultiMap>
@@ -52,46 +53,29 @@ class PreviewWidgetModel;
 class PushEvent;
 class Scope;
 
-class Q_DECL_EXPORT PreviewModel : public QAbstractListModel
+class Q_DECL_EXPORT PreviewModel : public unity::shell::scopes::PreviewModelInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
-
-    Q_PROPERTY(int widgetColumnCount READ widgetColumnCount WRITE setWidgetColumnCount NOTIFY widgetColumnCountChanged)
-    Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
-    Q_PROPERTY(bool processingAction READ processingAction NOTIFY processingActionChanged)
 
 public:
     explicit PreviewModel(QObject* parent = 0);
 
-    enum Roles {
-        RoleColumnModel
-    };
-
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     virtual bool event(QEvent* ev) override;
 
     void setResult(std::shared_ptr<unity::scopes::Result> const&);
 
-    void setWidgetColumnCount(int count);
-    int widgetColumnCount() const;
-    bool loaded() const;
-    bool processingAction() const;
+    void setWidgetColumnCount(int count) override;
+    int widgetColumnCount() const override;
+    bool loaded() const override;
+    bool processingAction() const override;
     void setProcessingAction(bool processing);
 
     void setDelayedClear();
     void clearAll();
     PreviewWidgetData* getWidgetData(QString const& widgetId) const;
-
-Q_SIGNALS:
-    void widgetColumnCountChanged();
-    void loadedChanged();
-    void processingActionChanged();
-    void triggered(QString const&, QString const&, QVariantMap const&);
 
 private:
     void processPreviewChunk(PushEvent* pushEvent);

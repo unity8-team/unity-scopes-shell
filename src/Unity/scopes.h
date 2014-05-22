@@ -20,8 +20,9 @@
 #ifndef NG_SCOPES_H
 #define NG_SCOPES_H
 
+#include <unity/shell/scopes/ScopesInterface.h>
+
 // Qt
-#include <QAbstractListModel>
 #include <QList>
 #include <QThread>
 
@@ -36,41 +37,26 @@ namespace scopes_ng
 
 class Scope;
 
-class Q_DECL_EXPORT Scopes : public QAbstractListModel
+class Q_DECL_EXPORT Scopes : public unity::shell::scopes::ScopesInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
-
-    Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
-
 public:
     explicit Scopes(QObject *parent = 0);
     ~Scopes();
 
-    enum Roles {
-        RoleScope,
-        RoleId,
-        RoleVisible,
-        RoleTitle
-    };
-
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const;
+    Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    Q_INVOKABLE QVariant get(int row) const;
-    Q_INVOKABLE QVariant get(QString const& scopeId) const;
+    Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
+    Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
 
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     void refreshScopeMetadata();
 
-    QHash<int, QByteArray> roleNames() const;
-
-    bool loaded() const;
+    bool loaded() const override;
 
 Q_SIGNALS:
-    void loadedChanged(bool loaded);
     void metadataRefreshed();
 
 private Q_SLOTS:
@@ -82,7 +68,6 @@ private Q_SLOTS:
 private:
     static int LIST_DELAY;
 
-    QHash<int, QByteArray> m_roles;
     QList<Scope*> m_scopes;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     QThread* m_listThread;

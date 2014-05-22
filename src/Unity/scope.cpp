@@ -63,7 +63,7 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
-Scope::Scope(QObject *parent) : QObject(parent)
+Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -458,7 +458,7 @@ QString Scope::shortcut() const
     return QString::fromStdString(hotkey);
 }
 
-Categories* Scope::categories() const
+unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
     return m_categories;
 }
@@ -564,7 +564,7 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-PreviewStack* Scope::preview(QVariant const& result_var)
+unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -605,7 +605,7 @@ void Scope::invalidateResults()
     }
 }
 
-void Scope::closeScope(scopes_ng::Scope* scope)
+void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
     if (m_tempScopes.remove(scope)) {
         delete scope;

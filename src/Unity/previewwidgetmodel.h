@@ -22,7 +22,8 @@
 #ifndef NG_PREVIEW_WIDGET_MODEL_H
 #define NG_PREVIEW_WIDGET_MODEL_H
 
-#include <QAbstractListModel>
+#include <unity/shell/scopes/PreviewWidgetModelInterface.h>
+
 #include <QSet>
 #include <QSharedPointer>
 #include <QMultiMap>
@@ -35,23 +36,14 @@
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT PreviewWidgetModel : public QAbstractListModel
+class Q_DECL_EXPORT PreviewWidgetModel : public unity::shell::scopes::PreviewWidgetModelInterface
 {
     Q_OBJECT
-
-    Q_ENUMS(Roles)
 
 public:
     explicit PreviewWidgetModel(QObject* parent = 0);
 
-    enum Roles {
-        RoleWidgetId,
-        RoleType,
-        RoleProperties
-    };
-
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);

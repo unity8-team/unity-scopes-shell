@@ -3,6 +3,7 @@ include(Plugins)
 
 # Dependencies
 include(FindPkgConfig)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
@@ -25,6 +26,15 @@ set(QMLPLUGIN_SRC
     utils.cpp
     plugin.cpp
     iconutils.cpp
+    # We need these headers here so moc runs and we get the moc-stuff
+    # compiled in, otherwise we miss some symbols
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewStackInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewWidgetModelInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ResultsModelInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopesInterface.h
 )
 
 add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})

@@ -40,7 +40,9 @@ namespace scopes_ng
 
 using namespace unity;
 
-PreviewStack::PreviewStack(QObject* parent) : QAbstractListModel(parent), m_widgetColumnCount(1)
+PreviewStack::PreviewStack(QObject* parent)
+ : unity::shell::scopes::PreviewStackInterface(parent)
+ , m_widgetColumnCount(1)
 {
 }
 
@@ -54,15 +56,6 @@ PreviewStack::~PreviewStack()
     if (m_lastActivation) {
         m_lastActivation->invalidate();
     }
-}
-
-QHash<int, QByteArray> PreviewStack::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-
-    roles[Roles::RolePreviewModel] = "previewModel";
-
-    return roles;
 }
 
 bool PreviewStack::event(QEvent* ev)
@@ -234,7 +227,7 @@ int PreviewStack::rowCount(const QModelIndex&) const
     return m_previews.size();
 }
 
-PreviewModel* PreviewStack::get(int index) const
+unity::shell::scopes::PreviewModelInterface* PreviewStack::getPreviewModel(int index) const
 {
     if (index >= m_previews.size()) {
         return nullptr;
