@@ -46,6 +46,7 @@ public:
         arguments << TEST_RUNTIME_CONFIG;
 
         m_registry.reset(new QProcess(nullptr));
+        m_registry->setProcessChannelMode(QProcess::ForwardedChannels);
         m_registry->start(registryBin, arguments);
         QVERIFY(m_registry->waitForStarted());
 

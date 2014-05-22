@@ -24,6 +24,7 @@
 #include <QThread>
 #include <QScopedPointer>
 #include <QSignalSpy>
+#include <QVariantList>
 #include <QDBusConnection>
 
 #include <scopes.h>
@@ -86,6 +87,7 @@ class ResultsTest : public QObject
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
+    Scope* m_scope_ttl;
     QScopedPointer<RegistrySpawner> m_registry;
 
 private Q_SLOTS:
@@ -110,19 +112,24 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
         // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 1);
-
-        QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
-        QVERIFY(scope_var.canConvert<Scope*>());
+        QCOMPARE(m_scopes->rowCount(), 2);
 
         // get scope proxy
+        QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
+        QVERIFY(scope_var.canConvert<Scope*>());
         m_scope = scope_var.value<Scope*>();
+
+        // get scope proxy for TTL scope
+        scope_var = m_scopes->data(m_scopes->index(1), Scopes::Roles::RoleScope);
+        QVERIFY(scope_var.canConvert<Scope*>());
+        m_scope_ttl = scope_var.value<Scope*>();
     }
 
     void cleanup()
     {
         m_scopes.reset();
         m_scope = nullptr;
+        m_scope_ttl = nullptr;
     }
 
     void testScopeCommunication()
@@ -258,6 +265,64 @@ private Q_SLOTS:
         QCOMPARE(m_scope->searchInProgress(), true);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
+    }
+
+    void testActiveTtlScope()
+    {
+        m_scope_ttl->setActive(true);
+        performSearch(m_scope_ttl, "query text");
+
+        // get ResultsModel instance
+        auto categories = m_scope_ttl->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0),
+                Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        auto results = results_var.value<ResultsModel*>();
+        QVERIFY(results->rowCount() > 0);
+
+        auto idx = results->index(0);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text0"));
+        QVERIFY(!m_scope_ttl->resultsDirty());
+
+
+        // The scope should refresh every 250 ms, and increment the query
+        // counter each time.
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text1"));
+        QVERIFY(!m_scope_ttl->resultsDirty());
+
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text2"));
+        QVERIFY(!m_scope_ttl->resultsDirty());
+
+        waitForResultsChange(m_scope_ttl);
+        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
+                QString("query text3"));
+        QVERIFY(!m_scope_ttl->resultsDirty());
+    }
+
+    void testInactiveTtlScope()
+    {
+        QSignalSpy dirtySpy(m_scope_ttl, SIGNAL(resultsDirtyChanged(bool)));
+
+        m_scope_ttl->setActive(false);
+        performSearch(m_scope_ttl, "banana");
+
+        if (dirtySpy.isEmpty())
+        {
+            QVERIFY(dirtySpy.wait());
+        }
+
+        // Model should go dirty
+        QList<QVariantList> expected;
+        expected << (QVariantList() << true);
+        QVERIFY(dirtySpy == expected);
+
+        QVERIFY(m_scope_ttl->resultsDirty());
     }
 
     void testAlbumArtResult()
