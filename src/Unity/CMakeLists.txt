@@ -26,6 +26,8 @@ set(QMLPLUGIN_SRC
     utils.cpp
     plugin.cpp
     iconutils.cpp
+    # We need these headers here so moc runs and we get the moc-stuff
+    # compiled in, otherwise we miss some symbols
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewStackInterface.h
