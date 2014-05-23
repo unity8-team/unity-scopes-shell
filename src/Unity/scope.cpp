@@ -98,8 +98,10 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
+    scopes::Department::SPtr rootDepartment;
+    scopes::Department::SPtr activeDepartment;
 
-    status = pushEvent->collectSearchResults(results);
+    status = pushEvent->collectSearchResults(results, rootDepartment, activeDepartment);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
