@@ -85,40 +85,21 @@ private Q_SLOTS:
         m_scope = nullptr;
     }
 
-    void testScopeCommunication()
+    void testNoDepartments()
     {
         performSearch(m_scope, QString(""));
 
-        // ensure categories have > 0 rows
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ResultsModel*>());
-        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
-        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
-
-        // ensure results have some data
-        auto results = results_var.value<ResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
+        QVERIFY(m_scope->currentDepartment().isNull());
+        QVERIFY(m_scope->getDepartment(QString()) == nullptr);
     }
 
-    void testScopesGet()
+    void testRootDepartment()
     {
-        unity::shell::scopes::ScopeInterface* scope = m_scopes->getScope(0);
-        QVERIFY(scope);
+        performSearch(m_scope, QString("dep-query"));
 
-        // try incorrect index as well
-        scope = m_scopes->getScope(65536);
-        QVERIFY(!scope);
-        scope = m_scopes->getScope(-1);
-        QVERIFY(!scope);
-
-        // try to get by scope id
-        scope = m_scopes->getScope(QString("mock-scope"));
-        QVERIFY(scope);
-
-        scope = m_scopes->getScope(QString("non-existing"));
-        QVERIFY(!scope);
+        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        auto departmentModel = m_scope->getDepartment(m_scope->currentDepartment());
+        QVERIFY(departmentModel != nullptr);
     }
 
 };

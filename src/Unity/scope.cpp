@@ -106,6 +106,9 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         return;
     }
 
+    m_rootDepartment = rootDepartment;
+    m_activeDepartment = activeDepartment;
+
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
     } else {
@@ -254,6 +257,19 @@ void Scope::flushUpdates()
     }
 
     processResultSet(m_cachedResults); // clears the result list
+
+    // process departments
+    if (m_rootDepartment != m_lastRootDepartment || m_activeDepartment != m_lastActiveDepartment) {
+        // build / append to the tree
+        m_departmentTree.reset(new DepartmentNode);
+        m_departmentTree->initializeForDepartment(m_rootDepartment);
+    }
+
+    QString activeDepId(QString::fromStdString(m_activeDepartment ? m_activeDepartment->id() : ""));
+    if (activeDepId != m_currentDepartment) {
+        m_currentDepartment = activeDepId;
+        Q_EMIT currentDepartmentChanged();
+    }
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)
@@ -472,6 +488,16 @@ Filters* Scope::filters() const
 }
 */
 
+Department* Scope::getDepartment(QString const& departmentId)
+{
+    // find the department node by id
+    return nullptr;
+}
+
+void Scope::loadDepartment(QString const& departmentId)
+{
+}
+
 QString Scope::searchQuery() const
 {
     return m_searchQuery;
@@ -490,6 +516,11 @@ QString Scope::formFactor() const
 bool Scope::isActive() const
 {
     return m_isActive;
+}
+
+QString Scope::currentDepartment() const
+{
+    return m_currentDepartment;
 }
 
 void Scope::setSearchQuery(const QString& search_query)

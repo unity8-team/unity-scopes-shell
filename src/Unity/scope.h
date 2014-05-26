@@ -36,6 +36,9 @@
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
+#include "departmentnode.h"
+#include "department.h"
+
 namespace scopes_ng
 {
 
@@ -47,6 +50,7 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString currentDepartment READ currentDepartment NOTIFY currentDepartmentChanged)
 public:
     explicit Scope(QObject *parent = 0);
     virtual ~Scope();
@@ -67,6 +71,7 @@ public:
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
+    QString currentDepartment() const;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;
@@ -78,6 +83,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
+    Q_INVOKABLE Department* getDepartment(QString const& id);
+    Q_INVOKABLE void loadDepartment(QString const& id);
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
@@ -90,6 +97,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void resultsDirtyChanged(bool resultsDirty);
+    void currentDepartmentChanged();
 
 private Q_SLOTS:
     void flushUpdates();
@@ -109,6 +117,7 @@ private:
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
+    QString m_currentDepartment;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
@@ -120,8 +129,13 @@ private:
     unity::scopes::QueryCtrlProxy m_lastSearchQuery;
     unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
+    unity::scopes::Department::SPtr m_rootDepartment;
+    unity::scopes::Department::SPtr m_lastRootDepartment;
+    unity::scopes::Department::SPtr m_activeDepartment;
+    unity::scopes::Department::SPtr m_lastActiveDepartment;
     QGSettings* m_settings;
     Categories* m_categories;
+    QSharedPointer<DepartmentNode> m_departmentTree;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
