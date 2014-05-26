@@ -202,6 +202,41 @@ public:
             res1.set_title("result for: \"" + query_ + "\"");
             reply->push(res1);
         }
+        else if (query_ == "dep-query")
+        {
+            Department::SPtr child_dep;
+            Department::SPtr root_dep;
+            CannedQuery query("mock-scope", "dep-query", "");
+            root_dep = Department::create("", query, "All departments");
+
+            child_dep = Department::create("books", query, "Books");
+            child_dep->set_has_subdepartments();
+            root_dep->add_subdepartment(child_dep);
+
+            child_dep = Department::create("movies", query, "Movies, TV, Music");
+            child_dep->set_has_subdepartments();
+            root_dep->add_subdepartment(child_dep);
+
+            child_dep = Department::create("electronics", query, "Electronics");
+            child_dep->set_has_subdepartments();
+            root_dep->add_subdepartment(child_dep);
+
+            child_dep = Department::create("home", query, "Home, Garden & DIY");
+            child_dep->set_has_subdepartments();
+            root_dep->add_subdepartment(child_dep);
+
+            child_dep = Department::create("toys", query, "Toys, Children & Baby");
+            child_dep->set_has_subdepartments();
+            root_dep->add_subdepartment(child_dep);
+
+            reply->register_departments(root_dep, root_dep);
+
+            auto cat1 = reply->register_category("cat1", "Category 1", "");
+            CategorisedResult res1(cat1);
+            res1.set_uri("test:uri");
+            res1.set_title("result for: \"" + query_ + "\"");
+            reply->push(res1);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");

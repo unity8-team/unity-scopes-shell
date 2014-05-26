@@ -17,6 +17,8 @@ include_directories(
 set(QMLPLUGIN_SRC
     categories.cpp
     collectors.cpp
+    department.cpp
+    departmentnode.cpp
     previewmodel.cpp
     previewstack.cpp
     previewwidgetmodel.cpp
