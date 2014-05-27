@@ -45,13 +45,6 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_parentId = parentNode ? parentNode->id() : "";
     m_parentLabel = parentNode ? parentNode->label() : "";
 
-    Q_EMIT departmentIdChanged();
-    Q_EMIT labelChanged();
-    Q_EMIT allLabelChanged();
-    Q_EMIT parentIdChanged();
-    Q_EMIT parentLabelChanged();
-    Q_EMIT loadedChanged();
-
     beginResetModel();
 
     m_subdepartments.clear();
@@ -63,6 +56,14 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
         subdept->isActive = false;
         m_subdepartments.append(subdept);
     }
+
+    Q_EMIT departmentIdChanged();
+    Q_EMIT labelChanged();
+    Q_EMIT allLabelChanged();
+    Q_EMIT parentIdChanged();
+    Q_EMIT parentLabelChanged();
+    Q_EMIT loadedChanged();
+    Q_EMIT countChanged();
 
     endResetModel();
 }
@@ -123,6 +124,11 @@ QString Department::parentLabel() const
 bool Department::loaded() const
 {
     return m_loaded;
+}
+
+int Department::count() const
+{
+    return rowCount();
 }
 
 } // namespace scopes_ng

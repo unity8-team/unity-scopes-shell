@@ -54,6 +54,7 @@ class Q_DECL_EXPORT Department : public QAbstractListModel //public unity::shell
     Q_PROPERTY(QString parentId READ parentId NOTIFY parentIdChanged)
     Q_PROPERTY(QString parentLabel READ parentLabel NOTIFY parentLabelChanged)
     Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     enum Roles {
@@ -76,6 +77,7 @@ public:
     QString parentId() const;
     QString parentLabel() const;
     bool loaded() const;
+    int count() const;
 
 Q_SIGNALS:
     void departmentIdChanged();
@@ -84,6 +86,7 @@ Q_SIGNALS:
     void parentIdChanged();
     void parentLabelChanged();
     void loadedChanged();
+    void countChanged();
 
 private:
     QString m_departmentId;
