@@ -278,7 +278,8 @@ void Scope::flushUpdates()
                     it.value()->loadFromDepartmentNode(node);
                     ++it;
                 }
-                parentNode = node->parent();
+                // if this node is a leaf, we need to update models for the parent
+                parentNode = node->isLeaf() ? node->parent() : nullptr;
             }
             if (parentNode != nullptr) {
                 auto it = m_departmentModels.find(parentNode->id());
