@@ -86,7 +86,7 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
-    Q_INVOKABLE Department* getDepartment(QString const& id);
+    Q_INVOKABLE scopes_ng::Department* getDepartment(QString const& id);
     Q_INVOKABLE void loadDepartment(QString const& id);
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
