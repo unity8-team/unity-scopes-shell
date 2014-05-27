@@ -89,16 +89,15 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString(""));
 
-        QVERIFY(m_scope->currentDepartment().isNull());
+        QCOMPARE(m_scope->hasDepartments(), false);
         QVERIFY(m_scope->getDepartment(QString()) == nullptr);
     }
 
     void testRootDepartment()
     {
-        QSignalSpy spy(m_scope, SIGNAL(currentDepartmentChanged()));
         performSearch(m_scope, QString("dep-query"));
 
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(m_scope->hasDepartments(), true);
         QCOMPARE(m_scope->currentDepartment(), QString(""));
         QScopedPointer<Department> departmentModel(m_scope->getDepartment(m_scope->currentDepartment()));
         QVERIFY(departmentModel != nullptr);

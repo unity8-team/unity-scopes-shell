@@ -31,8 +31,8 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(string const& query) :
-        query_(query)
+    MyQuery(string const& query, string const& department_id) :
+        query_(query), department_id_(department_id)
     {
     }
 
@@ -206,12 +206,26 @@ public:
         {
             Department::SPtr child_dep;
             Department::SPtr root_dep;
+            Department::SPtr active_dep;
             CannedQuery query("mock-scope", "dep-query", "");
             root_dep = Department::create("", query, "All departments");
 
             child_dep = Department::create("books", query, "Books");
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
+
+            if (department_id_ == "books")
+            {
+                active_dep = child_dep;
+                child_dep = Department::create("books-kindle", query, "Kindle Books");
+                active_dep->add_subdepartment(child_dep);
+
+                child_dep = Department::create("books-study", query, "Books for Study");
+                active_dep->add_subdepartment(child_dep);
+
+                child_dep = Department::create("books-audio", query, "Audiobooks");
+                active_dep->add_subdepartment(child_dep);
+            }
 
             child_dep = Department::create("movies", query, "Movies, TV, Music");
             child_dep->set_has_subdepartments();
@@ -225,11 +239,39 @@ public:
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
 
+            if (department_id_ == "home")
+            {
+                active_dep = child_dep;
+                child_dep = Department::create("home-garden", query, "Garden & Outdoors");
+                active_dep->add_subdepartment(child_dep);
+
+                child_dep = Department::create("home-furniture", query, "Homeware & Furniture");
+                active_dep->add_subdepartment(child_dep);
+
+                child_dep = Department::create("home-kitchen", query, "Kitchen & Dining");
+                active_dep->add_subdepartment(child_dep);
+            }
+
             child_dep = Department::create("toys", query, "Toys, Children & Baby");
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
 
-            reply->register_departments(root_dep, root_dep);
+            if (department_id_ == "toys")
+            {
+                active_dep = child_dep;
+                child_dep = Department::create("toys-games", query, "Toys & Games");
+                active_dep->add_subdepartment(child_dep);
+
+                child_dep = Department::create("toys-baby", query, "Baby");
+                active_dep->add_subdepartment(child_dep);
+            }
+
+            if (!active_dep)
+            {
+                active_dep = root_dep;
+            }
+
+            reply->register_departments(root_dep, active_dep);
 
             auto cat1 = reply->register_category("cat1", "Category 1", "");
             CategorisedResult res1(cat1);
@@ -252,6 +294,7 @@ public:
 
 private:
     string query_;
+    string department_id_;
 };
 
 class MyPreview : public PreviewQueryBase
@@ -386,7 +429,7 @@ public:
 
     virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
     {
-        SearchQueryBase::UPtr query(new MyQuery(q.query_string()));
+        SearchQueryBase::UPtr query(new MyQuery(q.query_string(), q.department_id()));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }

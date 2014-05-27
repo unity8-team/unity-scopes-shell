@@ -40,6 +40,8 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
     m_allLabel = QString::fromStdString(dep->alternate_label());
     m_hasSubdepartments = dep->has_subdepartments();
 
+    clearChildren();
+
     auto subdeps = dep->subdepartments();
     for (auto it = subdeps.begin(); it != subdeps.end(); ++it) {
         DepartmentNode* subdep = new DepartmentNode(this);

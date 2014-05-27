@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMetaType>
 #include <QPointer>
+#include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
 
@@ -51,6 +52,7 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
     Q_OBJECT
 
     Q_PROPERTY(QString currentDepartment READ currentDepartment NOTIFY currentDepartmentChanged)
+    Q_PROPERTY(bool hasDepartments READ hasDepartments NOTIFY hasDepartmentsChanged)
 public:
     explicit Scope(QObject *parent = 0);
     virtual ~Scope();
@@ -72,6 +74,7 @@ public:
     QString formFactor() const override;
     bool isActive() const override;
     QString currentDepartment() const;
+    bool hasDepartments() const;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;
@@ -98,11 +101,13 @@ public Q_SLOTS:
 Q_SIGNALS:
     void resultsDirtyChanged(bool resultsDirty);
     void currentDepartmentChanged();
+    void hasDepartmentsChanged();
 
 private Q_SLOTS:
     void flushUpdates();
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
+    void departmentModelDestroyed(QObject* obj);
 
 private:
     void startTtlTimer();
@@ -122,6 +127,7 @@ private:
     bool m_searchInProgress;
     bool m_resultsDirty;
     bool m_delayedClear;
+    bool m_hasDepartments;
 
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
@@ -141,6 +147,8 @@ private:
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
+    QMultiMap<QString, Department*> m_departmentModels;
+    QMap<Department*, QString> m_inverseDepartments;
 };
 
 } // namespace scopes_ng

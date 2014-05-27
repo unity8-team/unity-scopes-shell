@@ -69,6 +69,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
     , m_delayedClear(false)
+    , m_hasDepartments(false)
 {
     m_categories = new Categories(this);
 
@@ -259,18 +260,39 @@ void Scope::flushUpdates()
     processResultSet(m_cachedResults); // clears the result list
 
     // process departments
+    bool containsDepartments = m_rootDepartment.get() != nullptr;
+    if (containsDepartments != m_hasDepartments) {
+        m_hasDepartments = containsDepartments;
+        Q_EMIT hasDepartmentsChanged();
+    }
+
     if (m_rootDepartment != m_lastRootDepartment || m_activeDepartment != m_lastActiveDepartment) {
         // build / append to the tree
-        m_departmentTree.reset(new DepartmentNode);
-        m_departmentTree->initializeForDepartment(m_rootDepartment);
+        DepartmentNode* node = nullptr;
+        if (m_departmentTree) {
+            QString depId(QString::fromStdString(m_rootDepartment->id()));
+            node = m_departmentTree->findNodeById(depId);
+            node->initializeForDepartment(m_rootDepartment);
+
+            QString updatedDepartment(QString::fromStdString(m_activeDepartment->id()));
+            // update corresponding models
+            auto it = m_departmentModels.find(updatedDepartment);
+            while (it != m_departmentModels.end() && it.key() == updatedDepartment) {
+                it.value()->loadFromDepartmentNode(node);
+                ++it;
+            }
+        } else {
+            m_departmentTree.reset(new DepartmentNode);
+            m_departmentTree->initializeForDepartment(m_rootDepartment);
+        }
     }
 
     QString activeDepId;
     if (m_activeDepartment) {
         activeDepId = QString::fromStdString(m_activeDepartment->id());
     }
-    // FIXME: nasty, qt docs say this shouldn't be done
-    if (activeDepId != m_currentDepartment || (activeDepId.isNull() != m_currentDepartment.isNull())) {
+
+    if (activeDepId != m_currentDepartment) {
         m_currentDepartment = activeDepId;
         Q_EMIT currentDepartmentChanged();
     }
@@ -502,8 +524,22 @@ Department* Scope::getDepartment(QString const& departmentId)
     Department* departmentModel = new Department;
     departmentModel->loadFromDepartmentNode(node);
 
-    // FIXME: add to multimap, keep updating
+    m_departmentModels.insert(departmentId, departmentModel);
+    m_inverseDepartments.insert(departmentModel, departmentId);
+    QObject::connect(departmentModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
+
     return departmentModel;
+}
+
+void Scope::departmentModelDestroyed(QObject* obj)
+{
+  scopes_ng::Department* department = reinterpret_cast<scopes_ng::Department*>(obj);
+
+  auto it = m_inverseDepartments.find(department);
+  if (it == m_inverseDepartments.end()) return;
+
+  m_departmentModels.remove(it.value(), department);
+  m_inverseDepartments.remove(department);
 }
 
 void Scope::loadDepartment(QString const& departmentId)
@@ -539,6 +575,11 @@ bool Scope::isActive() const
 QString Scope::currentDepartment() const
 {
     return m_currentDepartment;
+}
+
+bool Scope::hasDepartments() const
+{
+    return m_hasDepartments;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
