@@ -146,6 +146,8 @@ private Q_SLOTS:
 
         m_scope->loadDepartment(QString("toys"));
         QVERIFY(spy.wait());
+
+        QCOMPARE(departmentModel->rowCount(), 2);
     }
 
 };

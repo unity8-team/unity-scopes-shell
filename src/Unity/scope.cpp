@@ -270,6 +270,7 @@ void Scope::flushUpdates()
 
             QString updatedDepartment(QString::fromStdString(m_activeDepartment->id()));
             // update corresponding models
+            node = m_departmentTree->findNodeById(updatedDepartment);
             auto it = m_departmentModels.find(updatedDepartment);
             while (it != m_departmentModels.end() && it.key() == updatedDepartment) {
                 it.value()->loadFromDepartmentNode(node);
