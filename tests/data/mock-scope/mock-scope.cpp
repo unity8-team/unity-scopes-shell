@@ -214,7 +214,7 @@ public:
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
 
-            if (department_id_ == "books")
+            if (department_id_.compare(0, 5, "books") == 0)
             {
                 active_dep = child_dep;
                 child_dep = Department::create("books-kindle", query, "Kindle Books");
@@ -225,6 +225,9 @@ public:
 
                 child_dep = Department::create("books-audio", query, "Audiobooks");
                 active_dep->add_subdepartment(child_dep);
+
+                // and this is the only leaf department for which the scope provides good data
+                if (department_id_ == "books-audio") active_dep = child_dep;
             }
 
             child_dep = Department::create("movies", query, "Movies, TV, Music");
@@ -239,7 +242,7 @@ public:
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
 
-            if (department_id_ == "home")
+            if (department_id_.compare(0, 4, "home") == 0)
             {
                 active_dep = child_dep;
                 child_dep = Department::create("home-garden", query, "Garden & Outdoors");
@@ -256,7 +259,7 @@ public:
             child_dep->set_has_subdepartments();
             root_dep->add_subdepartment(child_dep);
 
-            if (department_id_ == "toys")
+            if (department_id_.compare(0, 4, "toys") == 0)
             {
                 active_dep = child_dep;
                 child_dep = Department::create("toys-games", query, "Toys & Games");

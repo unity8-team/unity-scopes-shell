@@ -264,17 +264,28 @@ void Scope::flushUpdates()
         // build / append to the tree
         DepartmentNode* node = nullptr;
         if (m_departmentTree) {
-            QString depId(QString::fromStdString(m_rootDepartment->id()));
-            node = m_departmentTree->findNodeById(depId);
+            QString departmentId(QString::fromStdString(m_rootDepartment->id()));
+            node = m_departmentTree->findNodeById(departmentId);
             node->initializeForDepartment(m_rootDepartment);
 
-            QString updatedDepartment(QString::fromStdString(m_activeDepartment->id()));
             // update corresponding models
-            node = m_departmentTree->findNodeById(updatedDepartment);
-            auto it = m_departmentModels.find(updatedDepartment);
-            while (it != m_departmentModels.end() && it.key() == updatedDepartment) {
-                it.value()->loadFromDepartmentNode(node);
-                ++it;
+            QString activeDepartment(QString::fromStdString(m_activeDepartment->id()));
+            node = m_departmentTree->findNodeById(activeDepartment);
+            DepartmentNode* parentNode = nullptr;
+            if (node != nullptr) {
+                auto it = m_departmentModels.find(activeDepartment);
+                while (it != m_departmentModels.end() && it.key() == activeDepartment) {
+                    it.value()->loadFromDepartmentNode(node);
+                    ++it;
+                }
+                parentNode = node->parent();
+            }
+            if (parentNode != nullptr) {
+                auto it = m_departmentModels.find(parentNode->id());
+                while (it != m_departmentModels.end() && it.key() == parentNode->id()) {
+                    it.value()->markSubdepartmentActive(activeDepartment);
+                    ++it;
+                }
             }
         } else {
             m_departmentTree.reset(new DepartmentNode);

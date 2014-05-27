@@ -150,6 +150,34 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->rowCount(), 2);
     }
 
+    void testLeafActivationUpdatesModel()
+    {
+        performSearch(m_scope, QString("dep-query"));
+
+        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        m_scope->loadDepartment(QString("books"));
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
+        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("books")));
+
+        // this is a leaf department, so activating it should update the parent model
+        m_scope->loadDepartment(QString("books-audio"));
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
+
+        bool foundAudiobooks = false;
+        for (int i = 0; i < departmentModel->rowCount(); i++) {
+            QModelIndex idx(departmentModel->index(i));
+            QVariant data = departmentModel->data(idx, Department::Roles::RoleDepartmentId);
+            if (data.toString() == QString("books-audio")) {
+                QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive).toBool(), true);
+                foundAudiobooks = true;
+            }
+        }
+        QCOMPARE(foundAudiobooks, true);
+    }
+
 };
 
 QTEST_GUILESS_MAIN(DepartmentsTest)

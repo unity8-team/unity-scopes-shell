@@ -66,6 +66,7 @@ public:
 
     explicit Department(QObject* parent = 0);
     void loadFromDepartmentNode(DepartmentNode* treeNode);
+    void markSubdepartmentActive(QString const& subdepartmentId);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

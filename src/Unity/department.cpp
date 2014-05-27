@@ -68,6 +68,26 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     endResetModel();
 }
 
+void Department::markSubdepartmentActive(QString const& subdepartmentId)
+{
+    int idx = -1;
+    for (int i = 0; i < m_subdepartments.count(); i++) {
+        if (m_subdepartments[i]->id == subdepartmentId) {
+            m_subdepartments[i]->isActive = true;
+            idx = i;
+            break;
+        }
+    }
+
+    if (idx < 0) return;
+
+    QVector<int> roles;
+    roles.append(Roles::RoleIsActive);
+
+    QModelIndex changedIndex(index(idx));
+    dataChanged(changedIndex, changedIndex, roles);
+}
+
 QVariant Department::data(const QModelIndex& index, int role) const
 {
     SubdepartmentData* data = m_subdepartments[index.row()].data();
