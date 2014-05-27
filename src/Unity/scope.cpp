@@ -265,8 +265,12 @@ void Scope::flushUpdates()
         m_departmentTree->initializeForDepartment(m_rootDepartment);
     }
 
-    QString activeDepId(QString::fromStdString(m_activeDepartment ? m_activeDepartment->id() : ""));
-    if (activeDepId != m_currentDepartment) {
+    QString activeDepId;
+    if (m_activeDepartment) {
+        activeDepId = QString::fromStdString(m_activeDepartment->id());
+    }
+    // FIXME: nasty, qt docs say this shouldn't be done
+    if (activeDepId != m_currentDepartment || (activeDepId.isNull() != m_currentDepartment.isNull())) {
         m_currentDepartment = activeDepId;
         Q_EMIT currentDepartmentChanged();
     }
@@ -397,7 +401,7 @@ void Scope::dispatchSearch()
         }
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
-            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), meta, m_lastSearch);
+            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartment.toStdString(), scopes::FilterState(), meta, m_lastSearch);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
@@ -490,12 +494,26 @@ Filters* Scope::filters() const
 
 Department* Scope::getDepartment(QString const& departmentId)
 {
-    // find the department node by id
-    return nullptr;
+    if (!m_departmentTree) return nullptr;
+
+    DepartmentNode* node = m_departmentTree->findNodeById(departmentId);
+    if (!node) return nullptr;
+
+    Department* departmentModel = new Department;
+    departmentModel->loadFromDepartmentNode(node);
+
+    // FIXME: add to multimap, keep updating
+    return departmentModel;
 }
 
 void Scope::loadDepartment(QString const& departmentId)
 {
+    if (departmentId != m_currentDepartment) {
+        m_currentDepartment = departmentId;
+        Q_EMIT currentDepartmentChanged();
+
+        dispatchSearch();
+    }
 }
 
 QString Scope::searchQuery() const

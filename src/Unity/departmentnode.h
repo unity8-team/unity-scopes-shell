@@ -38,7 +38,7 @@ public:
     ~DepartmentNode();
 
     void initializeForDepartment(unity::scopes::Department::SCPtr const& dep);
-
+    DepartmentNode* findNodeById(QString const& id);
 
     QString id() const;
     QString label() const;
@@ -47,6 +47,7 @@ public:
 
     void appendChild(DepartmentNode* child);
     int childCount() const;
+    bool isLeaf() const;
     QList<DepartmentNode*> childNodes() const;
     DepartmentNode* parent() const;
 

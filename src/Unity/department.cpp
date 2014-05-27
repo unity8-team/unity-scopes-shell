@@ -25,7 +25,8 @@ namespace scopes_ng
 using namespace unity;
 
 Department::Department(QObject* parent) :
-    QAbstractListModel(parent)
+    QAbstractListModel(parent),
+    m_loaded(false)
 {
 }
 
@@ -38,6 +39,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_departmentId = treeNode->id();
     m_label = treeNode->label();
     m_allLabel = treeNode->allLabel();
+    m_loaded = !treeNode->isLeaf() && treeNode->childCount() > 0;
 
     DepartmentNode* parentNode = treeNode->parent();
     m_parentId = parentNode ? parentNode->id() : "";
@@ -48,6 +50,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     Q_EMIT allLabelChanged();
     Q_EMIT parentIdChanged();
     Q_EMIT parentLabelChanged();
+    Q_EMIT loadedChanged();
 
     beginResetModel();
 

@@ -95,11 +95,58 @@ private Q_SLOTS:
 
     void testRootDepartment()
     {
+        QSignalSpy spy(m_scope, SIGNAL(currentDepartmentChanged()));
+        performSearch(m_scope, QString("dep-query"));
+
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QScopedPointer<Department> departmentModel(m_scope->getDepartment(m_scope->currentDepartment()));
+        QVERIFY(departmentModel != nullptr);
+
+        QVERIFY(departmentModel->departmentId().isEmpty());
+        QCOMPARE(departmentModel->label(), QString("All departments"));
+        QCOMPARE(departmentModel->allLabel(), QString(""));
+        QCOMPARE(departmentModel->parentId(), QString());
+        QCOMPARE(departmentModel->parentLabel(), QString());
+        QCOMPARE(departmentModel->loaded(), true);
+
+        QCOMPARE(departmentModel->rowCount(), 5);
+        QModelIndex idx;
+
+        idx = departmentModel->index(0);
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleDepartmentId), QVariant(QString("books")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+
+        idx = departmentModel->index(4);
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleDepartmentId), QVariant(QString("toys")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+    }
+
+    void testChildDepartmentModel()
+    {
         performSearch(m_scope, QString("dep-query"));
 
         QCOMPARE(m_scope->currentDepartment(), QString(""));
-        auto departmentModel = m_scope->getDepartment(m_scope->currentDepartment());
+        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("toys")));
         QVERIFY(departmentModel != nullptr);
+
+        QSignalSpy spy(departmentModel.data(), SIGNAL(loadedChanged()));
+
+        QCOMPARE(departmentModel->departmentId(), QString("toys"));
+        QCOMPARE(departmentModel->label(), QString("Toys, Children & Baby"));
+        QCOMPARE(departmentModel->allLabel(), QString(""));
+        QCOMPARE(departmentModel->parentId(), QString(""));
+        QCOMPARE(departmentModel->parentLabel(), QString("All departments"));
+        QCOMPARE(departmentModel->loaded(), false);
+
+        QCOMPARE(departmentModel->rowCount(), 0);
+
+        m_scope->loadDepartment(QString("toys"));
+        QVERIFY(spy.wait());
     }
 
 };

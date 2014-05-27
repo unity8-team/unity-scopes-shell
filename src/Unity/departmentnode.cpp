@@ -48,6 +48,18 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
     }
 }
 
+DepartmentNode* DepartmentNode::findNodeById(QString const& id)
+{
+    if (id == m_id) return this;
+
+    Q_FOREACH(DepartmentNode* child, m_children) {
+        DepartmentNode* node = child->findNodeById(id);
+        if (node) return node;
+    }
+
+    return nullptr;
+}
+
 QString DepartmentNode::id() const
 {
     return m_id;
@@ -86,6 +98,11 @@ QList<DepartmentNode*> DepartmentNode::childNodes() const
 DepartmentNode* DepartmentNode::parent() const
 {
     return m_parent;
+}
+
+bool DepartmentNode::isLeaf() const
+{
+    return m_children.count() == 0 && !m_hasSubdepartments;
 }
 
 void DepartmentNode::clearChildren()
