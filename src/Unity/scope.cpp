@@ -266,6 +266,7 @@ void Scope::flushUpdates()
         if (m_departmentTree) {
             QString departmentId(QString::fromStdString(m_rootDepartment->id()));
             node = m_departmentTree->findNodeById(departmentId);
+            // FIXME: uuuuh, could be null!
             node->initializeForDepartment(m_rootDepartment);
             // as far as we know, this is the root, re-initializing might have unset the flag
             m_departmentTree->setIsRoot(true);
@@ -297,6 +298,9 @@ void Scope::flushUpdates()
             // is better than pretending it isn't
             m_departmentTree->setIsRoot(true);
         }
+
+        m_lastRootDepartment = m_rootDepartment;
+        m_lastActiveDepartment = m_activeDepartment;
     }
 
     QString activeDepId;
