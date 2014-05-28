@@ -59,6 +59,8 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
         m_subdepartments.append(subdept);
     }
 
+    endResetModel();
+
     Q_EMIT departmentIdChanged();
     Q_EMIT labelChanged();
     Q_EMIT allLabelChanged();
@@ -66,8 +68,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     Q_EMIT parentLabelChanged();
     Q_EMIT loadedChanged();
     Q_EMIT countChanged();
-
-    endResetModel();
+    Q_EMIT isRootChanged();
 }
 
 void Department::markSubdepartmentActive(QString const& subdepartmentId)
