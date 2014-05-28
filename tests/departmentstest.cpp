@@ -184,6 +184,25 @@ private Q_SLOTS:
         QCOMPARE(foundAudiobooks, true);
     }
 
+    void testGoingBack()
+    {
+        performSearch(m_scope, QString("dep-query"));
+
+        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        m_scope->loadDepartment(QString("books"));
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
+        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("books")));
+        QCOMPARE(departmentModel->isRoot(), false);
+
+        // get the root again without actually loading the department
+        departmentModel.reset(m_scope->getDepartment(departmentModel->parentId()));
+        QCOMPARE(departmentModel->isRoot(), true);
+        QEXPECT_FAIL("", "We have the department in cache, to it kind of is loaded", Continue);
+        QCOMPARE(departmentModel->loaded(), false);
+    }
+
 };
 
 QTEST_GUILESS_MAIN(DepartmentsTest)
