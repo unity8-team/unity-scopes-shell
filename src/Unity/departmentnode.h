@@ -44,6 +44,9 @@ public:
     QString label() const;
     QString allLabel() const;
     bool hasSubdepartments() const;
+    bool isRoot() const;
+
+    void setIsRoot(bool isRoot);
 
     void appendChild(DepartmentNode* child);
     int childCount() const;
@@ -60,6 +63,7 @@ private:
     QString m_label;
     QString m_allLabel;
     bool m_hasSubdepartments;
+    bool m_isRoot;
 };
 
 } // namespace scopes_ng

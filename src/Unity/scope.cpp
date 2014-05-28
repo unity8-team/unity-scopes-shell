@@ -267,6 +267,7 @@ void Scope::flushUpdates()
             QString departmentId(QString::fromStdString(m_rootDepartment->id()));
             node = m_departmentTree->findNodeById(departmentId);
             node->initializeForDepartment(m_rootDepartment);
+            node->setIsRoot(m_activeDepartment == m_rootDepartment);
 
             // update corresponding models
             QString activeDepartment(QString::fromStdString(m_activeDepartment->id()));
@@ -291,6 +292,7 @@ void Scope::flushUpdates()
         } else {
             m_departmentTree.reset(new DepartmentNode);
             m_departmentTree->initializeForDepartment(m_rootDepartment);
+            m_departmentTree->setIsRoot(m_activeDepartment == m_rootDepartment);
         }
     }
 

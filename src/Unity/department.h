@@ -54,6 +54,7 @@ class Q_DECL_EXPORT Department : public QAbstractListModel //public unity::shell
     Q_PROPERTY(QString parentId READ parentId NOTIFY parentIdChanged)
     Q_PROPERTY(QString parentLabel READ parentLabel NOTIFY parentLabelChanged)
     Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
+    Q_PROPERTY(bool isRoot READ isRoot NOTIFY isRootChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
@@ -78,6 +79,7 @@ public:
     QString parentId() const;
     QString parentLabel() const;
     bool loaded() const;
+    bool isRoot() const;
     int count() const;
 
 Q_SIGNALS:
@@ -87,6 +89,7 @@ Q_SIGNALS:
     void parentIdChanged();
     void parentLabelChanged();
     void loadedChanged();
+    void isRootChanged();
     void countChanged();
 
 private:
@@ -96,6 +99,7 @@ private:
     QString m_parentId;
     QString m_parentLabel;
     bool m_loaded;
+    bool m_isRoot;
 
     QList<QSharedPointer<SubdepartmentData>> m_subdepartments;
 };

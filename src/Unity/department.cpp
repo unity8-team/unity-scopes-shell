@@ -26,7 +26,8 @@ using namespace unity;
 
 Department::Department(QObject* parent) :
     QAbstractListModel(parent),
-    m_loaded(false)
+    m_loaded(false),
+    m_isRoot(false)
 {
 }
 
@@ -40,6 +41,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_label = treeNode->label();
     m_allLabel = treeNode->allLabel();
     m_loaded = !treeNode->isLeaf() && treeNode->childCount() > 0;
+    m_isRoot = treeNode->isRoot();
 
     DepartmentNode* parentNode = treeNode->parent();
     m_parentId = parentNode ? parentNode->id() : "";
@@ -144,6 +146,11 @@ QString Department::parentLabel() const
 bool Department::loaded() const
 {
     return m_loaded;
+}
+
+bool Department::isRoot() const
+{
+    return m_isRoot;
 }
 
 int Department::count() const

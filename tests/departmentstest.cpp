@@ -108,6 +108,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->parentId(), QString());
         QCOMPARE(departmentModel->parentLabel(), QString());
         QCOMPARE(departmentModel->loaded(), true);
+        QCOMPARE(departmentModel->isRoot(), true);
 
         QCOMPARE(departmentModel->rowCount(), 5);
         QModelIndex idx;
@@ -141,6 +142,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->parentId(), QString(""));
         QCOMPARE(departmentModel->parentLabel(), QString("All departments"));
         QCOMPARE(departmentModel->loaded(), false);
+        QCOMPARE(departmentModel->isRoot(), false);
 
         QCOMPARE(departmentModel->rowCount(), 0);
 
@@ -148,6 +150,8 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
 
         QCOMPARE(departmentModel->rowCount(), 2);
+        QCOMPARE(departmentModel->loaded(), true);
+        QCOMPARE(departmentModel->isRoot(), false);
     }
 
     void testLeafActivationUpdatesModel()
@@ -160,11 +164,13 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
         QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("books")));
+        QCOMPARE(departmentModel->isRoot(), false);
 
         // this is a leaf department, so activating it should update the parent model
         m_scope->loadDepartment(QString("books-audio"));
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
+        QCOMPARE(departmentModel->isRoot(), false);
 
         bool foundAudiobooks = false;
         for (int i = 0; i < departmentModel->rowCount(); i++) {

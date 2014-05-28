@@ -24,7 +24,7 @@ namespace scopes_ng
 
 using namespace unity;
 
-DepartmentNode::DepartmentNode(DepartmentNode* parent) : m_parent(parent)
+DepartmentNode::DepartmentNode(DepartmentNode* parent) : m_parent(parent), m_isRoot(false)
 {
 }
 
@@ -48,6 +48,16 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
         subdep->initializeForDepartment(*it);
         this->appendChild(subdep);
     }
+}
+
+void DepartmentNode::setIsRoot(bool isRoot)
+{
+    m_isRoot = isRoot;
+}
+
+bool DepartmentNode::isRoot() const
+{
+    return m_isRoot;
 }
 
 DepartmentNode* DepartmentNode::findNodeById(QString const& id)
