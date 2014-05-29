@@ -51,8 +51,6 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString currentDepartment READ currentDepartment NOTIFY currentDepartmentChanged)
-    Q_PROPERTY(bool hasDepartments READ hasDepartments NOTIFY hasDepartmentsChanged)
 public:
     explicit Scope(QObject *parent = 0);
     virtual ~Scope();
@@ -73,8 +71,8 @@ public:
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
-    QString currentDepartment() const;
-    bool hasDepartments() const;
+    QString currentDepartment() const override;
+    bool hasDepartments() const override;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;
@@ -86,8 +84,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
-    Q_INVOKABLE scopes_ng::Department* getDepartment(QString const& id);
-    Q_INVOKABLE void loadDepartment(QString const& id);
+    Q_INVOKABLE unity::shell::scopes::DepartmentInterface* getDepartment(QString const& id) override;
+    Q_INVOKABLE void loadDepartment(QString const& id) override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
@@ -99,9 +97,7 @@ public Q_SLOTS:
     void invalidateResults();
 
 Q_SIGNALS:
-    void resultsDirtyChanged(bool resultsDirty);
-    void currentDepartmentChanged();
-    void hasDepartmentsChanged();
+    void resultsDirtyChanged();
 
 private Q_SLOTS:
     void flushUpdates();

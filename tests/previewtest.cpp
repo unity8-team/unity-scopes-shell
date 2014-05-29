@@ -62,7 +62,7 @@ private Q_SLOTS:
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
         QCOMPARE(m_scopes->loaded(), false);
-        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged(bool)));
+        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged()));
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);

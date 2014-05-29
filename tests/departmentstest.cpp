@@ -40,6 +40,7 @@
 #include "test-utils.h"
 
 using namespace scopes_ng;
+using namespace unity::shell::scopes;
 
 class DepartmentsTest : public QObject
 {
@@ -66,7 +67,7 @@ private Q_SLOTS:
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
         QCOMPARE(m_scopes->loaded(), false);
-        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged(bool)));
+        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged()));
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
@@ -99,7 +100,7 @@ private Q_SLOTS:
 
         QCOMPARE(m_scope->hasDepartments(), true);
         QCOMPARE(m_scope->currentDepartment(), QString(""));
-        QScopedPointer<Department> departmentModel(m_scope->getDepartment(m_scope->currentDepartment()));
+        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(m_scope->currentDepartment()));
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(departmentModel->departmentId().isEmpty());
@@ -131,7 +132,7 @@ private Q_SLOTS:
         performSearch(m_scope, QString("dep-query"));
 
         QCOMPARE(m_scope->currentDepartment(), QString(""));
-        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("toys")));
+        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("toys")));
         QVERIFY(departmentModel != nullptr);
 
         QSignalSpy spy(departmentModel.data(), SIGNAL(loadedChanged()));
@@ -163,7 +164,7 @@ private Q_SLOTS:
         m_scope->loadDepartment(QString("books"));
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("books")));
+        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
         // this is a leaf department, so activating it should update the parent model
@@ -193,7 +194,7 @@ private Q_SLOTS:
         m_scope->loadDepartment(QString("books"));
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<Department> departmentModel(m_scope->getDepartment(QString("books")));
+        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
         // get the root again without actually loading the department

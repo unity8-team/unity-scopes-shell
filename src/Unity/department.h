@@ -21,7 +21,7 @@
 #ifndef NG_DEPARTMENT_H
 #define NG_DEPARTMENT_H
 
-//#include <unity/shell/scopes/DepartmentInterface.h>
+#include <unity/shell/scopes/DepartmentInterface.h>
 
 #include <QString>
 #include <QSharedPointer>
@@ -44,27 +44,11 @@ struct SubdepartmentData
     bool isActive;
 };
 
-class Q_DECL_EXPORT Department : public QAbstractListModel //public unity::shell::scopes::DepartmentInterface
+class Q_DECL_EXPORT Department : public unity::shell::scopes::DepartmentInterface
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString departmentId READ departmentId NOTIFY departmentIdChanged)
-    Q_PROPERTY(QString label READ label NOTIFY labelChanged)
-    Q_PROPERTY(QString allLabel READ allLabel NOTIFY allLabelChanged)
-    Q_PROPERTY(QString parentId READ parentId NOTIFY parentIdChanged)
-    Q_PROPERTY(QString parentLabel READ parentLabel NOTIFY parentLabelChanged)
-    Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
-    Q_PROPERTY(bool isRoot READ isRoot NOTIFY isRootChanged)
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
-
 public:
-    enum Roles {
-        RoleDepartmentId,
-        RoleLabel,
-        RoleHasChildren,
-        RoleIsActive
-    };
-
     explicit Department(QObject* parent = 0);
     void loadFromDepartmentNode(DepartmentNode* treeNode);
     void markSubdepartmentActive(QString const& subdepartmentId);
@@ -73,24 +57,16 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    QString departmentId() const;
-    QString label() const;
-    QString allLabel() const;
-    QString parentId() const;
-    QString parentLabel() const;
-    bool loaded() const;
-    bool isRoot() const;
-    int count() const;
+    QString departmentId() const override;
+    QString label() const override;
+    QString allLabel() const override;
+    QString parentId() const override;
+    QString parentLabel() const override;
+    bool loaded() const override;
+    bool isRoot() const override;
+    int count() const override;
 
 Q_SIGNALS:
-    void departmentIdChanged();
-    void labelChanged();
-    void allLabelChanged();
-    void parentIdChanged();
-    void parentLabelChanged();
-    void loadedChanged();
-    void isRootChanged();
-    void countChanged();
 
 private:
     QString m_departmentId;

@@ -430,7 +430,7 @@ void Scope::dispatchSearch()
     if (m_resultsDirty)
     {
         m_resultsDirty = false;
-        resultsDirtyChanged(false);
+        resultsDirtyChanged();
     }
 
     setSearchInProgress(true);
@@ -536,7 +536,7 @@ Filters* Scope::filters() const
 }
 */
 
-Department* Scope::getDepartment(QString const& departmentId)
+unity::shell::scopes::DepartmentInterface* Scope::getDepartment(QString const& departmentId)
 {
     if (!m_departmentTree) return nullptr;
 
@@ -640,7 +640,7 @@ void Scope::setFormFactor(const QString& form_factor) {
 void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
-        Q_EMIT isActiveChanged(m_isActive);
+        Q_EMIT isActiveChanged();
 
         if (active && m_resultsDirty) {
             dispatchSearch();
@@ -714,7 +714,7 @@ void Scope::invalidateResults()
         if (!m_resultsDirty)
         {
             m_resultsDirty = true;
-            resultsDirtyChanged(true);
+            resultsDirtyChanged();
         }
     }
 }

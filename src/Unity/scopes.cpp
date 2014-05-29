@@ -162,7 +162,7 @@ void Scopes::discoveryFinished()
     endResetModel();
 
     m_loaded = true;
-    Q_EMIT loadedChanged(m_loaded);
+    Q_EMIT loadedChanged();
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;

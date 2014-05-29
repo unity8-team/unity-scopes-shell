@@ -107,7 +107,7 @@ private Q_SLOTS:
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
         QCOMPARE(m_scopes->loaded(), false);
-        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged(bool)));
+        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged()));
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
@@ -307,7 +307,7 @@ private Q_SLOTS:
 
     void testInactiveTtlScope()
     {
-        QSignalSpy dirtySpy(m_scope_ttl, SIGNAL(resultsDirtyChanged(bool)));
+        QSignalSpy dirtySpy(m_scope_ttl, SIGNAL(resultsDirtyChanged()));
 
         m_scope_ttl->setActive(false);
         performSearch(m_scope_ttl, "banana");
@@ -318,10 +318,6 @@ private Q_SLOTS:
         }
 
         // Model should go dirty
-        QList<QVariantList> expected;
-        expected << (QVariantList() << true);
-        QVERIFY(dirtySpy == expected);
-
         QVERIFY(m_scope_ttl->resultsDirty());
     }
 

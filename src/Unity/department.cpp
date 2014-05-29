@@ -25,7 +25,7 @@ namespace scopes_ng
 using namespace unity;
 
 Department::Department(QObject* parent) :
-    QAbstractListModel(parent),
+    unity::shell::scopes::DepartmentInterface(parent),
     m_loaded(false),
     m_isRoot(false)
 {
