@@ -99,14 +99,14 @@ private Q_SLOTS:
         performSearch(m_scope, QString("dep-query"));
 
         QCOMPARE(m_scope->hasDepartments(), true);
-        QCOMPARE(m_scope->currentDepartment(), QString(""));
-        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(m_scope->currentDepartment()));
+        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
+        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(m_scope->currentDepartmentId()));
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(departmentModel->departmentId().isEmpty());
         QCOMPARE(departmentModel->label(), QString("All departments"));
         QCOMPARE(departmentModel->allLabel(), QString(""));
-        QCOMPARE(departmentModel->parentId(), QString());
+        QCOMPARE(departmentModel->parentDepartmentId(), QString());
         QCOMPARE(departmentModel->parentLabel(), QString());
         QCOMPARE(departmentModel->loaded(), true);
         QCOMPARE(departmentModel->isRoot(), true);
@@ -131,7 +131,7 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString("dep-query"));
 
-        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("toys")));
         QVERIFY(departmentModel != nullptr);
 
@@ -140,7 +140,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->departmentId(), QString("toys"));
         QCOMPARE(departmentModel->label(), QString("Toys, Children & Baby"));
         QCOMPARE(departmentModel->allLabel(), QString(""));
-        QCOMPARE(departmentModel->parentId(), QString(""));
+        QCOMPARE(departmentModel->parentDepartmentId(), QString(""));
         QCOMPARE(departmentModel->parentLabel(), QString("All departments"));
         QCOMPARE(departmentModel->loaded(), false);
         QCOMPARE(departmentModel->isRoot(), false);
@@ -159,7 +159,7 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString("dep-query"));
 
-        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         m_scope->loadDepartment(QString("books"));
         QVERIFY(spy.wait());
@@ -189,7 +189,7 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString("dep-query"));
 
-        QCOMPARE(m_scope->currentDepartment(), QString(""));
+        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         m_scope->loadDepartment(QString("books"));
         QVERIFY(spy.wait());
@@ -198,7 +198,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->isRoot(), false);
 
         // get the root again without actually loading the department
-        departmentModel.reset(m_scope->getDepartment(departmentModel->parentId()));
+        departmentModel.reset(m_scope->getDepartment(departmentModel->parentDepartmentId()));
         QCOMPARE(departmentModel->isRoot(), true);
         QEXPECT_FAIL("", "We have the department in cache, to it kind of is loaded", Continue);
         QCOMPARE(departmentModel->loaded(), false);

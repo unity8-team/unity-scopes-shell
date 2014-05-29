@@ -71,7 +71,7 @@ public:
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
-    QString currentDepartment() const override;
+    QString currentDepartmentId() const override;
     bool hasDepartments() const override;
 
     /* setters */
@@ -118,7 +118,7 @@ private:
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
-    QString m_currentDepartment;
+    QString m_currentDepartmentId;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;

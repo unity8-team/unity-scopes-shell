@@ -60,7 +60,7 @@ public:
     QString departmentId() const override;
     QString label() const override;
     QString allLabel() const override;
-    QString parentId() const override;
+    QString parentDepartmentId() const override;
     QString parentLabel() const override;
     bool loaded() const override;
     bool isRoot() const override;
@@ -72,7 +72,7 @@ private:
     QString m_departmentId;
     QString m_label;
     QString m_allLabel;
-    QString m_parentId;
+    QString m_parentDepartmentId;
     QString m_parentLabel;
     bool m_loaded;
     bool m_isRoot;

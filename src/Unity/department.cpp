@@ -44,7 +44,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_isRoot = treeNode->isRoot();
 
     DepartmentNode* parentNode = treeNode->parent();
-    m_parentId = parentNode ? parentNode->id() : "";
+    m_parentDepartmentId = parentNode ? parentNode->id() : "";
     m_parentLabel = parentNode ? parentNode->label() : "";
 
     beginResetModel();
@@ -64,7 +64,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     Q_EMIT departmentIdChanged();
     Q_EMIT labelChanged();
     Q_EMIT allLabelChanged();
-    Q_EMIT parentIdChanged();
+    Q_EMIT parentDepartmentIdChanged();
     Q_EMIT parentLabelChanged();
     Q_EMIT loadedChanged();
     Q_EMIT countChanged();
@@ -134,9 +134,9 @@ QString Department::allLabel() const
     return m_allLabel;
 }
 
-QString Department::parentId() const
+QString Department::parentDepartmentId() const
 {
-    return m_parentId;
+    return m_parentDepartmentId;
 }
 
 QString Department::parentLabel() const

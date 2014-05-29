@@ -314,9 +314,9 @@ void Scope::flushUpdates()
         Q_EMIT hasDepartmentsChanged();
     }
 
-    if (activeDepId != m_currentDepartment) {
-        m_currentDepartment = activeDepId;
-        Q_EMIT currentDepartmentChanged();
+    if (activeDepId != m_currentDepartmentId) {
+        m_currentDepartmentId = activeDepId;
+        Q_EMIT currentDepartmentIdChanged();
     }
 }
 
@@ -445,7 +445,7 @@ void Scope::dispatchSearch()
         }
         m_lastSearch.reset(new SearchResultReceiver(this));
         try {
-            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartment.toStdString(), scopes::FilterState(), meta, m_lastSearch);
+            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartmentId.toStdString(), scopes::FilterState(), meta, m_lastSearch);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
@@ -566,9 +566,9 @@ void Scope::departmentModelDestroyed(QObject* obj)
 
 void Scope::loadDepartment(QString const& departmentId)
 {
-    if (departmentId != m_currentDepartment) {
-        m_currentDepartment = departmentId;
-        Q_EMIT currentDepartmentChanged();
+    if (departmentId != m_currentDepartmentId) {
+        m_currentDepartmentId = departmentId;
+        Q_EMIT currentDepartmentIdChanged();
 
         dispatchSearch();
     }
@@ -594,9 +594,9 @@ bool Scope::isActive() const
     return m_isActive;
 }
 
-QString Scope::currentDepartment() const
+QString Scope::currentDepartmentId() const
 {
-    return m_currentDepartment;
+    return m_currentDepartmentId;
 }
 
 bool Scope::hasDepartments() const
