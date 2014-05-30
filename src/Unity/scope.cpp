@@ -70,6 +70,8 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_resultsDirty(false)
     , m_delayedClear(false)
     , m_hasDepartments(false)
+    , m_searchController(new CollectionController)
+    , m_activationController(new CollectionController)
 {
     m_categories = new Categories(this);
 
@@ -87,12 +89,6 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
 
 Scope::~Scope()
 {
-    if (m_lastSearch) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastSearch)->invalidate();
-    }
-    if (m_lastActivation) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
-    }
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
@@ -355,14 +351,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
 
 void Scope::invalidateLastSearch()
 {
-    if (m_lastSearch) {
-        std::dynamic_pointer_cast<SearchResultReceiver>(m_lastSearch)->invalidate();
-        m_lastSearch.reset();
-    }
-    if (m_lastSearchQuery) {
-        m_lastSearchQuery->cancel();
-        m_lastSearchQuery.reset();
-    }
+    m_searchController->invalidate();
     if (m_aggregatorTimer.isActive()) {
         m_aggregatorTimer.stop();
     }
@@ -443,9 +432,11 @@ void Scope::dispatchSearch()
                 meta["no-internet"] = true;
             }
         }
-        m_lastSearch.reset(new SearchResultReceiver(this));
+        scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
+        m_searchController->setListener(listener);
         try {
-            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartmentId.toStdString(), scopes::FilterState(), meta, m_lastSearch);
+            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartmentId.toStdString(), scopes::FilterState(), meta, listener);
+            m_searchController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
@@ -453,7 +444,7 @@ void Scope::dispatchSearch()
         }
     }
 
-    if (!m_lastSearchQuery) {
+    if (!m_searchController->isValid()) {
         // something went wrong, reset search state
         setSearchInProgress(false);
     }
@@ -665,11 +656,14 @@ void Scope::activate(QVariant const& result_var)
         activateUri(QString::fromStdString(result->uri()));
     } else {
         try {
+            cancelActivation();
+            scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
+            m_activationController->setListener(listener);
+
             auto proxy = result->target_scope_proxy();
-            // FIXME: don't block
             unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
-            m_lastActivation.reset(new ActivationReceiver(this, result));
-            proxy->activate(*(result.get()), metadata, m_lastActivation);
+            scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
+            m_activationController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from activate(): %s", e.what());
         } catch (...) {
@@ -699,10 +693,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
 
 void Scope::cancelActivation()
 {
-    if (m_lastActivation) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
-        m_lastActivation.reset();
-    }
+    m_activationController->invalidate();
 }
 
 void Scope::invalidateResults()

@@ -37,6 +37,7 @@
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
+#include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
 
@@ -46,6 +47,54 @@ namespace scopes_ng
 class Categories;
 class PushEvent;
 class PreviewStack;
+
+class CollectionController
+{
+public:
+    CollectionController() {}
+    ~CollectionController()
+    {
+        if (m_receiver) {
+            m_receiver->invalidate();
+        }
+        // shouldn't call QueryCtrlProxy->cancel() cause the Runtime might be
+        // in the process of being destroyed
+    }
+
+    bool isValid()
+    {
+        return m_listener && m_controller;
+    }
+
+    void invalidate()
+    {
+        if (m_receiver) {
+            m_receiver->invalidate();
+            m_receiver.reset();
+        }
+        m_listener.reset();
+        if (m_controller) {
+            m_controller->cancel();
+            m_controller.reset();
+        }
+    }
+
+    void setListener(unity::scopes::ListenerBase::SPtr const& listener)
+    {
+        m_listener = listener;
+        m_receiver = std::dynamic_pointer_cast<ScopeDataReceiverBase>(listener);
+    }
+
+    void setController(unity::scopes::QueryCtrlProxy const& controller)
+    {
+        m_controller = controller;
+    }
+
+private:
+    unity::scopes::ListenerBase::SPtr m_listener;
+    std::shared_ptr<ScopeDataReceiverBase> m_receiver;
+    unity::scopes::QueryCtrlProxy m_controller;
+};
 
 class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
 {
@@ -125,11 +174,10 @@ private:
     bool m_delayedClear;
     bool m_hasDepartments;
 
+    std::unique_ptr<CollectionController> m_searchController;
+    std::unique_ptr<CollectionController> m_activationController;
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
-    unity::scopes::SearchListenerBase::SPtr m_lastSearch;
-    unity::scopes::QueryCtrlProxy m_lastSearchQuery;
-    unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     unity::scopes::Department::SPtr m_rootDepartment;
     unity::scopes::Department::SPtr m_lastRootDepartment;
