@@ -46,20 +46,56 @@ public:
     {
     }
 
+    static Department::SPtr create_root_dep(CannedQuery const& query)
+    {
+        Department::SPtr child_dep;
+        Department::SPtr root_dep;
+        root_dep = Department::create("", query, "All departments");
+
+        child_dep = Department::create("books", query, "Books");
+        child_dep->set_has_subdepartments();
+        root_dep->add_subdepartment(child_dep);
+
+        child_dep = Department::create("movies", query, "Movies, TV, Music");
+        child_dep->set_has_subdepartments();
+        root_dep->add_subdepartment(child_dep);
+
+        child_dep = Department::create("electronics", query, "Electronics");
+        child_dep->set_has_subdepartments();
+        root_dep->add_subdepartment(child_dep);
+
+        child_dep = Department::create("home", query, "Home, Garden & DIY");
+        child_dep->set_has_subdepartments();
+        root_dep->add_subdepartment(child_dep);
+
+        child_dep = Department::create("toys", query, "Toys, Children & Baby");
+        child_dep->set_has_subdepartments();
+        root_dep->add_subdepartment(child_dep);
+
+        return root_dep;
+    }
+
+    static Department::SPtr get_department_by_id(Department::SPtr root_dep, std::string const& dep_id)
+    {
+        auto children = root_dep->subdepartments();
+        for (auto it = children.begin(); it != children.end(); ++it)
+        {
+            if ((*it)->id() == dep_id) return const_pointer_cast<Department>(*it);
+        }
+        return Department::SPtr();
+    }
+
     virtual void run(SearchReplyProxy const& reply) override
     {
         Department::SPtr child_dep;
         Department::SPtr root_dep;
         Department::SPtr active_dep;
-        root_dep = Department::create("", query_, "All departments");
 
-        child_dep = Department::create("books", query_, "Books");
-        child_dep->set_has_subdepartments();
-        root_dep->add_subdepartment(child_dep);
+        root_dep = create_root_dep(query_);
 
         if (department_id_.compare(0, 5, "books") == 0)
         {
-            active_dep = child_dep;
+            active_dep = get_department_by_id(root_dep, "books");
             child_dep = Department::create("books-kindle", query_, "Kindle Books");
             active_dep->add_subdepartment(child_dep);
 
@@ -70,21 +106,9 @@ public:
             active_dep->add_subdepartment(child_dep);
         }
 
-        child_dep = Department::create("movies", query_, "Movies, TV, Music");
-        child_dep->set_has_subdepartments();
-        root_dep->add_subdepartment(child_dep);
-
-        child_dep = Department::create("electronics", query_, "Electronics");
-        child_dep->set_has_subdepartments();
-        root_dep->add_subdepartment(child_dep);
-
-        child_dep = Department::create("home", query_, "Home, Garden & DIY");
-        child_dep->set_has_subdepartments();
-        root_dep->add_subdepartment(child_dep);
-
         if (department_id_.compare(0, 4, "home") == 0)
         {
-            active_dep = child_dep;
+            active_dep = get_department_by_id(root_dep, "home");
             child_dep = Department::create("home-garden", query_, "Garden & Outdoors");
             active_dep->add_subdepartment(child_dep);
 
@@ -95,13 +119,9 @@ public:
             active_dep->add_subdepartment(child_dep);
         }
 
-        child_dep = Department::create("toys", query_, "Toys, Children & Baby");
-        child_dep->set_has_subdepartments();
-        root_dep->add_subdepartment(child_dep);
-
         if (department_id_.compare(0, 4, "toys") == 0)
         {
-            active_dep = child_dep;
+            active_dep = get_department_by_id(root_dep, "toys");
             child_dep = Department::create("toys-games", query_, "Toys & Games");
             active_dep->add_subdepartment(child_dep);
 
