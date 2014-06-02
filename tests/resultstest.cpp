@@ -112,17 +112,15 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
         // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 2);
+        QCOMPARE(m_scopes->rowCount(), 3);
 
         // get scope proxy
-        QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
-        QVERIFY(scope_var.canConvert<Scope*>());
-        m_scope = scope_var.value<Scope*>();
+        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope")));
+        QVERIFY(m_scope != nullptr);
 
         // get scope proxy for TTL scope
-        scope_var = m_scopes->data(m_scopes->index(1), Scopes::Roles::RoleScope);
-        QVERIFY(scope_var.canConvert<Scope*>());
-        m_scope_ttl = scope_var.value<Scope*>();
+        m_scope_ttl = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-ttl")));
+        QVERIFY(m_scope != nullptr);
     }
 
     void cleanup()
@@ -619,7 +617,7 @@ private Q_SLOTS:
 
         QSignalSpy spy(m_scopes.data(), SIGNAL(metadataRefreshed()));
         QSignalSpy spy2(m_scope, SIGNAL(gotoScope(QString)));
-        QSignalSpy spy3(m_scope, SIGNAL(openScope(scopes_ng::Scope*)));
+        QSignalSpy spy3(m_scope, SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)));
         // this tries to activate non-existing scope
         m_scope->activate(QVariant::fromValue(result));
         QVERIFY(spy.wait());

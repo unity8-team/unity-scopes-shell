@@ -75,9 +75,8 @@ private Q_SLOTS:
         QVERIFY(m_scopes->rowCount() > 1);
 
         // get scope proxy
-        QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
-        QVERIFY(scope_var.canConvert<Scope*>());
-        m_scope = scope_var.value<Scope*>();
+        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
+        QVERIFY(m_scope != nullptr);
     }
 
     void cleanup()
@@ -88,15 +87,14 @@ private Q_SLOTS:
 
     void testNoDepartments()
     {
-        performSearch(m_scope, QString(""));
+        performSearch(m_scope, QString("foo"));
 
         QCOMPARE(m_scope->hasDepartments(), false);
-        QVERIFY(m_scope->getDepartment(QString()) == nullptr);
     }
 
     void testRootDepartment()
     {
-        performSearch(m_scope, QString("dep-query"));
+        performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->hasDepartments(), true);
         QCOMPARE(m_scope->currentDepartmentId(), QString(""));
@@ -129,7 +127,7 @@ private Q_SLOTS:
 
     void testChildDepartmentModel()
     {
-        performSearch(m_scope, QString("dep-query"));
+        performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("toys")));
@@ -157,7 +155,7 @@ private Q_SLOTS:
 
     void testLeafActivationUpdatesModel()
     {
-        performSearch(m_scope, QString("dep-query"));
+        performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
@@ -187,7 +185,7 @@ private Q_SLOTS:
 
     void testGoingBack()
     {
-        performSearch(m_scope, QString("dep-query"));
+        performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentDepartmentId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));

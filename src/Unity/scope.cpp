@@ -256,7 +256,7 @@ void Scope::flushUpdates()
     processResultSet(m_cachedResults); // clears the result list
 
     // process departments
-    if (m_rootDepartment != m_lastRootDepartment || m_activeDepartment != m_lastActiveDepartment) {
+    if (m_rootDepartment != m_lastRootDepartment) {
         // build / append to the tree
         DepartmentNode* node = nullptr;
         if (m_departmentTree) {
@@ -296,22 +296,19 @@ void Scope::flushUpdates()
         }
 
         m_lastRootDepartment = m_rootDepartment;
-        m_lastActiveDepartment = m_activeDepartment;
-    }
-
-    QString activeDepId;
-    if (m_activeDepartment) {
-        activeDepId = QString::fromStdString(m_activeDepartment->id());
     }
 
     bool containsDepartments = m_rootDepartment.get() != nullptr;
+    // design decision - no departments when doing searches
+    containsDepartments &= m_searchQuery.isEmpty();
+
     if (containsDepartments != m_hasDepartments) {
         m_hasDepartments = containsDepartments;
         Q_EMIT hasDepartmentsChanged();
     }
 
-    if (activeDepId != m_currentDepartmentId) {
-        m_currentDepartmentId = activeDepId;
+    if (!containsDepartments && !m_currentDepartmentId.isEmpty()) {
+        m_currentDepartmentId = "";
         Q_EMIT currentDepartmentIdChanged();
     }
 }
