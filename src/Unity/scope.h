@@ -181,8 +181,6 @@ private:
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     unity::scopes::Department::SPtr m_rootDepartment;
     unity::scopes::Department::SPtr m_lastRootDepartment;
-    unity::scopes::Department::SPtr m_activeDepartment;
-    unity::scopes::Department::SPtr m_lastActiveDepartment;
     QGSettings* m_settings;
     Categories* m_categories;
     QSharedPointer<DepartmentNode> m_departmentTree;

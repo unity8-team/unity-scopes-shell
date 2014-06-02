@@ -87,14 +87,13 @@ public:
         return m_posted;
     }
 
-    void setDepartment(scopes::Department::SCPtr const& department, scopes::Department::SCPtr activeDepartment)
+    void setDepartment(scopes::Department::SCPtr const& department)
     {
         QMutexLocker locker(&m_mutex);
         m_rootDepartment = department;
-        m_activeDepartment = activeDepartment;
     }
 
-    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment, scopes::Department::SPtr& activeDepartment)
+    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment)
     {
         Status status;
 
@@ -106,7 +105,6 @@ public:
         status = m_status;
         m_results.swap(out_results);
         rootDepartment = std::const_pointer_cast<scopes::Department>(m_rootDepartment);
-        activeDepartment = std::const_pointer_cast<scopes::Department>(m_activeDepartment);
 
         return status;
     }
@@ -114,7 +112,6 @@ public:
 private:
     QList<scopes::CategorisedResult::SPtr> m_results;
     scopes::Department::SCPtr m_rootDepartment;
-    scopes::Department::SCPtr m_activeDepartment;
 };
 
 class PreviewDataCollector: public CollectorBase
@@ -225,10 +222,10 @@ qint64 PushEvent::msecsSinceStart() const
     return m_collector->msecsSinceStart();
 }
 
-CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment, scopes::Department::SPtr& activeDepartment)
+CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment)
 {
     auto collector = std::dynamic_pointer_cast<SearchDataCollector>(m_collector);
-    return collector->collect(out_results, rootDepartment, activeDepartment);
+    return collector->collect(out_results, rootDepartment);
 }
 
 CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
@@ -285,9 +282,9 @@ void SearchResultReceiver::push(scopes::CategorisedResult result)
 }
 
 // this will be called from non-main thread, (might even be multiple different threads)
-void SearchResultReceiver::push(scopes::Department::SCPtr const& department, scopes::Department::SCPtr const& activeDepartment)
+void SearchResultReceiver::push(scopes::Department::SCPtr const& department)
 {
-    m_collector->setDepartment(department, activeDepartment);
+    m_collector->setDepartment(department);
 }
 
 // this might be called from any thread (might be main, might be any other thread)

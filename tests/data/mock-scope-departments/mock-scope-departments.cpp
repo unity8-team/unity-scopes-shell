@@ -68,9 +68,6 @@ public:
 
             child_dep = Department::create("books-audio", query_, "Audiobooks");
             active_dep->add_subdepartment(child_dep);
-
-            // and this is the only leaf department for which the scope provides good data
-            if (department_id_ == "books-audio") active_dep = child_dep;
         }
 
         child_dep = Department::create("movies", query_, "Movies, TV, Music");
@@ -112,12 +109,7 @@ public:
             active_dep->add_subdepartment(child_dep);
         }
 
-        if (!active_dep)
-        {
-            active_dep = root_dep;
-        }
-
-        reply->register_departments(root_dep, active_dep);
+        reply->register_departments(root_dep);
 
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);

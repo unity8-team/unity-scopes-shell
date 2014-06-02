@@ -96,15 +96,13 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
     scopes::Department::SPtr rootDepartment;
-    scopes::Department::SPtr activeDepartment;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, activeDepartment);
+    status = pushEvent->collectSearchResults(results, rootDepartment);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     m_rootDepartment = rootDepartment;
-    m_activeDepartment = activeDepartment;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -268,7 +266,7 @@ void Scope::flushUpdates()
             m_departmentTree->setIsRoot(true);
 
             // update corresponding models
-            QString activeDepartment(QString::fromStdString(m_activeDepartment->id()));
+            QString activeDepartment(m_currentDepartmentId);
             node = m_departmentTree->findNodeById(activeDepartment);
             DepartmentNode* parentNode = nullptr;
             if (node != nullptr) {
