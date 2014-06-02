@@ -263,8 +263,13 @@ void Scope::flushUpdates()
         if (m_departmentTree) {
             QString departmentId(QString::fromStdString(m_rootDepartment->id()));
             node = m_departmentTree->findNodeById(departmentId);
-            // FIXME: uuuuh, could be null!
-            node->initializeForDepartment(m_rootDepartment);
+            if (node == nullptr) {
+                node = m_departmentTree.data();
+            }
+            auto depNode = findDepartmentById(m_rootDepartment, m_currentDepartmentId.toStdString());
+            if (depNode && depNode->has_subdepartments()) {
+                node->initializeForDepartment(m_rootDepartment);
+            }
             // as far as we know, this is the root, re-initializing might have unset the flag
             m_departmentTree->setIsRoot(true);
 
@@ -312,6 +317,23 @@ void Scope::flushUpdates()
         m_currentDepartmentId = "";
         Q_EMIT currentDepartmentIdChanged();
     }
+}
+
+scopes::Department::SCPtr Scope::findDepartmentById(scopes::Department::SCPtr const& root, std::string const& id)
+{
+    if (root->id() == id) return root;
+
+    auto sub_deps = root->subdepartments();
+    for (auto it = sub_deps.begin(); it != sub_deps.end(); ++it) {
+        if ((*it)->id() == id) {
+            return *it;
+        } else {
+            auto node = findDepartmentById(*it, id);
+            if (node) return node;
+        }
+    }
+
+    return nullptr;
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)

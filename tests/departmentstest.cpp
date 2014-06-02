@@ -227,7 +227,6 @@ private Q_SLOTS:
         // all the leaves, even though the leaf served just itself
         departmentModel.reset(m_scope->getDepartment(QString("toys")));
         QCOMPARE(departmentModel->isRoot(), false);
-        QEXPECT_FAIL("", "Leaves overwrite current tree", Continue);
         QCOMPARE(departmentModel->rowCount(), 2);
     }
 

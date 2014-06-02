@@ -165,6 +165,8 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
 
+    static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
+
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;

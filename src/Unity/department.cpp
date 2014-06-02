@@ -74,11 +74,15 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
 void Department::markSubdepartmentActive(QString const& subdepartmentId)
 {
     int idx = -1;
+    bool isActiveReset = false;
     for (int i = 0; i < m_subdepartments.count(); i++) {
         if (m_subdepartments[i]->id == subdepartmentId) {
             m_subdepartments[i]->isActive = true;
             idx = i;
-            break;
+        } else if (m_subdepartments[i]->isActive) {
+            // only one department can be active
+            m_subdepartments[i]->isActive = false;
+            isActiveReset = true;
         }
     }
 
@@ -87,8 +91,9 @@ void Department::markSubdepartmentActive(QString const& subdepartmentId)
     QVector<int> roles;
     roles.append(Roles::RoleIsActive);
 
-    QModelIndex changedIndex(index(idx));
-    dataChanged(changedIndex, changedIndex, roles);
+    QModelIndex startIndex(index(isActiveReset ? 0 : idx));
+    QModelIndex endIndex(index(isActiveReset ? m_subdepartments.count() - 1 : idx));
+    dataChanged(startIndex, endIndex, roles);
 }
 
 QVariant Department::data(const QModelIndex& index, int role) const
