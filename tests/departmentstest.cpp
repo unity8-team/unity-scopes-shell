@@ -202,6 +202,35 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->loaded(), false);
     }
 
+    void testIncompleteTreeOnLeaf()
+    {
+        QScopedPointer<DepartmentInterface> departmentModel;
+        performSearch(m_scope, QString(""));
+
+        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
+        QCOMPARE(m_scope->hasDepartments(), true);
+
+        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        m_scope->loadDepartment(QString("toys"));
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
+
+        departmentModel.reset(m_scope->getDepartment(QString("toys")));
+        QCOMPARE(departmentModel->isRoot(), false);
+        QCOMPARE(departmentModel->rowCount(), 2);
+
+        m_scope->loadDepartment(QString("toys-games"));
+        QVERIFY(spy.wait());
+        QCOMPARE(m_scope->searchInProgress(), false);
+
+        // after getting the parent department model, it should still have
+        // all the leaves, even though the leaf served just itself
+        departmentModel.reset(m_scope->getDepartment(QString("toys")));
+        QCOMPARE(departmentModel->isRoot(), false);
+        QEXPECT_FAIL("", "Leaves overwrite current tree", Continue);
+        QCOMPARE(departmentModel->rowCount(), 2);
+    }
+
 };
 
 QTEST_GUILESS_MAIN(DepartmentsTest)

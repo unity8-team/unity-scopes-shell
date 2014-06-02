@@ -129,6 +129,16 @@ public:
             active_dep->add_subdepartment(child_dep);
         }
 
+        // provide only partial tree for this leaf
+        if (department_id_ == "toys-games")
+        {
+            root_dep = Department::create("", query_, "All departments");
+            child_dep = Department::create("toys", query_, "Toys, Children & Baby");
+            root_dep->add_subdepartment(child_dep);
+            active_dep = Department::create("toys-games", query_, "Toys & Games");
+            child_dep->add_subdepartment(active_dep);
+        }
+
         reply->register_departments(root_dep);
 
         auto cat1 = reply->register_category("cat1", "Category 1", "");

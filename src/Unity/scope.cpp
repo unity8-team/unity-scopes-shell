@@ -213,10 +213,12 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     QString scopeId(QString::fromStdString(query.scope_id()));
     QString searchString(QString::fromStdString(query.query_string()));
+    QString departmentId(QString::fromStdString(query.department_id()));
     // figure out if this scope is already favourited
     Scope* scope = scopes->getScopeById(scopeId);
     if (scope != nullptr) {
-        // TODO: change department, filters?
+        // TODO: change filters?
+        scope->setCurrentDepartmentId(departmentId);
         scope->setSearchQuery(searchString);
         Q_EMIT gotoScope(scopeId);
     } else {
@@ -225,6 +227,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         if (meta_sptr) {
             scope = new scopes_ng::Scope(this);
             scope->setScopeData(*meta_sptr);
+            scope->setCurrentDepartmentId(departmentId);
             scope->setSearchQuery(searchString);
             m_tempScopes.insert(scope);
             Q_EMIT openScope(scope);
@@ -385,6 +388,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     if (m_searchInProgress != searchInProgress) {
         m_searchInProgress = searchInProgress;
         Q_EMIT searchInProgressChanged();
+    }
+}
+
+void Scope::setCurrentDepartmentId(QString const& id)
+{
+    if (m_currentDepartmentId != id) {
+        m_currentDepartmentId = id;
+        Q_EMIT currentDepartmentIdChanged();
     }
 }
 

@@ -157,6 +157,7 @@ private Q_SLOTS:
 private:
     void startTtlTimer();
     void setSearchInProgress(bool searchInProgress);
+    void setCurrentDepartmentId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
