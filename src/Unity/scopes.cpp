@@ -79,10 +79,17 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 
 int Scopes::LIST_DELAY = -1;
 
+class Scopes::Priv : public QObject {
+    Q_OBJECT
+Q_SIGNALS:
+    void safeInvalidateScopeResults(const QString& scopeName);
+};
+
 Scopes::Scopes(QObject *parent)
     : unity::shell::scopes::ScopesInterface(parent)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_priv(new Priv())
 {
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
@@ -92,11 +99,18 @@ Scopes::Scopes(QObject *parent)
     }
     QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
 
+    connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
+            SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
+
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 }
 
 Scopes::~Scopes()
 {
+    if(m_scopesRuntime) {
+        m_scopesRuntime->registry()->set_list_update_callback([]{});
+    }
+
     if (m_listThread && !m_listThread->isFinished()) {
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
@@ -129,7 +143,7 @@ void Scopes::discoveryFinished()
     m_scopesRuntime = thread->getRuntime();
     auto scopes = thread->metadataMap();
     m_scopesRuntime->registry()->set_list_update_callback(
-            std::bind(&Scopes::invalidateScopeResults, this, "scopes"));
+            std::bind(&Scopes::Priv::safeInvalidateScopeResults, m_priv.get(), "scopes"));
 
     // FIXME: use a dconf setting for this
     QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
@@ -278,3 +292,5 @@ bool Scopes::loaded() const
 }
 
 } // namespace scopes_ng
+
+#include <scopes.moc>

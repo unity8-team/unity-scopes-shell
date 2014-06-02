@@ -67,6 +67,7 @@ private Q_SLOTS:
 
 private:
     static int LIST_DELAY;
+    class Priv;
 
     QList<Scope*> m_scopes;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
@@ -74,6 +75,8 @@ private:
     bool m_loaded;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
+
+    std::unique_ptr<Priv> m_priv;
 };
 
 class ScopeListWorker: public QThread
