@@ -128,6 +128,8 @@ void Scopes::discoveryFinished()
 
     m_scopesRuntime = thread->getRuntime();
     auto scopes = thread->metadataMap();
+    m_scopesRuntime->registry()->set_list_update_callback(
+            std::bind(&Scopes::invalidateScopeResults, this, "scopes"));
 
     // FIXME: use a dconf setting for this
     QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
