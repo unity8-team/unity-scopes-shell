@@ -203,8 +203,6 @@ void Scopes::refreshFinished()
 
 void Scopes::invalidateScopeResults(QString const& scopeName)
 {
-    qDebug() << "!!!! invalidate " << scopeName;
-
     // HACK! mediascanner invalidates local media scopes, but those are aggregated, so let's "forward" the call
     if (scopeName == "mediascanner-music") {
         invalidateScopeResults("musicaggregator");
