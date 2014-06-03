@@ -43,7 +43,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
 add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
                                        ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
 
-include(FindPkgConfig)
+find_package(PkgConfig)
 find_package(Qt5Core)
 find_package(Qt5Qml)
 find_package(Qt5Quick)
