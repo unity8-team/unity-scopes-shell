@@ -83,6 +83,8 @@ class Scopes::Priv : public QObject {
     Q_OBJECT
 Q_SIGNALS:
     void safeInvalidateScopeResults(const QString& scopeName);
+public:
+    std::unique_ptr<core::ScopedConnection> m_list_update_callback_connection_;
 };
 
 Scopes::Scopes(QObject *parent)
@@ -107,10 +109,6 @@ Scopes::Scopes(QObject *parent)
 
 Scopes::~Scopes()
 {
-    if(m_scopesRuntime) {
-        m_scopesRuntime->registry()->set_list_update_callback([]{});
-    }
-
     if (m_listThread && !m_listThread->isFinished()) {
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
@@ -142,8 +140,11 @@ void Scopes::discoveryFinished()
 
     m_scopesRuntime = thread->getRuntime();
     auto scopes = thread->metadataMap();
-    m_scopesRuntime->registry()->set_list_update_callback(
-            std::bind(&Scopes::Priv::safeInvalidateScopeResults, m_priv.get(), "scopes"));
+    m_priv->m_list_update_callback_connection_.reset(
+            new core::ScopedConnection(
+                    m_scopesRuntime->registry()->set_list_update_callback(
+                            std::bind(&Scopes::Priv::safeInvalidateScopeResults,
+                                      m_priv.get(), "scopes"))));
 
     // FIXME: use a dconf setting for this
     QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
@@ -202,6 +203,8 @@ void Scopes::refreshFinished()
 
 void Scopes::invalidateScopeResults(QString const& scopeName)
 {
+    qDebug() << "!!!! invalidate " << scopeName;
+
     // HACK! mediascanner invalidates local media scopes, but those are aggregated, so let's "forward" the call
     if (scopeName == "mediascanner-music") {
         invalidateScopeResults("musicaggregator");
