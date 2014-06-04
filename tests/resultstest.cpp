@@ -623,7 +623,7 @@ private Q_SLOTS:
 
         QSignalSpy spy(m_scopes.data(), SIGNAL(metadataRefreshed()));
         QSignalSpy spy2(m_scope, SIGNAL(gotoScope(QString)));
-        QSignalSpy spy3(m_scope, SIGNAL(openScope(scopes_ng::Scope*)));
+        QSignalSpy spy3(m_scope, SIGNAL(openScope(unity::shell::scopes::ScopeInterface *)));
         // this tries to activate non-existing scope
         m_scope->activate(QVariant::fromValue(result));
         QVERIFY(spy.wait());
