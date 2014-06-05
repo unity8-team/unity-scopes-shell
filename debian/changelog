@@ -4,6 +4,13 @@ unity-scopes-shell (0.4.8-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Michal Hruby <michal.hruby@canonical.com>  Tue, 27 May 2014 14:20:15 +0200
 
+unity-scopes-shell (0.4.0+14.10.20140604.1-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Click store support
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 04 Jun 2014 13:10:58 +0000
+
 unity-scopes-shell (0.4.0+14.10.20140522-0ubuntu1) utopic; urgency=low
 
   [ Albert Astals ]
