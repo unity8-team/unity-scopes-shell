@@ -257,7 +257,7 @@ void Scope::flushUpdates()
     processResultSet(m_cachedResults); // clears the result list
 
     // process departments
-    if (m_rootDepartment != m_lastRootDepartment) {
+    if (m_rootDepartment && m_rootDepartment != m_lastRootDepartment) {
         // build / append to the tree
         DepartmentNode* node = nullptr;
         if (m_departmentTree) {
