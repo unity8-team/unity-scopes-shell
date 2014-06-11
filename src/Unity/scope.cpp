@@ -26,6 +26,7 @@
 #include "previewstack.h"
 #include "utils.h"
 #include "scopes.h"
+#include "settingsmodel.h"
 
 // Qt
 #include <QUrl>
@@ -63,6 +64,45 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
+static const QByteArray FAKE_JSON = ""
+        "{"
+        "    \"settings\": ["
+        "        {"
+        "            \"id\": \"locationSetting\","
+        "            \"displayName\": \"Location\","
+        "            \"type\": \"string\","
+        "            \"parameters\": {"
+        "                \"defaultValue\": \"London\""
+        "            }"
+        "        },"
+        "        {"
+        "            \"id\": \"unitTempSetting\","
+        "            \"displayName\": \"Temperature Units\","
+        "            \"type\": \"list\","
+        "            \"parameters\": {"
+        "                \"defaultValue\": 1,"
+        "                \"values\": [\"Celcius\", \"Fahrenheit\"]"
+        "            }"
+        "        },"
+        "        {"
+        "            \"id\": \"ageSetting\","
+        "            \"displayName\": \"Age\","
+        "            \"type\": \"number\","
+        "            \"parameters\": {"
+        "                \"defaultValue\": 23"
+        "            }"
+        "        },"
+        "        {"
+        "            \"id\": \"enabledSetting\","
+        "            \"displayName\": \"Enabled\","
+        "            \"type\": \"boolean\","
+        "            \"parameters\": {"
+        "                \"defaultValue\": true"
+        "            }"
+        "        }"
+        "    ]"
+        "}";
+
 Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_formFactor("phone")
     , m_isActive(false)
@@ -72,6 +112,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_hasDepartments(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
+    , m_settingsModel(nullptr)
 {
     m_categories = new Categories(this);
 
@@ -482,6 +523,7 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
 {
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
+    m_settingsModel.reset(new SettingsModel(id(), FAKE_JSON, this));
 }
 
 QString Scope::id() const
@@ -546,6 +588,11 @@ QString Scope::shortcut() const
 unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
     return m_categories;
+}
+
+unity::shell::scopes::SettingsModelInterface* Scope::settings() const
+{
+    return m_settingsModel.data();
 }
 
 /*
