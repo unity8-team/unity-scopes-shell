@@ -1,4 +1,4 @@
 #!/bin/sh
 
 DIR="$(dirname "$0")"
-qmlscene "$DIR/Settings.qml"
+APP_ID="example" qmlscene "$DIR/Settings.qml"
