@@ -29,6 +29,8 @@ static const QString SETTING_GROUP("default");
 
 static const QString SETTING_ID_PATTERN("%1-%2");
 
+static const QSet<QString> VALID_TYPES { "boolean", "list", "number", "string" };
+
 SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
         QObject* parent)
         : SettingsModelInterface(parent)
@@ -45,14 +47,27 @@ SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
     for (const QVariant &variant : settings)
     {
         QVariantMap data = variant.toMap();
-        QVariantMap parameters = data["parameters"].toMap();
+
         QString id = data["id"].toString();
+        QString displayName = data["displayName"].toString();
+        QString type = data["type"].toString();
+        QVariantMap parameters = data["parameters"].toMap();
+
+        if (id.isEmpty() || displayName.isEmpty())
+        {
+            continue;
+        }
+        if (!VALID_TYPES.contains(type))
+        {
+            continue;
+        }
+
+        QVariantMap defaults;
+        defaults["value"] = parameters["defaultValue"];
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
         document->setDatabase(&m_database);
         document->setDocId(SETTING_ID_PATTERN.arg(SETTING_GROUP, id));
-        QVariantMap defaults;
-        defaults["value"] = parameters["defaultValue"];
         document->setDefaults(defaults);
         document->setCreate(true);
 
@@ -60,10 +75,8 @@ SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
 
         QVariantMap contents = document->getContents().toMap();
         parameters["currentValue"] = contents["value"];
-
         QSharedPointer<Data> setting(
-                new Data(id, data["displayName"].toString(),
-                        data["type"].toString(), parameters));
+                new Data(id, displayName, type, parameters));
 
         m_data << setting;
     }
