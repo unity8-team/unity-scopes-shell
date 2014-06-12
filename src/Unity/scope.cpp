@@ -484,7 +484,6 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
 
-
     // FIXME Read the JSON from the metadata instead of straight from disk
     QByteArray json;
     try

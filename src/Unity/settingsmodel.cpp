@@ -73,8 +73,6 @@ SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
 
         m_documents[id] = document;
 
-        QVariantMap contents = document->getContents().toMap();
-        parameters["currentValue"] = contents["value"];
         QSharedPointer<Data> setting(
                 new Data(id, displayName, type, parameters));
 
@@ -105,6 +103,13 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
             case Roles::RoleProperties:
                 result = data->data;
                 break;
+            case Roles::RoleValue:
+            {
+                QSharedPointer<U1db::Document> document = m_documents[data->id];
+                QVariantMap contents = document->getContents().toMap();
+                result = contents["value"];
+                break;
+            }
             default:
                 break;
         }
@@ -113,20 +118,36 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
     return result;
 }
 
+bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
+        int role)
+{
+    int row = index.row();
+    QVariant result;
+
+    if (row < m_data.size())
+    {
+        auto data = m_data[row];
+
+        switch (role)
+        {
+            case Roles::RoleValue:
+            {
+                QSharedPointer<U1db::Document> document = m_documents[data->id];
+                QVariantMap map;
+                map["value"] = value;
+                document->setContents(map);
+
+                return true;
+            }
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
 int SettingsModel::rowCount(const QModelIndex&) const
 {
     return m_data.size();
-}
-
-void SettingsModel::setValue(const QString& settingName, const QVariant& value)
-{
-    QSharedPointer<U1db::Document> document = m_documents[settingName];
-    if (!document)
-    {
-        return;
-    }
-
-    QVariantMap map;
-    map["value"] = value;
-    document->setContents(map);
 }

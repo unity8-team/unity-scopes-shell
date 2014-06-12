@@ -30,17 +30,21 @@ MainView {
                 source: type + "SettingsWidget.qml"
                 onLoaded: {
                     item.properties = properties
+                    item.value = value
+
                     if (type != "boolean") {
                         loader.width = parent.width
                     }
-                    if(type == "list") {
+                    if (type == "list") {
                         loader.height = units.gu(10)
                     }
+
+                    itemValue = Qt.binding(function() { return item.value })
                 }
-                property var value: item.value
-                onValueChanged: {
-                    if (item.properties) {
-                        scope.settings.setValue(settingId, value)
+                property var itemValue
+                onItemValueChanged: {
+                    if (value !== item.value) {
+                        value = item.value
                     }
                 }
             }

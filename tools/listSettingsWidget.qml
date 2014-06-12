@@ -8,5 +8,4 @@ OptionSelector {
     property alias value: combo.selectedIndex
 
     model: properties["values"]
-    selectedIndex: properties["currentValue"]
 }

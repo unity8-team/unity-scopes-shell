@@ -57,10 +57,10 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
             override;
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    bool setData(const QModelIndex&index, const QVariant& value, int role =
+            Qt::EditRole) override;
 
-    Q_INVOKABLE
-    void setValue(const QString& settingName, const QVariant& value);
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 protected:
     QList<QSharedPointer<Data>> m_data;

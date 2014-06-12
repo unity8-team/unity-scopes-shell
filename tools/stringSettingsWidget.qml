@@ -3,9 +3,7 @@ import Ubuntu.Components 1.1
 
 
 TextField {
-    id: foo
+    id: field
     property var properties
-    property var value: foo.text
-
-    text: properties["currentValue"]
+    property alias value: field.text
 }

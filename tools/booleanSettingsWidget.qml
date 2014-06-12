@@ -6,5 +6,4 @@ CheckBox {
     id: box
     property var properties
     property alias value: box.checked
-    checked: properties["currentValue"]
 }

@@ -3,11 +3,10 @@ import Ubuntu.Components 1.1
 
 
 TextField {
-    id: foo
+    id: field
 
     property var properties
-    property alias value: foo.text
+    property alias value: field.text
 
-    text: properties["currentValue"]
     validator: DoubleValidator {}
 }
