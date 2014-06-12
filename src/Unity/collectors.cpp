@@ -93,7 +93,7 @@ public:
         m_rootDepartment = department;
     }
 
-    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment)
+    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& out_rootDepartment)
     {
         Status status;
 
@@ -104,7 +104,7 @@ public:
         }
         status = m_status;
         m_results.swap(out_results);
-        rootDepartment = std::const_pointer_cast<scopes::Department>(m_rootDepartment);
+        out_rootDepartment = m_rootDepartment;
 
         return status;
     }
@@ -222,7 +222,7 @@ qint64 PushEvent::msecsSinceStart() const
     return m_collector->msecsSinceStart();
 }
 
-CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SPtr& rootDepartment)
+CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& rootDepartment)
 {
     auto collector = std::dynamic_pointer_cast<SearchDataCollector>(m_collector);
     return collector->collect(out_results, rootDepartment);
