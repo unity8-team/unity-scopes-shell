@@ -17,6 +17,10 @@ MainView {
 
     property var scope: ListModel{}
 
+    function toFileName(type) {
+        return "widgets/" + type + "SettingsWidget.qml"
+    }
+
     Page {
         title: "Settings for " + scope.name
 
@@ -27,7 +31,7 @@ MainView {
             model: scope.settings
             delegate: Loader {
                 id: loader
-                source: type + "SettingsWidget.qml"
+                source: toFileName(type)
                 onLoaded: {
                     item.properties = properties
                     item.value = value
