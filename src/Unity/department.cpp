@@ -114,16 +114,6 @@ int Department::rowCount(const QModelIndex& parent) const
     return m_subdepartments.size();
 }
 
-QHash<int, QByteArray> Department::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-    roles[RoleDepartmentId] = "departmentId";
-    roles[RoleLabel] = "label";
-    roles[RoleHasChildren] = "hasChildren";
-    roles[RoleIsActive] = "isActive";
-    return roles;
-}
-
 QString Department::departmentId() const
 {
     return m_departmentId;

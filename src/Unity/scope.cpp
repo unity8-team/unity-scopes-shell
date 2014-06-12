@@ -580,7 +580,7 @@ void Scope::departmentModelDestroyed(QObject* obj)
   if (it == m_inverseDepartments.end()) return;
 
   m_departmentModels.remove(it.value(), department);
-  m_inverseDepartments.remove(department);
+  m_inverseDepartments.erase(it);
 }
 
 void Scope::loadDepartment(QString const& departmentId)
