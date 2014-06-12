@@ -73,7 +73,7 @@ public:
     PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector);
     Type type();
 
-    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SPtr& rootDepartment);
+    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr& out_rootDepartment);
     CollectorBase::Status collectPreviewData(unity::scopes::ColumnLayoutList& out_columns, unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
     CollectorBase::Status collectActivationResponse(std::shared_ptr<unity::scopes::ActivationResponse>& out_response, std::shared_ptr<unity::scopes::Result>& out_result);
 

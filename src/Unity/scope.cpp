@@ -96,7 +96,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
-    scopes::Department::SPtr rootDepartment;
+    scopes::Department::SCPtr rootDepartment;
 
     status = pushEvent->collectSearchResults(results, rootDepartment);
     if (status == CollectorBase::Status::CANCELLED) {
@@ -301,9 +301,9 @@ void Scope::flushUpdates()
             // is better than pretending it isn't
             m_departmentTree->setIsRoot(true);
         }
-
-        m_lastRootDepartment = m_rootDepartment;
     }
+
+    m_lastRootDepartment = m_rootDepartment;
 
     bool containsDepartments = m_rootDepartment.get() != nullptr;
     // design decision - no departments when doing searches
@@ -611,7 +611,7 @@ void Scope::departmentModelDestroyed(QObject* obj)
   if (it == m_inverseDepartments.end()) return;
 
   m_departmentModels.remove(it.value(), department);
-  m_inverseDepartments.remove(department);
+  m_inverseDepartments.erase(it);
 }
 
 void Scope::loadDepartment(QString const& departmentId)

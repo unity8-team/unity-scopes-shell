@@ -184,8 +184,8 @@ private:
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
-    unity::scopes::Department::SPtr m_rootDepartment;
-    unity::scopes::Department::SPtr m_lastRootDepartment;
+    unity::scopes::Department::SCPtr m_rootDepartment;
+    unity::scopes::Department::SCPtr m_lastRootDepartment;
     QGSettings* m_settings;
     Categories* m_categories;
     QScopedPointer<SettingsModel> m_settingsModel;
