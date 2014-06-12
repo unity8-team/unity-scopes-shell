@@ -300,9 +300,9 @@ void Scope::flushUpdates()
             // is better than pretending it isn't
             m_departmentTree->setIsRoot(true);
         }
-
-        m_lastRootDepartment = m_rootDepartment;
     }
+
+    m_lastRootDepartment = m_rootDepartment;
 
     bool containsDepartments = m_rootDepartment.get() != nullptr;
     // design decision - no departments when doing searches
