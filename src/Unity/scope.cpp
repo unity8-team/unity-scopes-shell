@@ -484,30 +484,16 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
 
-    // FIXME Read the JSON from the metadata instead of straight from disk
-    QByteArray json;
+    std::string settings_json;
     try
     {
-        QString scope_directory = QString::fromStdString(
-                m_scopeMetadata->scope_directory());
-        QFile settingsFile(QDir(scope_directory).filePath(id() + ".json"));
-
-        if (settingsFile.exists())
-        {
-            if (settingsFile.open(QIODevice::ReadOnly))
-            {
-                json = settingsFile.readAll();
-                settingsFile.close();
-            }
-        }
+        settings_json = m_scopeMetadata->settings_json();
     }
-    catch (unity::scopes::NotFoundException& e)
+    catch (unity::scopes::NotFoundException&)
     {
-        // If there's no directory set
+        // If there's no json set
     }
-
-    m_settingsModel.reset(new SettingsModel(id(), json, this));
-
+    m_settingsModel.reset(new SettingsModel(id(), QString::fromStdString(settings_json).toUtf8(), this));
 }
 
 QString Scope::id() const
