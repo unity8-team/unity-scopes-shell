@@ -8,10 +8,16 @@ MainView {
     width: units.gu(40)
     height: units.gu(60)
 
+    Arguments {
+        id: args
+        defaultArgument.help: "Expects a scope ID"
+        defaultArgument.valueNames: ["SCOPE"]
+    }
+
     Scopes {
         id: scopes
         onLoadedChanged: {
-            app.scope = scopes.getScope("musicaggregator")
+            app.scope = scopes.getScope(args.defaultArgument.at(0))
         }
     }
 
