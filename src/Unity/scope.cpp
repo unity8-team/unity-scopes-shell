@@ -261,14 +261,20 @@ void Scope::flushUpdates()
         // build / append to the tree
         DepartmentNode* node = nullptr;
         if (m_departmentTree) {
-            QString departmentId(QString::fromStdString(m_rootDepartment->id()));
+            scopes::Department::SCPtr updateNode(m_rootDepartment);
+            QString departmentId(QString::fromStdString(updateNode->id()));
             node = m_departmentTree->findNodeById(departmentId);
             if (node == nullptr) {
                 node = m_departmentTree.data();
+            } else {
+                // we have the node in our tree, try to find the minimal subtree to update
+                updateNode = findUpdateNode(node, updateNode);
+                if (updateNode) {
+                    node = m_departmentTree->findNodeById(QString::fromStdString(updateNode->id()));
+                }
             }
-            auto depNode = findDepartmentById(m_rootDepartment, m_currentDepartmentId.toStdString());
-            if (depNode && depNode->has_subdepartments()) {
-                node->initializeForDepartment(m_rootDepartment);
+            if (updateNode) {
+                node->initializeForDepartment(updateNode);
             }
             // as far as we know, this is the root, re-initializing might have unset the flag
             m_departmentTree->setIsRoot(true);
@@ -317,6 +323,47 @@ void Scope::flushUpdates()
         m_currentDepartmentId = "";
         Q_EMIT currentDepartmentIdChanged();
     }
+}
+
+scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::Department::SCPtr const& scopeNode)
+{
+    if (node == nullptr || node->id() != QString::fromStdString(scopeNode->id())) return scopeNode;
+
+    // are all the children in our cache?
+    QStringList cachedChildrenIds;
+    Q_FOREACH(DepartmentNode* child, node->childNodes()) {
+        cachedChildrenIds << child->id();
+    }
+    auto subdeps = scopeNode->subdepartments();
+    QMap<QString, scopes::Department::SCPtr> childIdMap;
+    for (auto it = subdeps.begin(); it != subdeps.end(); ++it) {
+        QString childId = QString::fromStdString((*it)->id());
+        childIdMap.insert(childId, *it);
+        if (!cachedChildrenIds.contains(childId)) {
+            return scopeNode;
+        }
+    }
+
+    scopes::Department::SCPtr firstMismatchingChild;
+
+    Q_FOREACH(DepartmentNode* child, node->childNodes()) {
+        scopes::Department::SCPtr scopeChildNode(childIdMap[child->id()]);
+        // the cache might have more data than the node, should we consider that bad?
+        if (!scopeChildNode) {
+            continue;
+        }
+        scopes::Department::SCPtr updateNode = findUpdateNode(child, scopeChildNode);
+        if (updateNode) {
+            if (!firstMismatchingChild) {
+                firstMismatchingChild = updateNode;
+            } else {
+                // there are multiple mismatching children, update the entire node
+                return scopeNode;
+            }
+        }
+    }
+
+    return firstMismatchingChild; // will be nullptr if everything matches
 }
 
 scopes::Department::SCPtr Scope::findDepartmentById(scopes::Department::SCPtr const& root, std::string const& id)
