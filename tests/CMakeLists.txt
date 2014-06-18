@@ -47,6 +47,7 @@ macro(run_tests)
 endmacro(run_tests)
 
 run_tests(
+    departmentstest
     resultstest
     previewtest
     utilstest

@@ -71,15 +71,15 @@ qint64 CollectorBase::msecsSinceStart() const
     return m_timer.elapsed();
 }
 
-class ResultCollector: public CollectorBase
+class SearchDataCollector: public CollectorBase
 {
 public:
-    ResultCollector(): CollectorBase()
+    SearchDataCollector(): CollectorBase()
     {
     }
 
     // Returns bool indicating whether this resultset was already posted
-    bool addResult(std::shared_ptr<scopes::CategorisedResult> const& result)
+    bool addResult(scopes::CategorisedResult::SPtr const& result)
     {
         QMutexLocker locker(&m_mutex);
         m_results.append(result);
@@ -87,7 +87,13 @@ public:
         return m_posted;
     }
 
-    Status collect(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
+    void setDepartment(scopes::Department::SCPtr const& department)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_rootDepartment = department;
+    }
+
+    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& out_rootDepartment)
     {
         Status status;
 
@@ -98,12 +104,14 @@ public:
         }
         status = m_status;
         m_results.swap(out_results);
+        out_rootDepartment = m_rootDepartment;
 
         return status;
     }
 
 private:
-    QList<std::shared_ptr<scopes::CategorisedResult>> m_results;
+    QList<scopes::CategorisedResult::SPtr> m_results;
+    scopes::Department::SCPtr m_rootDepartment;
 };
 
 class PreviewDataCollector: public CollectorBase
@@ -214,10 +222,10 @@ qint64 PushEvent::msecsSinceStart() const
     return m_collector->msecsSinceStart();
 }
 
-CollectorBase::Status PushEvent::collectSearchResults(QList<std::shared_ptr<scopes::CategorisedResult>>& out_results)
+CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& rootDepartment)
 {
-    auto collector = std::dynamic_pointer_cast<ResultCollector>(m_collector);
-    return collector->collect(out_results);
+    auto collector = std::dynamic_pointer_cast<SearchDataCollector>(m_collector);
+    return collector->collect(out_results, rootDepartment);
 }
 
 CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
@@ -257,9 +265,9 @@ void ScopeDataReceiverBase::invalidate()
 }
 
 SearchResultReceiver::SearchResultReceiver(QObject* receiver):
-    ScopeDataReceiverBase(receiver, PushEvent::SEARCH, std::shared_ptr<CollectorBase>(new ResultCollector))
+    ScopeDataReceiverBase(receiver, PushEvent::SEARCH, std::shared_ptr<CollectorBase>(new SearchDataCollector))
 {
-    m_collector = collectorAs<ResultCollector>();
+    m_collector = collectorAs<SearchDataCollector>();
 }
 
 // this will be called from non-main thread, (might even be multiple different threads)
@@ -271,6 +279,12 @@ void SearchResultReceiver::push(scopes::CategorisedResult result)
     if (!posted) {
         postCollectedResults();
     }
+}
+
+// this will be called from non-main thread, (might even be multiple different threads)
+void SearchResultReceiver::push(scopes::Department::SCPtr const& department)
+{
+    m_collector->setDepartment(department);
 }
 
 // this might be called from any thread (might be main, might be any other thread)

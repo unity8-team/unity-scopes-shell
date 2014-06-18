@@ -31,8 +31,10 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(string const& query) :
-        query_(query)
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata) :
+        SearchQueryBase(query, metadata),
+        query_(query.query_string()),
+        department_id_(query.department_id())
     {
     }
 
@@ -217,13 +219,15 @@ public:
 
 private:
     string query_;
+    string department_id_;
 };
 
 class MyPreview : public PreviewQueryBase
 {
 public:
-    MyPreview(Result const& result, Variant const& scope_data = Variant()) :
-        result_(result), scope_data_(scope_data)
+    MyPreview(Result const& result, ActionMetadata const& metadata) :
+        PreviewQueryBase(result, metadata),
+        scope_data_(metadata.scope_data())
     {
     }
 
@@ -237,7 +241,7 @@ public:
 
     virtual void run(PreviewReplyProxy const& reply) override
     {
-        if (result_.uri().find("layout") != std::string::npos)
+        if (result().uri().find("layout") != std::string::npos)
         {
             PreviewWidget w1("img", "image");
             w1.add_attribute_value("source", Variant("foo.png"));
@@ -291,20 +295,21 @@ public:
     }
 
 private:
-    Result result_;
     Variant scope_data_;
 };
 
 class MyActivation : public ActivationQueryBase
 {
 public:
-    MyActivation(Result const& result) :
-        result_(result), status_(ActivationResponse::HideDash)
+    MyActivation(Result const& result, ActionMetadata const& metadata) :
+        ActivationQueryBase(result, metadata),
+        status_(ActivationResponse::HideDash)
     {
     }
 
-    MyActivation(Result const& result, ActivationResponse::Status status) :
-        result_(result), status_(status)
+    MyActivation(Result const& result, ActionMetadata const& metadata, ActivationResponse::Status status) :
+        ActivationQueryBase(result, metadata),
+        status_(status)
     {
     }
 
@@ -324,7 +329,7 @@ public:
     virtual ActivationResponse activate() override
     {
         if (status_ == ActivationResponse::Status::PerformQuery) {
-            auto resp = ActivationResponse(CannedQuery(result_["scope-id"].get_string()));
+            auto resp = ActivationResponse(CannedQuery(result()["scope-id"].get_string()));
             return resp;
         } else {
             auto resp = ActivationResponse(status_);
@@ -335,30 +340,22 @@ public:
 
 private:
     Variant extra_data_;
-    Result result_;
     ActivationResponse::Status status_;
 };
 
 class MyScope : public ScopeBase
 {
 public:
-    virtual int start(string const&, RegistryProxy const&) override
+    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
-        return VERSION;
-    }
-
-    virtual void stop() override {}
-
-    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
-    {
-        SearchQueryBase::UPtr query(new MyQuery(q.query_string()));
+        SearchQueryBase::UPtr query(new MyQuery(q, metadata));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
 
     virtual PreviewQueryBase::UPtr preview(Result const& result, ActionMetadata const& metadata) override
     {
-        PreviewQueryBase::UPtr query(new MyPreview(result, metadata.scope_data()));
+        PreviewQueryBase::UPtr query(new MyPreview(result, metadata));
         cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
     }
@@ -367,23 +364,23 @@ public:
     {
         if (widget_id == "actions" && action_id == "hide")
         {
-            return ActivationQueryBase::UPtr(new MyActivation(result));
+            return ActivationQueryBase::UPtr(new MyActivation(result, meta));
         }
         else if (widget_id == "actions" && action_id == "download")
         {
-            MyActivation* response = new MyActivation(result, ActivationResponse::ShowPreview);
+            MyActivation* response = new MyActivation(result, meta, ActivationResponse::ShowPreview);
             response->setExtraData(meta.scope_data());
             return ActivationQueryBase::UPtr(response);
         }
-        return ActivationQueryBase::UPtr(new MyActivation(result, ActivationResponse::NotHandled));
+        return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::NotHandled));
     }
 
-    virtual ActivationQueryBase::UPtr activate(Result const& result, ActionMetadata const&) override
+    virtual ActivationQueryBase::UPtr activate(Result const& result, ActionMetadata const& meta) override
     {
         if (result.uri().find("perform-query") != std::string::npos) {
-            return ActivationQueryBase::UPtr(new MyActivation(result, ActivationResponse::PerformQuery));
+            return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::PerformQuery));
         }
-        return ActivationQueryBase::UPtr(new MyActivation(result));
+        return ActivationQueryBase::UPtr(new MyActivation(result, meta));
     }
 };
 

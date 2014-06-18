@@ -37,7 +37,7 @@
 namespace scopes_ng
 {
 
-class ResultCollector;
+class SearchDataCollector;
 class PreviewDataCollector;
 class ActivationCollector;
 
@@ -73,7 +73,7 @@ public:
     PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector);
     Type type();
 
-    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results);
+    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr& out_rootDepartment);
     CollectorBase::Status collectPreviewData(unity::scopes::ColumnLayoutList& out_columns, unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
     CollectorBase::Status collectActivationResponse(std::shared_ptr<unity::scopes::ActivationResponse>& out_response, std::shared_ptr<unity::scopes::Result>& out_result);
 
@@ -104,12 +104,13 @@ class SearchResultReceiver: public unity::scopes::SearchListenerBase, public Sco
 {
 public:
     virtual void push(unity::scopes::CategorisedResult result) override;
+    virtual void push(unity::scopes::Department::SCPtr const& department) override;
     virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
 
     SearchResultReceiver(QObject* receiver);
 
 private:
-    std::shared_ptr<ResultCollector> m_collector;
+    std::shared_ptr<SearchDataCollector> m_collector;
 };
 
 class PreviewDataReceiver: public unity::scopes::PreviewListenerBase, public ScopeDataReceiverBase

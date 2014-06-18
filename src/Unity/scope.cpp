@@ -69,6 +69,9 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
     , m_delayedClear(false)
+    , m_hasDepartments(false)
+    , m_searchController(new CollectionController)
+    , m_activationController(new CollectionController)
 {
     m_categories = new Categories(this);
 
@@ -86,23 +89,20 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
 
 Scope::~Scope()
 {
-    if (m_lastSearch) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastSearch)->invalidate();
-    }
-    if (m_lastActivation) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
-    }
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
 {
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
+    scopes::Department::SCPtr rootDepartment;
 
-    status = pushEvent->collectSearchResults(results);
+    status = pushEvent->collectSearchResults(results, rootDepartment);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
+
+    m_rootDepartment = rootDepartment;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -213,10 +213,12 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     QString scopeId(QString::fromStdString(query.scope_id()));
     QString searchString(QString::fromStdString(query.query_string()));
+    QString departmentId(QString::fromStdString(query.department_id()));
     // figure out if this scope is already favourited
     Scope* scope = scopes->getScopeById(scopeId);
     if (scope != nullptr) {
-        // TODO: change department, filters?
+        // TODO: change filters?
+        scope->setCurrentDepartmentId(departmentId);
         scope->setSearchQuery(searchString);
         Q_EMIT gotoScope(scopeId);
     } else {
@@ -225,6 +227,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         if (meta_sptr) {
             scope = new scopes_ng::Scope(this);
             scope->setScopeData(*meta_sptr);
+            scope->setCurrentDepartmentId(departmentId);
             scope->setSearchQuery(searchString);
             m_tempScopes.insert(scope);
             Q_EMIT openScope(scope);
@@ -252,6 +255,132 @@ void Scope::flushUpdates()
     }
 
     processResultSet(m_cachedResults); // clears the result list
+
+    // process departments
+    if (m_rootDepartment && m_rootDepartment != m_lastRootDepartment) {
+        // build / append to the tree
+        DepartmentNode* node = nullptr;
+        if (m_departmentTree) {
+            scopes::Department::SCPtr updateNode(m_rootDepartment);
+            QString departmentId(QString::fromStdString(updateNode->id()));
+            node = m_departmentTree->findNodeById(departmentId);
+            if (node == nullptr) {
+                node = m_departmentTree.data();
+            } else {
+                // we have the node in our tree, try to find the minimal subtree to update
+                updateNode = findUpdateNode(node, updateNode);
+                if (updateNode) {
+                    node = m_departmentTree->findNodeById(QString::fromStdString(updateNode->id()));
+                }
+            }
+            if (updateNode) {
+                node->initializeForDepartment(updateNode);
+            }
+            // as far as we know, this is the root, re-initializing might have unset the flag
+            m_departmentTree->setIsRoot(true);
+
+            // update corresponding models
+            QString activeDepartment(m_currentDepartmentId);
+            node = m_departmentTree->findNodeById(activeDepartment);
+            DepartmentNode* parentNode = nullptr;
+            if (node != nullptr) {
+                auto it = m_departmentModels.find(activeDepartment);
+                while (it != m_departmentModels.end() && it.key() == activeDepartment) {
+                    it.value()->loadFromDepartmentNode(node);
+                    ++it;
+                }
+                // if this node is a leaf, we need to update models for the parent
+                parentNode = node->isLeaf() ? node->parent() : nullptr;
+            }
+            if (parentNode != nullptr) {
+                auto it = m_departmentModels.find(parentNode->id());
+                while (it != m_departmentModels.end() && it.key() == parentNode->id()) {
+                    it.value()->markSubdepartmentActive(activeDepartment);
+                    ++it;
+                }
+            }
+        } else {
+            m_departmentTree.reset(new DepartmentNode);
+            m_departmentTree->initializeForDepartment(m_rootDepartment);
+            // as far as we know, this is the root, changing our mind later
+            // is better than pretending it isn't
+            m_departmentTree->setIsRoot(true);
+        }
+    }
+
+    m_lastRootDepartment = m_rootDepartment;
+
+    bool containsDepartments = m_rootDepartment.get() != nullptr;
+    // design decision - no departments when doing searches
+    containsDepartments &= m_searchQuery.isEmpty();
+
+    if (containsDepartments != m_hasDepartments) {
+        m_hasDepartments = containsDepartments;
+        Q_EMIT hasDepartmentsChanged();
+    }
+
+    if (!containsDepartments && !m_currentDepartmentId.isEmpty()) {
+        m_currentDepartmentId = "";
+        Q_EMIT currentDepartmentIdChanged();
+    }
+}
+
+scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::Department::SCPtr const& scopeNode)
+{
+    if (node == nullptr || node->id() != QString::fromStdString(scopeNode->id())) return scopeNode;
+
+    // are all the children in our cache?
+    QStringList cachedChildrenIds;
+    Q_FOREACH(DepartmentNode* child, node->childNodes()) {
+        cachedChildrenIds << child->id();
+    }
+    auto subdeps = scopeNode->subdepartments();
+    QMap<QString, scopes::Department::SCPtr> childIdMap;
+    for (auto it = subdeps.begin(); it != subdeps.end(); ++it) {
+        QString childId = QString::fromStdString((*it)->id());
+        childIdMap.insert(childId, *it);
+        if (!cachedChildrenIds.contains(childId)) {
+            return scopeNode;
+        }
+    }
+
+    scopes::Department::SCPtr firstMismatchingChild;
+
+    Q_FOREACH(DepartmentNode* child, node->childNodes()) {
+        scopes::Department::SCPtr scopeChildNode(childIdMap[child->id()]);
+        // the cache might have more data than the node, should we consider that bad?
+        if (!scopeChildNode) {
+            continue;
+        }
+        scopes::Department::SCPtr updateNode = findUpdateNode(child, scopeChildNode);
+        if (updateNode) {
+            if (!firstMismatchingChild) {
+                firstMismatchingChild = updateNode;
+            } else {
+                // there are multiple mismatching children, update the entire node
+                return scopeNode;
+            }
+        }
+    }
+
+    return firstMismatchingChild; // will be nullptr if everything matches
+}
+
+scopes::Department::SCPtr Scope::findDepartmentById(scopes::Department::SCPtr const& root, std::string const& id)
+{
+    if (root->id() == id) return root;
+
+    auto sub_deps = root->subdepartments();
+    for (auto it = sub_deps.begin(); it != sub_deps.end(); ++it) {
+        if ((*it)->id() == id) {
+            return *it;
+        } else {
+            auto node = findDepartmentById(*it, id);
+            if (node) return node;
+        }
+    }
+
+    return nullptr;
 }
 
 void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& result_set)
@@ -289,14 +418,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
 
 void Scope::invalidateLastSearch()
 {
-    if (m_lastSearch) {
-        std::dynamic_pointer_cast<SearchResultReceiver>(m_lastSearch)->invalidate();
-        m_lastSearch.reset();
-    }
-    if (m_lastSearchQuery) {
-        m_lastSearchQuery->cancel();
-        m_lastSearchQuery.reset();
-    }
+    m_searchController->invalidate();
     if (m_aggregatorTimer.isActive()) {
         m_aggregatorTimer.stop();
     }
@@ -338,6 +460,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
+void Scope::setCurrentDepartmentId(QString const& id)
+{
+    if (m_currentDepartmentId != id) {
+        m_currentDepartmentId = id;
+        Q_EMIT currentDepartmentIdChanged();
+    }
+}
+
 void Scope::dispatchSearch()
 {
     invalidateLastSearch();
@@ -364,7 +494,7 @@ void Scope::dispatchSearch()
     if (m_resultsDirty)
     {
         m_resultsDirty = false;
-        resultsDirtyChanged(false);
+        resultsDirtyChanged();
     }
 
     setSearchInProgress(true);
@@ -377,9 +507,11 @@ void Scope::dispatchSearch()
                 meta["no-internet"] = true;
             }
         }
-        m_lastSearch.reset(new SearchResultReceiver(this));
+        scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
+        m_searchController->setListener(listener);
         try {
-            m_lastSearchQuery = m_proxy->search(m_searchQuery.toStdString(), meta, m_lastSearch);
+            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartmentId.toStdString(), scopes::FilterState(), meta, listener);
+            m_searchController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
         } catch (...) {
@@ -387,7 +519,7 @@ void Scope::dispatchSearch()
         }
     }
 
-    if (!m_lastSearchQuery) {
+    if (!m_searchController->isValid()) {
         // something went wrong, reset search state
         setSearchInProgress(false);
     }
@@ -470,6 +602,44 @@ Filters* Scope::filters() const
 }
 */
 
+unity::shell::scopes::DepartmentInterface* Scope::getDepartment(QString const& departmentId)
+{
+    if (!m_departmentTree) return nullptr;
+
+    DepartmentNode* node = m_departmentTree->findNodeById(departmentId);
+    if (!node) return nullptr;
+
+    Department* departmentModel = new Department;
+    departmentModel->loadFromDepartmentNode(node);
+
+    m_departmentModels.insert(departmentId, departmentModel);
+    m_inverseDepartments.insert(departmentModel, departmentId);
+    QObject::connect(departmentModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
+
+    return departmentModel;
+}
+
+void Scope::departmentModelDestroyed(QObject* obj)
+{
+  scopes_ng::Department* department = reinterpret_cast<scopes_ng::Department*>(obj);
+
+  auto it = m_inverseDepartments.find(department);
+  if (it == m_inverseDepartments.end()) return;
+
+  m_departmentModels.remove(it.value(), department);
+  m_inverseDepartments.erase(it);
+}
+
+void Scope::loadDepartment(QString const& departmentId)
+{
+    if (departmentId != m_currentDepartmentId) {
+        m_currentDepartmentId = departmentId;
+        Q_EMIT currentDepartmentIdChanged();
+
+        dispatchSearch();
+    }
+}
+
 QString Scope::searchQuery() const
 {
     return m_searchQuery;
@@ -488,6 +658,16 @@ QString Scope::formFactor() const
 bool Scope::isActive() const
 {
     return m_isActive;
+}
+
+QString Scope::currentDepartmentId() const
+{
+    return m_currentDepartmentId;
+}
+
+bool Scope::hasDepartments() const
+{
+    return m_hasDepartments;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
@@ -526,7 +706,7 @@ void Scope::setFormFactor(const QString& form_factor) {
 void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
-        Q_EMIT isActiveChanged(m_isActive);
+        Q_EMIT isActiveChanged();
 
         if (active && m_resultsDirty) {
             dispatchSearch();
@@ -551,11 +731,14 @@ void Scope::activate(QVariant const& result_var)
         activateUri(QString::fromStdString(result->uri()));
     } else {
         try {
+            cancelActivation();
+            scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
+            m_activationController->setListener(listener);
+
             auto proxy = result->target_scope_proxy();
-            // FIXME: don't block
             unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
-            m_lastActivation.reset(new ActivationReceiver(this, result));
-            proxy->activate(*(result.get()), metadata, m_lastActivation);
+            scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
+            m_activationController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from activate(): %s", e.what());
         } catch (...) {
@@ -585,10 +768,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
 
 void Scope::cancelActivation()
 {
-    if (m_lastActivation) {
-        std::dynamic_pointer_cast<ScopeDataReceiverBase>(m_lastActivation)->invalidate();
-        m_lastActivation.reset();
-    }
+    m_activationController->invalidate();
 }
 
 void Scope::invalidateResults()
@@ -600,7 +780,7 @@ void Scope::invalidateResults()
         if (!m_resultsDirty)
         {
             m_resultsDirty = true;
-            resultsDirtyChanged(true);
+            resultsDirtyChanged();
         }
     }
 }

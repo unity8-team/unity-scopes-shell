@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMetaType>
 #include <QPointer>
+#include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
 
@@ -36,12 +37,64 @@
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
+#include "collectors.h"
+#include "departmentnode.h"
+#include "department.h"
+
 namespace scopes_ng
 {
 
 class Categories;
 class PushEvent;
 class PreviewStack;
+
+class CollectionController
+{
+public:
+    CollectionController() {}
+    ~CollectionController()
+    {
+        if (m_receiver) {
+            m_receiver->invalidate();
+        }
+        // shouldn't call QueryCtrlProxy->cancel() cause the Runtime might be
+        // in the process of being destroyed
+    }
+
+    bool isValid()
+    {
+        return m_listener && m_controller;
+    }
+
+    void invalidate()
+    {
+        if (m_receiver) {
+            m_receiver->invalidate();
+            m_receiver.reset();
+        }
+        m_listener.reset();
+        if (m_controller) {
+            m_controller->cancel();
+            m_controller.reset();
+        }
+    }
+
+    void setListener(unity::scopes::ListenerBase::SPtr const& listener)
+    {
+        m_listener = listener;
+        m_receiver = std::dynamic_pointer_cast<ScopeDataReceiverBase>(listener);
+    }
+
+    void setController(unity::scopes::QueryCtrlProxy const& controller)
+    {
+        m_controller = controller;
+    }
+
+private:
+    unity::scopes::ListenerBase::SPtr m_listener;
+    std::shared_ptr<ScopeDataReceiverBase> m_receiver;
+    unity::scopes::QueryCtrlProxy m_controller;
+};
 
 class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
 {
@@ -67,6 +120,8 @@ public:
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
+    QString currentDepartmentId() const override;
+    bool hasDepartments() const override;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;
@@ -78,6 +133,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
+    Q_INVOKABLE unity::shell::scopes::DepartmentInterface* getDepartment(QString const& id) override;
+    Q_INVOKABLE void loadDepartment(QString const& id) override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
@@ -89,16 +146,18 @@ public Q_SLOTS:
     void invalidateResults();
 
 Q_SIGNALS:
-    void resultsDirtyChanged(bool resultsDirty);
+    void resultsDirtyChanged();
 
 private Q_SLOTS:
     void flushUpdates();
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
+    void departmentModelDestroyed(QObject* obj);
 
 private:
     void startTtlTimer();
     void setSearchInProgress(bool searchInProgress);
+    void setCurrentDepartmentId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
@@ -106,27 +165,36 @@ private:
     void dispatchSearch();
     void invalidateLastSearch();
 
+    static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
+    static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
+
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
+    QString m_currentDepartmentId;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
     bool m_delayedClear;
+    bool m_hasDepartments;
 
+    std::unique_ptr<CollectionController> m_searchController;
+    std::unique_ptr<CollectionController> m_activationController;
     unity::scopes::ScopeProxy m_proxy;
     unity::scopes::ScopeMetadata::SPtr m_scopeMetadata;
-    unity::scopes::SearchListenerBase::SPtr m_lastSearch;
-    unity::scopes::QueryCtrlProxy m_lastSearchQuery;
-    unity::scopes::ActivationListenerBase::SPtr m_lastActivation;
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
+    unity::scopes::Department::SCPtr m_rootDepartment;
+    unity::scopes::Department::SCPtr m_lastRootDepartment;
     QGSettings* m_settings;
     Categories* m_categories;
+    QSharedPointer<DepartmentNode> m_departmentTree;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
+    QMultiMap<QString, Department*> m_departmentModels;
+    QMap<Department*, QString> m_inverseDepartments;
 };
 
 } // namespace scopes_ng

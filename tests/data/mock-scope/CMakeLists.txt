@@ -1,4 +1,4 @@
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.0)
 
 include_directories(${SCOPESLIB_INCLUDE_DIRS})
 
