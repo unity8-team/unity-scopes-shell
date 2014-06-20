@@ -177,6 +177,15 @@ private Q_SLOTS:
         QCOMPARE(m_scope->visible(), true);
         QCOMPARE(m_scope->searchQuery(), QString());
 
+        QVariantMap customizations(m_scope->customizations());
+        QVERIFY(customizations.size() > 0);
+        QCOMPARE(static_cast<QMetaType::Type>(customizations["page-header"].type()), QMetaType::QVariantMap);
+        QVariantMap headerCustomizations(customizations["page-header"].toMap());
+        QCOMPARE(headerCustomizations["logo"], QVariant("http://assets.ubuntu.com/sites/ubuntu/1110/u/img/logos/logo-ubuntu-orange.svg"));
+        QCOMPARE(headerCustomizations["foreground-color"], QVariant("white"));
+        QCOMPARE(headerCustomizations["background"], QVariant("color://black"));
+        QCOMPARE(customizations["shape-images"], QVariant(false));
+
         QCOMPARE(m_scope->isActive(), false);
         m_scope->setActive(true);
         QCOMPARE(m_scope->isActive(), true);

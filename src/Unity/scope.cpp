@@ -529,6 +529,76 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
 {
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
+
+    m_customizations = processAppearance(m_scopeMetadata->appearance_attributes());
+    Q_EMIT customizationsChanged();
+}
+
+static QVariantMap updateNestedMap(QVariantMap const& current, QVariant const& value, QStringList const& parts, int i)
+{
+    QVariantMap obj(current);
+
+    if (i == parts.size() - 1) {
+        obj.insert(parts[i], value);
+        return obj;
+    }
+
+    if (!obj.contains(parts[i])) {
+        obj.insert(parts[i], QVariantMap());
+    }
+
+    QVariant& r = obj[parts[i]];
+    QVariantMap temp(r.toMap());
+    r = updateNestedMap(temp, value, parts, i+1);
+
+    return obj;
+}
+
+QVariantMap Scope::processAppearance(scopes::VariantMap const& attributes)
+{
+    QStringList supportedAttributes({
+        "ForegroundColor",
+        "BackgroundColor",
+        "ShapeImages",
+        "CategoryHeaderBackground",
+        "PreviewButtonColor",
+        "PageHeader.Logo",
+        "PageHeader.ForegroundColor",
+        "PageHeader.Background",
+        "PageHeader.DividerColor",
+        "PageHeader.NavigationBackground"
+    });
+
+    QVariantMap result;
+
+    for (auto it = attributes.begin(); it != attributes.end(); ++it) {
+        if (it->second.which() != scopes::Variant::String) {
+            continue;
+        }
+        QString attribute(QString::fromStdString(it->first));
+        QVariant value;
+
+        std::string valueString(it->second.get_string());
+        if (valueString == "true" || valueString == "false") {
+            value = valueString == "true"; // bool variant
+        } else {
+            value = QString::fromStdString(valueString);
+        }
+
+        if (!supportedAttributes.contains(attribute)) {
+            continue;
+        }
+        // convert FooBar.Qoo=Baz to a QVariantMap where result["foo-bar"]["qoo"] = "baz"
+        QStringList parts(attribute.split(".", QString::SkipEmptyParts));
+        QStringList uncamelcased;
+        for (int i = 0; i < parts.size(); i++) {
+            QStringList splitName(parts.at(i).split(QRegExp("(?=[A-Z])"), QString::SkipEmptyParts));
+            uncamelcased << splitName.join("-").toLower();
+        }
+        result = updateNestedMap(result, value, uncamelcased, 0);
+    }
+
+    return result;
 }
 
 QString Scope::id() const
@@ -668,6 +738,11 @@ QString Scope::currentDepartmentId() const
 bool Scope::hasDepartments() const
 {
     return m_hasDepartments;
+}
+
+QVariantMap Scope::customizations() const
+{
+    return m_customizations;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
