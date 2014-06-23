@@ -33,8 +33,9 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(CannedQuery const& query) :
-            query_(query), department_id_(query.department_id())
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata) :
+        SearchQueryBase(query, metadata),
+        department_id_(query.department_id())
     {
     }
 
@@ -91,51 +92,51 @@ public:
         Department::SPtr root_dep;
         Department::SPtr active_dep;
 
-        root_dep = create_root_dep(query_);
+        root_dep = create_root_dep(query());
 
         if (department_id_.compare(0, 5, "books") == 0)
         {
             active_dep = get_department_by_id(root_dep, "books");
-            child_dep = Department::create("books-kindle", query_, "Kindle Books");
+            child_dep = Department::create("books-kindle", query(), "Kindle Books");
             active_dep->add_subdepartment(child_dep);
 
-            child_dep = Department::create("books-study", query_, "Books for Study");
+            child_dep = Department::create("books-study", query(), "Books for Study");
             active_dep->add_subdepartment(child_dep);
 
-            child_dep = Department::create("books-audio", query_, "Audiobooks");
+            child_dep = Department::create("books-audio", query(), "Audiobooks");
             active_dep->add_subdepartment(child_dep);
         }
 
         if (department_id_.compare(0, 4, "home") == 0)
         {
             active_dep = get_department_by_id(root_dep, "home");
-            child_dep = Department::create("home-garden", query_, "Garden & Outdoors");
+            child_dep = Department::create("home-garden", query(), "Garden & Outdoors");
             active_dep->add_subdepartment(child_dep);
 
-            child_dep = Department::create("home-furniture", query_, "Homeware & Furniture");
+            child_dep = Department::create("home-furniture", query(), "Homeware & Furniture");
             active_dep->add_subdepartment(child_dep);
 
-            child_dep = Department::create("home-kitchen", query_, "Kitchen & Dining");
+            child_dep = Department::create("home-kitchen", query(), "Kitchen & Dining");
             active_dep->add_subdepartment(child_dep);
         }
 
         if (department_id_.compare(0, 4, "toys") == 0)
         {
             active_dep = get_department_by_id(root_dep, "toys");
-            child_dep = Department::create("toys-games", query_, "Toys & Games");
+            child_dep = Department::create("toys-games", query(), "Toys & Games");
             active_dep->add_subdepartment(child_dep);
 
-            child_dep = Department::create("toys-baby", query_, "Baby");
+            child_dep = Department::create("toys-baby", query(), "Baby");
             active_dep->add_subdepartment(child_dep);
         }
 
         // provide only partial tree for this leaf
         if (department_id_ == "toys-games")
         {
-            root_dep = Department::create("", query_, "All departments");
-            child_dep = Department::create("toys", query_, "Toys, Children & Baby");
+            root_dep = Department::create("", query(), "All departments");
+            child_dep = Department::create("toys", query(), "Toys, Children & Baby");
             root_dep->add_subdepartment(child_dep);
-            active_dep = Department::create("toys-games", query_, "Toys & Games");
+            active_dep = Department::create("toys-games", query(), "Toys & Games");
             child_dep->add_subdepartment(active_dep);
         }
 
@@ -144,12 +145,11 @@ public:
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
         res1.set_uri("test:uri");
-        res1.set_title("result for: \"" + query_.query_string() + "\"");
+        res1.set_title("result for: \"" + query().query_string() + "\"");
         reply->push(res1);
     }
 
 protected:
-    CannedQuery query_;
     string department_id_;
 };
 
@@ -160,17 +160,9 @@ public:
     {
     }
 
-    virtual int start(string const&, RegistryProxy const&) override
+    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
-        return VERSION;
-    }
-
-    virtual void stop() override {
-    }
-
-    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
-    {
-        return SearchQueryBase::UPtr(new MyQuery(q));
+        return SearchQueryBase::UPtr(new MyQuery(q, metadata));
     }
 
     virtual PreviewQueryBase::UPtr preview(Result const&, ActionMetadata const&) override

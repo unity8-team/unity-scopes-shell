@@ -33,8 +33,10 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(string const& result) :
-            result_(result)
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata,
+            string const& result) :
+        SearchQueryBase(query, metadata),
+        result_(result)
     {
     }
 
@@ -67,21 +69,13 @@ public:
     {
     }
 
-    virtual int start(string const&, RegistryProxy const&) override
-    {
-        return VERSION;
-    }
-
-    virtual void stop() override {
-    }
-
-    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const&) override
+    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
         stringstream builder;
         builder << q.query_string();
         builder << counter_++;
 
-        return SearchQueryBase::UPtr(new MyQuery(builder.str()));
+        return SearchQueryBase::UPtr(new MyQuery(q, metadata, builder.str()));
     }
 
     virtual PreviewQueryBase::UPtr preview(Result const&, ActionMetadata const&) override
