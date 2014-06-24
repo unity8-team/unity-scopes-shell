@@ -39,13 +39,13 @@ MainView {
                 id: loader
                 source: toFileName(type)
                 onLoaded: {
-                    item.properties = properties
                     item.value = value
 
                     if (type != "boolean") {
                         loader.width = parent.width
                     }
                     if (type == "list") {
+                        item.values = properties
                         loader.height = units.gu(10)
                     }
 

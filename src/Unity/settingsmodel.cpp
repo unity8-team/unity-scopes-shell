@@ -18,20 +18,22 @@
  */
 
 #include "settingsmodel.h"
+#include "utils.h"
 
 #include <QDebug>
 #include <QDir>
-#include <QJsonDocument>
+#include <QTimer>
 
 using namespace scopes_ng;
+namespace sc = unity::scopes;
 
 static const QString SETTING_GROUP("default");
 
 static const QString SETTING_ID_PATTERN("%1-%2");
 
-static const QSet<QString> VALID_TYPES { "boolean", "list", "number", "string" };
+static const int SETTING_TIMEOUT = 300;
 
-SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
+SettingsModel::SettingsModel(const QString& scopeId, const sc::VariantMap& settings_definitions,
         QObject* parent)
         : SettingsModelInterface(parent)
 {
@@ -40,30 +42,21 @@ SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
     QDir databaseDir = shareDir.filePath(scopeId);
     m_database.setPath(databaseDir.filePath("settings.db"));
 
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(json);
-    QVariant variant = jsonDocument.toVariant();
-    QVariantList settings = variant.toMap()["settings"].toList();
-
-    for (const QVariant &variant : settings)
+    for (const auto &entry : settings_definitions)
     {
-        QVariantMap data = variant.toMap();
-
-        QString id = data["id"].toString();
-        QString displayName = data["displayName"].toString();
-        QString type = data["type"].toString();
-        QVariantMap parameters = data["parameters"].toMap();
-
-        if (id.isEmpty() || displayName.isEmpty())
+        QString id = QString::fromStdString(entry.first);
+        sc::VariantMap data = entry.second.get_dict();
+        QString displayName = QString::fromStdString(data["displayName"].get_string());
+        QVariant defaultValue = scopeVariantToQVariant(data["defaultValue"]);
+        QString type = QString::fromStdString(data["type"].get_string());
+        QVariant values;
+        if (data.find("values") != data.end())
         {
-            continue;
-        }
-        if (!VALID_TYPES.contains(type))
-        {
-            continue;
+            values = scopeVariantToQVariant(data["values"]);
         }
 
         QVariantMap defaults;
-        defaults["value"] = parameters["defaultValue"];
+        defaults["value"] = defaultValue;
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
         document->setDatabase(&m_database);
@@ -73,8 +66,15 @@ SettingsModel::SettingsModel(const QString& scopeId, const QByteArray& json,
 
         m_documents[id] = document;
 
+        QSharedPointer<QTimer> timer(new QTimer());
+        timer->setProperty("setting_id", id);
+        timer->setSingleShot(true);
+        timer->setInterval(SETTING_TIMEOUT);
+        connect(timer.data(), SIGNAL(timeout()), this, SLOT(settings_timeout()));
+        m_timers[id] = timer;
+
         QSharedPointer<Data> setting(
-                new Data(id, displayName, type, parameters));
+                new Data(id, displayName, type, values));
 
         m_data << setting;
     }
@@ -101,7 +101,7 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 result = data->type;
                 break;
             case Roles::RoleProperties:
-                result = data->data;
+                result = data->values;
                 break;
             case Roles::RoleValue:
             {
@@ -132,10 +132,9 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
         {
             case Roles::RoleValue:
             {
-                QSharedPointer<U1db::Document> document = m_documents[data->id];
-                QVariantMap map;
-                map["value"] = value;
-                document->setContents(map);
+                QSharedPointer<QTimer> timer = m_timers[data->id];
+                timer->setProperty("value", value);
+                timer->start();
 
                 return true;
             }
@@ -150,4 +149,21 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
 int SettingsModel::rowCount(const QModelIndex&) const
 {
     return m_data.size();
+}
+
+void SettingsModel::settings_timeout()
+{
+    QObject *timer = sender();
+    if (!timer)
+    {
+        return;
+    }
+
+    QString setting_id = timer->property("setting_id").toString();
+    QVariant value = timer->property("value");
+
+    QSharedPointer<U1db::Document> document = m_documents[setting_id];
+    QVariantMap map;
+    map["value"] = value;
+    document->setContents(map);
 }

@@ -24,10 +24,15 @@
 #include <libu1db-qt5/document.h>
 #include <unity/SymbolExport.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
+#include <unity/scopes/Variant.h>
 
 #include <QAbstractListModel>
 #include <QList>
 #include <QSharedPointer>
+
+QT_BEGIN_NAMESPACE
+class QTimer;
+QT_END_NAMESPACE
 
 namespace scopes_ng
 {
@@ -41,17 +46,17 @@ Q_OBJECT
         QString id;
         QString displayName;
         QString type;
-        QVariantMap data;
+        QVariant values;
 
         Data(QString const& id_, QString const& displayName_,
-                QString const& type_, QVariantMap const& data_)
-                : id(id_), displayName(displayName_), type(type_), data(data_)
+                QString const& type_, QVariant const& values_)
+                : id(id_), displayName(displayName_), type(type_), values(values_)
         {
         }
     };
 
 public:
-    explicit SettingsModel(const QString& scopeId, const QByteArray& json,
+    explicit SettingsModel(const QString& scopeId, const unity::scopes::VariantMap& settings_definitions,
             QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
@@ -62,12 +67,17 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+protected Q_SLOTS:
+    void settings_timeout();
+
 protected:
     QList<QSharedPointer<Data>> m_data;
 
     U1db::Database m_database;
 
     QMap<QString, QSharedPointer<U1db::Document>> m_documents;
+
+    QMap<QString, QSharedPointer<QTimer>> m_timers;
 };
 
 }
