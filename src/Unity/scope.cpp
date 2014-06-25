@@ -536,26 +536,6 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     Q_EMIT customizationsChanged();
 }
 
-static QVariantMap updateNestedMap(QVariantMap const& current, QVariant const& value, QStringList const& parts, int i)
-{
-    QVariantMap obj(current);
-
-    if (i == parts.size() - 1) {
-        obj.insert(parts[i], value);
-        return obj;
-    }
-
-    if (!obj.contains(parts[i])) {
-        obj.insert(parts[i], QVariantMap());
-    }
-
-    QVariant& r = obj[parts[i]];
-    QVariantMap temp(r.toMap());
-    r = updateNestedMap(temp, value, parts, i+1);
-
-    return obj;
-}
-
 QString Scope::id() const
 {
     return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->scope_id() : "");
