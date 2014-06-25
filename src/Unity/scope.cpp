@@ -532,7 +532,6 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
 
     QVariant converted(scopeVariantToQVariant(scopes::Variant(m_scopeMetadata->appearance_attributes())));
     m_customizations = converted.toMap();
-    qDebug() << m_customizations;
     Q_EMIT customizationsChanged();
 }
 
