@@ -4,8 +4,8 @@ import Ubuntu.Components 1.1
 OptionSelector {
     id: combo
 
-    property var values
+    property var properties
     property alias value: combo.selectedIndex
 
-    model: values
+    model: properties["values"]
 }

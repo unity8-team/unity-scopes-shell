@@ -531,16 +531,16 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
 
-    scopes::VariantMap settings_definitions;
+    scopes::Variant settings_definitions;
     try
     {
         settings_definitions = m_scopeMetadata->settings_definitions();
+        m_settingsModel.reset(new SettingsModel(id(), scopeVariantToQVariant(settings_definitions), this));
     }
     catch (unity::scopes::NotFoundException&)
     {
         // If there's no json set
     }
-    m_settingsModel.reset(new SettingsModel(id(), settings_definitions, this));
 }
 
 QString Scope::id() const

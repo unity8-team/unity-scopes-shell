@@ -33,7 +33,7 @@ static const QString SETTING_ID_PATTERN("%1-%2");
 
 static const int SETTING_TIMEOUT = 300;
 
-SettingsModel::SettingsModel(const QString& scopeId, const sc::VariantMap& settings_definitions,
+SettingsModel::SettingsModel(const QString& scopeId, const QVariant& settings_definitions,
         QObject* parent)
         : SettingsModelInterface(parent)
 {
@@ -42,21 +42,16 @@ SettingsModel::SettingsModel(const QString& scopeId, const sc::VariantMap& setti
     QDir databaseDir = shareDir.filePath(scopeId);
     m_database.setPath(databaseDir.filePath("settings.db"));
 
-    for (const auto &entry : settings_definitions)
+    for (const auto &it : settings_definitions.toList())
     {
-        QString id = QString::fromStdString(entry.first);
-        sc::VariantMap data = entry.second.get_dict();
-        QString displayName = QString::fromStdString(data["displayName"].get_string());
-        QVariant defaultValue = scopeVariantToQVariant(data["defaultValue"]);
-        QString type = QString::fromStdString(data["type"].get_string());
-        QVariant values;
-        if (data.find("values") != data.end())
-        {
-            values = scopeVariantToQVariant(data["values"]);
-        }
+        QVariantMap data = it.toMap();
+        QString id = data["id"].toString();
+        QString displayName = data["displayName"].toString();
+        QVariantMap properties = data["parameters"].toMap();
+        QString type = data["type"].toString();
 
         QVariantMap defaults;
-        defaults["value"] = defaultValue;
+        defaults["value"] = properties["defaultValue"];
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
         document->setDatabase(&m_database);
@@ -74,7 +69,7 @@ SettingsModel::SettingsModel(const QString& scopeId, const sc::VariantMap& setti
         m_timers[id] = timer;
 
         QSharedPointer<Data> setting(
-                new Data(id, displayName, type, values));
+                new Data(id, displayName, type, properties));
 
         m_data << setting;
     }

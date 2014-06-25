@@ -24,7 +24,6 @@
 #include <libu1db-qt5/document.h>
 #include <unity/SymbolExport.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
-#include <unity/scopes/Variant.h>
 
 #include <QAbstractListModel>
 #include <QList>
@@ -56,7 +55,7 @@ Q_OBJECT
     };
 
 public:
-    explicit SettingsModel(const QString& scopeId, const unity::scopes::VariantMap& settings_definitions,
+    explicit SettingsModel(const QString& scopeId, const QVariant& settings_definitions,
             QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
