@@ -161,7 +161,6 @@ private:
     void setCurrentDepartmentId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
-    QVariantMap processAppearance(unity::scopes::VariantMap const& attributes);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
     void dispatchSearch();
