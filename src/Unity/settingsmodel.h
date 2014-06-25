@@ -30,6 +30,7 @@
 #include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
+class QDir;
 class QTimer;
 QT_END_NAMESPACE
 
@@ -45,18 +46,19 @@ Q_OBJECT
         QString id;
         QString displayName;
         QString type;
-        QVariant values;
+        QVariant properties;
 
         Data(QString const& id_, QString const& displayName_,
-                QString const& type_, QVariant const& values_)
-                : id(id_), displayName(displayName_), type(type_), values(values_)
+                QString const& type_, QVariant const& properties_)
+                : id(id_), displayName(displayName_), type(type_), properties(
+                        properties_)
         {
         }
     };
 
 public:
-    explicit SettingsModel(const QString& scopeId, const QVariant& settings_definitions,
-            QObject* parent = 0);
+    explicit SettingsModel(const QDir& shareDir, const QString& scopeId,
+            const QVariant& settings_definitions, QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
             override;

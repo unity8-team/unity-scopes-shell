@@ -17,7 +17,9 @@
  *  Pete Woods <pete.woods@canonical.com>
  */
 
+#include <QJsonDocument>
 #include <QObject>
+#include <QTemporaryDir>
 #include <QTest>
 
 #include <settingsmodel.h>
@@ -25,27 +27,107 @@
 using namespace scopes_ng;
 using namespace unity::shell::scopes;
 
-class SettingsTest : public QObject
+namespace
 {
-    Q_OBJECT
+
+const static QByteArray BOOLEAN_DEFINITION = R"(
+[
+    {
+        "id": "enabledSetting",
+        "displayName": "Enabled",
+        "type": "boolean",
+        "parameters": {
+            "defaultValue": true
+        }
+    }
+]
+)";
+
+const static QByteArray LIST_DEFINITION = R"(
+[
+    {
+        "id": "unitTempSetting",
+        "displayName": "Temperature Units",
+        "type": "list",
+        "parameters": {
+            "defaultValue": 1,
+            "values": ["Celcius", "Fahrenheit"]
+        }
+    }
+]
+)";
+
+const static QByteArray NUMBER_DEFINITION = R"(
+[
+    {
+        "id": "ageSetting",
+        "displayName": "Age",
+        "type": "number",
+        "parameters": {
+            "defaultValue": 23
+        }
+    }
+]
+)";
+
+const static QByteArray STRING_DEFINITION = R"(
+[
+    {
+        "id": "locationSetting",
+        "displayName": "Location",
+        "type": "string",
+        "parameters": {
+            "defaultValue": "London"
+        }
+    }
+]
+)";
+
+class SettingsTest: public QObject
+{
+Q_OBJECT
+private:
+    QScopedPointer<QTemporaryDir> tempDir;
+
+    QSharedPointer<SettingsModelInterface> newSettingsModel(const QString& id, const QByteArray& json)
+    {
+        QJsonDocument doc = QJsonDocument::fromJson(json);
+        QVariant definitions = doc.toVariant();
+        return QSharedPointer<SettingsModelInterface>(
+                        new SettingsModel(tempDir->path(), id, definitions));
+    }
 
 private Q_SLOTS:
     void init()
     {
+        tempDir.reset(new QTemporaryDir);
     }
 
     void cleanup()
     {
     }
 
-    void testNoDepartments()
+    void testBooleanDefinition()
     {
-        QVariant definitions;
-        QScopedPointer<SettingsModelInterface> settingsModel(
-                new SettingsModel("id", definitions));
+        newSettingsModel("boolean", BOOLEAN_DEFINITION);
     }
 
+    void testListDefinition()
+    {
+        newSettingsModel("list", LIST_DEFINITION);
+    }
+
+    void testNumberDefinition()
+    {
+        newSettingsModel("number", NUMBER_DEFINITION);
+    }
+
+    void testStringDefinition()
+    {
+        newSettingsModel("string", STRING_DEFINITION);
+    }
 };
 
+}
 QTEST_GUILESS_MAIN(SettingsTest)
 #include <settingstest.moc>

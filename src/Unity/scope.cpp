@@ -535,7 +535,9 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     try
     {
         settings_definitions = m_scopeMetadata->settings_definitions();
-        m_settingsModel.reset(new SettingsModel(id(), scopeVariantToQVariant(settings_definitions), this));
+        m_settingsModel.reset(
+                new SettingsModel(QDir::home().filePath(".local/share"), id(),
+                        scopeVariantToQVariant(settings_definitions), this));
     }
     catch (unity::scopes::NotFoundException&)
     {

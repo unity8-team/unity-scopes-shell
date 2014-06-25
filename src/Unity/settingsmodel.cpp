@@ -33,11 +33,10 @@ static const QString SETTING_ID_PATTERN("%1-%2");
 
 static const int SETTING_TIMEOUT = 300;
 
-SettingsModel::SettingsModel(const QString& scopeId, const QVariant& settings_definitions,
+SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId, const QVariant& settings_definitions,
         QObject* parent)
         : SettingsModelInterface(parent)
 {
-    QDir shareDir = QDir::home().filePath(".local/share");
     shareDir.mkdir(scopeId);
     QDir databaseDir = shareDir.filePath(scopeId);
     m_database.setPath(databaseDir.filePath("settings.db"));
@@ -96,7 +95,7 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 result = data->type;
                 break;
             case Roles::RoleProperties:
-                result = data->values;
+                result = data->properties;
                 break;
             case Roles::RoleValue:
             {
