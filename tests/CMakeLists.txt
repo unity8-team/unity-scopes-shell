@@ -51,4 +51,7 @@ run_tests(
     resultstest
     previewtest
     utilstest
+    settingstest
     )
+
+qt5_use_modules(settingstestExec Sql)

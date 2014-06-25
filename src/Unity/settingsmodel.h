@@ -36,7 +36,7 @@ QT_END_NAMESPACE
 namespace scopes_ng
 {
 
-class SettingsModel: public unity::shell::scopes::SettingsModelInterface
+class Q_DECL_EXPORT SettingsModel: public unity::shell::scopes::SettingsModelInterface
 {
 Q_OBJECT
 
