@@ -4,7 +4,7 @@ Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
                libunity-api-dev (>= 7.82),
-               libunity-scopes-dev (>= 0.5.0~),
+               libunity-scopes-dev (>= 0.5.1~),
                libgsettings-qt-dev (>= 0.1),
                pkg-config,
                qt5-default,
