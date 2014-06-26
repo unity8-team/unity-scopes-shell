@@ -170,8 +170,8 @@ private:
 
     void setValue(int index, const QVariant& value)
     {
-        settings->setData(settings->index(index), value,
-                SettingsModelInterface::RoleValue);
+        QVERIFY(settings->setData(settings->index(index), value,
+                SettingsModelInterface::RoleValue));
     }
 
 private Q_SLOTS:
