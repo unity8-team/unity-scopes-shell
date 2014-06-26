@@ -122,6 +122,7 @@ public:
     bool isActive() const override;
     QString currentDepartmentId() const override;
     bool hasDepartments() const override;
+    QVariantMap customizations() const override;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;
@@ -172,6 +173,7 @@ private:
     QString m_noResultsHint;
     QString m_formFactor;
     QString m_currentDepartmentId;
+    QVariantMap m_customizations;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
