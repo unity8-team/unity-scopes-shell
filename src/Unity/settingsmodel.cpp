@@ -31,17 +31,16 @@ static const QString SETTING_GROUP("default");
 
 static const QString SETTING_ID_PATTERN("%1-%2");
 
-static const int SETTING_TIMEOUT = 300;
-
-SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId, const QVariant& settings_definitions,
-        QObject* parent)
-        : SettingsModelInterface(parent)
+SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
+        const QVariant& settingsDefinitions, QObject* parent,
+        int settingsTimeout)
+        : SettingsModelInterface(parent), m_settingsTimeout(settingsTimeout)
 {
     shareDir.mkdir(scopeId);
     QDir databaseDir = shareDir.filePath(scopeId);
     m_database.setPath(databaseDir.filePath("settings.db"));
 
-    for (const auto &it : settings_definitions.toList())
+    for (const auto &it : settingsDefinitions.toList())
     {
         QVariantMap data = it.toMap();
         QString id = data["id"].toString();
@@ -63,8 +62,9 @@ SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId, const
         QSharedPointer<QTimer> timer(new QTimer());
         timer->setProperty("setting_id", id);
         timer->setSingleShot(true);
-        timer->setInterval(SETTING_TIMEOUT);
-        connect(timer.data(), SIGNAL(timeout()), this, SLOT(settings_timeout()));
+        timer->setInterval(m_settingsTimeout);
+        connect(timer.data(), SIGNAL(timeout()), this,
+                SLOT(settings_timeout()));
         m_timers[id] = timer;
 
         QSharedPointer<Data> setting(

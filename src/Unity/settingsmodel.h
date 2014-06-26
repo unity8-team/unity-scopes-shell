@@ -58,7 +58,8 @@ Q_OBJECT
 
 public:
     explicit SettingsModel(const QDir& shareDir, const QString& scopeId,
-            const QVariant& settings_definitions, QObject* parent = 0);
+            const QVariant& settingsDefinitions, QObject* parent = 0,
+            int settingsTimeout = 300);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const
             override;
@@ -72,6 +73,8 @@ protected Q_SLOTS:
     void settings_timeout();
 
 protected:
+    int m_settingsTimeout;
+
     QList<QSharedPointer<Data>> m_data;
 
     U1db::Database m_database;

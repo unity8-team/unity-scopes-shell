@@ -138,7 +138,7 @@ private:
     {
         QJsonDocument doc = QJsonDocument::fromJson(json);
         QVariant definitions = doc.toVariant();
-        settings.reset(new SettingsModel(tempDir->path(), id, definitions));
+        settings.reset(new SettingsModel(tempDir->path(), id, definitions, 0, 0));
     }
 
     void verifyData(int index, const QString& id, const QString& displayName,
@@ -166,6 +166,12 @@ private:
                         SettingsModelInterface::RoleValue), value);
     }
 
+    void setValue(int index, const QVariant& value)
+    {
+        settings->setData(settings->index(index), value,
+                SettingsModelInterface::RoleValue);
+    }
+
 private Q_SLOTS:
     void init()
     {
@@ -186,7 +192,7 @@ private Q_SLOTS:
         properties["defaultValue"] = true;
         verifyData(0, "enabledSetting", "Enabled", "boolean", properties);
 
-        verifyValue(0, QVariant(true));
+        verifyValue(0, true);
     }
 
     void testListDefinition()
@@ -202,7 +208,7 @@ private Q_SLOTS:
                 properties);
 
         // Check the default value
-        verifyValue(0, QVariant(1));
+        verifyValue(0, 1);
     }
 
     void testNumberDefinition()
@@ -216,7 +222,7 @@ private Q_SLOTS:
         verifyData(0, "ageSetting", "Age", "number", properties);
 
         // Check the default value
-        verifyValue(0, QVariant(23));
+        verifyValue(0, 23);
     }
 
     void testStringDefinition()
@@ -230,7 +236,7 @@ private Q_SLOTS:
         verifyData(0, "locationSetting", "Location", "string", properties);
 
         // Check the default value
-        verifyValue(0, QVariant("London"));
+        verifyValue(0, "London");
     }
 
     void testMixedDefinition()
@@ -242,7 +248,7 @@ private Q_SLOTS:
             QVariantMap properties;
             properties["defaultValue"] = "London";
             verifyData(0, "locationSetting", "Location", "string", properties);
-            verifyValue(0, QVariant("London"));
+            verifyValue(0, "London");
         }
         {
             QVariantMap properties;
@@ -250,20 +256,34 @@ private Q_SLOTS:
             properties["values"] = QVariantList() << "Celcius" << "Fahrenheit";
             verifyData(1, "unitTempSetting", "Temperature Units", "list",
                     properties);
-            verifyValue(1, QVariant(1));
+            verifyValue(1, 1);
         }
         {
             QVariantMap properties;
             properties["defaultValue"] = 23;
             verifyData(2, "ageSetting", "Age", "number", properties);
-            verifyValue(2, QVariant(23));
+            verifyValue(2, 23);
         }
         {
             QVariantMap properties;
             properties["defaultValue"] = true;
             verifyData(3, "enabledSetting", "Enabled", "boolean", properties);
-            verifyValue(3, QVariant(true));
+            verifyValue(3, true);
         }
+    }
+
+    void testUpdateValue()
+    {
+        // Create an initial settings model
+        newSettingsModel("update", MIXED_DEFINITION);
+
+        verifyValue(0, "London");
+        setValue(0, "Banana");
+        verifyValue(0, "Banana");
+
+        // Make a new settings model to check the settings were saved to disk
+        newSettingsModel("update", MIXED_DEFINITION);
+        verifyValue(0, "Banana");
     }
 };
 
