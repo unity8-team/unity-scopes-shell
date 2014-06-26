@@ -30,7 +30,8 @@ using namespace unity::shell::scopes;
 namespace
 {
 
-const static QByteArray BOOLEAN_DEFINITION = R"(
+const static QByteArray BOOLEAN_DEFINITION =
+        R"(
 [
     {
         "id": "enabledSetting",
@@ -43,7 +44,8 @@ const static QByteArray BOOLEAN_DEFINITION = R"(
 ]
 )";
 
-const static QByteArray LIST_DEFINITION = R"(
+const static QByteArray LIST_DEFINITION =
+        R"(
 [
     {
         "id": "unitTempSetting",
@@ -57,7 +59,8 @@ const static QByteArray LIST_DEFINITION = R"(
 ]
 )";
 
-const static QByteArray NUMBER_DEFINITION = R"(
+const static QByteArray NUMBER_DEFINITION =
+        R"(
 [
     {
         "id": "ageSetting",
@@ -70,7 +73,8 @@ const static QByteArray NUMBER_DEFINITION = R"(
 ]
 )";
 
-const static QByteArray STRING_DEFINITION = R"(
+const static QByteArray STRING_DEFINITION =
+        R"(
 [
     {
         "id": "locationSetting",
@@ -83,18 +87,58 @@ const static QByteArray STRING_DEFINITION = R"(
 ]
 )";
 
+const static QByteArray MIXED_DEFINITION =
+        R"(
+[
+    {
+        "id": "locationSetting",
+        "displayName": "Location",
+        "type": "string",
+        "parameters": {
+            "defaultValue": "London"
+        }
+    },
+    {
+        "id": "unitTempSetting",
+        "displayName": "Temperature Units",
+        "type": "list",
+        "parameters": {
+            "defaultValue": 1,
+            "values": ["Celcius", "Fahrenheit"]
+        }
+    },
+    {
+        "id": "ageSetting",
+        "displayName": "Age",
+        "type": "number",
+        "parameters": {
+            "defaultValue": 23
+        }
+    },
+    {
+        "id": "enabledSetting",
+        "displayName": "Enabled",
+        "type": "boolean",
+        "parameters": {
+            "defaultValue": true
+        }
+    }
+]
+)";
+
 class SettingsTest: public QObject
 {
 Q_OBJECT
 private:
     QScopedPointer<QTemporaryDir> tempDir;
 
-    QSharedPointer<SettingsModelInterface> newSettingsModel(const QString& id, const QByteArray& json)
+    QSharedPointer<SettingsModelInterface> settings;
+
+    void newSettingsModel(const QString& id, const QByteArray& json)
     {
         QJsonDocument doc = QJsonDocument::fromJson(json);
         QVariant definitions = doc.toVariant();
-        return QSharedPointer<SettingsModelInterface>(
-                        new SettingsModel(tempDir->path(), id, definitions));
+        settings.reset(new SettingsModel(tempDir->path(), id, definitions));
     }
 
 private Q_SLOTS:
@@ -110,21 +154,31 @@ private Q_SLOTS:
     void testBooleanDefinition()
     {
         newSettingsModel("boolean", BOOLEAN_DEFINITION);
+        QVERIFY(settings->rowCount() == 1);
     }
 
     void testListDefinition()
     {
         newSettingsModel("list", LIST_DEFINITION);
+        QVERIFY(settings->rowCount() == 1);
     }
 
     void testNumberDefinition()
     {
         newSettingsModel("number", NUMBER_DEFINITION);
+        QVERIFY(settings->rowCount() == 1);
     }
 
     void testStringDefinition()
     {
         newSettingsModel("string", STRING_DEFINITION);
+        QVERIFY(settings->rowCount() == 1);
+    }
+
+    void testMixedDefinition()
+    {
+        newSettingsModel("mixed", MIXED_DEFINITION);
+        QVERIFY(settings->rowCount() == 4);
     }
 };
 
