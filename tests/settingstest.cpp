@@ -138,7 +138,8 @@ private:
     {
         QJsonDocument doc = QJsonDocument::fromJson(json);
         QVariant definitions = doc.toVariant();
-        settings.reset(new SettingsModel(tempDir->path(), id, definitions, 0, 0));
+        settings.reset(
+                new SettingsModel(tempDir->path(), id, definitions, 0, 0));
     }
 
     void verifyData(int index, const QString& id, const QString& displayName,
@@ -277,13 +278,34 @@ private Q_SLOTS:
         // Create an initial settings model
         newSettingsModel("update", MIXED_DEFINITION);
 
+        // Verify the initial values
         verifyValue(0, "London");
+        verifyValue(1, 1);
+        verifyValue(2, 23);
+        verifyValue(3, true);
+
+        // Update the string value
         setValue(0, "Banana");
         verifyValue(0, "Banana");
+
+        // Update the list value
+        setValue(1, 0);
+        verifyValue(1, 0);
+
+        // Update the number value
+        setValue(2, 123);
+        verifyValue(2, 123);
+
+        // Update the boolean value
+        setValue(3, false);
+        verifyValue(3, false);
 
         // Make a new settings model to check the settings were saved to disk
         newSettingsModel("update", MIXED_DEFINITION);
         verifyValue(0, "Banana");
+        verifyValue(1, 0);
+        verifyValue(2, 123);
+        verifyValue(3, false);
     }
 };
 
