@@ -162,6 +162,7 @@ private:
 
     void verifyValue(int index, const QVariant& value)
     {
+        // Using this "TRY" macro repeatedly attempts the comparison until a timeout
         QTRY_COMPARE(
                 settings->data(settings->index(index),
                         SettingsModelInterface::RoleValue), value);
