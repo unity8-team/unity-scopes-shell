@@ -180,10 +180,6 @@ private Q_SLOTS:
         tempDir.reset(new QTemporaryDir);
     }
 
-    void cleanup()
-    {
-    }
-
     void testBooleanDefinition()
     {
         newSettingsModel("boolean", BOOLEAN_DEFINITION);
