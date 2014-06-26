@@ -144,19 +144,19 @@ private:
     void verifyData(int index, const QString& id, const QString& displayName,
             const QString& type, const QVariant& properties)
     {
-        QVERIFY(
+        QCOMPARE(
                 settings->data(settings->index(index),
-                        SettingsModelInterface::RoleSettingId) == QVariant(id));
-        QVERIFY(
+                        SettingsModelInterface::RoleSettingId), QVariant(id));
+        QCOMPARE(
                 settings->data(settings->index(index),
-                        SettingsModelInterface::RoleDisplayName)
-                        == QVariant(displayName));
-        QVERIFY(
+                        SettingsModelInterface::RoleDisplayName),
+                QVariant(displayName));
+        QCOMPARE(
                 settings->data(settings->index(index),
-                        SettingsModelInterface::RoleType) == QVariant(type));
-        QVERIFY(
+                        SettingsModelInterface::RoleType), QVariant(type));
+        QCOMPARE(
                 settings->data(settings->index(index),
-                        SettingsModelInterface::RoleProperties) == properties);
+                        SettingsModelInterface::RoleProperties), properties);
     }
 
 private Q_SLOTS:
