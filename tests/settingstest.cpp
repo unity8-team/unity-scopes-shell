@@ -141,6 +141,24 @@ private:
         settings.reset(new SettingsModel(tempDir->path(), id, definitions));
     }
 
+    void verifyData(int index, const QString& id, const QString& displayName,
+            const QString& type, const QVariant& properties)
+    {
+        QVERIFY(
+                settings->data(settings->index(index),
+                        SettingsModelInterface::RoleSettingId) == QVariant(id));
+        QVERIFY(
+                settings->data(settings->index(index),
+                        SettingsModelInterface::RoleDisplayName)
+                        == QVariant(displayName));
+        QVERIFY(
+                settings->data(settings->index(index),
+                        SettingsModelInterface::RoleType) == QVariant(type));
+        QVERIFY(
+                settings->data(settings->index(index),
+                        SettingsModelInterface::RoleProperties) == properties);
+    }
+
 private Q_SLOTS:
     void init()
     {
@@ -155,30 +173,71 @@ private Q_SLOTS:
     {
         newSettingsModel("boolean", BOOLEAN_DEFINITION);
         QVERIFY(settings->rowCount() == 1);
+
+        QVariantMap properties;
+        properties["defaultValue"] = true;
+        verifyData(0, "enabledSetting", "Enabled", "boolean", properties);
     }
 
     void testListDefinition()
     {
         newSettingsModel("list", LIST_DEFINITION);
         QVERIFY(settings->rowCount() == 1);
+
+        QVariantMap properties;
+        properties["defaultValue"] = 1;
+        properties["values"] = QVariantList() << "Celcius" << "Fahrenheit";
+        verifyData(0, "unitTempSetting", "Temperature Units", "list",
+                properties);
     }
 
     void testNumberDefinition()
     {
         newSettingsModel("number", NUMBER_DEFINITION);
         QVERIFY(settings->rowCount() == 1);
+
+        QVariantMap properties;
+        properties["defaultValue"] = 23;
+        verifyData(0, "ageSetting", "Age", "number", properties);
     }
 
     void testStringDefinition()
     {
         newSettingsModel("string", STRING_DEFINITION);
         QVERIFY(settings->rowCount() == 1);
+
+        QVariantMap properties;
+        properties["defaultValue"] = "London";
+        verifyData(0, "locationSetting", "Location", "string", properties);
     }
 
     void testMixedDefinition()
     {
         newSettingsModel("mixed", MIXED_DEFINITION);
         QVERIFY(settings->rowCount() == 4);
+
+        {
+            QVariantMap properties;
+            properties["defaultValue"] = "London";
+            verifyData(0, "locationSetting", "Location", "string", properties);
+        }
+        {
+            QVariantMap properties;
+            properties["defaultValue"] = 1;
+            properties["values"] = QVariantList() << "Celcius" << "Fahrenheit";
+            verifyData(1, "unitTempSetting", "Temperature Units", "list",
+                    properties);
+        }
+        {
+            QVariantMap properties;
+            properties["defaultValue"] = 23;
+            verifyData(2, "ageSetting", "Age", "number", properties);
+        }
+        {
+            QVariantMap properties;
+            properties["defaultValue"] = true;
+            verifyData(3, "enabledSetting", "Enabled", "boolean", properties);
+        }
     }
 };
 
