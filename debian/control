@@ -28,6 +28,7 @@ Depends: ${misc:Depends},
          ${shlibs:Depends},
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
+          unity-scopes-impl-1,
 Breaks: unity8-private (<< 7.84)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
