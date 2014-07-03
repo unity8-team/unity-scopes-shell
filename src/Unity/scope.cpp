@@ -531,9 +531,13 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_scopeMetadata = std::make_shared<scopes::ScopeMetadata>(data);
     m_proxy = data.proxy();
 
-    scopes::Variant settings_definitions;
+    QVariant converted(scopeVariantToQVariant(scopes::Variant(m_scopeMetadata->appearance_attributes())));
+    m_customizations = converted.toMap();
+    Q_EMIT customizationsChanged();
+
     try
     {
+        scopes::Variant settings_definitions;
         settings_definitions = m_scopeMetadata->settings_definitions();
         m_settingsModel.reset(
                 new SettingsModel(QDir::home().filePath(".local/share"), id(),
@@ -541,8 +545,10 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     }
     catch (unity::scopes::NotFoundException&)
     {
-        // If there's no json set
+        // If there's no settings data
+        m_settingsModel.reset();
     }
+    Q_EMIT settingsChanged();
 }
 
 QString Scope::id() const
@@ -687,6 +693,11 @@ QString Scope::currentDepartmentId() const
 bool Scope::hasDepartments() const
 {
     return m_hasDepartments;
+}
+
+QVariantMap Scope::customizations() const
+{
+    return m_customizations;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
