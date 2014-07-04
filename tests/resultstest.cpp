@@ -141,6 +141,7 @@ private Q_SLOTS:
         QVERIFY(results_var.canConvert<ResultsModel*>());
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
+        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleExpansionQuery).toString().isNull());
 
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
@@ -189,6 +190,20 @@ private Q_SLOTS:
         QCOMPARE(m_scope->isActive(), false);
         m_scope->setActive(true);
         QCOMPARE(m_scope->isActive(), true);
+    }
+
+    void testCategoryQuery()
+    {
+        performSearch(m_scope, QString("expansion-query"));
+
+        // ensure categories have > 0 rows
+        auto categories = m_scope->categories();
+        QVERIFY(categories->rowCount() > 0);
+        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ResultsModel*>());
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
+        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
+        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleExpansionQuery).toString().startsWith("scope://"));
     }
 
     void testTwoSearches()

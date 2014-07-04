@@ -204,6 +204,17 @@ public:
             res1.set_title("result for: \"" + query_ + "\"");
             reply->push(res1);
         }
+        else if (query_ == "expansion-query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", query(), minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            res.set_dnd_uri("test:dnd_uri");
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");

@@ -136,6 +136,7 @@ public:
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::DepartmentInterface* getDepartment(QString const& id) override;
     Q_INVOKABLE void loadDepartment(QString const& id) override;
+    Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
