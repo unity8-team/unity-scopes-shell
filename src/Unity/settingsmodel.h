@@ -69,6 +69,8 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    int count() const override;
+
 protected Q_SLOTS:
     void settings_timeout();
 

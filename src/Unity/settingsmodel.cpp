@@ -142,6 +142,11 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
 
 int SettingsModel::rowCount(const QModelIndex&) const
 {
+    return count();
+}
+
+int SettingsModel::count() const
+{
     return m_data.size();
 }
 
