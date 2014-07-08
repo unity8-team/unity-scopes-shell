@@ -141,7 +141,7 @@ private Q_SLOTS:
         QVERIFY(results_var.canConvert<ResultsModel*>());
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
-        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleExpansionQuery).toString().isNull());
+        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleHeaderLink).toString().isNull());
 
         // ensure results have some data
         auto results = results_var.value<ResultsModel*>();
@@ -203,7 +203,7 @@ private Q_SLOTS:
         QVERIFY(results_var.canConvert<ResultsModel*>());
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleName), QVariant(QString("Category 1")));
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleIcon), QVariant(QString("")));
-        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleExpansionQuery).toString().startsWith("scope://"));
+        QVERIFY(categories->data(categories->index(0), Categories::Roles::RoleHeaderLink).toString().startsWith("scope://"));
     }
 
     void testTwoSearches()
