@@ -2,7 +2,7 @@
 include(Plugins)
 
 # Dependencies
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=2)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.8)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 
