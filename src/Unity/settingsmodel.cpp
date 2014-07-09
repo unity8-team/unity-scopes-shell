@@ -63,6 +63,7 @@ SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
         timer->setProperty("setting_id", id);
         timer->setSingleShot(true);
         timer->setInterval(m_settingsTimeout);
+        timer->setTimerType(Qt::VeryCoarseTimer);
         connect(timer.data(), SIGNAL(timeout()), this,
                 SLOT(settings_timeout()));
         m_timers[id] = timer;
