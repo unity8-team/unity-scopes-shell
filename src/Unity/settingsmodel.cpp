@@ -52,9 +52,9 @@ SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
         defaults["value"] = properties["defaultValue"];
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
-        document->setDatabase(&m_database);
         document->setDocId(SETTING_ID_PATTERN.arg(SETTING_GROUP, id));
         document->setDefaults(defaults);
+        document->setDatabase(&m_database);
         document->setCreate(true);
 
         m_documents[id] = document;
