@@ -79,6 +79,8 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
+    setScopesInstance(qobject_cast<scopes_ng::Scopes*>(parent));
+
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_clearTimer.setSingleShot(true);
@@ -206,9 +208,8 @@ void Scope::internetFlagChanged(QString const& key)
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
 {
-    scopes_ng::Scopes* scopes = qobject_cast<scopes_ng::Scopes*>(parent());
-    if (scopes == nullptr) {
-        qWarning("Scope instance %p doesn't have Scopes as a parent", static_cast<void*>(this));
+    if (!m_scopesInstance) {
+        qWarning("Scope instance %p doesn't have associated Scopes instance", static_cast<void*>(this));
         return;
     }
 
@@ -216,7 +217,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
     // figure out if this scope is already favourited
-    Scope* scope = scopes->getScopeById(scopeId);
+    Scope* scope = m_scopesInstance->getScopeById(scopeId);
     if (scope != nullptr) {
         // TODO: change filters?
         scope->setCurrentDepartmentId(departmentId);
@@ -224,10 +225,11 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         Q_EMIT gotoScope(scopeId);
     } else {
         // create temp dash page
-        auto meta_sptr = scopes->getCachedMetadata(scopeId);
+        auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
             scope = new scopes_ng::Scope(this);
             scope->setScopeData(*meta_sptr);
+            scope->setScopesInstance(m_scopesInstance);
             scope->setCurrentDepartmentId(departmentId);
             scope->setSearchQuery(searchString);
             m_tempScopes.insert(scope);
@@ -235,8 +237,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
             m_delayedActivation = std::make_shared<scopes::ActivationResponse>(query);
-            QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
-            scopes->refreshScopeMetadata();
+            m_scopesInstance->refreshScopeMetadata();
         } else {
             qWarning("Unable to find scope \"%s\" after metadata refresh", query.scope_id().c_str());
         }
@@ -450,6 +451,18 @@ void Scope::startTtlTimer()
             }
             m_invalidateTimer.start(ttl);
         }
+    }
+}
+
+void Scope::setScopesInstance(Scopes* scopes)
+{
+    if (m_metadataConnection) {
+        QObject::disconnect(m_metadataConnection);
+    }
+
+    m_scopesInstance = scopes;
+    if (m_scopesInstance) {
+        m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
     }
 }
 

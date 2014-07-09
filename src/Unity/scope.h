@@ -25,6 +25,7 @@
 #include <QString>
 #include <QTimer>
 #include <QMetaType>
+#include <QMetaObject>
 #include <QPointer>
 #include <QMultiMap>
 #include <QSet>
@@ -48,6 +49,7 @@ class Categories;
 class PushEvent;
 class PreviewStack;
 class SettingsModel;
+class Scopes;
 
 class CollectionController
 {
@@ -159,6 +161,7 @@ private Q_SLOTS:
     void departmentModelDestroyed(QObject* obj);
 
 private:
+    void setScopesInstance(Scopes*);
     void startTtlTimer();
     void setSearchInProgress(bool searchInProgress);
     void setCurrentDepartmentId(QString const& id);
@@ -201,6 +204,8 @@ private:
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
     QMap<Department*, QString> m_inverseDepartments;
+    QPointer<Scopes> m_scopesInstance;
+    QMetaObject::Connection m_metadataConnection;
 };
 
 } // namespace scopes_ng
