@@ -665,6 +665,16 @@ void Scope::loadDepartment(QString const& departmentId)
     }
 }
 
+void Scope::performQuery(QString const& cannedQuery)
+{
+    try {
+        scopes::CannedQuery q(scopes::CannedQuery::from_uri(cannedQuery.toStdString()));
+        executeCannedQuery(q, true);
+    } catch (...) {
+        qWarning("Unable to parse canned query uri: %s", cannedQuery.toStdString().c_str());
+    }
+}
+
 QString Scope::searchQuery() const
 {
     return m_searchQuery;
@@ -848,12 +858,7 @@ void Scope::activateUri(QString const& uri)
         Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
     } else if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;
-        try {
-            scopes::CannedQuery q(scopes::CannedQuery::from_uri(uri.toStdString()));
-            executeCannedQuery(q, true);
-        } catch (...) {
-            qWarning("Unable to parse scope uri!");
-        }
+        performQuery(uri);
     } else {
         qDebug() << "Trying to open" << uri;
         /* Try our luck */

@@ -89,6 +89,12 @@ public:
             QString::fromStdString(m_category->icon()) : m_catIcon;
     }
 
+    QString headerLink() const
+    {
+        return m_category && m_category->query() ?
+            QString::fromStdString(m_category->query()->to_uri()) : QString();
+    }
+
     std::string rawTemplate() const
     {
         return m_rawTemplate;
@@ -143,6 +149,17 @@ public:
         }
         if (category->icon() != m_category->icon()) {
             roles.append(Categories::RoleIcon);
+        }
+        std::string oldQuery;
+        std::string newQuery;
+        if (m_category->query()) {
+            oldQuery = m_category->query()->to_uri();
+        }
+        if (category->query()) {
+            newQuery = category->query()->to_uri();
+        }
+        if (oldQuery != newQuery) {
+            roles.append(Categories::RoleHeaderLink);
         }
         if (category->renderer_template().data() != m_rawTemplate) {
             roles.append(Categories::RoleRawRendererTemplate);
@@ -490,6 +507,8 @@ Categories::data(const QModelIndex& index, int role) const
             return catData->rendererTemplate().toVariant();
         case RoleComponents:
             return catData->components().toVariant();
+        case RoleHeaderLink:
+            return catData->headerLink();
         case RoleResults:
             return QVariant::fromValue(resultsModel);
         case RoleCount:
