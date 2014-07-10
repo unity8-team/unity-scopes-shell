@@ -26,6 +26,7 @@
 #include "previewstack.h"
 #include "utils.h"
 #include "scopes.h"
+#include "settingsmodel.h"
 
 // Qt
 #include <QUrl>
@@ -533,6 +534,21 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     QVariant converted(scopeVariantToQVariant(scopes::Variant(m_scopeMetadata->appearance_attributes())));
     m_customizations = converted.toMap();
     Q_EMIT customizationsChanged();
+
+    try
+    {
+        scopes::Variant settings_definitions;
+        settings_definitions = m_scopeMetadata->settings_definitions();
+        m_settingsModel.reset(
+                new SettingsModel(QDir::home().filePath(".local/share"), id(),
+                        scopeVariantToQVariant(settings_definitions), this));
+    }
+    catch (unity::scopes::NotFoundException&)
+    {
+        // If there's no settings data
+        m_settingsModel.reset();
+    }
+    Q_EMIT settingsChanged();
 }
 
 QString Scope::id() const
@@ -597,6 +613,11 @@ QString Scope::shortcut() const
 unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
     return m_categories;
+}
+
+unity::shell::scopes::SettingsModelInterface* Scope::settings() const
+{
+    return m_settingsModel.data();
 }
 
 /*

@@ -2,15 +2,17 @@
 include(Plugins)
 
 # Dependencies
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.8)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=2)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.2)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
+pkg_check_modules(U1DB REQUIRED libu1db-qt5)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
+    ${U1DB_INCLUDE_DIRS}
 )
 
 set(QMLPLUGIN_SRC
@@ -24,6 +26,7 @@ set(QMLPLUGIN_SRC
     resultsmodel.cpp
     scope.cpp
     scopes.cpp
+    settingsmodel.cpp
     utils.cpp
     plugin.cpp
     iconutils.cpp
@@ -37,6 +40,7 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ResultsModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopesInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
 )
 
 add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
@@ -44,6 +48,7 @@ add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
 target_link_libraries(Unity-qml
     ${SCOPESLIB_LDFLAGS}
     ${GSETTINGSQT_LDFLAGS}
+    ${U1DB_LDFLAGS}
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)
