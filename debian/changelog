@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.2-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Specialized implementation of scopes overview
+
+ -- Michal Hruby <michal.hruby@canonical.com>  Wed, 16 Jul 2014 18:18:08 +0100
+
 unity-scopes-shell (0.5.0+14.10.20140710-0ubuntu1) utopic; urgency=low
 
   [ Pete Woods ]

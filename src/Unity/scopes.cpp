@@ -22,6 +22,7 @@
 
 // Local
 #include "scope.h"
+#include "overviewscope.h"
 
 // Qt
 #include <QDebug>
@@ -37,6 +38,8 @@ namespace scopes_ng
 {
 
 using namespace unity;
+
+#define SCOPES_SCOPE_ID "scopes"
 
 void ScopeListWorker::run()
 {
@@ -92,6 +95,7 @@ Scopes::Scopes(QObject *parent)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_priv(new Priv())
+    , m_overviewScope(nullptr)
 {
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
@@ -105,6 +109,8 @@ Scopes::Scopes(QObject *parent)
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
+
+    m_overviewScope = new OverviewScope(this);
 }
 
 Scopes::~Scopes()
@@ -144,7 +150,7 @@ void Scopes::discoveryFinished()
             new core::ScopedConnection(
                     m_scopesRuntime->registry()->set_list_update_callback(
                             std::bind(&Scopes::Priv::safeInvalidateScopeResults,
-                                      m_priv.get(), "scopes"))));
+                                      m_priv.get(), SCOPES_SCOPE_ID))));
 
     // FIXME: use a dconf setting for this
     QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
@@ -168,6 +174,17 @@ void Scopes::discoveryFinished()
             auto scope = new Scope(this);
             scope->setScopeData(it->second);
             m_scopes.append(scope);
+        }
+    }
+
+    // HACK! deal with the overview scope
+    {
+        auto it = scopes.find(SCOPES_SCOPE_ID);
+        if (it != scopes.end()) {
+            m_overviewScope->setScopeData(it->second);
+            m_scopes.prepend(m_overviewScope);
+        } else {
+            qWarning("Unable to add overview scope, can't find with ID: \"%s\"", SCOPES_SCOPE_ID);
         }
     }
 

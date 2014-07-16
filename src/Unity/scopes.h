@@ -71,6 +71,7 @@ private:
 
     QList<Scope*> m_scopes;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
+    Scope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
 
