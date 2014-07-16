@@ -41,6 +41,7 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
+#include "locationservice.h"
 
 namespace scopes_ng
 {
@@ -159,6 +160,7 @@ private Q_SLOTS:
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
+    void locationChanged();
 
 private:
     void setScopesInstance(Scopes*);
@@ -206,6 +208,7 @@ private:
     QMap<Department*, QString> m_inverseDepartments;
     QPointer<Scopes> m_scopesInstance;
     QMetaObject::Connection m_metadataConnection;
+    LocationService::Ptr m_locationService;
 };
 
 } // namespace scopes_ng

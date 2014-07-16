@@ -15,6 +15,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
+    ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
     )
 
 macro(run_tests)

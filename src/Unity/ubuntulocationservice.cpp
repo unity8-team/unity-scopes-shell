@@ -21,6 +21,7 @@
 
 #include <QDebug>
 #include <QThread>
+#include <QTimer>
 
 #include <com/ubuntu/location/service/stub.h>
 
@@ -56,7 +57,7 @@ protected:
     dbus::Bus::Ptr m_bus;
 };
 
-class UbuntuLocationService::Priv: public QObject
+class UbuntuLocationService::Priv : public QObject
 {
 Q_OBJECT
 
@@ -69,24 +70,12 @@ public:
         m_thread.reset(new WorkerThread(m_bus));
         m_thread->start();
 
-        m_location_service = dbus::resolve_service_on_bus<culs::Interface, culs::Stub>(m_bus);
+        m_location_service = dbus::resolve_service_on_bus<culs::Interface,
+                            culs::Stub>(m_bus);
 
-        m_session = m_location_service->create_session_for_criteria(
-                cul::Criteria());
-
-        m_session->updates().position.changed().connect(
-                bind(&Priv::positionChanged, this));
-        m_session->updates().velocity.changed().connect(
-                bind(&Priv::velocityChanged, this));
-        m_session->updates().heading.changed().connect(
-                bind(&Priv::headingChanged, this));
-
-        m_session->updates().position_status =
-                culss::Interface::Updates::Status::enabled;
-        m_session->updates().heading_status =
-                culss::Interface::Updates::Status::enabled;
-        m_session->updates().velocity_status =
-                culss::Interface::Updates::Status::enabled;
+        m_deactivateTimer.setInterval(5000);
+        m_deactivateTimer.setSingleShot(true);
+        m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
     }
 
     ~Priv()
@@ -103,6 +92,44 @@ Q_SIGNALS:
 
     void headingChanged();
 
+public Q_SLOTS:
+    void update()
+    {
+        if (m_refCount > 0 && !m_session)
+        {
+            qDebug() << "starting location session";
+            try
+            {
+                m_session = m_location_service->create_session_for_criteria(
+                        cul::Criteria());
+
+                m_session->updates().position.changed().connect(
+                        bind(&Priv::positionChanged, this));
+                m_session->updates().velocity.changed().connect(
+                        bind(&Priv::velocityChanged, this));
+                m_session->updates().heading.changed().connect(
+                        bind(&Priv::headingChanged, this));
+
+                m_session->updates().position_status =
+                        culss::Interface::Updates::Status::enabled;
+                m_session->updates().heading_status =
+                        culss::Interface::Updates::Status::enabled;
+                m_session->updates().velocity_status =
+                        culss::Interface::Updates::Status::enabled;
+
+            }
+            catch (exception& e)
+            {
+                qWarning() << e.what();
+            }
+        }
+        else if (m_refCount == 0 && m_session)
+        {
+            qDebug() << "ending location session";
+            m_session.reset();
+        }
+    }
+
 public:
     dbus::Bus::Ptr m_bus;
 
@@ -111,31 +138,72 @@ public:
     culss::Interface::Ptr m_session;
 
     QScopedPointer<WorkerThread> m_thread;
+
+    int m_refCount = 0;
+
+    QTimer m_deactivateTimer;
 };
 
 UbuntuLocationService::UbuntuLocationService() :
-        p(new Priv())
+        p(new Priv(), &QObject::deleteLater)
 {
-    // Ensure that the Priv object is on the same thread as the DBus dispatcher
-    p->moveToThread(p->m_thread.data());
+    // Connect to signals (which will be queued)
+    connect(p.data(), &Priv::positionChanged, this, &LocationService::positionChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::velocityChanged, this, &LocationService::velocityChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::headingChanged, this, &LocationService::headingChanged, Qt::QueuedConnection);
 
-
-    // Connect to signals (which will be queued now that Priv is on the worker thread)
-    connect(p.data(), SIGNAL(positionChanged()), this, SIGNAL(positionChanged()));
-    connect(p.data(), SIGNAL(velocityChanged()), this, SIGNAL(velocityChanged()));
-    connect(p.data(), SIGNAL(headingChanged()), this, SIGNAL(headingChanged()));
+    // Wire up the deactivate timer
+    connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
 }
 
-cul::Position UbuntuLocationService::position() const {
+cul::Position UbuntuLocationService::position() const
+{
+    if (!isActive())
+    {
+        throw domain_error("No active session");
+    }
     return p->m_session->updates().position.get().value;
 }
 
-cul::Velocity UbuntuLocationService::velocity() const {
+cul::Velocity UbuntuLocationService::velocity() const
+{
+    if (!isActive())
+    {
+        throw domain_error("No active session");
+    }
     return p->m_session->updates().velocity.get().value;
 }
 
-cul::Heading UbuntuLocationService::heading() const {
+cul::Heading UbuntuLocationService::heading() const
+{
+    if (!isActive())
+    {
+        throw domain_error("No active session");
+    }
     return p->m_session->updates().heading.get().value;
+}
+
+bool UbuntuLocationService::isActive() const
+{
+    return p->m_session ? true : false;
+}
+
+void UbuntuLocationService::activate()
+{
+    ++p->m_refCount;
+    p->m_deactivateTimer.stop();
+    p->update();
+}
+
+void UbuntuLocationService::deactivate()
+{
+    --p->m_refCount;
+    if (p->m_refCount < 0)
+    {
+        p->m_refCount = 0;
+        qWarning() << "Location service refcount error";
+    }
+    p->m_deactivateTimer.start();
 }
 
 #include "ubuntulocationservice.moc"

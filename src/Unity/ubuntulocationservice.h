@@ -34,11 +34,17 @@ public:
 
     virtual ~UbuntuLocationService() = default;
 
-    com::ubuntu::location::Position position() const;
+    com::ubuntu::location::Position position() const override;
 
-    com::ubuntu::location::Velocity velocity() const;
+    com::ubuntu::location::Velocity velocity() const override;
 
-    com::ubuntu::location::Heading heading() const;
+    com::ubuntu::location::Heading heading() const override;
+
+    bool isActive() const override;
+
+    void activate() override;
+
+    void deactivate() override;
 
 protected:
     class Priv;

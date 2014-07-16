@@ -463,6 +463,8 @@ void Scope::setScopesInstance(Scopes* scopes)
     m_scopesInstance = scopes;
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
+        m_locationService = m_scopesInstance->locationService();
+        connect(m_locationService.data(), &LocationService::positionChanged, this, &Scope::locationChanged);
     }
 }
 
@@ -761,6 +763,18 @@ void Scope::setActive(const bool active) {
         m_isActive = active;
         Q_EMIT isActiveChanged();
 
+        if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+        {
+            if (m_isActive)
+            {
+                m_locationService->activate();
+            }
+            else
+            {
+                m_locationService->deactivate();
+            }
+        }
+
         if (active && m_resultsDirty) {
             dispatchSearch();
         }
@@ -877,6 +891,11 @@ void Scope::activateUri(QString const& uri)
         /* Try our luck */
         QDesktopServices::openUrl(url);
     }
+}
+
+void Scope::locationChanged()
+{
+    qDebug() << "Location changed";
 }
 
 } // namespace scopes_ng

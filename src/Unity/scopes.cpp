@@ -22,6 +22,7 @@
 
 // Local
 #include "scope.h"
+#include "ubuntulocationservice.h"
 
 // Qt
 #include <QDebug>
@@ -105,6 +106,8 @@ Scopes::Scopes(QObject *parent)
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
+
+    m_locationService.reset(new UbuntuLocationService(), &QObject::deleteLater);
 }
 
 Scopes::~Scopes()
@@ -290,6 +293,11 @@ void Scopes::refreshScopeMetadata()
 bool Scopes::loaded() const
 {
     return m_loaded;
+}
+
+LocationService::Ptr Scopes::locationService() const
+{
+    return m_locationService;
 }
 
 } // namespace scopes_ng

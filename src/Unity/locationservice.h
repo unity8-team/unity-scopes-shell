@@ -40,7 +40,11 @@ class Q_DECL_EXPORT LocationService : public QObject
 
     Q_PROPERTY(com::ubuntu::location::Heading heading READ heading NOTIFY headingChanged)
 
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
+
 public:
+    typedef QSharedPointer<LocationService> Ptr;
+
     LocationService();
 
     virtual ~LocationService() = default;
@@ -51,12 +55,27 @@ public:
 
     virtual com::ubuntu::location::Heading heading() const = 0;
 
+    virtual bool isActive() const = 0;
+
+public Q_SLOTS:
+    /**
+     * @brief Initiate a location session. Reference counted.
+     */
+    virtual void activate() = 0;
+
+    /**
+     * @brief End a location session. Reference counted.
+     */
+    virtual void deactivate() = 0;
+
 Q_SIGNALS:
     void positionChanged();
 
     void velocityChanged();
 
     void headingChanged();
+
+    void activeChanged();
 
 };
 
