@@ -20,6 +20,7 @@ set(QMLPLUGIN_SRC
     collectors.cpp
     department.cpp
     departmentnode.cpp
+    overviewcategories.cpp
     overviewscope.cpp
     previewmodel.cpp
     previewstack.cpp

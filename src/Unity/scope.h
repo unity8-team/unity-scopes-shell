@@ -160,6 +160,10 @@ private Q_SLOTS:
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
 
+protected:
+    QScopedPointer<Categories> m_categories;
+    QPointer<Scopes> m_scopesInstance;
+
 private:
     void setScopesInstance(Scopes*);
     void startTtlTimer();
@@ -194,7 +198,6 @@ private:
     unity::scopes::Department::SCPtr m_rootDepartment;
     unity::scopes::Department::SCPtr m_lastRootDepartment;
     QGSettings* m_settings;
-    Categories* m_categories;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QTimer m_aggregatorTimer;
@@ -204,7 +207,6 @@ private:
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
     QMap<Department*, QString> m_inverseDepartments;
-    QPointer<Scopes> m_scopesInstance;
     QMetaObject::Connection m_metadataConnection;
 };
 

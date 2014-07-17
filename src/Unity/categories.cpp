@@ -210,19 +210,6 @@ public:
         return m_isSpecial;
     }
 
-private:
-    static QJsonValue* DEFAULTS;
-    scopes::Category::SCPtr m_category;
-    QString m_catId;
-    QString m_catTitle;
-    QString m_catIcon;
-    std::string m_rawTemplate;
-    QJsonValue m_rendererTemplate;
-    QJsonValue m_components;
-    ResultsModel* m_resultsModel;
-    QPointer<QObject> m_countObject;
-    bool m_isSpecial;
-
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
         // lazy init of the defaults
@@ -255,6 +242,19 @@ private:
 
         return true;
     }
+
+private:
+    static QJsonValue* DEFAULTS;
+    scopes::Category::SCPtr m_category;
+    QString m_catId;
+    QString m_catTitle;
+    QString m_catIcon;
+    std::string m_rawTemplate;
+    QJsonValue m_rendererTemplate;
+    QJsonValue m_components;
+    ResultsModel* m_resultsModel;
+    QPointer<QObject> m_countObject;
+    bool m_isSpecial;
 
     static QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
     {
@@ -426,6 +426,12 @@ void Categories::clearAll()
     QVector<int> roles;
     roles.append(RoleCount);
     dataChanged(changeStart, changeEnd, roles);
+}
+
+
+bool Categories::parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
+{
+    return CategoryData::parseTemplate(raw_template, renderer, components);
 }
 
 bool Categories::overrideCategoryJson(QString const& categoryId, QString const& json)

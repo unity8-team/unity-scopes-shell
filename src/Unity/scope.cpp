@@ -74,7 +74,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
 {
-    m_categories = new Categories(this);
+    m_categories.reset(new Categories(this));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
@@ -405,7 +405,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
         ResultsModel* category_model = m_categories->lookupCategory(category->id());
         if (category_model == nullptr) {
-            category_model = new ResultsModel(m_categories);
+            category_model = new ResultsModel(m_categories.data());
             category_model->setCategoryId(QString::fromStdString(category->id()));
             category_model->addResults(category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
@@ -625,7 +625,7 @@ QString Scope::shortcut() const
 
 unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
-    return m_categories;
+    return m_categories.data();
 }
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const

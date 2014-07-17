@@ -21,6 +21,7 @@
 #include "overviewscope.h"
 
 // local
+#include "overviewcategories.h"
 #include "utils.h"
 
 // Qt
@@ -33,6 +34,7 @@ using namespace unity;
 
 OverviewScope::OverviewScope(QObject *parent) : scopes_ng::Scope(parent)
 {
+    m_categories.reset(new OverviewCategories(this));
 }
 
 OverviewScope::~OverviewScope()
@@ -46,7 +48,17 @@ QString OverviewScope::id() const
 
 void OverviewScope::setSearchQuery(const QString& search_query)
 {
-    Scope::setSearchQuery(search_query);
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    categories->setSurfacingMode(search_query.isEmpty());
+
+    if (!search_query.isEmpty()) {
+        Scope::setSearchQuery(search_query);
+    }
 }
 
 } // namespace scopes_ng
