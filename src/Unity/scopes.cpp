@@ -92,10 +92,10 @@ public:
 
 Scopes::Scopes(QObject *parent)
     : unity::shell::scopes::ScopesInterface(parent)
+    , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_priv(new Priv())
-    , m_overviewScope(nullptr)
 {
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
