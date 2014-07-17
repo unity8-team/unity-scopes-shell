@@ -35,6 +35,10 @@ class Q_DECL_EXPORT ResultsModel : public unity::shell::scopes::ResultsModelInte
     Q_OBJECT
 
 public:
+    enum ExtraRoles {
+        RoleScopeId = unity::shell::scopes::ResultsModelInterface::Roles::RoleBackground + 100
+    };
+
     explicit ResultsModel(QObject* parent = 0);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -50,6 +54,8 @@ public:
     /* setters */
     void setCategoryId(QString const& id) override;
     void setComponentsMapping(QHash<QString, QString> const& mapping);
+
+    QHash<int, QByteArray> roleNames() const override;
 
 private:
     QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
