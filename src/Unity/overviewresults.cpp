@@ -21,11 +21,45 @@
 #include "overviewresults.h"
 
 // local
+#include "resultsmodel.h"
 #include "utils.h"
+
+#include <unity/scopes/Result.h>
 
 namespace scopes_ng {
 
 using namespace unity;
+
+class FakeResult: public scopes::Result
+{
+public:
+    FakeResult(scopes::ScopeMetadata const& metadata): Result(map_for_meta(metadata)) {}
+
+private:
+    // HACK: we need to create a fake result understood by the scopes scope, so it can create a proper preview
+    static scopes::VariantMap map_for_meta(scopes::ScopeMetadata const& metadata)
+    {
+        scopes::VariantMap map;
+        scopes::VariantMap internal;
+        scopes::VariantMap attrs;
+
+        internal["origin"] = "scopes";
+        map["internal"] = internal;
+
+        attrs["title"] = metadata.display_name();
+        try {
+            attrs["art"] = metadata.art();
+        } catch (...) {}
+        try {
+            attrs["icon"] = metadata.icon();
+        } catch (...) {}
+        attrs["description"] = metadata.description();
+        attrs["uri"] = scopes::CannedQuery(metadata.scope_id()).to_uri();
+        map["attrs"] = attrs;
+
+        return map;
+    }
+};
 
 OverviewResultsModel::OverviewResultsModel(QObject* parent)
  : unity::shell::scopes::ResultsModelInterface(parent)
@@ -83,28 +117,30 @@ QHash<int, QByteArray> OverviewResultsModel::roleNames() const
 QVariant
 OverviewResultsModel::data(const QModelIndex& index, int role) const
 {
-    scopes::ScopeMetadata* result = m_results.at(index.row()).get();
+    scopes::ScopeMetadata* metadata = m_results.at(index.row()).get();
 
     switch (role) {
         case RoleUri: {
-            scopes::CannedQuery q(result->scope_id());
+            scopes::CannedQuery q(metadata->scope_id());
             return QString::fromStdString(q.to_uri());
         }
         case RoleCategoryId:
             return QVariant();
         case RoleDndUri:
             return data(index, RoleUri);
-        case RoleResult:
-            return QVariant();
+        case RoleResult: {
+            scopes::Result::SPtr result(new FakeResult(*metadata));
+            return QVariant::fromValue(result);
+        }
         case RoleTitle:
-            return QString::fromStdString(result->display_name());
+            return QString::fromStdString(metadata->display_name());
         case RoleArt: {
             std::string art;
             try {
-                art = result->art();
+                art = metadata->art();
             } catch (...) {
                 try {
-                    art = result->icon();
+                    art = metadata->icon();
                 } catch (...) {
                     // no icon, oh well
                 }
@@ -124,7 +160,7 @@ OverviewResultsModel::data(const QModelIndex& index, int role) const
         case RoleBackground:
             return QVariant();
         case RoleScopeId:
-            return QString::fromStdString(result->scope_id());
+            return QString::fromStdString(metadata->scope_id());
         default:
             return QVariant();
     }
