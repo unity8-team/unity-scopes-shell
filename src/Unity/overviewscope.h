@@ -37,8 +37,7 @@ public:
     QString id() const override;
     bool visible() const override;
 
-    /* setters */
-    void setSearchQuery(const QString& search_query) override;
+    void dispatchSearch() override;
 
 private Q_SLOTS:
     void metadataChanged();

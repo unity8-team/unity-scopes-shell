@@ -161,6 +161,9 @@ private Q_SLOTS:
     void departmentModelDestroyed(QObject* obj);
 
 protected:
+    void invalidateLastSearch();
+    virtual void dispatchSearch();
+
     QScopedPointer<Categories> m_categories;
     QPointer<Scopes> m_scopesInstance;
 
@@ -173,8 +176,6 @@ private:
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
-    void dispatchSearch();
-    void invalidateLastSearch();
 
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);

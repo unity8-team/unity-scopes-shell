@@ -76,7 +76,7 @@ bool OverviewScope::visible() const
     return false;
 }
 
-void OverviewScope::setSearchQuery(const QString& search_query)
+void OverviewScope::dispatchSearch()
 {
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
     if (!categories) {
@@ -84,10 +84,14 @@ void OverviewScope::setSearchQuery(const QString& search_query)
         return;
     }
 
+    QString search_query(searchQuery());
+
     categories->setSurfacingMode(search_query.isEmpty());
 
     if (!search_query.isEmpty()) {
-        Scope::setSearchQuery(search_query);
+        Scope::dispatchSearch();
+    } else {
+        invalidateLastSearch();
     }
 }
 
