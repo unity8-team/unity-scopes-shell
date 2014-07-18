@@ -21,6 +21,7 @@ set(QMLPLUGIN_SRC
     department.cpp
     departmentnode.cpp
     overviewcategories.cpp
+    overviewresults.cpp
     overviewscope.cpp
     previewmodel.cpp
     previewstack.cpp

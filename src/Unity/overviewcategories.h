@@ -21,12 +21,15 @@
 #ifndef NG_OVERVIEW_CATEGORIES_H
 #define NG_OVERVIEW_CATEGORIES_H
 
+#include <unity/scopes/ScopeMetadata.h>
+
 #include "categories.h"
 
 namespace scopes_ng
 {
 
 class ScopesCategoryData;
+class OverviewResultsModel;
 
 class Q_DECL_EXPORT OverviewCategories : public scopes_ng::Categories
 {
@@ -34,16 +37,22 @@ class Q_DECL_EXPORT OverviewCategories : public scopes_ng::Categories
 
 public:
     explicit OverviewCategories(QObject* parent = 0);
+    virtual ~OverviewCategories();
 
     void setSurfacingMode(bool isSurfacing);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    void setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void setFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+
 private:
     bool m_isSurfacing;
 
     QList<QSharedPointer<ScopesCategoryData>> m_surfaceCategories;
+    QScopedPointer<OverviewResultsModel> m_allScopes;
+    QScopedPointer<OverviewResultsModel> m_favouriteScopes;
 };
 
 } // namespace scopes_ng

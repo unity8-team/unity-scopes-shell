@@ -22,6 +22,7 @@
 #include "overviewcategories.h"
 
 // local
+#include "overviewresults.h"
 #include "utils.h"
 
 namespace scopes_ng
@@ -51,8 +52,15 @@ OverviewCategories::OverviewCategories(QObject* parent)
     : scopes_ng::Categories(parent)
     , m_isSurfacing(true)
 {
+    m_allScopes.reset(new OverviewResultsModel(this));
+    m_favouriteScopes.reset(new OverviewResultsModel(this));
+
     m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("favorites", CATEGORY_JSON)));
     m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("all", CATEGORY_JSON)));
+}
+
+OverviewCategories::~OverviewCategories()
+{
 }
 
 void OverviewCategories::setSurfacingMode(bool surfacingMode)
@@ -62,6 +70,32 @@ void OverviewCategories::setSurfacingMode(bool surfacingMode)
         m_isSurfacing = surfacingMode;
         endResetModel();
     }
+}
+
+void OverviewCategories::setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+{
+    m_allScopes->setResults(scopes);
+
+    if (!m_isSurfacing) return;
+
+    QVector<int> roles;
+    roles.append(RoleCount);
+
+    QModelIndex changedIndex(index(1));
+    dataChanged(changedIndex, changedIndex, roles);
+}
+ 
+void OverviewCategories::setFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+{
+    m_favouriteScopes->setResults(scopes);
+
+    if (!m_isSurfacing) return;
+
+    QVector<int> roles;
+    roles.append(RoleCount);
+
+    QModelIndex changedIndex(index(0));
+    dataChanged(changedIndex, changedIndex, roles);
 }
 
 int OverviewCategories::rowCount(const QModelIndex& parent) const
@@ -81,6 +115,7 @@ OverviewCategories::data(const QModelIndex& index, int role) const
     }
 
     ScopesCategoryData* catData = m_surfaceCategories.at(index.row()).data();
+    OverviewResultsModel* results = index.row() == 0 ? m_favouriteScopes.data() : m_allScopes.data();
 
     switch (role) {
         case RoleCategoryId:
@@ -98,10 +133,9 @@ OverviewCategories::data(const QModelIndex& index, int role) const
         case RoleHeaderLink:
             return QVariant();
         case RoleResults:
-            // FIXME!
-            return (index.row() < Categories::rowCount()) ? Categories::data(index, role) : QVariant();
+            return QVariant::fromValue(results);
         case RoleCount:
-            return (index.row() < Categories::rowCount()) ? Categories::data(index, role) : QVariant(0);
+            return QVariant(results->rowCount());
         default:
             return QVariant();
     }
