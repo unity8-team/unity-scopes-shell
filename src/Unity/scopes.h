@@ -25,6 +25,7 @@
 // Qt
 #include <QList>
 #include <QThread>
+#include <QStringList>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -52,6 +53,9 @@ public:
 
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
+    QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
+    QStringList getFavoriteIds() const;
+
     void refreshScopeMetadata();
 
     bool loaded() const override;

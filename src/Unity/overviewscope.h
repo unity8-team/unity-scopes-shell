@@ -39,6 +39,9 @@ public:
     /* setters */
     void setSearchQuery(const QString& search_query) override;
 
+private Q_SLOTS:
+    void metadataChanged();
+
 private:
 };
 

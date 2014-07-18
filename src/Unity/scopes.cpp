@@ -280,6 +280,22 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
     return nullptr;
 }
 
+QStringList Scopes::getFavoriteIds() const
+{
+    QStringList ids;
+
+    Q_FOREACH(Scope* scope, m_scopes) {
+        ids << scope->id();
+    }
+
+    return ids;
+}
+
+QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
+{
+    return m_cachedMetadata;
+}
+
 scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) const
 {
     auto it = m_cachedMetadata.constFind(scopeId);

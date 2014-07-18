@@ -87,8 +87,19 @@ OverviewResultsModel::data(const QModelIndex& index, int role) const
             return QVariant();
         case RoleTitle:
             return QString::fromStdString(result->display_name());
-        case RoleArt:
-            return QString::fromStdString(result->art());
+        case RoleArt: {
+            std::string art;
+            try {
+                art = result->art();
+            } catch (...) {
+                try {
+                    art = result->icon();
+                } catch (...) {
+                    // no icon, oh well
+                }
+            }
+            return QString::fromStdString(art);
+        }
         case RoleSubtitle:
             return QVariant();
         case RoleMascot:

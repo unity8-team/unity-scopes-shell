@@ -22,6 +22,7 @@
 
 // local
 #include "overviewcategories.h"
+#include "scopes.h"
 #include "utils.h"
 
 // Qt
@@ -35,10 +36,34 @@ using namespace unity;
 OverviewScope::OverviewScope(QObject *parent) : scopes_ng::Scope(parent)
 {
     m_categories.reset(new OverviewCategories(this));
+
+    QObject::connect(m_scopesInstance.data(), &Scopes::metadataRefreshed, this, &OverviewScope::metadataChanged);
 }
 
 OverviewScope::~OverviewScope()
 {
+}
+
+void OverviewScope::metadataChanged()
+{
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
+    QList<scopes::ScopeMetadata::SPtr> favourites;
+    Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
+        auto it = allMetadata.find(id);
+        if (it != allMetadata.end()) {
+            favourites.append(it.value());
+        }
+    }
+
+    // FIXME: filter invisible scopes?
+    categories->setAllScopes(allMetadata.values());
+    categories->setFavouriteScopes(favourites);
 }
 
 QString OverviewScope::id() const
