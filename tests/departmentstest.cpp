@@ -77,6 +77,7 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
         QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
     }
 
     void cleanup()

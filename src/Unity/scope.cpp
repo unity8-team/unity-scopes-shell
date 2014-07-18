@@ -531,7 +531,6 @@ void Scope::dispatchSearch()
         }
         catch (std::domain_error& e)
         {
-
         }
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
@@ -747,7 +746,7 @@ void Scope::setSearchQuery(const QString& search_query)
         m_searchQuery = search_query;
 
         // FIXME: use a timeout
-        dispatchSearch();
+        invalidateResults();
 
         Q_EMIT searchQueryChanged();
     }
