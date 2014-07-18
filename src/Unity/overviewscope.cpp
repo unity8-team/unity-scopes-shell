@@ -101,6 +101,16 @@ bool OverviewScope::visible() const
     return false;
 }
 
+scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& result) const
+{
+    try {
+        return result->target_scope_proxy();
+    } catch (...) {
+        // our fake results don't have a proxy associated, return the default one
+        return proxy();
+    }
+}
+
 void OverviewScope::dispatchSearch()
 {
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());

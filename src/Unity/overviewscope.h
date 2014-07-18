@@ -39,10 +39,10 @@ public:
 
     void dispatchSearch() override;
 
+    unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const override;
+
 private Q_SLOTS:
     void metadataChanged();
-
-private:
 };
 
 } // namespace scopes_ng

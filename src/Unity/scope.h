@@ -147,6 +147,7 @@ public:
     void activateUri(QString const& uri);
 
     bool resultsDirty() const;
+    virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
 public Q_SLOTS:
     void invalidateResults();
@@ -163,6 +164,8 @@ private Q_SLOTS:
 protected:
     void invalidateLastSearch();
     virtual void dispatchSearch();
+
+    unity::scopes::ScopeProxy proxy() const;
 
     QScopedPointer<Categories> m_categories;
     QPointer<Scopes> m_scopesInstance;

@@ -418,6 +418,16 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     }
 }
 
+scopes::ScopeProxy Scope::proxy() const
+{
+    return m_proxy;
+}
+
+scopes::ScopeProxy Scope::proxy_for_result(scopes::Result::SPtr const& result) const
+{
+    return result->target_scope_proxy();
+}
+
 void Scope::invalidateLastSearch()
 {
     m_searchController->invalidate();
@@ -788,7 +798,7 @@ void Scope::activate(QVariant const& result_var)
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
             m_activationController->setListener(listener);
 
-            auto proxy = result->target_scope_proxy();
+            auto proxy = proxy_for_result(result);
             unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
             scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
             m_activationController->setController(controller);
