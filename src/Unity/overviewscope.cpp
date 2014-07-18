@@ -44,6 +44,19 @@ OverviewScope::~OverviewScope()
 {
 }
 
+struct ScopeInfo {
+    scopes::ScopeMetadata::SPtr data;
+    QString name;
+
+    ScopeInfo(scopes::ScopeMetadata::SPtr const& data_):
+        data(data_), name(QString::fromStdString(data->display_name())) {}
+};
+
+bool operator<(ScopeInfo const& first, ScopeInfo const& second)
+{
+    return first.name.compare(second.name, Qt::CaseInsensitive) < 0;
+}
+
 void OverviewScope::metadataChanged()
 {
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
@@ -61,8 +74,20 @@ void OverviewScope::metadataChanged()
         }
     }
 
+    QList<ScopeInfo> scopes;
+    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
+        if (metadata->invisible()) continue;
+        scopes.append(ScopeInfo(metadata));
+    }
+    qSort(scopes.begin(), scopes.end());
+
+    QList<scopes::ScopeMetadata::SPtr> allScopes;
+    Q_FOREACH(ScopeInfo const& info, scopes) {
+        allScopes << info.data;
+    }
+
     // FIXME: filter invisible scopes?
-    categories->setAllScopes(allMetadata.values());
+    categories->setAllScopes(allScopes);
     categories->setFavouriteScopes(favourites);
 }
 
