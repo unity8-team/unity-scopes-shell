@@ -182,7 +182,6 @@ void Scopes::discoveryFinished()
         auto it = scopes.find(SCOPES_SCOPE_ID);
         if (it != scopes.end()) {
             m_overviewScope->setScopeData(it->second);
-            m_scopes.prepend(m_overviewScope);
         } else {
             qWarning("Unable to add overview scope, can't find with ID: \"%s\"", SCOPES_SCOPE_ID);
         }
@@ -323,7 +322,7 @@ void Scopes::refreshScopeMetadata()
 
 unity::shell::scopes::ScopeInterface* Scopes::overviewScope() const
 {
-    return m_loaded ? nullptr : m_overviewScope;
+    return m_loaded ? m_overviewScope : nullptr;
 }
 
 bool Scopes::loaded() const
