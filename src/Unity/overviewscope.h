@@ -35,6 +35,7 @@ public:
 
     /* getters */
     QString id() const override;
+    bool visible() const override;
 
     /* setters */
     void setSearchQuery(const QString& search_query) override;

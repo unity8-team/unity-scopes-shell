@@ -61,6 +61,17 @@ int OverviewResultsModel::count() const
     return m_results.count();
 }
 
+int OverviewResultsModel::scopeIndex(const QString& scopeId) const
+{
+    std::string id(scopeId.toStdString());
+
+    for (int i = 0; i < m_results.size(); i++) {
+        if (m_results.at(i)->scope_id() == id) return i;
+    }
+
+    return -1;
+}
+
 QHash<int, QByteArray> OverviewResultsModel::roleNames() const
 {
     QHash<int, QByteArray> roles(unity::shell::scopes::ResultsModelInterface::roleNames());

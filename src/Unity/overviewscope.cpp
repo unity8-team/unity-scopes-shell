@@ -71,6 +71,11 @@ QString OverviewScope::id() const
     return QString("scopesOverview");
 }
 
+bool OverviewScope::visible() const
+{
+    return false;
+}
+
 void OverviewScope::setSearchQuery(const QString& search_query)
 {
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());

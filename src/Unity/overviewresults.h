@@ -51,6 +51,8 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    Q_INVOKABLE int scopeIndex(const QString& scopeId) const;
+
 private:
     QList<unity::scopes::ScopeMetadata::SPtr> m_results;
 };
