@@ -32,22 +32,13 @@ Q_OBJECT
 
 public:
     LocationPrinter() {
-        connect(&locationService, SIGNAL(positionChanged()), this, SLOT(positionChanged()));
-        connect(&locationService, SIGNAL(velocityChanged()), this, SLOT(velocityChanged()));
-        connect(&locationService, SIGNAL(headingChanged()), this, SLOT(headingChanged()));
+        locationService.activate();
+        connect(&locationService, &LocationService::locationChanged, this, &LocationPrinter::positionChanged);
     }
 
 public Q_SLOTS:
     void positionChanged() {
-        cout << "position:" << locationService.position() << endl;
-    }
-
-    void velocityChanged() {
-        cout << "velocity:" << locationService.velocity() << endl;
-    }
-
-    void headingChanged() {
-        cout <<  "heading:" << locationService.heading() << endl;
+        cout << "position:" << locationService.location().serialize_json() << endl;
     }
 
 protected:

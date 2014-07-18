@@ -27,6 +27,8 @@
 #include <com/ubuntu/location/update.h>
 #include <com/ubuntu/location/velocity.h>
 
+#include <unity/scopes/Variant.h>
+
 namespace scopes_ng
 {
 
@@ -34,11 +36,7 @@ class Q_DECL_EXPORT LocationService : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(com::ubuntu::location::Position position READ position NOTIFY positionChanged)
-
-    Q_PROPERTY(com::ubuntu::location::Velocity velocity READ velocity NOTIFY velocityChanged)
-
-    Q_PROPERTY(com::ubuntu::location::Heading heading READ heading NOTIFY headingChanged)
+    Q_PROPERTY(unity::scopes::Variant location READ location NOTIFY locationChanged)
 
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
 
@@ -49,11 +47,7 @@ public:
 
     virtual ~LocationService() = default;
 
-    virtual com::ubuntu::location::Position position() const = 0;
-
-    virtual com::ubuntu::location::Velocity velocity() const = 0;
-
-    virtual com::ubuntu::location::Heading heading() const = 0;
+    virtual unity::scopes::Variant location() const = 0;
 
     virtual bool isActive() const = 0;
 
@@ -69,11 +63,7 @@ public Q_SLOTS:
     virtual void deactivate() = 0;
 
 Q_SIGNALS:
-    void positionChanged();
-
-    void velocityChanged();
-
-    void headingChanged();
+    void locationChanged();
 
     void activeChanged();
 

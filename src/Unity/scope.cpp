@@ -464,7 +464,7 @@ void Scope::setScopesInstance(Scopes* scopes)
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
         m_locationService = m_scopesInstance->locationService();
-        connect(m_locationService.data(), &LocationService::positionChanged, this, &Scope::locationChanged);
+        connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::locationChanged);
     }
 }
 
@@ -522,6 +522,16 @@ void Scope::dispatchSearch()
             if (remoteSearch.toString() == QString("none")) {
                 meta["no-internet"] = true;
             }
+        }
+        try {
+            if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+            {
+                meta["location"] = m_locationService->location();
+            }
+        }
+        catch (std::domain_error& e)
+        {
+
         }
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
@@ -895,7 +905,7 @@ void Scope::activateUri(QString const& uri)
 
 void Scope::locationChanged()
 {
-    qDebug() << "Location changed";
+//    qDebug() << "Location changed";
 }
 
 } // namespace scopes_ng

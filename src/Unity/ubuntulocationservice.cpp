@@ -17,7 +17,8 @@
  *  Pete Woods <pete.woods@canonical.com>
  */
 
-#include <ubuntulocationservice.h>
+#include "ubuntulocationservice.h"
+#include "geoip.h"
 
 #include <QDebug>
 #include <QThread>
@@ -37,6 +38,7 @@ namespace cul = com::ubuntu::location;
 namespace culs = com::ubuntu::location::service;
 namespace culss = com::ubuntu::location::service::session;
 namespace dbus = core::dbus;
+namespace scopes = unity::scopes;
 
 class WorkerThread : public QThread
 {
@@ -64,6 +66,8 @@ Q_OBJECT
 public:
     Priv()
     {
+        m_geoIp.reset(new GeoIp);
+
         m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
         m_bus->install_executor(dbus::asio::make_executor(m_bus));
 
@@ -76,6 +80,7 @@ public:
         m_deactivateTimer.setInterval(5000);
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
+
     }
 
     ~Priv()
@@ -86,11 +91,7 @@ public:
     }
 
 Q_SIGNALS:
-    void positionChanged();
-
-    void velocityChanged();
-
-    void headingChanged();
+    void locationChanged();
 
 public Q_SLOTS:
     void update()
@@ -98,25 +99,18 @@ public Q_SLOTS:
         if (m_refCount > 0 && !m_session)
         {
             qDebug() << "starting location session";
+            m_geoIp.reset(new GeoIp);
+
             try
             {
                 m_session = m_location_service->create_session_for_criteria(
                         cul::Criteria());
 
                 m_session->updates().position.changed().connect(
-                        bind(&Priv::positionChanged, this));
-                m_session->updates().velocity.changed().connect(
-                        bind(&Priv::velocityChanged, this));
-                m_session->updates().heading.changed().connect(
-                        bind(&Priv::headingChanged, this));
+                        bind(&Priv::locationChanged, this));
 
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
-                m_session->updates().heading_status =
-                        culss::Interface::Updates::Status::enabled;
-                m_session->updates().velocity_status =
-                        culss::Interface::Updates::Status::enabled;
-
             }
             catch (exception& e)
             {
@@ -128,6 +122,12 @@ public Q_SLOTS:
             qDebug() << "ending location session";
             m_session.reset();
         }
+    }
+
+    void requestFinished()
+    {
+        qDebug() << m_geoIp->latitude() << m_geoIp->longitude()
+                << m_geoIp->countryCode();
     }
 
 public:
@@ -142,45 +142,98 @@ public:
     int m_refCount = 0;
 
     QTimer m_deactivateTimer;
+
+    QSharedPointer<GeoIp> m_geoIp;
 };
 
 UbuntuLocationService::UbuntuLocationService() :
         p(new Priv(), &QObject::deleteLater)
 {
     // Connect to signals (which will be queued)
-    connect(p.data(), &Priv::positionChanged, this, &LocationService::positionChanged, Qt::QueuedConnection);
-    connect(p.data(), &Priv::velocityChanged, this, &LocationService::velocityChanged, Qt::QueuedConnection);
-    connect(p.data(), &Priv::headingChanged, this, &LocationService::headingChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
 
     // Wire up the deactivate timer
     connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
+
+    // Wire up the network request finished timer
+    connect(p->m_geoIp.data(), &GeoIp::finishedChanged, p.data(), &Priv::requestFinished);
 }
 
-cul::Position UbuntuLocationService::position() const
+unity::scopes::Variant UbuntuLocationService::location() const
 {
-    if (!isActive())
+    scopes::VariantMap location;
+    scopes::VariantMap position;
+
+    GeoIp::Ptr geoIp(p->m_geoIp);
+
+    if (geoIp->finished())
+    {
+        location["countryCode"] = geoIp->countryCode().toStdString();
+        location["countryName"] = geoIp->countryName().toStdString();
+
+        location["regionCode"] = geoIp->regionCode().toStdString();
+        location["regionName"] = geoIp->regionName().toStdString();
+
+        location["zipPostalCode"] = geoIp->zipPostalCode().toStdString();
+        location["areaCode"] = geoIp->areaCode().toStdString();
+
+        location["city"] = geoIp->city().toStdString();
+    }
+
+    if (isActive())
+    {
+        cul::Position pos = p->m_session->updates().position.get().value;
+
+        scopes::VariantMap accuracy;
+        if (pos.accuracy.horizontal)
+        {
+            // location.position.accuracy.horizontal
+            accuracy["horizontal"] = pos.accuracy.horizontal.get().value();
+        }
+        if (pos.accuracy.vertical)
+        {
+            // location.position.accuracy.vertical
+            accuracy["vertical"] = pos.accuracy.vertical.get().value();
+        }
+        if (pos.accuracy.horizontal || pos.accuracy.horizontal)
+        {
+            // location.position.accuracy
+            position["accuracy"] = accuracy;
+        }
+
+        if (pos.altitude)
+        {
+            // location.position.altitude
+            position["altitude"] = pos.altitude.get().value.value();
+        }
+
+        // location.position.latitude
+        position["latitude"] = pos.latitude.value.value();
+        // location.position.longitude
+        position["longitude"] = pos.longitude.value.value();
+    }
+    else if (geoIp->finished())
+    {
+        scopes::VariantMap accuracy;
+        // location.position.accuracy.horizontal
+        accuracy["horizontal"] = 100000.0;
+        // location.position.accuracy
+        position["accuracy"] = accuracy;
+
+        // location.position.latitude
+        position["latitude"] = geoIp->latitude();
+        // location.position.longitude
+        position["longitude"] = geoIp->longitude();
+    }
+    else
     {
         throw domain_error("No active session");
     }
-    return p->m_session->updates().position.get().value;
-}
 
-cul::Velocity UbuntuLocationService::velocity() const
-{
-    if (!isActive())
-    {
-        throw domain_error("No active session");
-    }
-    return p->m_session->updates().velocity.get().value;
-}
+    // location.position
+   location["position"] = position;
 
-cul::Heading UbuntuLocationService::heading() const
-{
-    if (!isActive())
-    {
-        throw domain_error("No active session");
-    }
-    return p->m_session->updates().heading.get().value;
+    return scopes::Variant(location);
 }
 
 bool UbuntuLocationService::isActive() const

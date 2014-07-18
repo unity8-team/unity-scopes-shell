@@ -34,11 +34,7 @@ public:
 
     virtual ~UbuntuLocationService() = default;
 
-    com::ubuntu::location::Position position() const override;
-
-    com::ubuntu::location::Velocity velocity() const override;
-
-    com::ubuntu::location::Heading heading() const override;
+    unity::scopes::Variant location() const override;
 
     bool isActive() const override;
 

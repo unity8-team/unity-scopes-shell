@@ -22,6 +22,7 @@ set(QMLPLUGIN_SRC
     collectors.cpp
     department.cpp
     departmentnode.cpp
+    geoip.cpp
     locationservice.cpp
     previewmodel.cpp
     previewstack.cpp
