@@ -24,21 +24,33 @@
 
 using namespace scopes_ng;
 
-GeoIp::GeoIp(const QUrl& url)
+GeoIp::GeoIp(const QUrl& url) :
+        m_url(url)
 {
     // Wire up the network request finished signal
     connect(&m_networkAccessManager, &QNetworkAccessManager::finished, this, &GeoIp::response);
+}
 
-    m_networkAccessManager.get(QNetworkRequest(url));
+void GeoIp::start()
+{
+    if (!m_running)
+    {
+        m_running = true;
+        m_networkAccessManager.get(QNetworkRequest(m_url));
+    }
 }
 
 void GeoIp::response(QNetworkReply * const reply)
 {
+    m_running = false;
+
     if (reply->error())
     {
         qWarning() << reply->errorString();
         return;
     }
+
+    Result result;
 
     QXmlStreamReader xml(reply);
     while (!xml.atEnd() && !xml.hasError())
@@ -57,7 +69,7 @@ void GeoIp::response(QNetworkReply * const reply)
             /* If it's named persons, we'll go to the next.*/
             if (xml.name() == "Response")
             {
-                parseResponse(xml);
+                parseResponse(result, xml);
             }
         }
     }
@@ -67,16 +79,11 @@ void GeoIp::response(QNetworkReply * const reply)
         return;
     }
 
-    m_finished = true;
-    Q_EMIT finishedChanged();
+    result.valid = true;
+    Q_EMIT finished(result);
 }
 
-bool GeoIp::finished() const
-{
-    return m_finished;
-}
-
-void GeoIp::parseResponse(QXmlStreamReader& xml)
+void GeoIp::parseResponse(Result& result, QXmlStreamReader& xml)
 {
     xml.readNext();
 
@@ -91,55 +98,55 @@ void GeoIp::parseResponse(QXmlStreamReader& xml)
         {
             if (xml.name() == "Ip")
             {
-                m_ip = readText(xml);
+                result.ip = readText(xml);
             }
             else if (xml.name() == "Status")
             {
-                m_status = readText(xml);
+                result.status = readText(xml);
             }
             else if (xml.name() == "CountryCode")
             {
-                m_countryCode = readText(xml);
+                result.countryCode = readText(xml);
             }
             else if (xml.name() == "CountryCode3")
             {
-                m_countryCode3 = readText(xml);
+                result.countryCode3 = readText(xml);
             }
             else if (xml.name() == "CountryName")
             {
-                m_countryName = readText(xml);
+                result.countryName = readText(xml);
             }
             else if (xml.name() == "RegionCode")
             {
-                m_regionCode = readText(xml);
+                result.regionCode = readText(xml);
             }
             else if (xml.name() == "RegionName")
             {
-                m_regionName = readText(xml);
+                result.regionName = readText(xml);
             }
             else if (xml.name() == "City")
             {
-                m_city = readText(xml);
+                result.city = readText(xml);
             }
             else if (xml.name() == "ZipPostalCode")
             {
-                m_zipPostalCode = readText(xml);
+                result.zipPostalCode = readText(xml);
             }
             else if (xml.name() == "Latitude")
             {
-                m_latitude = readText(xml).toDouble();
+                result.latitude = readText(xml).toDouble();
             }
             else if (xml.name() == "Longitude")
             {
-                m_longitude = readText(xml).toDouble();
+                result.longitude = readText(xml).toDouble();
             }
             else if (xml.name() == "AreaCode")
             {
-                m_areaCode = readText(xml);
+                result.areaCode = readText(xml);
             }
             else if (xml.name() == "TimeZone")
             {
-                m_timeZone = readText(xml);
+                result.timeZone = readText(xml);
             }
         }
 
@@ -157,69 +164,4 @@ QString GeoIp::readText(QXmlStreamReader& xml)
     }
 
     return xml.text().toString();
-}
-
-const QString & GeoIp::ip() const
-{
-    return m_ip;
-}
-
-const QString & GeoIp::status() const
-{
-    return m_status;
-}
-
-const QString & GeoIp::countryCode() const
-{
-    return m_countryCode;
-}
-
-const QString & GeoIp::countryCode3() const
-{
-    return m_countryCode3;
-}
-
-const QString & GeoIp::countryName() const
-{
-    return m_countryName;
-}
-
-const QString & GeoIp::regionCode() const
-{
-    return m_regionCode;
-}
-
-const QString & GeoIp::regionName() const
-{
-    return m_regionName;
-}
-
-const QString & GeoIp::city() const
-{
-    return m_city;
-}
-
-const QString & GeoIp::zipPostalCode() const
-{
-    return m_zipPostalCode;
-}
-
-double GeoIp::latitude() const
-{
-    return m_latitude;
-}
-
-double GeoIp::longitude() const
-{
-    return m_longitude;
-}
-
-const QString & GeoIp::areaCode() const
-{
-    return m_areaCode;
-}
-
-const QString & GeoIp::timeZone() const
-{
-    return m_timeZone;
 }

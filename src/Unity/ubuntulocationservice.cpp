@@ -66,7 +66,8 @@ Q_OBJECT
 public:
     Priv()
     {
-        m_geoIp.reset(new GeoIp);
+        m_geoIp.start();
+        m_locationChanged = false;
 
         m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
         m_bus->install_executor(dbus::asio::make_executor(m_bus));
@@ -98,8 +99,8 @@ public Q_SLOTS:
     {
         if (m_refCount > 0 && !m_session)
         {
-            qDebug() << "starting location session";
-            m_geoIp.reset(new GeoIp);
+            // Update the GeoIp again
+            m_geoIp.start();
 
             try
             {
@@ -107,7 +108,7 @@ public Q_SLOTS:
                         cul::Criteria());
 
                 m_session->updates().position.changed().connect(
-                        bind(&Priv::locationChanged, this));
+                        bind(&Priv::positionChanged, this));
 
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
@@ -119,15 +120,19 @@ public Q_SLOTS:
         }
         else if (m_refCount == 0 && m_session)
         {
-            qDebug() << "ending location session";
             m_session.reset();
         }
     }
 
-    void requestFinished()
+    void positionChanged() {
+        m_locationChanged = true;
+        Q_EMIT locationChanged();
+    }
+
+    void requestFinished(const GeoIp::Result& result)
     {
-        qDebug() << m_geoIp->latitude() << m_geoIp->longitude()
-                << m_geoIp->countryCode();
+        m_result = result;
+        Q_EMIT locationChanged();
     }
 
 public:
@@ -137,13 +142,17 @@ public:
 
     culss::Interface::Ptr m_session;
 
+    bool m_locationChanged = false;
+
     QScopedPointer<WorkerThread> m_thread;
 
     int m_refCount = 0;
 
     QTimer m_deactivateTimer;
 
-    QSharedPointer<GeoIp> m_geoIp;
+    GeoIp m_geoIp;
+
+    GeoIp::Result m_result;
 };
 
 UbuntuLocationService::UbuntuLocationService() :
@@ -156,7 +165,7 @@ UbuntuLocationService::UbuntuLocationService() :
     connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
 
     // Wire up the network request finished timer
-    connect(p->m_geoIp.data(), &GeoIp::finishedChanged, p.data(), &Priv::requestFinished);
+    connect(&p->m_geoIp, &GeoIp::finished, p.data(), &Priv::requestFinished);
 }
 
 unity::scopes::Variant UbuntuLocationService::location() const
@@ -164,23 +173,24 @@ unity::scopes::Variant UbuntuLocationService::location() const
     scopes::VariantMap location;
     scopes::VariantMap position;
 
-    GeoIp::Ptr geoIp(p->m_geoIp);
+    const GeoIp::Result& result(p->m_result);
 
-    if (geoIp->finished())
+    if (result.valid)
     {
-        location["countryCode"] = geoIp->countryCode().toStdString();
-        location["countryName"] = geoIp->countryName().toStdString();
+        location["countryCode"] = result.countryCode.toStdString();
+        location["countryName"] = result.countryName.toStdString();
 
-        location["regionCode"] = geoIp->regionCode().toStdString();
-        location["regionName"] = geoIp->regionName().toStdString();
+        location["regionCode"] = result.regionCode.toStdString();
+        location["regionName"] = result.regionName.toStdString();
 
-        location["zipPostalCode"] = geoIp->zipPostalCode().toStdString();
-        location["areaCode"] = geoIp->areaCode().toStdString();
+        location["zipPostalCode"] = result.zipPostalCode.toStdString();
+        location["areaCode"] = result.areaCode.toStdString();
 
-        location["city"] = geoIp->city().toStdString();
+        location["city"] = result.city.toStdString();
     }
 
-    if (isActive())
+    // We need to be active, and the location session must have updated at least once
+    if (isActive() && p->m_locationChanged)
     {
         cul::Position pos = p->m_session->updates().position.get().value;
 
@@ -212,7 +222,7 @@ unity::scopes::Variant UbuntuLocationService::location() const
         // location.position.longitude
         position["longitude"] = pos.longitude.value.value();
     }
-    else if (geoIp->finished())
+    else if (result.valid)
     {
         scopes::VariantMap accuracy;
         // location.position.accuracy.horizontal
@@ -221,13 +231,13 @@ unity::scopes::Variant UbuntuLocationService::location() const
         position["accuracy"] = accuracy;
 
         // location.position.latitude
-        position["latitude"] = geoIp->latitude();
+        position["latitude"] = result.latitude;
         // location.position.longitude
-        position["longitude"] = geoIp->longitude();
+        position["longitude"] = result.longitude;
     }
     else
     {
-        throw domain_error("No active session");
+        throw domain_error("Location unavailable");
     }
 
     // location.position

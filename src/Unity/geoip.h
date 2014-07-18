@@ -36,78 +36,60 @@ class GeoIp : public QObject
 Q_OBJECT
 
 public:
+    struct Result
+    {
+        bool valid = false;
+
+        QString ip;
+
+        QString status;
+
+        QString countryCode;
+
+        QString countryCode3;
+
+        QString countryName;
+
+        QString regionCode;
+
+        QString regionName;
+
+        QString city;
+
+        QString zipPostalCode;
+
+        double latitude = 0.0;
+
+        double longitude = 0.0;
+
+        QString areaCode;
+
+        QString timeZone;
+    };
+
     typedef QSharedPointer<GeoIp> Ptr;
 
     GeoIp(const QUrl& url = QUrl("http://geoip.ubuntu.com/lookup"));
 
-    const QString & ip() const;
-
-    const QString & status() const;
-
-    const QString & countryCode() const;
-
-    const QString & countryCode3() const;
-
-    const QString & countryName() const;
-
-    const QString & regionCode() const;
-
-    const QString & regionName() const;
-
-    const QString & city() const;
-
-    const QString & zipPostalCode() const;
-
-    double latitude() const;
-
-    double longitude() const;
-
-    const QString & areaCode() const;
-
-    const QString & timeZone() const;
-
-    bool finished() const;
+public Q_SLOTS:
+    void start();
 
 Q_SIGNALS:
-    void finishedChanged();
+    void finished(const Result& result);
 
 protected Q_SLOTS:
     void response(QNetworkReply * const reply);
 
 protected:
-    void parseResponse(QXmlStreamReader& xml);
+    void parseResponse(Result& result, QXmlStreamReader& xml);
 
     QString readText(QXmlStreamReader& xml);
 
+    QUrl m_url;
+
     QNetworkAccessManager m_networkAccessManager;
 
-    bool m_finished = false;
-
-    QString m_ip;
-
-    QString m_status;
-
-    QString m_countryCode;
-
-    QString m_countryCode3;
-
-    QString m_countryName;
-
-    QString m_regionCode;
-
-    QString m_regionName;
-
-    QString m_city;
-
-    QString m_zipPostalCode;
-
-    double m_latitude = 0.0;
-
-    double m_longitude = 0.0;
-
-    QString m_areaCode;
-
-    QString m_timeZone;
+    bool m_running = false;
 };
 
 } // namespace scopes_ng
