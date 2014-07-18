@@ -220,6 +220,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
             }
             return backgroundUriToVariant(backgroundVariant.toString());
         }
+        case RoleOverlayColor:
+            return componentValue(result, "overlay-color");
         case RoleScopeId:
             if (result->uri().compare(0, 8, "scope://") == 0) {
                 try {

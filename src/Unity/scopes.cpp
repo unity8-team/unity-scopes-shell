@@ -197,6 +197,7 @@ void Scopes::discoveryFinished()
 
     m_loaded = true;
     Q_EMIT loadedChanged();
+    Q_EMIT overviewScopeChanged();
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
@@ -318,6 +319,11 @@ void Scopes::refreshScopeMetadata()
         m_listThread = thread;
         m_listThread->start();
     }
+}
+
+unity::shell::scopes::ScopeInterface* Scopes::overviewScope() const
+{
+    return m_loaded ? nullptr : m_overviewScope;
 }
 
 bool Scopes::loaded() const

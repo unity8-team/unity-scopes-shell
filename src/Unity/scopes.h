@@ -59,6 +59,7 @@ public:
     void refreshScopeMetadata();
 
     bool loaded() const override;
+    unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
 Q_SIGNALS:
     void metadataRefreshed();
