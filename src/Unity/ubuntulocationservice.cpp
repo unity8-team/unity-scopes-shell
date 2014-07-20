@@ -40,6 +40,20 @@ namespace culss = com::ubuntu::location::service::session;
 namespace dbus = core::dbus;
 namespace scopes = unity::scopes;
 
+namespace
+{
+    /**
+     * The GPS session is terminated this amount of time after
+     * moving away from an active scope.
+     */
+    static const int DEACTIVATE_INTERVAL = 5000;
+
+    /**
+     * Minimum time between location updates.
+     */
+    static const int THROTTLE_INTERVAL = 10000;
+}
+
 class WorkerThread : public QThread
 {
 Q_OBJECT
@@ -67,7 +81,6 @@ public:
     Priv()
     {
         m_geoIp.start();
-        m_locationChanged = false;
 
         m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
         m_bus->install_executor(dbus::asio::make_executor(m_bus));
@@ -78,10 +91,13 @@ public:
         m_location_service = dbus::resolve_service_on_bus<culs::Interface,
                             culs::Stub>(m_bus);
 
-        m_deactivateTimer.setInterval(5000);
+        m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
 
+        m_positionUpdateThrottle.setInterval(THROTTLE_INTERVAL);
+        m_positionUpdateThrottle.setSingleShot(true);
+        m_positionUpdateThrottle.setTimerType(Qt::VeryCoarseTimer);
     }
 
     ~Priv()
@@ -99,11 +115,15 @@ public Q_SLOTS:
     {
         if (m_refCount > 0 && !m_session)
         {
-            // Update the GeoIp again
+            // Update the GeoIp data again
             m_geoIp.start();
 
+            // Starting a new location service session
             try
             {
+                m_locationChanged = false;
+                m_dirty = false;
+
                 m_session = m_location_service->create_session_for_criteria(
                         cul::Criteria());
 
@@ -124,9 +144,36 @@ public Q_SLOTS:
         }
     }
 
-    void positionChanged() {
+    void positionChanged()
+    {
         m_locationChanged = true;
-        Q_EMIT locationChanged();
+        // If the timer is already active, we have
+        // received an update "soon" after a previous
+        // update, so throttle it.
+        if (m_positionUpdateThrottle.isActive())
+        {
+            m_dirty = true;
+        }
+        // There's no block on the update (it's probably
+        // the first) so dispatch right away.
+        else
+        {
+            // Block updates from being dispatched for a
+            // fixed time
+            m_positionUpdateThrottle.start();
+            Q_EMIT locationChanged();
+        }
+    }
+
+    void throttleTimeout()
+    {
+        // If we got additional updates while we were
+        // throttling, we need to dispatch them now.
+        if (m_dirty)
+        {
+            m_dirty = false;
+            Q_EMIT locationChanged();
+        }
     }
 
     void requestFinished(const GeoIp::Result& result)
@@ -153,6 +200,10 @@ public:
     GeoIp m_geoIp;
 
     GeoIp::Result m_result;
+
+    QTimer m_positionUpdateThrottle;
+
+    bool m_dirty = false;
 };
 
 UbuntuLocationService::UbuntuLocationService() :
@@ -171,7 +222,6 @@ UbuntuLocationService::UbuntuLocationService() :
 unity::scopes::Variant UbuntuLocationService::location() const
 {
     scopes::VariantMap location;
-    scopes::VariantMap position;
 
     const GeoIp::Result& result(p->m_result);
 
@@ -188,6 +238,8 @@ unity::scopes::Variant UbuntuLocationService::location() const
 
         location["city"] = result.city.toStdString();
     }
+
+    scopes::VariantMap position;
 
     // We need to be active, and the location session must have updated at least once
     if (isActive() && p->m_locationChanged)

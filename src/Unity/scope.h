@@ -160,7 +160,6 @@ private Q_SLOTS:
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
-    void locationChanged();
 
 private:
     void setScopesInstance(Scopes*);

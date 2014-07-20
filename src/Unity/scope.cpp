@@ -464,7 +464,8 @@ void Scope::setScopesInstance(Scopes* scopes)
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
         m_locationService = m_scopesInstance->locationService();
-        connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::locationChanged);
+        // Connect to the throttled locationChanged signal
+        connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
     }
 }
 
@@ -527,6 +528,7 @@ void Scope::dispatchSearch()
             if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
                 meta["location"] = m_locationService->location();
+                qDebug() << QString::fromStdString(meta["location"].serialize_json());
             }
         }
         catch (std::domain_error& e)
@@ -900,11 +902,6 @@ void Scope::activateUri(QString const& uri)
         /* Try our luck */
         QDesktopServices::openUrl(url);
     }
-}
-
-void Scope::locationChanged()
-{
-//    qDebug() << "Location changed";
 }
 
 } // namespace scopes_ng
