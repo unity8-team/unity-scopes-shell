@@ -137,10 +137,10 @@ OverviewResultsModel::data(const QModelIndex& index, int role) const
         case RoleArt: {
             std::string art;
             try {
-                art = metadata->art();
+                art = metadata->icon();
             } catch (...) {
                 try {
-                    art = metadata->icon();
+                    art = metadata->art();
                 } catch (...) {
                     // no icon, oh well
                 }
