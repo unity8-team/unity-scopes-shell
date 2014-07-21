@@ -32,11 +32,13 @@
 #include <memory>
 
 using namespace std;
+using namespace std::placeholders;
 using namespace scopes_ng;
 
 namespace cul = com::ubuntu::location;
 namespace culs = com::ubuntu::location::service;
 namespace culss = com::ubuntu::location::service::session;
+namespace culu = com::ubuntu::location::units;
 namespace dbus = core::dbus;
 namespace scopes = unity::scopes;
 
@@ -88,7 +90,7 @@ public:
         m_thread.reset(new WorkerThread(m_bus));
         m_thread->start();
 
-        m_location_service = dbus::resolve_service_on_bus<culs::Interface,
+        m_locationService = dbus::resolve_service_on_bus<culs::Interface,
                             culs::Stub>(m_bus);
 
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
@@ -121,14 +123,14 @@ public Q_SLOTS:
             // Starting a new location service session
             try
             {
-                m_locationChanged = false;
+                m_lastLocation.reset();
                 m_dirty = false;
 
-                m_session = m_location_service->create_session_for_criteria(
+                m_session = m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
                 m_session->updates().position.changed().connect(
-                        bind(&Priv::positionChanged, this));
+                        bind(&Priv::positionChanged, this, _1));
 
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
@@ -144,9 +146,20 @@ public Q_SLOTS:
         }
     }
 
-    void positionChanged()
+    void positionChanged(const cul::Update<cul::Position>& newPosition)
     {
-        m_locationChanged = true;
+        if (m_lastLocation)
+        {
+            culu::Quantity<culu::Length> distance = cul::haversine_distance(*m_lastLocation, newPosition.value);
+            culu::Quantity<culu::Length> threshold{ 50.0 * culu::Meters };
+            if (distance <= threshold)
+            {
+                return;
+            }
+        }
+
+        m_lastLocation = make_shared<cul::Position>(newPosition.value);
+
         // If the timer is already active, we have
         // received an update "soon" after a previous
         // update, so throttle it.
@@ -185,11 +198,11 @@ public Q_SLOTS:
 public:
     dbus::Bus::Ptr m_bus;
 
-    culs::Stub::Ptr m_location_service;
+    culs::Stub::Ptr m_locationService;
 
     culss::Interface::Ptr m_session;
 
-    bool m_locationChanged = false;
+    shared_ptr<cul::Position> m_lastLocation;
 
     QScopedPointer<WorkerThread> m_thread;
 
@@ -242,9 +255,9 @@ unity::scopes::Variant UbuntuLocationService::location() const
     scopes::VariantMap position;
 
     // We need to be active, and the location session must have updated at least once
-    if (isActive() && p->m_locationChanged)
+    if (isActive() && p->m_lastLocation)
     {
-        cul::Position pos = p->m_session->updates().position.get().value;
+        const cul::Position& pos = *p->m_lastLocation;
 
         scopes::VariantMap accuracy;
         if (pos.accuracy.horizontal)
