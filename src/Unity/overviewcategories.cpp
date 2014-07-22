@@ -28,7 +28,7 @@
 namespace scopes_ng
 {
 
-#define CATEGORY_JSON R"({"schema-version":1,"template": {"category-layout":"grid","card-size":"small","overlay":true}, "components": { "title":"title", "art": {"field":"art", "aspect-ratio": 0.5}}})"
+#define CATEGORY_JSON R"({"schema-version":1,"template": {"category-layout":"grid","card-size":"small","overlay":true}, "components": { "title":"title", "art": {"field":"art", "aspect-ratio": 0.5}, "overlay-color": "overlay-color"}})"
 
 struct ScopesCategoryData
 {

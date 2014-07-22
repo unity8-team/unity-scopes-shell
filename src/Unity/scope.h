@@ -162,6 +162,7 @@ private Q_SLOTS:
     void departmentModelDestroyed(QObject* obj);
 
 protected:
+    void setSearchInProgress(bool searchInProgress);
     void invalidateLastSearch();
     virtual void dispatchSearch();
 
@@ -173,7 +174,6 @@ protected:
 private:
     void setScopesInstance(Scopes*);
     void startTtlTimer();
-    void setSearchInProgress(bool searchInProgress);
     void setCurrentDepartmentId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);

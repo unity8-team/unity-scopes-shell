@@ -48,10 +48,11 @@ endmacro(run_tests)
 
 run_tests(
     departmentstest
-    resultstest
+    overviewtest
     previewtest
-    utilstest
+    resultstest
     settingstest
+    utilstest
     )
 
 qt5_use_modules(settingstestExec Sql)

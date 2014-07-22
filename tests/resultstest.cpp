@@ -111,8 +111,8 @@ private Q_SLOTS:
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
-        // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 3);
+        // should have at least one scope now
+        QCOMPARE(m_scopes->rowCount(), 4);
 
         // get scope proxy
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope")));

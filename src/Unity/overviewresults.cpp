@@ -159,6 +159,20 @@ OverviewResultsModel::data(const QModelIndex& index, int role) const
             return QVariant();
         case RoleBackground:
             return QVariant();
+        case RoleOverlayColor: {
+            try {
+                std::string color;
+                auto attrs = metadata->appearance_attributes();
+                auto it = attrs.find("logo-overlay-color");
+                if (it != attrs.end()) {
+                    color = it->second.get_string();
+                    return QString::fromStdString(color);
+                }
+            } catch (...) {
+                // silently ignore
+            }
+            return QVariant();
+        }
         case RoleScopeId:
             return QString::fromStdString(metadata->scope_id());
         default:

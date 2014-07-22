@@ -119,14 +119,14 @@ void OverviewScope::dispatchSearch()
         return;
     }
 
-    QString search_query(searchQuery());
-
-    categories->setSurfacingMode(search_query.isEmpty());
-
-    if (!search_query.isEmpty()) {
-        Scope::dispatchSearch();
-    } else {
+    if (searchQuery().isEmpty()) {
+        setSearchInProgress(true);
         invalidateLastSearch();
+        categories->setSurfacingMode(true);
+        setSearchInProgress(false);
+    } else {
+        categories->setSurfacingMode(false);
+        Scope::dispatchSearch();
     }
 }
 
