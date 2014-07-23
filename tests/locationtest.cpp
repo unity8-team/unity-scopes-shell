@@ -50,8 +50,8 @@ static const string GEOIP_JSON = R"(
   "city":"Accrington",
   "countryCode":"GB",
   "countryName":"United Kingdom",
-    "position": {
-      "accuracy": {
+  "position": {
+    "accuracy": {
       "horizontal":100000.0
     },
     "latitude":55.76540,
