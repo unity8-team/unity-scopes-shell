@@ -82,7 +82,7 @@ private Q_SLOTS:
 
     void testScopeProperties()
     {
-        QCOMPARE(m_scope->id(), QString("scopesOverview"));
+        QCOMPARE(m_scope->id(), QString("scopes"));
         QCOMPARE(m_scope->name(), QString("mock.scopes.DisplayName"));
         QCOMPARE(m_scope->iconHint(), QString("/mock.Icon"));
         QCOMPARE(m_scope->description(), QString("mock.scopes.Description"));

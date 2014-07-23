@@ -93,7 +93,7 @@ void OverviewScope::metadataChanged()
 
 QString OverviewScope::id() const
 {
-    return QString("scopesOverview");
+    return QString("scopes");
 }
 
 bool OverviewScope::visible() const

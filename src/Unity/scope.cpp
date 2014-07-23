@@ -216,13 +216,20 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString scopeId(QString::fromStdString(query.scope_id()));
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
-    // figure out if this scope is already favourited
-    Scope* scope = m_scopesInstance->getScopeById(scopeId);
+
+    Scope* scope = nullptr;
+    if (scopeId == id()) {
+        scope = this;
+    } else {
+        // figure out if this scope is already favourited
+        scope = m_scopesInstance->getScopeById(scopeId);
+    }
+
     if (scope != nullptr) {
         // TODO: change filters?
         scope->setCurrentDepartmentId(departmentId);
         scope->setSearchQuery(searchString);
-        Q_EMIT gotoScope(scopeId);
+        if (scope != this) Q_EMIT gotoScope(scopeId);
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
