@@ -79,25 +79,39 @@ public:
     {
         m_geoIp->start();
 
-        m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
-        m_bus->install_executor(dbus::asio::make_executor(m_bus));
+        try
+        {
+            m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
+            m_bus->install_executor(dbus::asio::make_executor(m_bus));
 
-        m_thread.reset(new WorkerThread(m_bus));
-        m_thread->start();
+            m_thread.reset(new WorkerThread(m_bus));
+            m_thread->start();
 
-        m_locationService = dbus::resolve_service_on_bus<culs::Interface,
-                            culs::Stub>(m_bus);
+            m_locationService = dbus::resolve_service_on_bus<culs::Interface,
+                    culs::Stub>(m_bus);
 
-        m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
-        m_deactivateTimer.setSingleShot(true);
-        m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
+            m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
+            m_deactivateTimer.setSingleShot(true);
+            m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
+
+        }
+        catch (exception& e)
+        {
+            qWarning() << e.what();
+        }
     }
 
     ~Priv()
     {
-        m_bus->stop();
-        m_thread->wait();
-        m_thread->exit();
+        if (m_bus)
+        {
+            m_bus->stop();
+        }
+        if (m_thread->isRunning())
+        {
+            m_thread->wait();
+            m_thread->exit();
+        }
     }
 
 Q_SIGNALS:
