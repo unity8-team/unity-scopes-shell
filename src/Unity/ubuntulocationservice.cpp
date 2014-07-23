@@ -18,7 +18,6 @@
  */
 
 #include "ubuntulocationservice.h"
-#include "geoip.h"
 
 #include <QDebug>
 #include <QThread>
@@ -49,11 +48,6 @@ namespace
      * moving away from an active scope.
      */
     static const int DEACTIVATE_INTERVAL = 5000;
-
-    /**
-     * Minimum time between location updates.
-     */
-    static const int THROTTLE_INTERVAL = 10000;
 }
 
 class WorkerThread : public QThread
@@ -80,9 +74,10 @@ class UbuntuLocationService::Priv : public QObject
 Q_OBJECT
 
 public:
-    Priv()
+    Priv(GeoIp::Ptr geoIp) :
+            m_geoIp(geoIp)
     {
-        m_geoIp.start();
+        m_geoIp->start();
 
         m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
         m_bus->install_executor(dbus::asio::make_executor(m_bus));
@@ -96,10 +91,6 @@ public:
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
-
-        m_positionUpdateThrottle.setInterval(THROTTLE_INTERVAL);
-        m_positionUpdateThrottle.setSingleShot(true);
-        m_positionUpdateThrottle.setTimerType(Qt::VeryCoarseTimer);
     }
 
     ~Priv()
@@ -118,19 +109,18 @@ public Q_SLOTS:
         if (m_refCount > 0 && !m_session)
         {
             // Update the GeoIp data again
-            m_geoIp.start();
+            m_geoIp->start();
 
             // Starting a new location service session
             try
             {
-                m_lastLocation.reset();
-                m_dirty = false;
-
                 m_session = m_locationService->create_session_for_criteria(
                         cul::Criteria());
+                m_lastLocation.reset(); // = make_shared<cul::Position>(m_session->updates().position);
 
-                m_session->updates().position.changed().connect(
-                        bind(&Priv::positionChanged, this, _1));
+                m_positionConnection = make_shared<core::ScopedConnection>(
+                        m_session->updates().position.changed().connect(
+                                bind(&Priv::positionChanged, this, _1)));
 
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
@@ -150,8 +140,11 @@ public Q_SLOTS:
     {
         if (m_lastLocation)
         {
-            culu::Quantity<culu::Length> distance = cul::haversine_distance(*m_lastLocation, newPosition.value);
-            culu::Quantity<culu::Length> threshold{ 50.0 * culu::Meters };
+            culu::Quantity<culu::Length> distance = cul::haversine_distance(
+                    *m_lastLocation, newPosition.value);
+            culu::Quantity<culu::Length> threshold(50.0 * culu::Meters);
+
+            // Ignore the update if we haven't moved significantly
             if (distance <= threshold)
             {
                 return;
@@ -159,34 +152,7 @@ public Q_SLOTS:
         }
 
         m_lastLocation = make_shared<cul::Position>(newPosition.value);
-
-        // If the timer is already active, we have
-        // received an update "soon" after a previous
-        // update, so throttle it.
-        if (m_positionUpdateThrottle.isActive())
-        {
-            m_dirty = true;
-        }
-        // There's no block on the update (it's probably
-        // the first) so dispatch right away.
-        else
-        {
-            // Block updates from being dispatched for a
-            // fixed time
-            m_positionUpdateThrottle.start();
-            Q_EMIT locationChanged();
-        }
-    }
-
-    void throttleTimeout()
-    {
-        // If we got additional updates while we were
-        // throttling, we need to dispatch them now.
-        if (m_dirty)
-        {
-            m_dirty = false;
-            Q_EMIT locationChanged();
-        }
+        Q_EMIT locationChanged();
     }
 
     void requestFinished(const GeoIp::Result& result)
@@ -202,6 +168,8 @@ public:
 
     culss::Interface::Ptr m_session;
 
+    shared_ptr<core::ScopedConnection> m_positionConnection;
+
     shared_ptr<cul::Position> m_lastLocation;
 
     QScopedPointer<WorkerThread> m_thread;
@@ -210,17 +178,13 @@ public:
 
     QTimer m_deactivateTimer;
 
-    GeoIp m_geoIp;
+    GeoIp::Ptr m_geoIp;
 
     GeoIp::Result m_result;
-
-    QTimer m_positionUpdateThrottle;
-
-    bool m_dirty = false;
 };
 
-UbuntuLocationService::UbuntuLocationService() :
-        p(new Priv(), &QObject::deleteLater)
+UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
+        p(new Priv(geoIp), &QObject::deleteLater)
 {
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
@@ -229,7 +193,7 @@ UbuntuLocationService::UbuntuLocationService() :
     connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
 
     // Wire up the network request finished timer
-    connect(&p->m_geoIp, &GeoIp::finished, p.data(), &Priv::requestFinished);
+    connect(p->m_geoIp.data(), &GeoIp::finished, p.data(), &Priv::requestFinished);
 }
 
 unity::scopes::Variant UbuntuLocationService::location() const

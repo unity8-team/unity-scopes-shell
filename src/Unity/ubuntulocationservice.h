@@ -20,6 +20,7 @@
 #ifndef UBUNTULOCATIONSERVICE_H
 #define UBUNTULOCATIONSERVICE_H
 
+#include "geoip.h"
 #include "locationservice.h"
 
 #include <QSharedPointer>
@@ -30,7 +31,7 @@ namespace scopes_ng
 class Q_DECL_EXPORT UbuntuLocationService : public LocationService
 {
 public:
-    UbuntuLocationService();
+    UbuntuLocationService(GeoIp::Ptr geoIp = GeoIp::Ptr(new GeoIp));
 
     virtual ~UbuntuLocationService() = default;
 

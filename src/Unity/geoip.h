@@ -31,7 +31,7 @@ QT_END_NAMESPACE
 namespace scopes_ng
 {
 
-class GeoIp : public QObject
+class Q_DECL_EXPORT GeoIp : public QObject
 {
 Q_OBJECT
 
@@ -70,6 +70,8 @@ public:
     typedef QSharedPointer<GeoIp> Ptr;
 
     GeoIp(const QUrl& url = QUrl("http://geoip.ubuntu.com/lookup"));
+
+    ~GeoIp() = default;
 
 public Q_SLOTS:
     void start();
