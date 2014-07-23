@@ -3,7 +3,7 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
-               libdbus-cpp-dev, # Needed by libubuntu-location-service-dev, but not in deps
+               libdbus-cpp-dev,
                libunity-api-dev (>= 7.85),
                libunity-scopes-dev (>= 0.5.2~),
                libgsettings-qt-dev (>= 0.1),
