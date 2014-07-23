@@ -90,15 +90,15 @@ public:
             m_locationService = dbus::resolve_service_on_bus<culs::Interface,
                     culs::Stub>(m_bus);
 
-            m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
-            m_deactivateTimer.setSingleShot(true);
-            m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
-
         }
         catch (exception& e)
         {
             qWarning() << e.what();
         }
+
+        m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
+        m_deactivateTimer.setSingleShot(true);
+        m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
     }
 
     ~Priv()
@@ -120,7 +120,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void update()
     {
-        if (m_refCount > 0 && !m_session)
+        if (m_refCount > 0 && !m_session && m_locationService)
         {
             // Update the GeoIp data again
             m_geoIp->start();
