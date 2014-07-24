@@ -107,7 +107,7 @@ Scopes::Scopes(QObject *parent)
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
-    m_locationService.reset(new UbuntuLocationService(), &QObject::deleteLater);
+    m_locationService.reset(new UbuntuLocationService());
 }
 
 Scopes::~Scopes()

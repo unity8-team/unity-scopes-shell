@@ -74,12 +74,15 @@ void GeoIp::response(QNetworkReply * const reply)
         }
     }
 
-    if(xml.hasError()) {
+    if (xml.hasError())
+    {
         qWarning() << xml.errorString();
-        return;
+    }
+    else
+    {
+        result.valid = true;
     }
 
-    result.valid = true;
     Q_EMIT finished(result);
 }
 
@@ -91,10 +94,9 @@ void GeoIp::parseResponse(Result& result, QXmlStreamReader& xml)
      * We're going to loop over the things because the order might change.
      * We'll continue the loop until we hit an EndElement named Response.
      */
-    while (!(xml.tokenType() == QXmlStreamReader::EndElement
-            && xml.name() == "Response"))
+    while (!xml.atEnd() && !(xml.isEndElement() && xml.name() == "Response"))
     {
-        if (xml.tokenType() == QXmlStreamReader::StartElement)
+        if (xml.isStartElement())
         {
             if (xml.name() == "Ip")
             {

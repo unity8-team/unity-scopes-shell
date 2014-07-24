@@ -115,7 +115,6 @@ public:
         if (m_thread && m_thread->isRunning())
         {
             m_thread->wait();
-            m_thread->exit();
         }
     }
 
@@ -131,7 +130,7 @@ public Q_SLOTS:
             return;
         }
 
-        if (m_refCount > 0 && !m_session)
+        if (m_activationCount > 0 && !m_session)
         {
             // Update the GeoIp data again
             m_geoIp->start();
@@ -153,7 +152,7 @@ public Q_SLOTS:
                 qWarning() << e.what();
             }
         }
-        else if (m_refCount == 0 && m_session)
+        else if (m_activationCount == 0 && m_session)
         {
             m_session.reset();
         }
@@ -203,7 +202,7 @@ public:
 
     QScopedPointer<WorkerThread> m_thread;
 
-    int m_refCount = 0;
+    int m_activationCount = 0;
 
     QTimer m_deactivateTimer;
 
@@ -311,17 +310,17 @@ bool UbuntuLocationService::isActive() const
 
 void UbuntuLocationService::activate()
 {
-    ++p->m_refCount;
+    ++p->m_activationCount;
     p->m_deactivateTimer.stop();
     p->update();
 }
 
 void UbuntuLocationService::deactivate()
 {
-    --p->m_refCount;
-    if (p->m_refCount < 0)
+    --p->m_activationCount;
+    if (p->m_activationCount < 0)
     {
-        p->m_refCount = 0;
+        p->m_activationCount = 0;
         qWarning() << "Location service refcount error";
     }
     p->m_deactivateTimer.start();
