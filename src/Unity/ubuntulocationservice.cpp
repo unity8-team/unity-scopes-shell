@@ -107,7 +107,7 @@ public:
         {
             m_bus->stop();
         }
-        if (m_thread->isRunning())
+        if (m_thread && m_thread->isRunning())
         {
             m_thread->wait();
             m_thread->exit();
@@ -120,7 +120,13 @@ Q_SIGNALS:
 public Q_SLOTS:
     void update()
     {
-        if (m_refCount > 0 && !m_session && m_locationService)
+        if (!m_locationService)
+        {
+            qWarning() << "Location service not available";
+            return;
+        }
+
+        if (m_refCount > 0 && !m_session)
         {
             // Update the GeoIp data again
             m_geoIp->start();
