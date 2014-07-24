@@ -464,7 +464,8 @@ void Scope::setScopesInstance(Scopes* scopes)
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
         m_locationService = m_scopesInstance->locationService();
-        connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
+        // TODO Notify the user the the location has changed
+        // connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
     }
 }
 

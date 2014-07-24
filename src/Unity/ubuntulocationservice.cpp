@@ -176,11 +176,6 @@ public Q_SLOTS:
         m_locationUpdatedAtLeastOnce = true;
         m_lastLocation = newPosition.value;
         Q_EMIT locationChanged();
-
-        // FIXME Until we have a way of politely informing the user that
-        // they should refresh the query, just stop passing updates
-        m_session->updates().position_status =
-                                culss::Interface::Updates::Status::disabled;
     }
 
     void requestFinished(const GeoIp::Result& result)
