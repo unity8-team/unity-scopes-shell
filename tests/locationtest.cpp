@@ -42,7 +42,7 @@ static const char* LOCATION_SERVICE_INTERFACE = "com.ubuntu.location.Service";
 
 static const char* SESSION_NAME = "com.ubuntu.location.Service.Session";
 static const QString SESSION_PATH = "/com/ubuntu/location/session/%1";
-static const char* SESSION_INTERFACE = "com.ubuntu.location.Service.Session";
+static const QString SESSION_INTERFACE = "com.ubuntu.location.Service.Session";
 
 static const string GEOIP_JSON = R"(
 {
@@ -63,6 +63,27 @@ static const string GEOIP_JSON = R"(
 }
 )";
 
+static const string GPS_JSON = R"(
+{
+  "areaCode":"0",
+  "city":"Accrington",
+  "countryCode":"GB",
+  "countryName":"United Kingdom",
+  "position": {
+    "accuracy": {
+      "horizontal":4.0,
+      "vertical":5.0
+    },
+    "altitude":3.0,
+    "latitude":1.0,
+    "longitude":2.0
+  },
+  "regionCode":"H2",
+  "regionName":"Lancashire",
+  "zipPostalCode":"BB5"
+}
+)";
+
 class LocationTest: public QObject
 {
 Q_OBJECT
@@ -74,6 +95,19 @@ public:
     }
 
 private:
+    OrgFreedesktopDBusMockInterface& interface()
+    {
+        return mock.mockInterface(LOCATION_SERVICE_NAME, LOCATION_SERVICE_PATH,
+                                  LOCATION_SERVICE_INTERFACE,
+                                  QDBusConnection::SystemBus);
+    }
+
+    OrgFreedesktopDBusMockInterface& session(int id)
+    {
+        return mock.mockInterface(SESSION_NAME, SESSION_PATH.arg(id),
+                                  SESSION_INTERFACE, QDBusConnection::SystemBus);
+    }
+
     DBusTestRunner dbus;
 
     DBusMock mock;
@@ -103,23 +137,15 @@ private Q_SLOTS:
 
         // Set up the main interface
         {
-            OrgFreedesktopDBusMockInterface& interface = mock.mockInterface(
-                    LOCATION_SERVICE_NAME, LOCATION_SERVICE_PATH,
-                    LOCATION_SERVICE_INTERFACE, QDBusConnection::SystemBus);
-
-            interface.AddMethod(LOCATION_SERVICE_INTERFACE,
+            interface().AddMethod(LOCATION_SERVICE_INTERFACE,
                                 "CreateSessionForCriteria", "bbbbdbbb", "o",
                                 "ret='/com/ubuntu/location/session/0'");
         }
 
         // Set up the first session
         {
-            OrgFreedesktopDBusMockInterface& session = mock.mockInterface(
-                    SESSION_NAME, SESSION_PATH.arg(0), SESSION_INTERFACE,
-                    QDBusConnection::SystemBus);
-
-            session.AddMethod(SESSION_INTERFACE, "StartPositionUpdates", "", "",
-                              "");
+            session(0).AddMethod(SESSION_INTERFACE, "StartPositionUpdates", "", "", "");
+            session(0).AddMethod(SESSION_INTERFACE, "StopPositionUpdates", "", "", "");
         }
 
         geoIpServer.setProcessChannelMode(QProcess::ForwardedErrorChannel);
@@ -140,13 +166,26 @@ private Q_SLOTS:
         locationService.reset(new UbuntuLocationService(GeoIp::Ptr(new GeoIp(url))));
     }
 
-    void testGeoIpLocation()
+    void testLocation()
     {
         QSignalSpy spy(locationService.data(), SIGNAL(locationChanged()));
         locationService->activate();
 
+        // The GeoIP HTTP call should return now
         QVERIFY(spy.wait());
         QCOMPARE(Variant::deserialize_json(GEOIP_JSON), locationService->location());
+
+        // Call the object that the location service client creates
+        QDBusMessage reply = QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(":1.4", SESSION_PATH.arg(0),
+                                               SESSION_INTERFACE,
+                                               "UpdatePosition")
+                    << 1.0 << 2.0 << true << 3.0 << true << 4.0 << true << 5.0 << qint64(1234));
+        QCOMPARE(QString(), reply.errorMessage());
+
+        // The GPS update should return now
+        QVERIFY(spy.wait());
+        QCOMPARE(Variant::deserialize_json(GPS_JSON), locationService->location());
     }
 };
 
