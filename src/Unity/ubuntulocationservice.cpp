@@ -77,6 +77,16 @@ public:
     Priv(GeoIp::Ptr geoIp) :
             m_geoIp(geoIp)
     {
+        m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
+        m_deactivateTimer.setSingleShot(true);
+        m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
+
+        // If the location service is disabled
+        if (qEnvironmentVariableIsSet("UNITY_SCOPES_NO_LOCATION"))
+        {
+            return;
+        }
+
         m_geoIp->start();
 
         try
@@ -89,16 +99,11 @@ public:
 
             m_locationService = dbus::resolve_service_on_bus<culs::Interface,
                     culs::Stub>(m_bus);
-
         }
         catch (exception& e)
         {
             qWarning() << e.what();
         }
-
-        m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
-        m_deactivateTimer.setSingleShot(true);
-        m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
     }
 
     ~Priv()
@@ -136,11 +141,10 @@ public Q_SLOTS:
             {
                 m_session = m_locationService->create_session_for_criteria(
                         cul::Criteria());
-                m_lastLocation.reset(); // = make_shared<cul::Position>(m_session->updates().position);
+                m_lastLocation = m_session->updates().position->value;
 
-                m_positionConnection = make_shared<core::ScopedConnection>(
-                        m_session->updates().position.changed().connect(
-                                bind(&Priv::positionChanged, this, _1)));
+                m_session->updates().position.changed().connect(
+                        bind(&Priv::positionChanged, this, _1));
 
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
@@ -158,10 +162,10 @@ public Q_SLOTS:
 
     void positionChanged(const cul::Update<cul::Position>& newPosition)
     {
-        if (m_lastLocation)
+        if (m_locationUpdatedAtLeastOnce)
         {
             culu::Quantity<culu::Length> distance = cul::haversine_distance(
-                    *m_lastLocation, newPosition.value);
+                    m_lastLocation, newPosition.value);
             culu::Quantity<culu::Length> threshold(50.0 * culu::Meters);
 
             // Ignore the update if we haven't moved significantly
@@ -171,8 +175,14 @@ public Q_SLOTS:
             }
         }
 
-        m_lastLocation = make_shared<cul::Position>(newPosition.value);
+        m_locationUpdatedAtLeastOnce = true;
+        m_lastLocation = newPosition.value;
         Q_EMIT locationChanged();
+
+        // FIXME Until we have a way of politely informing the user that
+        // they should refresh the query, just stop passing updates
+        m_session->updates().position_status =
+                                culss::Interface::Updates::Status::disabled;
     }
 
     void requestFinished(const GeoIp::Result& result)
@@ -188,9 +198,9 @@ public:
 
     culss::Interface::Ptr m_session;
 
-    shared_ptr<core::ScopedConnection> m_positionConnection;
+    cul::Position m_lastLocation;
 
-    shared_ptr<cul::Position> m_lastLocation;
+    bool m_locationUpdatedAtLeastOnce = false;
 
     QScopedPointer<WorkerThread> m_thread;
 
@@ -239,9 +249,9 @@ unity::scopes::Variant UbuntuLocationService::location() const
     scopes::VariantMap position;
 
     // We need to be active, and the location session must have updated at least once
-    if (isActive() && p->m_lastLocation)
+    if (isActive() && p->m_locationUpdatedAtLeastOnce)
     {
-        const cul::Position& pos = *p->m_lastLocation;
+        const cul::Position& pos = p->m_lastLocation;
 
         scopes::VariantMap accuracy;
         if (pos.accuracy.horizontal)
