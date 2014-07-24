@@ -77,7 +77,7 @@ public:
         }
         else if (query_ == "attributes")
         {
-            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "attributes": "attributes"}})");
+            CategoryRenderer rating_rndr(R"({"schema-version": 1, "components": {"title": "title", "attributes": {"field": "attributes", "max-count":3}}})");
             auto cat = reply->register_category("cat1", "Category 1", "", rating_rndr);
             CategorisedResult res(cat);
             res.set_uri("test:uri");

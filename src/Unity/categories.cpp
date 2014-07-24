@@ -39,7 +39,7 @@ using namespace unity;
 namespace scopes_ng {
 
 // FIXME: this should be in a common place
-#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes":null, "background":null }, "resources":{}})"
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null }, "resources":{}})"
 
 class CategoryData
 {
@@ -138,6 +138,15 @@ public:
         }
 
         return result;
+    }
+
+    int getMaxAttributes() const
+    {
+        QJsonObject components_obj = m_components.toObject();
+        QJsonObject attrs_obj = components_obj.value("attributes").toObject();
+        QJsonValue max_count_val = attrs_obj.value("max-count");
+
+        return max_count_val.toInt(2);
     }
 
     QVector<int> updateAttributes(scopes::Category::SCPtr category)
@@ -355,6 +364,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
                 resultsModel = catData->resultsModel();
                 if (resultsModel) {
                     resultsModel->setComponentsMapping(catData->getComponentsMapping());
+                    resultsModel->setMaxAtrributesCount(catData->getMaxAttributes());
                 }
             }
             beginInsertRows(QModelIndex(), emptyIndex, emptyIndex);
@@ -369,6 +379,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
                 resultsModel = catData->resultsModel();
                 if (resultsModel) {
                     resultsModel->setComponentsMapping(catData->getComponentsMapping());
+                    resultsModel->setMaxAtrributesCount(catData->getMaxAttributes());
                 }
                 QModelIndex changedIndex(this->index(index));
                 dataChanged(changedIndex, changedIndex, changedRoles);
@@ -386,6 +397,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
         m_categories.insert(emptyIndex, QSharedPointer<CategoryData>(catData));
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
         resultsModel->setComponentsMapping(catData->getComponentsMapping());
+        resultsModel->setMaxAtrributesCount(catData->getMaxAttributes());
         m_categoryResults[category->id()] = resultsModel;
 
         endInsertRows();
@@ -438,6 +450,7 @@ bool Categories::overrideCategoryJson(QString const& categoryId, QString const& 
         }
         if (catData->resultsModel()) {
             catData->resultsModel()->setComponentsMapping(catData->getComponentsMapping());
+            catData->resultsModel()->setMaxAtrributesCount(catData->getMaxAttributes());
         }
         QModelIndex changeIndex(index(idx));
         QVector<int> roles;
