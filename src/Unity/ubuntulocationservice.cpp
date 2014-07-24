@@ -141,7 +141,6 @@ public Q_SLOTS:
             {
                 m_session = m_locationService->create_session_for_criteria(
                         cul::Criteria());
-                m_lastLocation = m_session->updates().position->value;
 
                 m_session->updates().position.changed().connect(
                         bind(&Priv::positionChanged, this, _1));
