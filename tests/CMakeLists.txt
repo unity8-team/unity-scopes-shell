@@ -1,8 +1,8 @@
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.4.0)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.3)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1 REQUIRED)
-pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1 REQUIRED)
+pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
+pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1>=0.2 REQUIRED)
 
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )

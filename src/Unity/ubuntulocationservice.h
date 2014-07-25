@@ -35,7 +35,7 @@ public:
 
     virtual ~UbuntuLocationService() = default;
 
-    unity::scopes::Variant location() const override;
+    unity::scopes::Location location() const override;
 
     bool isActive() const override;
 

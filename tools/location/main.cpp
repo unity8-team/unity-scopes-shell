@@ -26,6 +26,7 @@
 
 using namespace std;
 using namespace scopes_ng;
+using namespace unity::scopes;
 
 class LocationPrinter: public QObject {
 Q_OBJECT
@@ -38,7 +39,7 @@ public:
 
 public Q_SLOTS:
     void positionChanged() {
-        cout << "position:" << locationService.location().serialize_json() << endl;
+        cout << "position:" << Variant(locationService.location().serialize()).serialize_json() << endl;
     }
 
 protected:

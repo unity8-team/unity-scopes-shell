@@ -45,42 +45,35 @@ static const QString SESSION_PATH = "/com/ubuntu/location/session/%1";
 static const QString SESSION_INTERFACE = "com.ubuntu.location.Service.Session";
 
 static const string GEOIP_JSON = R"(
+
 {
-  "areaCode":"0",
+  "area_code":"0",
   "city":"Accrington",
-  "countryCode":"GB",
-  "countryName":"United Kingdom",
-  "position": {
-    "accuracy": {
-      "horizontal":100000.0
-    },
-    "latitude":55.76540,
-    "longitude":-2.74670
-  },
-  "regionCode":"H2",
-  "regionName":"Lancashire",
-  "zipPostalCode":"BB5"
+  "country_code":"GB",
+  "country_name":"United Kingdom",
+  "horizontal_accuracy":100000.0,
+  "latitude":55.76540,
+  "longitude":-2.74670,
+  "region_code":"H2",
+  "region_name":"Lancashire",
+  "zip_postal_code":"BB5"
 }
 )";
 
 static const string GPS_JSON = R"(
 {
-  "areaCode":"0",
+  "altitude":3.0,
+  "area_code":"0",
   "city":"Accrington",
-  "countryCode":"GB",
-  "countryName":"United Kingdom",
-  "position": {
-    "accuracy": {
-      "horizontal":4.0,
-      "vertical":5.0
-    },
-    "altitude":3.0,
-    "latitude":1.0,
-    "longitude":2.0
-  },
-  "regionCode":"H2",
-  "regionName":"Lancashire",
-  "zipPostalCode":"BB5"
+  "country_code":"GB",
+  "country_name":"United Kingdom",
+  "horizontal_accuracy":4.0,
+  "latitude":1.0,
+  "longitude":2.0,
+  "region_code":"H2",
+  "region_name":"Lancashire",
+  "vertical_accuracy":5.0,
+  "zip_postal_code":"BB5"
 }
 )";
 
@@ -173,7 +166,7 @@ private Q_SLOTS:
 
         // The GeoIP HTTP call should return now
         QVERIFY(spy.wait());
-        QCOMPARE(Variant::deserialize_json(GEOIP_JSON), locationService->location());
+        QCOMPARE(Variant::deserialize_json(GEOIP_JSON), Variant(locationService->location().serialize()));
 
         // Call the object that the location service client creates
         QDBusMessage reply = QDBusConnection::systemBus().call(
@@ -185,7 +178,8 @@ private Q_SLOTS:
 
         // The GPS update should return now
         QVERIFY(spy.wait());
-        QCOMPARE(Variant::deserialize_json(GPS_JSON), locationService->location());
+        qDebug() << QString::fromStdString(Variant(locationService->location().serialize()).serialize_json());
+        QCOMPARE(Variant::deserialize_json(GPS_JSON), Variant(locationService->location().serialize()));
     }
 };
 

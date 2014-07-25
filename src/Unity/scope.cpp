@@ -528,7 +528,7 @@ void Scope::dispatchSearch()
             // TODO Verify that the scope is allowed to access the location data
             if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
-                meta["location"] = m_locationService->location();
+                meta.set_location(m_locationService->location());
             }
         }
         catch (std::domain_error& e)

@@ -219,83 +219,61 @@ UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
     connect(p->m_geoIp.data(), &GeoIp::finished, p.data(), &Priv::requestFinished);
 }
 
-unity::scopes::Variant UbuntuLocationService::location() const
+scopes::Location UbuntuLocationService::location() const
 {
-    scopes::VariantMap location;
+    scopes::Location location(0.0, 0.0);
 
     const GeoIp::Result& result(p->m_result);
 
     if (result.valid)
     {
-        location["countryCode"] = result.countryCode.toStdString();
-        location["countryName"] = result.countryName.toStdString();
+        location.set_country_code(result.countryCode.toStdString());
+        location.set_country_name(result.countryName.toStdString());
 
-        location["regionCode"] = result.regionCode.toStdString();
-        location["regionName"] = result.regionName.toStdString();
+        location.set_region_code(result.regionCode.toStdString());
+        location.set_region_name(result.regionName.toStdString());
 
-        location["zipPostalCode"] = result.zipPostalCode.toStdString();
-        location["areaCode"] = result.areaCode.toStdString();
+        location.set_zip_postal_code(result.zipPostalCode.toStdString());
+        location.set_area_code(result.areaCode.toStdString());
 
-        location["city"] = result.city.toStdString();
+        location.set_city(result.city.toStdString());
     }
-
-    scopes::VariantMap position;
 
     // We need to be active, and the location session must have updated at least once
     if (isActive() && p->m_locationUpdatedAtLeastOnce)
     {
         const cul::Position& pos = p->m_lastLocation;
 
-        scopes::VariantMap accuracy;
         if (pos.accuracy.horizontal)
         {
-            // location.position.accuracy.horizontal
-            accuracy["horizontal"] = pos.accuracy.horizontal.get().value();
+            location.set_horizontal_accuracy(pos.accuracy.horizontal.get().value());
         }
         if (pos.accuracy.vertical)
         {
-            // location.position.accuracy.vertical
-            accuracy["vertical"] = pos.accuracy.vertical.get().value();
-        }
-        if (pos.accuracy.horizontal || pos.accuracy.horizontal)
-        {
-            // location.position.accuracy
-            position["accuracy"] = accuracy;
+            location.set_vertical_accuracy(pos.accuracy.vertical.get().value());
         }
 
         if (pos.altitude)
         {
-            // location.position.altitude
-            position["altitude"] = pos.altitude.get().value.value();
+            location.set_altitude(pos.altitude.get().value.value());
         }
 
-        // location.position.latitude
-        position["latitude"] = pos.latitude.value.value();
-        // location.position.longitude
-        position["longitude"] = pos.longitude.value.value();
+        location.set_latitude(pos.latitude.value.value());
+        location.set_longitude(pos.longitude.value.value());
     }
     else if (result.valid)
     {
-        scopes::VariantMap accuracy;
-        // location.position.accuracy.horizontal
-        accuracy["horizontal"] = 100000.0;
-        // location.position.accuracy
-        position["accuracy"] = accuracy;
+        location.set_horizontal_accuracy(100000.0);
 
-        // location.position.latitude
-        position["latitude"] = result.latitude;
-        // location.position.longitude
-        position["longitude"] = result.longitude;
+        location.set_latitude(result.latitude);
+        location.set_longitude(result.longitude);
     }
     else
     {
         throw domain_error("Location unavailable");
     }
 
-    // location.position
-   location["position"] = position;
-
-    return scopes::Variant(location);
+    return location;
 }
 
 bool UbuntuLocationService::isActive() const
