@@ -656,13 +656,14 @@ private Q_SLOTS:
         unity::scopes::Result::SPtr result;
         QVERIFY(getFirstResult(m_scope, result));
 
-        QSignalSpy spy(m_scope, SIGNAL(gotoScope(QString)));
+        QSignalSpy spy(m_scope, SIGNAL(searchQueryChanged()));
         m_scope->activate(QVariant::fromValue(result));
         // this is likely to be invoked synchronously
         if (spy.count() == 0) {
             QVERIFY(spy.wait());
         }
         QVERIFY(spy.count() > 0);
+        QCOMPARE(m_scope->searchQuery(), QString("next-scope-query"));
     }
 
 };
