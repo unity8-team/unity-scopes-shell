@@ -51,13 +51,13 @@ public:
     {
         Department::SPtr child_dep;
         Department::SPtr root_dep;
-        root_dep = Department::create("", query, "All departments");
+        root_dep = Department::create("hidden", query, "");
 
         child_dep = Department::create("books", query, "Books");
         child_dep->set_has_subdepartments();
         root_dep->add_subdepartment(child_dep);
 
-        child_dep = Department::create("movies", query, "Movies, TV, Music");
+        child_dep = Department::create("", query, "Movies, TV, Music");
         child_dep->set_has_subdepartments();
         root_dep->add_subdepartment(child_dep);
 
