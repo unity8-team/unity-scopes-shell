@@ -28,10 +28,9 @@ namespace scopes_ng {
 
 using namespace unity;
 
-const int MAX_ATTRIBUTES = 3;
-
 ResultsModel::ResultsModel(QObject* parent)
  : unity::shell::scopes::ResultsModelInterface(parent)
+ , m_maxAttributes(2)
 {
 }
 
@@ -62,6 +61,11 @@ void ResultsModel::setComponentsMapping(QHash<QString, QString> const& mapping)
     } else {
         m_componentMapping.swap(newMapping);
     }
+}
+
+void ResultsModel::setMaxAtrributesCount(int count)
+{
+    m_maxAttributes = count;
 }
 
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
@@ -136,6 +140,7 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
     }
 
     QVariantList attributes;
+    QString defaultStyle("default");
     scopes::VariantArray arr(v.get_array());
     for (unsigned i = 0; i < arr.size(); i++) {
         if (arr[i].which() != scopes::Variant::Type::Dict) {
@@ -150,11 +155,11 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
             continue;
         }
         if (!attribute.contains("style")) {
-            attribute["style"] = QString("default");
+            attribute["style"] = defaultStyle;
         }
         attributes << QVariant(attribute);
         // we'll limit the number of attributes
-        if (attributes.size() >= MAX_ATTRIBUTES) {
+        if (attributes.size() >= m_maxAttributes) {
             break;
         }
     }

@@ -54,6 +54,7 @@ public:
     /* setters */
     void setCategoryId(QString const& id) override;
     void setComponentsMapping(QHash<QString, QString> const& mapping);
+    void setMaxAtrributesCount(int count);
 
     QHash<int, QByteArray> roleNames() const override;
 
@@ -64,6 +65,7 @@ private:
     std::unordered_map<std::string, std::string> m_componentMapping;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
     QString m_categoryId;
+    int m_maxAttributes;
 };
 
 } // namespace scopes_ng
