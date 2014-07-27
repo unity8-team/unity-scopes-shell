@@ -186,8 +186,8 @@ private Q_SLOTS:
             QVERIFY(spy.wait());
         }
         QList<QVariant> arguments = spy.takeFirst();
-        auto desktopFile = arguments.at(0).value<QString>();
-        QCOMPARE(desktopFile, QString("non-existent"));
+        auto uri = arguments.at(0).value<QString>();
+        QCOMPARE(uri, QString("application:///tmp/non-existent.desktop"));
     }
 
     void testPreviewReplacingPreview()
