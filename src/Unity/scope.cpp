@@ -857,18 +857,7 @@ void Scope::activateUri(QString const& uri)
     */
     QUrl url(uri);
     if (url.scheme() == QLatin1String("application")) {
-        QString path(url.path().isEmpty() ? url.authority() : url.path());
-        if (path.startsWith("/")) {
-            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
-                if (path.startsWith(dir)) {
-                    path.remove(0, dir.length());
-                    path.replace('/', '-');
-                    break;
-                }
-            }
-        }
-
-        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
+        Q_EMIT activateApplication(uri);
     } else if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;
         performQuery(uri);
