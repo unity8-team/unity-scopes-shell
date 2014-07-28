@@ -39,7 +39,7 @@ using namespace unity;
 namespace scopes_ng {
 
 // FIXME: this should be in a common place
-#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null }, "resources":{}})"
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0 }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null }, "resources":{}})"
 
 class CategoryData
 {
