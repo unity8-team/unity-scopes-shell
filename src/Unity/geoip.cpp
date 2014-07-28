@@ -44,13 +44,14 @@ void GeoIp::response(QNetworkReply * const reply)
 {
     m_running = false;
 
+    Result result;
+
     if (reply->error())
     {
         qWarning() << reply->errorString();
+        Q_EMIT finished(result);
         return;
     }
-
-    Result result;
 
     QXmlStreamReader xml(reply);
     while (!xml.atEnd() && !xml.hasError())
@@ -70,6 +71,10 @@ void GeoIp::response(QNetworkReply * const reply)
             if (xml.name() == "Response")
             {
                 parseResponse(result, xml);
+                if (!xml.hasError())
+                {
+                    result.valid = true;
+                }
             }
         }
     }
@@ -77,10 +82,6 @@ void GeoIp::response(QNetworkReply * const reply)
     if (xml.hasError())
     {
         qWarning() << xml.errorString();
-    }
-    else
-    {
-        result.valid = true;
     }
 
     Q_EMIT finished(result);
