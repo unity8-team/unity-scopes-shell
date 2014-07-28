@@ -19,16 +19,23 @@
 
 #include "department.h"
 
+#include <unity/scopes/CannedQuery.h>
+
 namespace scopes_ng
 {
 
 using namespace unity;
 
 Department::Department(QObject* parent) :
-    unity::shell::scopes::DepartmentInterface(parent),
+    unity::shell::scopes::NavigationInterface(parent),
     m_loaded(false),
     m_isRoot(false)
 {
+}
+
+void Department::setScopeId(QString const& scopeId)
+{
+    m_scopeId = scopeId;
 }
 
 void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
@@ -37,14 +44,14 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
         qWarning("Tried to set null DepartmentNode!");
         return;
     }
-    m_departmentId = treeNode->id();
+    m_navigationId = treeNode->id();
     m_label = treeNode->label();
     m_allLabel = treeNode->allLabel();
     m_loaded = !treeNode->isLeaf() && treeNode->childCount() > 0;
     m_isRoot = treeNode->isRoot();
 
     DepartmentNode* parentNode = treeNode->parent();
-    m_parentDepartmentId = parentNode ? parentNode->id() : "";
+    m_parentNavigationId = parentNode ? parentNode->id() : "";
     m_parentLabel = parentNode ? parentNode->label() : "";
 
     beginResetModel();
@@ -61,10 +68,10 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
 
     endResetModel();
 
-    Q_EMIT departmentIdChanged();
+    Q_EMIT navigationIdChanged();
     Q_EMIT labelChanged();
     Q_EMIT allLabelChanged();
-    Q_EMIT parentDepartmentIdChanged();
+    Q_EMIT parentNavigationIdChanged();
     Q_EMIT parentLabelChanged();
     Q_EMIT loadedChanged();
     Q_EMIT countChanged();
@@ -100,7 +107,8 @@ QVariant Department::data(const QModelIndex& index, int role) const
 {
     SubdepartmentData* data = m_subdepartments[index.row()].data();
     switch (role) {
-        case RoleDepartmentId: return data->id;
+        case RoleNavigationId: return data->id;
+        case RoleQuery: return QVariant(); // FIXME!
         case RoleLabel: return data->label;
         case RoleHasChildren: return data->hasChildren;
         case RoleIsActive: return data->isActive;
@@ -114,9 +122,20 @@ int Department::rowCount(const QModelIndex& parent) const
     return m_subdepartments.size();
 }
 
-QString Department::departmentId() const
+QString Department::navigationId() const
 {
-    return m_departmentId;
+    return m_navigationId;
+}
+
+QString Department::query() const
+{
+    if (m_scopeId.isEmpty()) {
+        qWarning("Unable to construct canned query, scope id is not set!");
+        return QString();
+    }
+    unity::scopes::CannedQuery q(m_scopeId.toStdString());
+    q.set_department_id(m_navigationId.toStdString());
+    return QString::fromStdString(q.to_uri());
 }
 
 QString Department::label() const
@@ -129,9 +148,9 @@ QString Department::allLabel() const
     return m_allLabel;
 }
 
-QString Department::parentDepartmentId() const
+QString Department::parentNavigationId() const
 {
-    return m_parentDepartmentId;
+    return m_parentNavigationId;
 }
 
 QString Department::parentLabel() const

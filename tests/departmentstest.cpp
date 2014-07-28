@@ -77,6 +77,7 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
         QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
     }
 
     void cleanup()
@@ -89,22 +90,22 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString("foo"));
 
-        QCOMPARE(m_scope->hasDepartments(), false);
+        QCOMPARE(m_scope->hasNavigation(), false);
     }
 
     void testRootDepartment()
     {
         performSearch(m_scope, QString(""));
 
-        QCOMPARE(m_scope->hasDepartments(), true);
-        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
-        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(m_scope->currentDepartmentId()));
+        QCOMPARE(m_scope->hasNavigation(), true);
+        QCOMPARE(m_scope->currentNavigationId(), QString(""));
+        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(m_scope->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
 
-        QVERIFY(departmentModel->departmentId().isEmpty());
+        QVERIFY(departmentModel->navigationId().isEmpty());
         QCOMPARE(departmentModel->label(), QString("All departments"));
         QCOMPARE(departmentModel->allLabel(), QString(""));
-        QCOMPARE(departmentModel->parentDepartmentId(), QString());
+        QCOMPARE(departmentModel->parentNavigationId(), QString());
         QCOMPARE(departmentModel->parentLabel(), QString());
         QCOMPARE(departmentModel->loaded(), true);
         QCOMPARE(departmentModel->isRoot(), true);
@@ -113,13 +114,13 @@ private Q_SLOTS:
         QModelIndex idx;
 
         idx = departmentModel->index(0);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleDepartmentId), QVariant(QString("books")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
 
         idx = departmentModel->index(4);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleDepartmentId), QVariant(QString("toys")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
         QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
@@ -129,23 +130,23 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString(""));
 
-        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
-        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("toys")));
+        QCOMPARE(m_scope->currentNavigationId(), QString(""));
+        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
         QVERIFY(departmentModel != nullptr);
 
         QSignalSpy spy(departmentModel.data(), SIGNAL(loadedChanged()));
 
-        QCOMPARE(departmentModel->departmentId(), QString("toys"));
+        QCOMPARE(departmentModel->navigationId(), QString("toys"));
         QCOMPARE(departmentModel->label(), QString("Toys, Children & Baby"));
         QCOMPARE(departmentModel->allLabel(), QString(""));
-        QCOMPARE(departmentModel->parentDepartmentId(), QString(""));
+        QCOMPARE(departmentModel->parentNavigationId(), QString(""));
         QCOMPARE(departmentModel->parentLabel(), QString("All departments"));
         QCOMPARE(departmentModel->loaded(), false);
         QCOMPARE(departmentModel->isRoot(), false);
 
         QCOMPARE(departmentModel->rowCount(), 0);
 
-        m_scope->loadDepartment(QString("toys"));
+        m_scope->performQuery(departmentModel->query());
         QVERIFY(spy.wait());
 
         QCOMPARE(departmentModel->rowCount(), 2);
@@ -157,16 +158,18 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString(""));
 
-        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
+        QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
-        m_scope->loadDepartment(QString("books"));
+        QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
+        m_scope->performQuery(navModel->query());
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("books")));
+        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
+        navModel.reset(m_scope->getNavigation(QString("books-audio")));
         // this is a leaf department, so activating it should update the parent model
-        m_scope->loadDepartment(QString("books-audio"));
+        m_scope->performQuery(navModel->query());
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
         QCOMPARE(departmentModel->isRoot(), false);
@@ -174,7 +177,7 @@ private Q_SLOTS:
         bool foundAudiobooks = false;
         for (int i = 0; i < departmentModel->rowCount(); i++) {
             QModelIndex idx(departmentModel->index(i));
-            QVariant data = departmentModel->data(idx, Department::Roles::RoleDepartmentId);
+            QVariant data = departmentModel->data(idx, Department::Roles::RoleNavigationId);
             if (data.toString() == QString("books-audio")) {
                 QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive).toBool(), true);
                 foundAudiobooks = true;
@@ -187,16 +190,17 @@ private Q_SLOTS:
     {
         performSearch(m_scope, QString(""));
 
-        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
+        QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
-        m_scope->loadDepartment(QString("books"));
+        QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
+        m_scope->performQuery(navModel->query());
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<DepartmentInterface> departmentModel(m_scope->getDepartment(QString("books")));
+        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
         // get the root again without actually loading the department
-        departmentModel.reset(m_scope->getDepartment(departmentModel->parentDepartmentId()));
+        departmentModel.reset(m_scope->getNavigation(departmentModel->parentNavigationId()));
         QCOMPARE(departmentModel->isRoot(), true);
         QEXPECT_FAIL("", "We have the department in cache, to it kind of is loaded", Continue);
         QCOMPARE(departmentModel->loaded(), false);
@@ -204,28 +208,31 @@ private Q_SLOTS:
 
     void testIncompleteTreeOnLeaf()
     {
-        QScopedPointer<DepartmentInterface> departmentModel;
+        QScopedPointer<NavigationInterface> navModel;
+        QScopedPointer<NavigationInterface> departmentModel;
         performSearch(m_scope, QString(""));
 
-        QCOMPARE(m_scope->currentDepartmentId(), QString(""));
-        QCOMPARE(m_scope->hasDepartments(), true);
+        QCOMPARE(m_scope->currentNavigationId(), QString(""));
+        QCOMPARE(m_scope->hasNavigation(), true);
 
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
-        m_scope->loadDepartment(QString("toys"));
+        navModel.reset(m_scope->getNavigation(QString("toys")));
+        m_scope->performQuery(navModel->query());
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
 
-        departmentModel.reset(m_scope->getDepartment(QString("toys")));
+        departmentModel.reset(m_scope->getNavigation(QString("toys")));
         QCOMPARE(departmentModel->isRoot(), false);
         QCOMPARE(departmentModel->rowCount(), 2);
 
-        m_scope->loadDepartment(QString("toys-games"));
+        navModel.reset(m_scope->getNavigation(QString("toys-games")));
+        m_scope->performQuery(navModel->query());
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
 
         // after getting the parent department model, it should still have
         // all the leaves, even though the leaf served just itself
-        departmentModel.reset(m_scope->getDepartment(QString("toys")));
+        departmentModel.reset(m_scope->getNavigation(QString("toys")));
         QCOMPARE(departmentModel->isRoot(), false);
         QCOMPARE(departmentModel->rowCount(), 2);
     }

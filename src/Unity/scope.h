@@ -124,8 +124,10 @@ public:
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
-    QString currentDepartmentId() const override;
-    bool hasDepartments() const override;
+    QString currentNavigationId() const override;
+    bool hasNavigation() const override;
+    QString currentAltNavigationId() const override;
+    bool hasAltNavigation() const override;
     QVariantMap customizations() const override;
 
     /* setters */
@@ -138,8 +140,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
-    Q_INVOKABLE unity::shell::scopes::DepartmentInterface* getDepartment(QString const& id) override;
-    Q_INVOKABLE void loadDepartment(QString const& id) override;
+    Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
+    Q_INVOKABLE unity::shell::scopes::NavigationInterface* getAltNavigation(QString const& id) override;
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
@@ -174,7 +176,7 @@ protected:
 private:
     void setScopesInstance(Scopes*);
     void startTtlTimer();
-    void setCurrentDepartmentId(QString const& id);
+    void setCurrentNavigationId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
@@ -186,13 +188,15 @@ private:
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
-    QString m_currentDepartmentId;
+    QString m_currentNavigationId;
+    QString m_currentAltNavigationId;
     QVariantMap m_customizations;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
     bool m_delayedClear;
-    bool m_hasDepartments;
+    bool m_hasNavigation;
+    bool m_hasAltNavigation;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;

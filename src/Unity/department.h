@@ -21,7 +21,7 @@
 #ifndef NG_DEPARTMENT_H
 #define NG_DEPARTMENT_H
 
-#include <unity/shell/scopes/DepartmentInterface.h>
+#include <unity/shell/scopes/NavigationInterface.h>
 
 #include <QString>
 #include <QSharedPointer>
@@ -44,22 +44,24 @@ struct SubdepartmentData
     bool isActive;
 };
 
-class Q_DECL_EXPORT Department : public unity::shell::scopes::DepartmentInterface
+class Q_DECL_EXPORT Department : public unity::shell::scopes::NavigationInterface
 {
     Q_OBJECT
 
 public:
     explicit Department(QObject* parent = 0);
+    void setScopeId(QString const& scopeId);
     void loadFromDepartmentNode(DepartmentNode* treeNode);
     void markSubdepartmentActive(QString const& subdepartmentId);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    QString departmentId() const override;
+    QString navigationId() const override;
+    QString query() const override;
     QString label() const override;
     QString allLabel() const override;
-    QString parentDepartmentId() const override;
+    QString parentNavigationId() const override;
     QString parentLabel() const override;
     bool loaded() const override;
     bool isRoot() const override;
@@ -68,10 +70,11 @@ public:
 Q_SIGNALS:
 
 private:
-    QString m_departmentId;
+    QString m_navigationId;
+    QString m_scopeId;
     QString m_label;
     QString m_allLabel;
-    QString m_parentDepartmentId;
+    QString m_parentNavigationId;
     QString m_parentLabel;
     bool m_loaded;
     bool m_isRoot;

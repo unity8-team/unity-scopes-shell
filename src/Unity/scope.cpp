@@ -70,7 +70,8 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
     , m_delayedClear(false)
-    , m_hasDepartments(false)
+    , m_hasNavigation(false)
+    , m_hasAltNavigation(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
 {
@@ -227,8 +228,13 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     if (scope != nullptr) {
         // TODO: change filters?
-        scope->setCurrentDepartmentId(departmentId);
+        qWarning("=== switching nav to %s", departmentId.toStdString().c_str());
+        scope->setCurrentNavigationId(departmentId);
         scope->setSearchQuery(searchString);
+        // FIXME: implement better way to do multiple changes to search props and dispatch single search
+        if (!scope->searchInProgress()) {
+            scope->invalidateResults();
+        }
         if (scope != this) Q_EMIT gotoScope(scopeId);
     } else {
         // create temp dash page
@@ -237,7 +243,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             scope = new scopes_ng::Scope(this);
             scope->setScopeData(*meta_sptr);
             scope->setScopesInstance(m_scopesInstance);
-            scope->setCurrentDepartmentId(departmentId);
+            scope->setCurrentNavigationId(departmentId);
             scope->setSearchQuery(searchString);
             m_tempScopes.insert(scope);
             Q_EMIT openScope(scope);
@@ -289,7 +295,7 @@ void Scope::flushUpdates()
             m_departmentTree->setIsRoot(true);
 
             // update corresponding models
-            QString activeDepartment(m_currentDepartmentId);
+            QString activeDepartment(m_currentNavigationId);
             node = m_departmentTree->findNodeById(activeDepartment);
             DepartmentNode* parentNode = nullptr;
             if (node != nullptr) {
@@ -323,14 +329,14 @@ void Scope::flushUpdates()
     // design decision - no departments when doing searches
     containsDepartments &= m_searchQuery.isEmpty();
 
-    if (containsDepartments != m_hasDepartments) {
-        m_hasDepartments = containsDepartments;
-        Q_EMIT hasDepartmentsChanged();
+    if (containsDepartments != m_hasNavigation) {
+        m_hasNavigation = containsDepartments;
+        Q_EMIT hasNavigationChanged();
     }
 
-    if (!containsDepartments && !m_currentDepartmentId.isEmpty()) {
-        m_currentDepartmentId = "";
-        Q_EMIT currentDepartmentIdChanged();
+    if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
+        m_currentNavigationId = "";
+        Q_EMIT currentNavigationIdChanged();
     }
 }
 
@@ -491,11 +497,11 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
-void Scope::setCurrentDepartmentId(QString const& id)
+void Scope::setCurrentNavigationId(QString const& id)
 {
-    if (m_currentDepartmentId != id) {
-        m_currentDepartmentId = id;
-        Q_EMIT currentDepartmentIdChanged();
+    if (m_currentNavigationId != id) {
+        m_currentNavigationId = id;
+        Q_EMIT currentNavigationIdChanged();
     }
 }
 
@@ -541,7 +547,7 @@ void Scope::dispatchSearch()
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
-            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentDepartmentId.toStdString(), scopes::FilterState(), meta, listener);
+            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), scopes::FilterState(), meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
@@ -657,7 +663,7 @@ Filters* Scope::filters() const
 }
 */
 
-unity::shell::scopes::DepartmentInterface* Scope::getDepartment(QString const& departmentId)
+unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& departmentId)
 {
     if (!m_departmentTree) return nullptr;
 
@@ -665,6 +671,7 @@ unity::shell::scopes::DepartmentInterface* Scope::getDepartment(QString const& d
     if (!node) return nullptr;
 
     Department* departmentModel = new Department;
+    departmentModel->setScopeId(this->id());
     departmentModel->loadFromDepartmentNode(node);
 
     m_departmentModels.insert(departmentId, departmentModel);
@@ -674,30 +681,26 @@ unity::shell::scopes::DepartmentInterface* Scope::getDepartment(QString const& d
     return departmentModel;
 }
 
-void Scope::departmentModelDestroyed(QObject* obj)
+unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& departmentId)
 {
-  scopes_ng::Department* department = reinterpret_cast<scopes_ng::Department*>(obj);
-
-  auto it = m_inverseDepartments.find(department);
-  if (it == m_inverseDepartments.end()) return;
-
-  m_departmentModels.remove(it.value(), department);
-  m_inverseDepartments.erase(it);
+    return nullptr;
 }
 
-void Scope::loadDepartment(QString const& departmentId)
+void Scope::departmentModelDestroyed(QObject* obj)
 {
-    if (departmentId != m_currentDepartmentId) {
-        m_currentDepartmentId = departmentId;
-        Q_EMIT currentDepartmentIdChanged();
+    scopes_ng::Department* department = reinterpret_cast<scopes_ng::Department*>(obj);
 
-        dispatchSearch();
-    }
+    auto it = m_inverseDepartments.find(department);
+    if (it == m_inverseDepartments.end()) return;
+
+    m_departmentModels.remove(it.value(), department);
+    m_inverseDepartments.erase(it);
 }
 
 void Scope::performQuery(QString const& cannedQuery)
 {
     try {
+        qWarning("===== performing %s", cannedQuery.toStdString().c_str());
         scopes::CannedQuery q(scopes::CannedQuery::from_uri(cannedQuery.toStdString()));
         executeCannedQuery(q, true);
     } catch (...) {
@@ -725,14 +728,24 @@ bool Scope::isActive() const
     return m_isActive;
 }
 
-QString Scope::currentDepartmentId() const
+QString Scope::currentNavigationId() const
 {
-    return m_currentDepartmentId;
+    return m_currentNavigationId;
 }
 
-bool Scope::hasDepartments() const
+bool Scope::hasNavigation() const
 {
-    return m_hasDepartments;
+    return m_hasNavigation;
+}
+
+QString Scope::currentAltNavigationId() const
+{
+    return m_currentAltNavigationId;
+}
+
+bool Scope::hasAltNavigation() const
+{
+    return m_hasAltNavigation;
 }
 
 QVariantMap Scope::customizations() const
