@@ -110,6 +110,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
     m_rootDepartment = rootDepartment;
     m_sortOrderFilter = sortOrderFilter;
+    m_filterState = filterState;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -345,6 +346,17 @@ void Scope::flushUpdates()
         // build the nodes
         m_altNavTree.reset(new DepartmentNode);
         m_altNavTree->initializeForFilter(m_sortOrderFilter);
+
+        if (m_sortOrderFilter->has_active_option(m_filterState)) {
+            auto active_options = m_sortOrderFilter->active_options(m_filterState);
+            scopes::FilterOption::SCPtr active_option = *active_options.begin();
+            if (active_option) {
+                if (m_currentAltNavigationId.toStdString() != active_option->id()) {
+                    m_currentAltNavigationId = QString::fromStdString(active_option->id());
+                    Q_EMIT currentAltNavigationIdChanged();
+                }
+            }
+        }
     }
 
     m_lastSortOrderFilter = m_sortOrderFilter;

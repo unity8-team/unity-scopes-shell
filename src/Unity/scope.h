@@ -207,6 +207,7 @@ private:
     unity::scopes::Department::SCPtr m_lastRootDepartment;
     unity::scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
     unity::scopes::OptionSelectorFilter::SCPtr m_lastSortOrderFilter;
+    unity::scopes::FilterState m_filterState;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;

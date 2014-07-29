@@ -255,7 +255,8 @@ private Q_SLOTS:
         QScopedPointer<NavigationInterface> departmentModel(m_scope_navs->getNavigation(m_scope_navs->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
 
-        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getNavigation(m_scope_navs->currentAltNavigationId()));
+        QVERIFY(!m_scope_navs->currentAltNavigationId().isEmpty());
+        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getNavigation(""));
         QVERIFY(sortOrderModel != nullptr);
     }
 
