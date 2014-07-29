@@ -17,6 +17,7 @@
  */
 
 #include <unity/scopes/CategorisedResult.h>
+#include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
@@ -141,6 +142,26 @@ public:
         }
 
         reply->register_departments(root_dep);
+
+        // add sort order filter
+        OptionSelectorFilter::UPtr sort_order_filter = OptionSelectorFilter::create("sort-order", "Sort Order (unused)");
+        sort_order_filter->set_display_hints(FilterBase::Primary);
+        sort_order_filter->add_option("featured", "Featured");
+        sort_order_filter->add_option("top", "Most popular");
+        sort_order_filter->add_option("best", "Best sellers");
+        Filters filters;
+        filters.push_back(std::move(sort_order_filter));
+
+        FilterState state;
+        FilterState initial_filter_state(query().filter_state());
+        if (initial_filter_state.has_filter("sort-order")) {
+            state = initial_filter_state;
+        } else {
+            // default option
+            OptionSelectorFilter::update_state(state, "sort-order", "featured", true);
+        }
+
+        reply->push(filters, state);
 
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);

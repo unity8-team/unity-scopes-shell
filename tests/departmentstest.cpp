@@ -48,6 +48,7 @@ class DepartmentsTest : public QObject
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
+    Scope* m_scope_navs;
     QScopedPointer<RegistrySpawner> m_registry;
 
 private Q_SLOTS:
@@ -78,6 +79,10 @@ private Q_SLOTS:
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
         QVERIFY(m_scope != nullptr);
         m_scope->setActive(true);
+
+        m_scope_navs = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-double-nav")));
+        QVERIFY(m_scope_navs != nullptr);
+        m_scope_navs->setActive(true);
     }
 
     void cleanup()

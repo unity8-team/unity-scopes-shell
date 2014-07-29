@@ -1,8 +1,8 @@
 [ScopeConfig]
-DisplayName = mock-departments.DisplayName
-Description = mock-departments.Description
-Art = /mock-departments.Art
-Icon = /mock-departments.Icon
-SearchHint = mock-departments.SearchHint
-HotKey = mock-departments.HotKey
-Author = mock-departments.Author
+DisplayName = mock-double-nav.DisplayName
+Description = mock-double-nav.Description
+Art = /mock-double-nav.Art
+Icon = /mock-double-nav.Icon
+SearchHint = mock-double-nav.SearchHint
+HotKey = mock-double-nav.HotKey
+Author = mock-double-nav.Author
