@@ -218,6 +218,7 @@ private:
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
+    QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
 };

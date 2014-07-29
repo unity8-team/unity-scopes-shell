@@ -259,7 +259,7 @@ private Q_SLOTS:
         QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
         QVERIFY(sortOrderModel != nullptr);
 
-        QVERIFY(sortOrderModel->navigationId().isEmpty());
+        QCOMPARE(sortOrderModel->navigationId(), QString(""));
         QCOMPARE(sortOrderModel->label(), QString("Sort Order"));
         QCOMPARE(sortOrderModel->allLabel(), QString(""));
         QCOMPARE(sortOrderModel->parentNavigationId(), QString());

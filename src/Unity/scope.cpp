@@ -329,7 +329,7 @@ void Scope::flushUpdates()
     m_lastRootDepartment = m_rootDepartment;
 
     bool containsDepartments = m_rootDepartment.get() != nullptr;
-    // design decision - no departments when doing searches
+    // design decision - no navigation when doing searches
     containsDepartments &= m_searchQuery.isEmpty();
 
     if (containsDepartments != m_hasNavigation) {
@@ -361,6 +361,9 @@ void Scope::flushUpdates()
     m_lastSortOrderFilter = m_sortOrderFilter;
 
     bool containsAltNav = m_sortOrderFilter.get() != nullptr;
+    // design decision - no navigation when doing searches
+    containsAltNav &= m_searchQuery.isEmpty();
+
     if (containsAltNav != m_hasAltNavigation) {
         m_hasAltNavigation = containsAltNav;
         Q_EMIT hasAltNavigationChanged();
@@ -695,22 +698,23 @@ Filters* Scope::filters() const
 }
 */
 
-unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& departmentId)
+unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& navId)
 {
     if (!m_departmentTree) return nullptr;
 
-    DepartmentNode* node = m_departmentTree->findNodeById(departmentId);
+    DepartmentNode* node = m_departmentTree->findNodeById(navId);
     if (!node) return nullptr;
 
-    Department* departmentModel = new Department;
-    departmentModel->setScopeId(this->id());
-    departmentModel->loadFromDepartmentNode(node);
+    Department* navModel = new Department;
+    navModel->setScopeId(this->id());
+    navModel->loadFromDepartmentNode(node);
+    navModel->markSubdepartmentActive(m_currentNavigationId);
 
-    m_departmentModels.insert(departmentId, departmentModel);
-    m_inverseDepartments.insert(departmentModel, departmentId);
-    QObject::connect(departmentModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
+    m_departmentModels.insert(navId, navModel);
+    m_inverseDepartments.insert(navModel, navId);
+    QObject::connect(navModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
 
-    return departmentModel;
+    return navModel;
 }
 
 unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& navId)
@@ -720,23 +724,28 @@ unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const
     DepartmentNode* node = m_altNavTree->findNodeById(navId);
     if (!node) return nullptr;
 
-    Department* departmentModel = new Department;
-    departmentModel->setScopeId(this->id());
-    departmentModel->loadFromDepartmentNode(node);
+    Department* navModel = new Department;
+    navModel->setScopeId(this->id());
+    navModel->loadFromDepartmentNode(node);
+    navModel->markSubdepartmentActive(m_currentAltNavigationId);
 
-    // FIXME: track to be able to switch active state
+    // sharing m_inverseDepartments with getNavigation
+    m_altNavModels.insert(navId, navModel);
+    m_inverseDepartments.insert(navModel, navId);
+    QObject::connect(navModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
 
-    return departmentModel;
+    return navModel;
 }
 
 void Scope::departmentModelDestroyed(QObject* obj)
 {
-    scopes_ng::Department* department = reinterpret_cast<scopes_ng::Department*>(obj);
+    scopes_ng::Department* navigation = reinterpret_cast<scopes_ng::Department*>(obj);
 
-    auto it = m_inverseDepartments.find(department);
+    auto it = m_inverseDepartments.find(navigation);
     if (it == m_inverseDepartments.end()) return;
 
-    m_departmentModels.remove(it.value(), department);
+    m_departmentModels.remove(it.value(), navigation);
+    m_altNavModels.remove(it.value(), navigation);
     m_inverseDepartments.erase(it);
 }
 
