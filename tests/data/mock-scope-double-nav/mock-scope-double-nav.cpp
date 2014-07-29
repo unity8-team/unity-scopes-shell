@@ -144,7 +144,7 @@ public:
         reply->register_departments(root_dep);
 
         // add sort order filter
-        OptionSelectorFilter::UPtr sort_order_filter = OptionSelectorFilter::create("sort-order", "Sort Order (unused)");
+        OptionSelectorFilter::UPtr sort_order_filter = OptionSelectorFilter::create("sort-order", "Sort Order");
         sort_order_filter->set_display_hints(FilterBase::Primary);
         sort_order_filter->add_option("featured", "Featured");
         sort_order_filter->add_option("top", "Most popular");

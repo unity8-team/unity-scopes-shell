@@ -342,6 +342,8 @@ void Scope::flushUpdates()
         Q_EMIT currentNavigationIdChanged();
     }
 
+    QString currentAltNav(m_currentAltNavigationId);
+
     if (m_sortOrderFilter && m_sortOrderFilter != m_lastSortOrderFilter) {
         // build the nodes
         m_altNavTree.reset(new DepartmentNode);
@@ -351,10 +353,7 @@ void Scope::flushUpdates()
             auto active_options = m_sortOrderFilter->active_options(m_filterState);
             scopes::FilterOption::SCPtr active_option = *active_options.begin();
             if (active_option) {
-                if (m_currentAltNavigationId.toStdString() != active_option->id()) {
-                    m_currentAltNavigationId = QString::fromStdString(active_option->id());
-                    Q_EMIT currentAltNavigationIdChanged();
-                }
+                currentAltNav = QString::fromStdString(active_option->id());
             }
         }
     }
@@ -365,6 +364,11 @@ void Scope::flushUpdates()
     if (containsAltNav != m_hasAltNavigation) {
         m_hasAltNavigation = containsAltNav;
         Q_EMIT hasAltNavigationChanged();
+    }
+
+    if (currentAltNav != m_currentAltNavigationId) {
+        m_currentAltNavigationId = currentAltNav;
+        Q_EMIT currentAltNavigationIdChanged();
     }
 }
 

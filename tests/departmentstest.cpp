@@ -256,8 +256,31 @@ private Q_SLOTS:
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(!m_scope_navs->currentAltNavigationId().isEmpty());
-        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getNavigation(""));
+        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
         QVERIFY(sortOrderModel != nullptr);
+
+        QVERIFY(sortOrderModel->navigationId().isEmpty());
+        QCOMPARE(sortOrderModel->label(), QString("Sort Order"));
+        QCOMPARE(sortOrderModel->allLabel(), QString(""));
+        QCOMPARE(sortOrderModel->parentNavigationId(), QString());
+        QCOMPARE(sortOrderModel->parentLabel(), QString());
+        QCOMPARE(sortOrderModel->loaded(), true);
+        QCOMPARE(sortOrderModel->isRoot(), true);
+
+        QCOMPARE(sortOrderModel->rowCount(), 3);
+        QModelIndex idx;
+
+        idx = sortOrderModel->index(0);
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("featured")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Featured")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleHasChildren), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(true));
+
+        idx = sortOrderModel->index(2);
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("best")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Best sellers")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleHasChildren), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
     }
 
 };
