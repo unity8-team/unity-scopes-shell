@@ -1,0 +1,8 @@
+[ScopeConfig]
+DisplayName = mock-departments.DisplayName
+Description = mock-departments.Description
+Art = /mock-departments.Art
+Icon = /mock-departments.Icon
+SearchHint = mock-departments.SearchHint
+HotKey = mock-departments.HotKey
+Author = mock-departments.Author

@@ -112,14 +112,14 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
         // should have at least one scope now
-        QCOMPARE(m_scopes->rowCount(), 4);
+        QVERIFY(m_scopes->rowCount() > 1);
 
         // get scope proxy
-        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope")));
+        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScopeById(QString("mock-scope")));
         QVERIFY(m_scope != nullptr);
 
         // get scope proxy for TTL scope
-        m_scope_ttl = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-ttl")));
+        m_scope_ttl = qobject_cast<scopes_ng::Scope*>(m_scopes->getScopeById(QString("mock-scope-ttl")));
         QVERIFY(m_scope != nullptr);
     }
 
