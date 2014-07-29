@@ -109,6 +109,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     }
 
     m_rootDepartment = rootDepartment;
+    m_sortOrderFilter = sortOrderFilter;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -230,7 +231,6 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     if (scope != nullptr) {
         // TODO: change filters?
-        qWarning("=== switching nav to %s", departmentId.toStdString().c_str());
         scope->setCurrentNavigationId(departmentId);
         scope->setSearchQuery(searchString);
         // FIXME: implement better way to do multiple changes to search props and dispatch single search
@@ -339,6 +339,20 @@ void Scope::flushUpdates()
     if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
         m_currentNavigationId = "";
         Q_EMIT currentNavigationIdChanged();
+    }
+
+    if (m_sortOrderFilter && m_sortOrderFilter != m_lastSortOrderFilter) {
+        // build the nodes
+        m_altNavTree.reset(new DepartmentNode);
+        m_altNavTree->initializeForFilter(m_sortOrderFilter);
+    }
+
+    m_lastSortOrderFilter = m_sortOrderFilter;
+
+    bool containsAltNav = m_sortOrderFilter.get() != nullptr;
+    if (containsAltNav != m_hasAltNavigation) {
+        m_hasAltNavigation = containsAltNav;
+        Q_EMIT hasAltNavigationChanged();
     }
 }
 
@@ -683,9 +697,20 @@ unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& d
     return departmentModel;
 }
 
-unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& departmentId)
+unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& navId)
 {
-    return nullptr;
+    if (!m_altNavTree) return nullptr;
+
+    DepartmentNode* node = m_altNavTree->findNodeById(navId);
+    if (!node) return nullptr;
+
+    Department* departmentModel = new Department;
+    departmentModel->setScopeId(this->id());
+    departmentModel->loadFromDepartmentNode(node);
+
+    // FIXME: track to be able to switch active state
+
+    return departmentModel;
 }
 
 void Scope::departmentModelDestroyed(QObject* obj)
@@ -702,7 +727,6 @@ void Scope::departmentModelDestroyed(QObject* obj)
 void Scope::performQuery(QString const& cannedQuery)
 {
     try {
-        qWarning("===== performing %s", cannedQuery.toStdString().c_str());
         scopes::CannedQuery q(scopes::CannedQuery::from_uri(cannedQuery.toStdString()));
         executeCannedQuery(q, true);
     } catch (...) {

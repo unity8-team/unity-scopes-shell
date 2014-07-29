@@ -50,6 +50,35 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
     }
 }
 
+void DepartmentNode::initializeForFilter(scopes::OptionSelectorFilter::SCPtr const& filter)
+{
+    auto children = filter->options();
+    m_id = QString(""); // this is root (which we shouldn't show really)
+    m_label = QString::fromStdString(filter->label());
+    m_allLabel = QString();
+    m_hasSubdepartments = !children.empty();
+    m_isRoot = true;
+
+    clearChildren();
+
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        DepartmentNode* subdep = new DepartmentNode(this);
+        subdep->initializeForFilterOption(*it);
+        this->appendChild(subdep);
+    }
+}
+
+void DepartmentNode::initializeForFilterOption(scopes::FilterOption::SCPtr const& option)
+{
+    m_id = QString::fromStdString(option->id());
+    m_label = QString::fromStdString(option->label());
+    m_allLabel = QString();
+    m_hasSubdepartments = false;
+    m_isRoot = false;
+
+    clearChildren();
+}
+
 void DepartmentNode::setIsRoot(bool isRoot)
 {
     m_isRoot = isRoot;

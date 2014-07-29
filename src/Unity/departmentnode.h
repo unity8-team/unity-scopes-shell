@@ -38,6 +38,7 @@ public:
     ~DepartmentNode();
 
     void initializeForDepartment(unity::scopes::Department::SCPtr const& dep);
+    void initializeForFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter);
     DepartmentNode* findNodeById(QString const& id);
 
     QString id() const;
@@ -56,6 +57,7 @@ public:
 
 private:
     void clearChildren();
+    void initializeForFilterOption(unity::scopes::FilterOption::SCPtr const&);
 
     DepartmentNode* m_parent;
     QList<DepartmentNode*> m_children;

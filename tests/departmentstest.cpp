@@ -96,6 +96,7 @@ private Q_SLOTS:
         performSearch(m_scope, QString("foo"));
 
         QCOMPARE(m_scope->hasNavigation(), false);
+        QCOMPARE(m_scope->hasAltNavigation(), false);
     }
 
     void testRootDepartment()
@@ -103,6 +104,7 @@ private Q_SLOTS:
         performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->hasNavigation(), true);
+        QCOMPARE(m_scope->hasAltNavigation(), false);
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(m_scope->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
@@ -240,6 +242,21 @@ private Q_SLOTS:
         departmentModel.reset(m_scope->getNavigation(QString("toys")));
         QCOMPARE(departmentModel->isRoot(), false);
         QCOMPARE(departmentModel->rowCount(), 2);
+    }
+
+    void testDoubleNavigation()
+    {
+        performSearch(m_scope_navs, QString(""));
+
+        QCOMPARE(m_scope_navs->hasNavigation(), true);
+        QCOMPARE(m_scope_navs->hasAltNavigation(), true);
+        QCOMPARE(m_scope_navs->currentNavigationId(), QString(""));
+        QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
+        QScopedPointer<NavigationInterface> departmentModel(m_scope_navs->getNavigation(m_scope_navs->currentNavigationId()));
+        QVERIFY(departmentModel != nullptr);
+
+        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getNavigation(m_scope_navs->currentAltNavigationId()));
+        QVERIFY(sortOrderModel != nullptr);
     }
 
 };

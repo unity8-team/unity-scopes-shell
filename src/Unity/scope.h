@@ -205,9 +205,12 @@ private:
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     unity::scopes::Department::SCPtr m_rootDepartment;
     unity::scopes::Department::SCPtr m_lastRootDepartment;
+    unity::scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
+    unity::scopes::OptionSelectorFilter::SCPtr m_lastSortOrderFilter;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
+    QSharedPointer<DepartmentNode> m_altNavTree;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
