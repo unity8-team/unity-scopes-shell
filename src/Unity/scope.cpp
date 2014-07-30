@@ -298,25 +298,7 @@ void Scope::flushUpdates()
             m_departmentTree->setIsRoot(true);
 
             // update corresponding models
-            QString activeDepartment(m_currentNavigationId);
-            node = m_departmentTree->findNodeById(activeDepartment);
-            DepartmentNode* parentNode = nullptr;
-            if (node != nullptr) {
-                auto it = m_departmentModels.find(activeDepartment);
-                while (it != m_departmentModels.end() && it.key() == activeDepartment) {
-                    it.value()->loadFromDepartmentNode(node);
-                    ++it;
-                }
-                // if this node is a leaf, we need to update models for the parent
-                parentNode = node->isLeaf() ? node->parent() : nullptr;
-            }
-            if (parentNode != nullptr) {
-                auto it = m_departmentModels.find(parentNode->id());
-                while (it != m_departmentModels.end() && it.key() == parentNode->id()) {
-                    it.value()->markSubdepartmentActive(activeDepartment);
-                    ++it;
-                }
-            }
+            updateNavigationModels(m_departmentTree.data(), m_departmentModels, m_currentNavigationId);
         } else {
             m_departmentTree.reset(new DepartmentNode);
             m_departmentTree->initializeForDepartment(m_rootDepartment);
@@ -342,6 +324,7 @@ void Scope::flushUpdates()
         Q_EMIT currentNavigationIdChanged();
     }
 
+    // process the alt navigation (sort order filter)
     QString currentAltNav(m_currentAltNavigationId);
 
     if (m_sortOrderFilter && m_sortOrderFilter != m_lastSortOrderFilter) {
@@ -372,6 +355,31 @@ void Scope::flushUpdates()
     if (currentAltNav != m_currentAltNavigationId) {
         m_currentAltNavigationId = currentAltNav;
         Q_EMIT currentAltNavigationIdChanged();
+
+        // update the alt navigation models
+        updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+    }
+}
+
+void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
+{
+    DepartmentNode* parentNode = nullptr;
+    DepartmentNode* node = rootNode->findNodeById(activeNavigation);
+    if (node != nullptr) {
+        auto it = navigationModels.find(activeNavigation);
+        while (it != navigationModels.end() && it.key() == activeNavigation) {
+            it.value()->loadFromDepartmentNode(node);
+            ++it;
+        }
+        // if this node is a leaf, we need to update models for the parent
+        parentNode = node->isLeaf() ? node->parent() : nullptr;
+    }
+    if (parentNode != nullptr) {
+        auto it = navigationModels.find(parentNode->id());
+        while (it != navigationModels.end() && it.key() == parentNode->id()) {
+            it.value()->markSubdepartmentActive(activeNavigation);
+            ++it;
+        }
     }
 }
 
@@ -710,6 +718,7 @@ unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& n
     navModel->loadFromDepartmentNode(node);
     navModel->markSubdepartmentActive(m_currentNavigationId);
 
+    // sharing m_inverseDepartments with getAltNavigation
     m_departmentModels.insert(navId, navModel);
     m_inverseDepartments.insert(navModel, navId);
     QObject::connect(navModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);

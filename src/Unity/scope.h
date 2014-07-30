@@ -174,6 +174,7 @@ protected:
     QPointer<Scopes> m_scopesInstance;
 
 private:
+    static void updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation);
     void setScopesInstance(Scopes*);
     void startTtlTimer();
     void setCurrentNavigationId(QString const& id);
