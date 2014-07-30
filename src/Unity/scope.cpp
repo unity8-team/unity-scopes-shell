@@ -669,6 +669,11 @@ bool Scope::searchInProgress() const
     return m_searchInProgress;
 }
 
+unity::shell::scopes::ScopeInterface::Status Scope::status() const
+{
+    return unity::shell::scopes::ScopeInterface::Status::Okay;
+}
+
 bool Scope::visible() const
 {
     // FIXME: get from scope config

@@ -50,6 +50,9 @@ public:
 
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
+    Q_INVOKABLE bool favorite(QString const& query) const override;
+    Q_INVOKABLE void addFavorite(QString const& query) override;
+    Q_INVOKABLE void removeFavorite(int index) override;
 
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;

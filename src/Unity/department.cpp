@@ -108,7 +108,7 @@ QVariant Department::data(const QModelIndex& index, int role) const
     SubdepartmentData* data = m_subdepartments[index.row()].data();
     switch (role) {
         case RoleNavigationId: return data->id;
-        case RoleQuery: return QVariant(); // FIXME!
+        case RoleQuery: return queryForDepartmentId(m_scopeId, data->id);
         case RoleLabel: return data->label;
         case RoleHasChildren: return data->hasChildren;
         case RoleIsActive: return data->isActive;
@@ -127,15 +127,21 @@ QString Department::navigationId() const
     return m_navigationId;
 }
 
-QString Department::query() const
+QString Department::queryForDepartmentId(QString const& scopeId, QString const& departmentId)
 {
-    if (m_scopeId.isEmpty()) {
+    if (scopeId.isEmpty()) {
         qWarning("Unable to construct canned query, scope id is not set!");
         return QString();
     }
-    unity::scopes::CannedQuery q(m_scopeId.toStdString());
-    q.set_department_id(m_navigationId.toStdString());
+
+    unity::scopes::CannedQuery q(scopeId.toStdString());
+    q.set_department_id(departmentId.toStdString());
     return QString::fromStdString(q.to_uri());
+}
+
+QString Department::query() const
+{
+    return queryForDepartmentId(m_scopeId, m_navigationId);
 }
 
 QString Department::label() const
@@ -151,6 +157,11 @@ QString Department::allLabel() const
 QString Department::parentNavigationId() const
 {
     return m_parentNavigationId;
+}
+
+QString Department::parentQuery() const
+{
+    return queryForDepartmentId(m_scopeId, m_parentNavigationId);
 }
 
 QString Department::parentLabel() const

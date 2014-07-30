@@ -62,6 +62,7 @@ public:
     QString label() const override;
     QString allLabel() const override;
     QString parentNavigationId() const override;
+    QString parentQuery() const override;
     QString parentLabel() const override;
     bool loaded() const override;
     bool isRoot() const override;
@@ -70,6 +71,8 @@ public:
 Q_SIGNALS:
 
 private:
+    static QString queryForDepartmentId(QString const& scopeId, QString const& departmentId);
+
     QString m_navigationId;
     QString m_scopeId;
     QString m_label;
