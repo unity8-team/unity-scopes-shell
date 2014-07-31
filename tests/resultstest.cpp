@@ -192,6 +192,15 @@ private Q_SLOTS:
         QCOMPARE(m_scope->isActive(), true);
         m_scope->setActive(false);
         QCOMPARE(m_scope->isActive(), false);
+
+        QCOMPARE(m_scope_ttl->id(), QString("mock-scope-ttl"));
+        QCOMPARE(m_scope_ttl->name(), QString("mock-ttl.DisplayName"));
+        QCOMPARE(m_scope_ttl->iconHint(), QString("/mock-ttl.Icon"));
+        QCOMPARE(m_scope_ttl->description(), QString("mock-ttl.Description"));
+        QCOMPARE(m_scope_ttl->searchHint(), QString());
+        QCOMPARE(m_scope_ttl->shortcut(), QString());
+        QCOMPARE(m_scope_ttl->visible(), true);
+        QCOMPARE(m_scope_ttl->searchQuery(), QString());
     }
 
     void testCategoryQuery()

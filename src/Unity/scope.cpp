@@ -625,7 +625,16 @@ QString Scope::description() const
 
 QString Scope::searchHint() const
 {
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->search_hint() : "");
+    std::string search_hint;
+    try {
+        if (m_scopeMetadata) {
+            search_hint = m_scopeMetadata->search_hint();
+        }
+    } catch (...) {
+        // throws if the value isn't set, safe to ignore
+    }
+
+    return QString::fromStdString(search_hint);
 }
 
 bool Scope::searchInProgress() const
