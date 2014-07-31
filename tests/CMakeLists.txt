@@ -1,4 +1,4 @@
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=1)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=3)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.3)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
