@@ -72,6 +72,7 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->overviewScope());
         QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
     }
 
     void cleanup()
@@ -90,9 +91,9 @@ private Q_SLOTS:
         QCOMPARE(m_scope->shortcut(), QString("mock.HotKey"));
         QCOMPARE(m_scope->searchQuery(), QString());
 
-        QCOMPARE(m_scope->isActive(), false);
-        m_scope->setActive(true);
         QCOMPARE(m_scope->isActive(), true);
+        m_scope->setActive(false);
+        QCOMPARE(m_scope->isActive(), false);
     }
 
     void testSurfacingQuery()
