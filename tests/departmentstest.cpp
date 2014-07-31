@@ -116,6 +116,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->parentLabel(), QString());
         QCOMPARE(departmentModel->loaded(), true);
         QCOMPARE(departmentModel->isRoot(), true);
+        QCOMPARE(departmentModel->hidden(), false);
 
         QCOMPARE(departmentModel->rowCount(), 5);
         QModelIndex idx;
@@ -266,6 +267,7 @@ private Q_SLOTS:
         QCOMPARE(sortOrderModel->parentLabel(), QString());
         QCOMPARE(sortOrderModel->loaded(), true);
         QCOMPARE(sortOrderModel->isRoot(), true);
+        QCOMPARE(sortOrderModel->hidden(), true);
 
         QCOMPARE(sortOrderModel->rowCount(), 3);
         QModelIndex idx;
@@ -283,6 +285,30 @@ private Q_SLOTS:
         QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
     }
 
+    void testDoubleNavChangeActive()
+    {
+        performSearch(m_scope_navs, QString(""));
+
+        QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
+        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
+        QVERIFY(sortOrderModel != nullptr);
+        QCOMPARE(sortOrderModel->loaded(), true);
+        QCOMPARE(sortOrderModel->rowCount(), 3);
+
+        QModelIndex idx(sortOrderModel->index(1));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QString query = sortOrderModel->data(idx, Department::Roles::RoleQuery).toString();
+
+        // perform a query for the other navigation
+        QSignalSpy spy(m_scope_navs, SIGNAL(searchInProgressChanged()));
+        m_scope_navs->performQuery(query);
+        QVERIFY(spy.wait());
+
+        // the model should be updated
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
+        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(true));
+    }
 };
 
 QTEST_GUILESS_MAIN(DepartmentsTest)
