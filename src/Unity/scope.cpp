@@ -74,7 +74,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
 {
-    m_categories = new Categories(this);
+    m_categories.reset(new Categories(this));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
@@ -216,13 +216,20 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString scopeId(QString::fromStdString(query.scope_id()));
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
-    // figure out if this scope is already favourited
-    Scope* scope = m_scopesInstance->getScopeById(scopeId);
+
+    Scope* scope = nullptr;
+    if (scopeId == id()) {
+        scope = this;
+    } else {
+        // figure out if this scope is already favourited
+        scope = m_scopesInstance->getScopeById(scopeId);
+    }
+
     if (scope != nullptr) {
         // TODO: change filters?
         scope->setCurrentDepartmentId(departmentId);
         scope->setSearchQuery(searchString);
-        Q_EMIT gotoScope(scopeId);
+        if (scope != this) Q_EMIT gotoScope(scopeId);
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
@@ -405,7 +412,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
         ResultsModel* category_model = m_categories->lookupCategory(category->id());
         if (category_model == nullptr) {
-            category_model = new ResultsModel(m_categories);
+            category_model = new ResultsModel(m_categories.data());
             category_model->setCategoryId(QString::fromStdString(category->id()));
             category_model->addResults(category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
@@ -416,6 +423,16 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
             m_categories->updateResultCount(category_model);
         }
     }
+}
+
+scopes::ScopeProxy Scope::proxy() const
+{
+    return m_proxy;
+}
+
+scopes::ScopeProxy Scope::proxy_for_result(scopes::Result::SPtr const& result) const
+{
+    return result->target_scope_proxy();
 }
 
 void Scope::invalidateLastSearch()
@@ -608,7 +625,16 @@ QString Scope::description() const
 
 QString Scope::searchHint() const
 {
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->search_hint() : "");
+    std::string search_hint;
+    try {
+        if (m_scopeMetadata) {
+            search_hint = m_scopeMetadata->search_hint();
+        }
+    } catch (...) {
+        // throws if the value isn't set, safe to ignore
+    }
+
+    return QString::fromStdString(search_hint);
 }
 
 bool Scope::searchInProgress() const
@@ -638,7 +664,7 @@ QString Scope::shortcut() const
 
 unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
-    return m_categories;
+    return m_categories.data();
 }
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
@@ -813,7 +839,7 @@ void Scope::activate(QVariant const& result_var)
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
             m_activationController->setListener(listener);
 
-            auto proxy = result->target_scope_proxy();
+            auto proxy = proxy_for_result(result);
             unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
             scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
             m_activationController->setController(controller);

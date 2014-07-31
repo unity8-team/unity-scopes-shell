@@ -66,8 +66,8 @@ private Q_SLOTS:
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
-        // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 3);
+        // should have at least one scope now
+        QCOMPARE(m_scopes->rowCount(), 4);
 
         QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
         QVERIFY(scope_var.canConvert<Scope*>());

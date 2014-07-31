@@ -39,7 +39,7 @@ using namespace unity;
 namespace scopes_ng {
 
 // FIXME: this should be in a common place
-#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null }, "resources":{}})"
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0, "fill-mode":"crop" }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null, "overlay-color":null }, "resources":{}})"
 
 class CategoryData
 {
@@ -219,19 +219,6 @@ public:
         return m_isSpecial;
     }
 
-private:
-    static QJsonValue* DEFAULTS;
-    scopes::Category::SCPtr m_category;
-    QString m_catId;
-    QString m_catTitle;
-    QString m_catIcon;
-    std::string m_rawTemplate;
-    QJsonValue m_rendererTemplate;
-    QJsonValue m_components;
-    ResultsModel* m_resultsModel;
-    QPointer<QObject> m_countObject;
-    bool m_isSpecial;
-
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
         // lazy init of the defaults
@@ -264,6 +251,19 @@ private:
 
         return true;
     }
+
+private:
+    static QJsonValue* DEFAULTS;
+    scopes::Category::SCPtr m_category;
+    QString m_catId;
+    QString m_catTitle;
+    QString m_catIcon;
+    std::string m_rawTemplate;
+    QJsonValue m_rendererTemplate;
+    QJsonValue m_components;
+    ResultsModel* m_resultsModel;
+    QPointer<QObject> m_countObject;
+    bool m_isSpecial;
 
     static QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
     {
@@ -438,6 +438,12 @@ void Categories::clearAll()
     QVector<int> roles;
     roles.append(RoleCount);
     dataChanged(changeStart, changeEnd, roles);
+}
+
+
+bool Categories::parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
+{
+    return CategoryData::parseTemplate(raw_template, renderer, components);
 }
 
 bool Categories::overrideCategoryJson(QString const& categoryId, QString const& json)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2014 Canonical, Ltd.
  *
  * Authors:
  *  Michal Hruby <michal.hruby@canonical.com>
@@ -18,19 +18,17 @@
  */
 
 
-#ifndef NG_CATEGORY_RESULTS_H
-#define NG_CATEGORY_RESULTS_H
+#ifndef NG_OVERVIEW_RESULTS_H
+#define NG_OVERVIEW_RESULTS_H
 
 #include <unity/shell/scopes/ResultsModelInterface.h>
+#include <unity/scopes/ScopeMetadata.h>
 
 #include <QHash>
 
-#include <unity/scopes/CategorisedResult.h>
-#include <unordered_map>
-
 namespace scopes_ng {
 
-class Q_DECL_EXPORT ResultsModel : public unity::shell::scopes::ResultsModelInterface
+class Q_DECL_EXPORT OverviewResultsModel : public unity::shell::scopes::ResultsModelInterface
 {
     Q_OBJECT
 
@@ -39,37 +37,26 @@ public:
         RoleScopeId = unity::shell::scopes::ResultsModelInterface::Roles::RoleBackground + 100
     };
 
-    explicit ResultsModel(QObject* parent = 0);
+    explicit OverviewResultsModel(QObject* parent = 0);
+
+    void setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
-    void clearResults();
-
-    /* getters */
-    QString categoryId() const override;
     int count() const override;
 
-    /* setters */
+    QString categoryId() const override;
     void setCategoryId(QString const& id) override;
-    void setComponentsMapping(QHash<QString, QString> const& mapping);
-    void setMaxAtrributesCount(int count);
 
     QHash<int, QByteArray> roleNames() const override;
 
-private:
-    QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
-    QVariant attributesValue(unity::scopes::CategorisedResult const* result) const;
+    Q_INVOKABLE int scopeIndex(const QString& scopeId) const;
 
-    std::unordered_map<std::string, std::string> m_componentMapping;
-    QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
-    QString m_categoryId;
-    int m_maxAttributes;
+private:
+    QList<unity::scopes::ScopeMetadata::SPtr> m_results;
 };
 
 } // namespace scopes_ng
 
-Q_DECLARE_METATYPE(std::shared_ptr<unity::scopes::Result>)
-
-#endif // NG_CATEGORY_RESULTS_H
+#endif // NG_OVERVIEW_RESULTS_H

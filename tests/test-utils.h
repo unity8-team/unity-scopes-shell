@@ -64,12 +64,14 @@ bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result)
 void performSearch(Scope* scope, QString const& searchString)
 {
     QCOMPARE(scope->searchInProgress(), false);
+    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
     // perform a search
     scope->setSearchQuery(searchString);
-    QCOMPARE(scope->searchInProgress(), true);
-    // wait for the search to finish
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
-    QVERIFY(spy.wait());
+    QVERIFY(scope->searchInProgress() || spy.count() > 1);
+    if (scope->searchInProgress()) {
+        // wait for the search to finish
+        QVERIFY(spy.wait());
+    }
     QCOMPARE(scope->searchInProgress(), false);
 }
 

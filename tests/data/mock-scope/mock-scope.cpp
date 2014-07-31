@@ -143,7 +143,7 @@ public:
             CategorisedResult res(cat);
             res.set_uri("test:perform-query");
             res.set_title("result for: \"" + query_ + "\"");
-            res["scope-id"] = "mock-scope";
+            res["scope-id"] = "mock-scope-ttl";
             res.set_intercept_activation();
             reply->push(res);
         }
@@ -163,7 +163,7 @@ public:
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
-            res.set_uri("scope://mock-scope?q=next-scope-uri");
+            res.set_uri("scope://mock-scope?q=next-scope-query");
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }

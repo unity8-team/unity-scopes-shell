@@ -24,9 +24,8 @@
 
 #include <unity/shell/scopes/CategoriesInterface.h>
 
-#include <QSet>
-#include <QTimer>
 #include <QSharedPointer>
+#include <QJsonValue>
 
 #include <unity/scopes/Category.h>
 
@@ -54,6 +53,8 @@ public:
     void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
     void updateResultCount(ResultsModel* resultsModel);
     void clearAll();
+
+    static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components);
 
 private Q_SLOTS:
     void countChanged();

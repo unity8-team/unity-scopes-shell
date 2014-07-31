@@ -22,6 +22,7 @@
 
 // Local
 #include "scope.h"
+#include "overviewscope.h"
 #include "ubuntulocationservice.h"
 
 // Qt
@@ -38,6 +39,8 @@ namespace scopes_ng
 {
 
 using namespace unity;
+
+#define SCOPES_SCOPE_ID "scopes"
 
 void ScopeListWorker::run()
 {
@@ -90,6 +93,7 @@ public:
 
 Scopes::Scopes(QObject *parent)
     : unity::shell::scopes::ScopesInterface(parent)
+    , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_priv(new Priv())
@@ -107,6 +111,7 @@ Scopes::Scopes(QObject *parent)
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
+    m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
 }
 
@@ -147,7 +152,7 @@ void Scopes::discoveryFinished()
             new core::ScopedConnection(
                     m_scopesRuntime->registry()->set_list_update_callback(
                             std::bind(&Scopes::Priv::safeInvalidateScopeResults,
-                                      m_priv.get(), "scopes"))));
+                                      m_priv.get(), SCOPES_SCOPE_ID))));
 
     // FIXME: use a dconf setting for this
     QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
@@ -174,6 +179,16 @@ void Scopes::discoveryFinished()
         }
     }
 
+    // HACK! deal with the overview scope
+    {
+        auto it = scopes.find(SCOPES_SCOPE_ID);
+        if (it != scopes.end()) {
+            m_overviewScope->setScopeData(it->second);
+        } else {
+            qWarning("Unable to add overview scope, can't find with ID: \"%s\"", SCOPES_SCOPE_ID);
+        }
+    }
+
     // cache all the metadata
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
@@ -183,6 +198,7 @@ void Scopes::discoveryFinished()
 
     m_loaded = true;
     Q_EMIT loadedChanged();
+    Q_EMIT overviewScopeChanged();
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
@@ -266,6 +282,22 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
     return nullptr;
 }
 
+QStringList Scopes::getFavoriteIds() const
+{
+    QStringList ids;
+
+    Q_FOREACH(Scope* scope, m_scopes) {
+        ids << scope->id();
+    }
+
+    return ids;
+}
+
+QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
+{
+    return m_cachedMetadata;
+}
+
 scopes::ScopeMetadata::SPtr Scopes::getCachedMetadata(QString const& scopeId) const
 {
     auto it = m_cachedMetadata.constFind(scopeId);
@@ -288,6 +320,11 @@ void Scopes::refreshScopeMetadata()
         m_listThread = thread;
         m_listThread->start();
     }
+}
+
+unity::shell::scopes::ScopeInterface* Scopes::overviewScope() const
+{
+    return m_loaded ? m_overviewScope : nullptr;
 }
 
 bool Scopes::loaded() const

@@ -2,7 +2,7 @@
 include(Plugins)
 
 # Dependencies
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=2)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=3)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.3)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(U1DB REQUIRED libu1db-qt5)
@@ -24,6 +24,9 @@ set(QMLPLUGIN_SRC
     departmentnode.cpp
     geoip.cpp
     locationservice.cpp
+    overviewcategories.cpp
+    overviewresults.cpp
+    overviewscope.cpp
     previewmodel.cpp
     previewstack.cpp
     previewwidgetmodel.cpp
