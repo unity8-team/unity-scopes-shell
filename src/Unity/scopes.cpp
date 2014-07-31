@@ -269,24 +269,6 @@ unity::shell::scopes::ScopeInterface* Scopes::getScope(const QString& scopeId) c
     return getScopeById(scopeId);
 }
 
-bool Scopes::favorite(QString const& query) const
-{
-    Q_UNUSED(query)
-    return false; // maybe?
-}
-
-void Scopes::addFavorite(QString const& query)
-{
-    Q_UNUSED(query)
-    qWarning("%s: UNIMPLEMENTED!", __func__);
-}
-
-void Scopes::removeFavorite(int index)
-{
-    Q_UNUSED(index)
-    qWarning("%s: UNIMPLEMENTED!", __func__);
-}
-
 Scope* Scopes::getScopeById(QString const& scopeId) const
 {
     Q_FOREACH(Scope* scope, m_scopes) {

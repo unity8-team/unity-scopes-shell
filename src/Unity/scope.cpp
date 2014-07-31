@@ -74,6 +74,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_hasAltNavigation(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
+    , m_status(Status::Okay)
 {
     m_categories.reset(new Categories(this));
 
@@ -131,6 +132,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         flushUpdates();
 
         setSearchInProgress(false);
+        setStatus(status == CollectorBase::Status::FINISHED ? Status::Okay : Status::Unknown);
 
         // Don't schedule a refresh if the query suffered an error
         if (status == CollectorBase::Status::FINISHED) {
@@ -272,6 +274,9 @@ void Scope::flushUpdates()
         m_clearTimer.stop();
     }
 
+    if (m_status != Status::Okay) {
+        setStatus(Status::Okay);
+    }
     processResultSet(m_cachedResults); // clears the result list
 
     // process departments
@@ -540,6 +545,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
+void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
+{
+    if (m_status != status) {
+        m_status = status;
+        Q_EMIT statusChanged();
+    }
+}
+
 void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
@@ -671,12 +684,17 @@ bool Scope::searchInProgress() const
 
 unity::shell::scopes::ScopeInterface::Status Scope::status() const
 {
-    return unity::shell::scopes::ScopeInterface::Status::Okay;
+    return m_status;
 }
 
 bool Scope::visible() const
 {
     // FIXME: get from scope config
+    return true;
+}
+
+bool Scope::favorite() const
+{
     return true;
 }
 
@@ -860,6 +878,13 @@ void Scope::setActive(const bool active) {
             dispatchSearch();
         }
     }
+}
+
+void Scope::setFavorite(const bool value)
+{
+    Q_UNUSED(value);
+
+    qWarning("Unimplemented: %s", __func__);
 }
 
 void Scope::activate(QVariant const& result_var)

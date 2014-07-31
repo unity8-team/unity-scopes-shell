@@ -116,6 +116,7 @@ public:
     QString description() const override;
     QString searchHint() const override;
     bool visible() const override;
+    bool favorite() const override;
     QString shortcut() const override;
     bool searchInProgress() const override;
     unity::shell::scopes::ScopeInterface::Status status() const override;
@@ -136,6 +137,7 @@ public:
     void setNoResultsHint(const QString& hint) override;
     void setFormFactor(const QString& form_factor) override;
     void setActive(const bool) override;
+    void setFavorite(const bool) override;
 
     Q_INVOKABLE void activate(QVariant const& result) override;
     Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
@@ -166,6 +168,7 @@ private Q_SLOTS:
 
 protected:
     void setSearchInProgress(bool searchInProgress);
+    void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
     virtual void dispatchSearch();
 
@@ -210,6 +213,7 @@ private:
     unity::scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
     unity::scopes::OptionSelectorFilter::SCPtr m_lastSortOrderFilter;
     unity::scopes::FilterState m_filterState;
+    unity::shell::scopes::ScopeInterface::Status m_status;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
