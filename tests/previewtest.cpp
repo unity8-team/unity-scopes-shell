@@ -75,6 +75,7 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = scope_var.value<Scope*>();
         QCOMPARE(m_scope->id(), QString("mock-scope"));
+        m_scope->setActive(true);
     }
 
     void cleanup()

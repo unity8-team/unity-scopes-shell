@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Canonical, Ltd.
+ * Copyright (C) 2014 Canonical, Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,10 @@
  *  Pete Woods <pete.woods@canonical.com>
  */
 
-import QtQuick 2.0
-import Ubuntu.Components 1.1
+#include <locationservice.h>
 
-OptionSelector {
-    id: combo
+using namespace scopes_ng;
 
-    property var properties
-    property alias value: combo.selectedIndex
+LocationService::LocationService() {
 
-    model: properties["values"]
 }
