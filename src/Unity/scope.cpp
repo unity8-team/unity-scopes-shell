@@ -463,6 +463,9 @@ void Scope::setScopesInstance(Scopes* scopes)
     m_scopesInstance = scopes;
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
+        m_locationService = m_scopesInstance->locationService();
+        // TODO Notify the user the the location has changed
+        // connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
     }
 }
 
@@ -520,6 +523,16 @@ void Scope::dispatchSearch()
             if (remoteSearch.toString() == QString("none")) {
                 meta["no-internet"] = true;
             }
+        }
+        try {
+            // TODO Verify that the scope is allowed to access the location data
+            if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+            {
+                meta.set_location(m_locationService->location());
+            }
+        }
+        catch (std::domain_error& e)
+        {
         }
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
@@ -744,7 +757,7 @@ void Scope::setSearchQuery(const QString& search_query)
         m_searchQuery = search_query;
 
         // FIXME: use a timeout
-        dispatchSearch();
+        invalidateResults();
 
         Q_EMIT searchQueryChanged();
     }
@@ -769,6 +782,18 @@ void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
         Q_EMIT isActiveChanged();
+
+        if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+        {
+            if (m_isActive)
+            {
+                m_locationService->activate();
+            }
+            else
+            {
+                m_locationService->deactivate();
+            }
+        }
 
         if (active && m_resultsDirty) {
             dispatchSearch();
