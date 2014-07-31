@@ -66,6 +66,7 @@ public:
     QString parentLabel() const override;
     bool loaded() const override;
     bool isRoot() const override;
+    bool hidden() const override;
     int count() const override;
 
 Q_SIGNALS:
@@ -81,6 +82,7 @@ private:
     QString m_parentLabel;
     bool m_loaded;
     bool m_isRoot;
+    bool m_hidden;
 
     QList<QSharedPointer<SubdepartmentData>> m_subdepartments;
 };

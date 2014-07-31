@@ -29,7 +29,8 @@ using namespace unity;
 Department::Department(QObject* parent) :
     unity::shell::scopes::NavigationInterface(parent),
     m_loaded(false),
-    m_isRoot(false)
+    m_isRoot(false),
+    m_hidden(false)
 {
 }
 
@@ -69,13 +70,16 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     endResetModel();
 
     Q_EMIT navigationIdChanged();
+    Q_EMIT queryChanged();
     Q_EMIT labelChanged();
     Q_EMIT allLabelChanged();
     Q_EMIT parentNavigationIdChanged();
+    Q_EMIT parentQueryChanged();
     Q_EMIT parentLabelChanged();
     Q_EMIT loadedChanged();
     Q_EMIT countChanged();
     Q_EMIT isRootChanged();
+    Q_EMIT hiddenChanged();
 }
 
 void Department::markSubdepartmentActive(QString const& subdepartmentId)
@@ -177,6 +181,11 @@ bool Department::loaded() const
 bool Department::isRoot() const
 {
     return m_isRoot;
+}
+
+bool Department::hidden() const
+{
+    return m_hidden;
 }
 
 int Department::count() const
