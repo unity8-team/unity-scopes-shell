@@ -715,12 +715,6 @@ unity::shell::scopes::ScopeInterface::Status Scope::status() const
     return m_status;
 }
 
-bool Scope::visible() const
-{
-    // FIXME: get from scope config
-    return true;
-}
-
 bool Scope::favorite() const
 {
     return true;

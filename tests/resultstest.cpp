@@ -177,7 +177,6 @@ private Q_SLOTS:
         QCOMPARE(m_scope->description(), QString("mock.Description"));
         QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
         QCOMPARE(m_scope->shortcut(), QString("mock.HotKey"));
-        QCOMPARE(m_scope->visible(), true);
         QCOMPARE(m_scope->searchQuery(), QString());
 
         QVariantMap customizations(m_scope->customizations());
@@ -199,7 +198,6 @@ private Q_SLOTS:
         QCOMPARE(m_scope_ttl->description(), QString("mock-ttl.Description"));
         QCOMPARE(m_scope_ttl->searchHint(), QString());
         QCOMPARE(m_scope_ttl->shortcut(), QString());
-        QCOMPARE(m_scope_ttl->visible(), true);
         QCOMPARE(m_scope_ttl->searchQuery(), QString());
     }
 

@@ -249,8 +249,6 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(scope);
         case Scopes::RoleId:
             return QString(scope->id());
-        case Scopes::RoleVisible:
-            return QVariant::fromValue(scope->visible());
         case Scopes::RoleTitle:
             return QString(scope->name());
         default:

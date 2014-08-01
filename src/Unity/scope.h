@@ -116,7 +116,6 @@ public:
     QString iconHint() const override;
     QString description() const override;
     QString searchHint() const override;
-    bool visible() const override;
     bool favorite() const override;
     QString shortcut() const override;
     bool searchInProgress() const override;

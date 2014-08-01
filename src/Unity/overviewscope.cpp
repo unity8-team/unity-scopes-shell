@@ -96,11 +96,6 @@ QString OverviewScope::id() const
     return QString("scopes");
 }
 
-bool OverviewScope::visible() const
-{
-    return false;
-}
-
 scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& result) const
 {
     try {
