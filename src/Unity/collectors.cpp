@@ -288,13 +288,16 @@ void SearchResultReceiver::push(scopes::Department::SCPtr const& department)
 }
 
 // this might be called from any thread (might be main, might be any other thread)
-void SearchResultReceiver::finished(scopes::ListenerBase::Reason reason, std::string const& error_msg)
+void SearchResultReceiver::finished(scopes::CompletionDetails const& details)
 {
-    Q_UNUSED(error_msg);
-    CollectorBase::Status status = reason == scopes::ListenerBase::Reason::Cancelled ?
+    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
         CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
 
     postCollectedResults(status);
+}
+
+void SearchResultReceiver::info(unity::scopes::OperationInfo const&)
+{
 }
 
 PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
@@ -329,13 +332,16 @@ void PreviewDataReceiver::push(std::string const& key, scopes::Variant const& va
 }
 
 // this might be called from any thread (might be main, might be any other thread)
-void PreviewDataReceiver::finished(scopes::ListenerBase::Reason reason, std::string const& error_msg)
+void PreviewDataReceiver::finished(scopes::CompletionDetails const& details)
 {
-    Q_UNUSED(error_msg);
-    CollectorBase::Status status = reason == scopes::ListenerBase::Reason::Cancelled ?
+    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
         CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
 
     postCollectedResults(status);
+}
+
+void PreviewDataReceiver::info(unity::scopes::OperationInfo const&)
+{
 }
 
 void ActivationReceiver::activated(scopes::ActivationResponse const& response)
@@ -343,13 +349,16 @@ void ActivationReceiver::activated(scopes::ActivationResponse const& response)
     m_collector->setResponse(response);
 }
 
-void ActivationReceiver::finished(scopes::ListenerBase::Reason reason, std::string const& error_msg)
+void ActivationReceiver::finished(scopes::CompletionDetails const& details)
 {
-    Q_UNUSED(error_msg);
-    CollectorBase::Status status = reason == scopes::ListenerBase::Reason::Cancelled ?
+    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
         CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
 
     postCollectedResults(status);
+}
+
+void ActivationReceiver::info(unity::scopes::OperationInfo const&)
+{
 }
 
 ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):
