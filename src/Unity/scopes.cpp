@@ -130,6 +130,11 @@ int Scopes::rowCount(const QModelIndex& parent) const
     return m_scopes.count();
 }
 
+int Scopes::count() const
+{
+    return m_scopes.count();
+}
+
 void Scopes::populateScopes()
 {
     auto thread = new ScopeListWorker;
@@ -198,6 +203,7 @@ void Scopes::discoveryFinished()
 
     m_loaded = true;
     Q_EMIT loadedChanged();
+    Q_EMIT countChanged();
     Q_EMIT overviewScopeChanged();
     Q_EMIT metadataRefreshed();
 
