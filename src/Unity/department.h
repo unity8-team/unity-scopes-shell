@@ -73,9 +73,11 @@ Q_SIGNALS:
 
 private:
     static QString queryForDepartmentId(QString const& scopeId, QString const& departmentId);
+    static QString queryForFilterOption(QString const& scopeId, QString const& filterId, QString const& optionId);
 
     QString m_navigationId;
     QString m_scopeId;
+    QString m_filterId;
     QString m_label;
     QString m_allLabel;
     QString m_parentNavigationId;
@@ -83,6 +85,7 @@ private:
     bool m_loaded;
     bool m_isRoot;
     bool m_hidden;
+    bool m_isFilter;
 
     QList<QSharedPointer<SubdepartmentData>> m_subdepartments;
 };

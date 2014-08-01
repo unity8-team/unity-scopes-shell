@@ -46,6 +46,8 @@ public:
     QString allLabel() const;
     bool hasSubdepartments() const;
     bool isRoot() const;
+    bool hidden() const;
+    bool isFilter() const;
 
     void setIsRoot(bool isRoot);
 
@@ -54,18 +56,22 @@ public:
     bool isLeaf() const;
     QList<DepartmentNode*> childNodes() const;
     DepartmentNode* parent() const;
+    QString filterId() const;
 
 private:
     void clearChildren();
-    void initializeForFilterOption(unity::scopes::FilterOption::SCPtr const&);
+    void initializeForFilterOption(unity::scopes::FilterOption::SCPtr const&, QString const&);
 
     DepartmentNode* m_parent;
     QList<DepartmentNode*> m_children;
     QString m_id;
     QString m_label;
     QString m_allLabel;
+    QString m_filterId;
     bool m_hasSubdepartments;
     bool m_isRoot;
+    bool m_hidden;
+    bool m_isFilter;
 };
 
 } // namespace scopes_ng

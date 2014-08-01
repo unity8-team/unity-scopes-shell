@@ -20,6 +20,7 @@
 #include "department.h"
 
 #include <unity/scopes/CannedQuery.h>
+#include <unity/scopes/OptionSelectorFilter.h>
 
 namespace scopes_ng
 {
@@ -28,9 +29,7 @@ using namespace unity;
 
 Department::Department(QObject* parent) :
     unity::shell::scopes::NavigationInterface(parent),
-    m_loaded(false),
-    m_isRoot(false),
-    m_hidden(false)
+    m_loaded(false), m_isRoot(false), m_hidden(false), m_isFilter(false)
 {
 }
 
@@ -46,10 +45,13 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
         return;
     }
     m_navigationId = treeNode->id();
+    m_filterId = treeNode->filterId();
     m_label = treeNode->label();
     m_allLabel = treeNode->allLabel();
     m_loaded = !treeNode->isLeaf() && treeNode->childCount() > 0;
     m_isRoot = treeNode->isRoot();
+    m_hidden = treeNode->hidden();
+    m_isFilter = treeNode->isFilter();
 
     DepartmentNode* parentNode = treeNode->parent();
     m_parentNavigationId = parentNode ? parentNode->id() : "";
@@ -112,7 +114,10 @@ QVariant Department::data(const QModelIndex& index, int role) const
     SubdepartmentData* data = m_subdepartments[index.row()].data();
     switch (role) {
         case RoleNavigationId: return data->id;
-        case RoleQuery: return queryForDepartmentId(m_scopeId, data->id);
+        case RoleQuery:
+            return m_isFilter ?
+                queryForFilterOption(m_scopeId, m_filterId, data->id) :
+                queryForDepartmentId(m_scopeId, data->id);
         case RoleLabel: return data->label;
         case RoleHasChildren: return data->hasChildren;
         case RoleIsActive: return data->isActive;
@@ -138,8 +143,22 @@ QString Department::queryForDepartmentId(QString const& scopeId, QString const& 
         return QString();
     }
 
-    unity::scopes::CannedQuery q(scopeId.toStdString());
+    scopes::CannedQuery q(scopeId.toStdString());
     q.set_department_id(departmentId.toStdString());
+    return QString::fromStdString(q.to_uri());
+}
+
+QString Department::queryForFilterOption(QString const& scopeId, QString const& filterId, QString const& optionId)
+{
+    if (scopeId.isEmpty()) {
+        qWarning("Unable to construct canned query, scope id is not set!");
+        return QString();
+    }
+
+    scopes::CannedQuery q(scopeId.toStdString());
+    scopes::FilterState filter_state;
+    scopes::OptionSelectorFilter::update_state(filter_state, filterId.toStdString(), optionId.toStdString(), true);
+    q.set_filter_state(filter_state);
     return QString::fromStdString(q.to_uri());
 }
 

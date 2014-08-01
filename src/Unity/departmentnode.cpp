@@ -24,7 +24,11 @@ namespace scopes_ng
 
 using namespace unity;
 
-DepartmentNode::DepartmentNode(DepartmentNode* parent) : m_parent(parent), m_isRoot(false)
+DepartmentNode::DepartmentNode(DepartmentNode* parent)
+    : m_parent(parent)
+    , m_isRoot(false)
+    , m_hidden(false)
+    , m_isFilter(false)
 {
 }
 
@@ -39,6 +43,8 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
     m_label = QString::fromStdString(dep->label());
     m_allLabel = QString::fromStdString(dep->alternate_label());
     m_hasSubdepartments = dep->has_subdepartments();
+    m_hidden = false;
+    m_isFilter = false;
 
     clearChildren();
 
@@ -54,27 +60,33 @@ void DepartmentNode::initializeForFilter(scopes::OptionSelectorFilter::SCPtr con
 {
     auto children = filter->options();
     m_id = QString(""); // this is root (which we shouldn't show really)
+    m_filterId = QString::fromStdString(filter->id());
     m_label = QString::fromStdString(filter->label());
     m_allLabel = QString();
     m_hasSubdepartments = !children.empty();
     m_isRoot = true;
+    m_hidden = true;
+    m_isFilter = true;
 
     clearChildren();
 
     for (auto it = children.begin(); it != children.end(); ++it) {
         DepartmentNode* subdep = new DepartmentNode(this);
-        subdep->initializeForFilterOption(*it);
+        subdep->initializeForFilterOption(*it, m_filterId);
         this->appendChild(subdep);
     }
 }
 
-void DepartmentNode::initializeForFilterOption(scopes::FilterOption::SCPtr const& option)
+void DepartmentNode::initializeForFilterOption(scopes::FilterOption::SCPtr const& option, QString const& filterId)
 {
     m_id = QString::fromStdString(option->id());
+    m_filterId = filterId;
     m_label = QString::fromStdString(option->label());
     m_allLabel = QString();
     m_hasSubdepartments = false;
     m_isRoot = false;
+    m_hidden = false;
+    m_isFilter = true;
 
     clearChildren();
 }
@@ -87,6 +99,16 @@ void DepartmentNode::setIsRoot(bool isRoot)
 bool DepartmentNode::isRoot() const
 {
     return m_isRoot;
+}
+
+bool DepartmentNode::hidden() const
+{
+    return m_hidden;
+}
+
+bool DepartmentNode::isFilter() const
+{
+    return m_isFilter;
 }
 
 DepartmentNode* DepartmentNode::findNodeById(QString const& id)
@@ -114,6 +136,11 @@ QString DepartmentNode::label() const
 QString DepartmentNode::allLabel() const
 {
     return m_allLabel;
+}
+
+QString DepartmentNode::filterId() const
+{
+    return m_filterId;
 }
 
 bool DepartmentNode::hasSubdepartments() const

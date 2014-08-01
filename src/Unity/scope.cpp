@@ -111,7 +111,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
     m_rootDepartment = rootDepartment;
     m_sortOrderFilter = sortOrderFilter;
-    m_filterState = filterState;
+    m_receivedFilterState = filterState;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -233,8 +233,8 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     }
 
     if (scope != nullptr) {
-        // TODO: change filters?
         scope->setCurrentNavigationId(departmentId);
+        scope->setFilterState(query.filter_state());
         scope->setSearchQuery(searchString);
         // FIXME: implement better way to do multiple changes to search props and dispatch single search
         if (!scope->searchInProgress()) {
@@ -249,6 +249,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             scope->setScopeData(*meta_sptr);
             scope->setScopesInstance(m_scopesInstance);
             scope->setCurrentNavigationId(departmentId);
+            scope->setFilterState(query.filter_state());
             scope->setSearchQuery(searchString);
             m_tempScopes.insert(scope);
             Q_EMIT openScope(scope);
@@ -337,8 +338,8 @@ void Scope::flushUpdates()
         m_altNavTree.reset(new DepartmentNode);
         m_altNavTree->initializeForFilter(m_sortOrderFilter);
 
-        if (m_sortOrderFilter->has_active_option(m_filterState)) {
-            auto active_options = m_sortOrderFilter->active_options(m_filterState);
+        if (m_sortOrderFilter->has_active_option(m_receivedFilterState)) {
+            auto active_options = m_sortOrderFilter->active_options(m_receivedFilterState);
             scopes::FilterOption::SCPtr active_option = *active_options.begin();
             if (active_option) {
                 currentAltNav = QString::fromStdString(active_option->id());
@@ -564,6 +565,11 @@ void Scope::setCurrentNavigationId(QString const& id)
     }
 }
 
+void Scope::setFilterState(scopes::FilterState const& filterState)
+{
+    m_filterState = filterState;
+}
+
 void Scope::dispatchSearch()
 {
     invalidateLastSearch();
@@ -616,7 +622,7 @@ void Scope::dispatchSearch()
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
-            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), scopes::FilterState(), meta, listener);
+            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());

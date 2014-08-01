@@ -183,6 +183,7 @@ private:
     void setScopesInstance(Scopes*);
     void startTtlTimer();
     void setCurrentNavigationId(QString const& id);
+    void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
@@ -214,6 +215,7 @@ private:
     unity::scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
     unity::scopes::OptionSelectorFilter::SCPtr m_lastSortOrderFilter;
     unity::scopes::FilterState m_filterState;
+    unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
