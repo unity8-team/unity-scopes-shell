@@ -106,7 +106,6 @@ public:
     virtual void push(unity::scopes::CategorisedResult result) override;
     virtual void push(unity::scopes::Department::SCPtr const& department) override;
     virtual void finished(unity::scopes::CompletionDetails const& details) override;
-    virtual void info(unity::scopes::OperationInfo const& op_info) override;
 
     SearchResultReceiver(QObject* receiver);
 
@@ -121,7 +120,6 @@ public:
     virtual void push(unity::scopes::PreviewWidgetList const& widgets) override;
     virtual void push(std::string const& key, unity::scopes::Variant const& value) override;
     virtual void finished(unity::scopes::CompletionDetails const& details) override;
-    virtual void info(unity::scopes::OperationInfo const& op_info) override;
 
     PreviewDataReceiver(QObject* receiver);
 
@@ -134,7 +132,6 @@ class ActivationReceiver: public unity::scopes::ActivationListenerBase, public S
 public:
     virtual void activated(unity::scopes::ActivationResponse const&) override;
     virtual void finished(unity::scopes::CompletionDetails const& details) override;
-    virtual void info(unity::scopes::OperationInfo const& op_info) override;
 
     ActivationReceiver(QObject* receiver, std::shared_ptr<unity::scopes::Result> const& result);
 

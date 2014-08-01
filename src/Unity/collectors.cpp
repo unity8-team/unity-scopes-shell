@@ -296,10 +296,6 @@ void SearchResultReceiver::finished(scopes::CompletionDetails const& details)
     postCollectedResults(status);
 }
 
-void SearchResultReceiver::info(unity::scopes::OperationInfo const&)
-{
-}
-
 PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
     ScopeDataReceiverBase(receiver, PushEvent::PREVIEW, std::shared_ptr<CollectorBase>(new PreviewDataCollector))
 {
@@ -340,10 +336,6 @@ void PreviewDataReceiver::finished(scopes::CompletionDetails const& details)
     postCollectedResults(status);
 }
 
-void PreviewDataReceiver::info(unity::scopes::OperationInfo const&)
-{
-}
-
 void ActivationReceiver::activated(scopes::ActivationResponse const& response)
 {
     m_collector->setResponse(response);
@@ -355,10 +347,6 @@ void ActivationReceiver::finished(scopes::CompletionDetails const& details)
         CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
 
     postCollectedResults(status);
-}
-
-void ActivationReceiver::info(unity::scopes::OperationInfo const&)
-{
 }
 
 ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):
