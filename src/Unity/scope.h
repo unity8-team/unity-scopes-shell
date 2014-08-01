@@ -41,6 +41,7 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
+#include "locationservice.h"
 
 namespace scopes_ng
 {
@@ -227,6 +228,7 @@ private:
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
+    LocationService::Ptr m_locationService;
 };
 
 } // namespace scopes_ng

@@ -3,9 +3,10 @@ include(Plugins)
 
 # Dependencies
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.2)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.5.3)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(U1DB REQUIRED libu1db-qt5)
+pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -13,6 +14,7 @@ include_directories(
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
     ${U1DB_INCLUDE_DIRS}
+    ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
 )
 
 set(QMLPLUGIN_SRC
@@ -20,6 +22,8 @@ set(QMLPLUGIN_SRC
     collectors.cpp
     department.cpp
     departmentnode.cpp
+    geoip.cpp
+    locationservice.cpp
     overviewcategories.cpp
     overviewresults.cpp
     overviewscope.cpp
@@ -30,6 +34,7 @@ set(QMLPLUGIN_SRC
     scope.cpp
     scopes.cpp
     settingsmodel.cpp
+    ubuntulocationservice.cpp
     utils.cpp
     plugin.cpp
     iconutils.cpp
@@ -52,6 +57,7 @@ target_link_libraries(Unity-qml
     ${SCOPESLIB_LDFLAGS}
     ${GSETTINGSQT_LDFLAGS}
     ${U1DB_LDFLAGS}
+    ${UBUNTU_LOCATION_SERVICE_LDFLAGS}
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)

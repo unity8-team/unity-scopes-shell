@@ -75,6 +75,7 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = m_scopes->getScopeById("mock-scope");
         QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
     }
 
     void cleanup()

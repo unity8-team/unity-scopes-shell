@@ -51,6 +51,7 @@ public:
         QVERIFY(m_registry->waitForStarted());
 
         qputenv("UNITY_SCOPES_RUNTIME_PATH", TEST_RUNTIME_CONFIG);
+        qputenv("UNITY_SCOPES_NO_LOCATION", "1");
     }
 
     ~RegistrySpawner()

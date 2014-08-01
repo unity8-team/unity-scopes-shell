@@ -45,6 +45,7 @@ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
 
 find_package(PkgConfig)
 find_package(Qt5Core)
+find_package(Qt5DBus)
 find_package(Qt5Qml)
 find_package(Qt5Quick)
 find_package(Qt5Gui)
@@ -92,6 +93,7 @@ ADD_CUSTOM_TARGET(
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(data)
+add_subdirectory(tools)
 
 #
 # Translation
