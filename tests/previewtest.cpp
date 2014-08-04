@@ -166,30 +166,6 @@ private Q_SLOTS:
         QCOMPARE(preview->processingAction(), false);
     }
 
-    void testPreviewUriAction()
-    {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->getPreviewModel(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-
-        QSignalSpy spy(m_scope, SIGNAL(activateApplication(QString)));
-        QVariantMap hints;
-        hints["uri"] = QString("application:///tmp/non-existent.desktop");
-        Q_EMIT preview->triggered(QString("actions"), QString("open"), hints);
-        // this is likely to be invoked synchronously
-        if (spy.count() == 0) {
-            QVERIFY(spy.wait());
-        }
-        QList<QVariant> arguments = spy.takeFirst();
-        auto uri = arguments.at(0).value<QString>();
-        QCOMPARE(uri, QString("application:///tmp/non-existent.desktop"));
-    }
-
     void testPreviewReplacingPreview()
     {
         QScopedPointer<PreviewStack> preview_stack;
