@@ -58,11 +58,9 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     QString navigationId() const override;
-    QString query() const override;
     QString label() const override;
     QString allLabel() const override;
     QString parentNavigationId() const override;
-    QString parentQuery() const override;
     QString parentLabel() const override;
     bool loaded() const override;
     bool isRoot() const override;
@@ -72,9 +70,6 @@ public:
 Q_SIGNALS:
 
 private:
-    static QString queryForDepartmentId(QString const& scopeId, QString const& departmentId);
-    static QString queryForFilterOption(QString const& scopeId, QString const& filterId, QString const& optionId);
-
     QString m_navigationId;
     QString m_scopeId;
     QString m_filterId;

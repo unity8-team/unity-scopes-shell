@@ -19,7 +19,6 @@
 
 #include "department.h"
 
-#include <unity/scopes/CannedQuery.h>
 #include <unity/scopes/OptionSelectorFilter.h>
 
 namespace scopes_ng
@@ -72,11 +71,9 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     endResetModel();
 
     Q_EMIT navigationIdChanged();
-    Q_EMIT queryChanged();
     Q_EMIT labelChanged();
     Q_EMIT allLabelChanged();
     Q_EMIT parentNavigationIdChanged();
-    Q_EMIT parentQueryChanged();
     Q_EMIT parentLabelChanged();
     Q_EMIT loadedChanged();
     Q_EMIT countChanged();
@@ -114,10 +111,6 @@ QVariant Department::data(const QModelIndex& index, int role) const
     SubdepartmentData* data = m_subdepartments[index.row()].data();
     switch (role) {
         case RoleNavigationId: return data->id;
-        case RoleQuery:
-            return m_isFilter ?
-                queryForFilterOption(m_scopeId, m_filterId, data->id) :
-                queryForDepartmentId(m_scopeId, data->id);
         case RoleLabel: return data->label;
         case RoleHasChildren: return data->hasChildren;
         case RoleIsActive: return data->isActive;
@@ -136,37 +129,6 @@ QString Department::navigationId() const
     return m_navigationId;
 }
 
-QString Department::queryForDepartmentId(QString const& scopeId, QString const& departmentId)
-{
-    if (scopeId.isEmpty()) {
-        qWarning("Unable to construct canned query, scope id is not set!");
-        return QString();
-    }
-
-    scopes::CannedQuery q(scopeId.toStdString());
-    q.set_department_id(departmentId.toStdString());
-    return QString::fromStdString(q.to_uri());
-}
-
-QString Department::queryForFilterOption(QString const& scopeId, QString const& filterId, QString const& optionId)
-{
-    if (scopeId.isEmpty()) {
-        qWarning("Unable to construct canned query, scope id is not set!");
-        return QString();
-    }
-
-    scopes::CannedQuery q(scopeId.toStdString());
-    scopes::FilterState filter_state;
-    scopes::OptionSelectorFilter::update_state(filter_state, filterId.toStdString(), optionId.toStdString(), true);
-    q.set_filter_state(filter_state);
-    return QString::fromStdString(q.to_uri());
-}
-
-QString Department::query() const
-{
-    return queryForDepartmentId(m_scopeId, m_navigationId);
-}
-
 QString Department::label() const
 {
     return m_label;
@@ -180,11 +142,6 @@ QString Department::allLabel() const
 QString Department::parentNavigationId() const
 {
     return m_parentNavigationId;
-}
-
-QString Department::parentQuery() const
-{
-    return queryForDepartmentId(m_scopeId, m_parentNavigationId);
 }
 
 QString Department::parentLabel() const

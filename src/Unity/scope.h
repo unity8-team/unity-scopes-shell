@@ -145,6 +145,7 @@ public:
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getAltNavigation(QString const& id) override;
+    Q_INVOKABLE void setNavigationState(QString const& navId, bool altNavigation) override;
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
@@ -179,6 +180,7 @@ protected:
 
 private:
     static void updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation);
+    static QString buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, QString const& primaryFilterId, QString const& primaryOptionId);
     void setScopesInstance(Scopes*);
     void startTtlTimer();
     void setCurrentNavigationId(QString const& id);

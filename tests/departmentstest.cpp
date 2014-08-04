@@ -154,7 +154,7 @@ private Q_SLOTS:
 
         QCOMPARE(departmentModel->rowCount(), 0);
 
-        m_scope->performQuery(departmentModel->query());
+        m_scope->setNavigationState(departmentModel->navigationId(), false);
         QVERIFY(spy.wait());
 
         QCOMPARE(departmentModel->rowCount(), 2);
@@ -169,7 +169,7 @@ private Q_SLOTS:
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
-        m_scope->performQuery(navModel->query());
+        m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
         QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
@@ -177,7 +177,7 @@ private Q_SLOTS:
 
         navModel.reset(m_scope->getNavigation(QString("books-audio")));
         // this is a leaf department, so activating it should update the parent model
-        m_scope->performQuery(navModel->query());
+        m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
         QCOMPARE(departmentModel->isRoot(), false);
@@ -201,7 +201,7 @@ private Q_SLOTS:
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
-        m_scope->performQuery(navModel->query());
+        m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
         QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
@@ -225,7 +225,7 @@ private Q_SLOTS:
 
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         navModel.reset(m_scope->getNavigation(QString("toys")));
-        m_scope->performQuery(navModel->query());
+        m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
 
@@ -234,7 +234,7 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->rowCount(), 2);
 
         navModel.reset(m_scope->getNavigation(QString("toys-games")));
-        m_scope->performQuery(navModel->query());
+        m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
 
@@ -298,11 +298,10 @@ private Q_SLOTS:
         QModelIndex idx(sortOrderModel->index(1));
         QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
         QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
-        QString query = sortOrderModel->data(idx, Department::Roles::RoleQuery).toString();
 
         // perform a query for the other navigation
         QSignalSpy spy(m_scope_navs, SIGNAL(searchInProgressChanged()));
-        m_scope_navs->performQuery(query);
+        m_scope_navs->setNavigationState("top", true);
         QVERIFY(spy.wait());
 
         // the model should be updated

@@ -47,6 +47,8 @@
 #include <libintl.h>
 
 #include <unity/scopes/ListenerBase.h>
+#include <unity/scopes/CannedQuery.h>
+#include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/QueryCtrl.h>
 #include <unity/scopes/PreviewWidget.h>
@@ -791,6 +793,36 @@ unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const
     return navModel;
 }
 
+QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, QString const& primaryFilterId, QString const& primaryOptionId)
+{
+    scopes::CannedQuery q(scopeId.toStdString());
+    q.set_query_string(searchQuery.toStdString());
+    q.set_department_id(departmentId.toStdString());
+
+    if (!primaryFilterId.isEmpty()) {
+        scopes::FilterState filter_state;
+        scopes::OptionSelectorFilter::update_state(filter_state, primaryFilterId.toStdString(), primaryOptionId.toStdString(), true);
+        q.set_filter_state(filter_state);
+    }
+
+    return QString::fromStdString(q.to_uri());
+}
+
+void Scope::setNavigationState(QString const& navId, bool altNavigation)
+{
+    QString primaryFilterId;
+    if (m_sortOrderFilter) {
+        primaryFilterId = QString::fromStdString(m_sortOrderFilter->id());
+    }
+    if (!altNavigation) {
+        // switch current department id
+        performQuery(buildQuery(id(), m_searchQuery, navId, primaryFilterId, m_currentAltNavigationId));
+    } else {
+        // switch current primary filter
+        performQuery(buildQuery(id(), m_searchQuery, m_currentNavigationId, primaryFilterId, navId));
+    }
+}
+
 void Scope::departmentModelDestroyed(QObject* obj)
 {
     scopes_ng::Department* navigation = reinterpret_cast<scopes_ng::Department*>(obj);
@@ -1010,20 +1042,7 @@ void Scope::activateUri(QString const& uri)
        Qt to open the uri.
     */
     QUrl url(uri);
-    if (url.scheme() == QLatin1String("application")) {
-        QString path(url.path().isEmpty() ? url.authority() : url.path());
-        if (path.startsWith("/")) {
-            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
-                if (path.startsWith(dir)) {
-                    path.remove(0, dir.length());
-                    path.replace('/', '-');
-                    break;
-                }
-            }
-        }
-
-        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
-    } else if (url.scheme() == QLatin1String("scope")) {
+    if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;
         performQuery(uri);
     } else {
