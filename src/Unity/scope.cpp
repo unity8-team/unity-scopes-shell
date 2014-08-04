@@ -360,7 +360,12 @@ void Scope::flushUpdates()
         Q_EMIT hasAltNavigationChanged();
     }
 
-    if (currentAltNav != m_currentAltNavigationId) {
+    if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
+        m_currentAltNavigationId = "";
+        Q_EMIT currentAltNavigationIdChanged();
+    }
+
+    if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
         m_currentAltNavigationId = currentAltNav;
         Q_EMIT currentAltNavigationIdChanged();
 
@@ -799,7 +804,7 @@ QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QS
     q.set_query_string(searchQuery.toStdString());
     q.set_department_id(departmentId.toStdString());
 
-    if (!primaryFilterId.isEmpty()) {
+    if (!primaryFilterId.isEmpty() && !primaryOptionId.isEmpty()) {
         scopes::FilterState filter_state;
         scopes::OptionSelectorFilter::update_state(filter_state, primaryFilterId.toStdString(), primaryOptionId.toStdString(), true);
         q.set_filter_state(filter_state);
@@ -843,6 +848,12 @@ void Scope::performQuery(QString const& cannedQuery)
     } catch (...) {
         qWarning("Unable to parse canned query uri: %s", cannedQuery.toStdString().c_str());
     }
+}
+
+void Scope::refresh()
+{
+    // shell has to specifically call this, maybe we should ignore the active flag here and just call dispatchSearch
+    invalidateResults();
 }
 
 QString Scope::searchQuery() const
