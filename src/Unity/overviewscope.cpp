@@ -1,0 +1,133 @@
+/*
+ * Copyright (C) 2014 Canonical, Ltd.
+ *
+ * Authors:
+ *  Michal Hruby <michal.hruby@canonical.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 3.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// Self
+#include "overviewscope.h"
+
+// local
+#include "overviewcategories.h"
+#include "scopes.h"
+#include "utils.h"
+
+// Qt
+#include <QScopedPointer>
+
+namespace scopes_ng
+{
+
+using namespace unity;
+
+OverviewScope::OverviewScope(QObject *parent) : scopes_ng::Scope(parent)
+{
+    m_categories.reset(new OverviewCategories(this));
+
+    QObject::connect(m_scopesInstance.data(), &Scopes::metadataRefreshed, this, &OverviewScope::metadataChanged);
+}
+
+OverviewScope::~OverviewScope()
+{
+}
+
+struct ScopeInfo {
+    scopes::ScopeMetadata::SPtr data;
+    QString name;
+
+    ScopeInfo(scopes::ScopeMetadata::SPtr const& data_):
+        data(data_), name(QString::fromStdString(data->display_name())) {}
+};
+
+bool operator<(ScopeInfo const& first, ScopeInfo const& second)
+{
+    return first.name.compare(second.name, Qt::CaseInsensitive) < 0;
+}
+
+void OverviewScope::metadataChanged()
+{
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
+    QList<scopes::ScopeMetadata::SPtr> favourites;
+    Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
+        auto it = allMetadata.find(id);
+        if (it != allMetadata.end()) {
+            favourites.append(it.value());
+        }
+    }
+
+    QList<ScopeInfo> scopes;
+    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
+        if (metadata->invisible()) continue;
+        scopes.append(ScopeInfo(metadata));
+    }
+    qSort(scopes.begin(), scopes.end());
+
+    QList<scopes::ScopeMetadata::SPtr> allScopes;
+    Q_FOREACH(ScopeInfo const& info, scopes) {
+        allScopes << info.data;
+    }
+
+    // FIXME: filter invisible scopes?
+    categories->setAllScopes(allScopes);
+    categories->setFavouriteScopes(favourites);
+}
+
+QString OverviewScope::id() const
+{
+    return QString("scopes");
+}
+
+bool OverviewScope::visible() const
+{
+    return false;
+}
+
+scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& result) const
+{
+    try {
+        return result->target_scope_proxy();
+    } catch (...) {
+        // our fake results don't have a proxy associated, return the default one
+        return proxy();
+    }
+}
+
+void OverviewScope::dispatchSearch()
+{
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    if (searchQuery().isEmpty()) {
+        setSearchInProgress(true);
+        invalidateLastSearch();
+        categories->setSurfacingMode(true);
+        setSearchInProgress(false);
+    } else {
+        categories->setSurfacingMode(false);
+        Scope::dispatchSearch();
+    }
+}
+
+} // namespace scopes_ng

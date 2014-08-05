@@ -111,16 +111,18 @@ private Q_SLOTS:
         // wait till the registry spawns
         QVERIFY(spy.wait());
         QCOMPARE(m_scopes->loaded(), true);
-        // should have one scope now
-        QCOMPARE(m_scopes->rowCount(), 3);
+        // should have at least one scope now
+        QCOMPARE(m_scopes->rowCount(), 4);
 
         // get scope proxy
         m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope")));
         QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
 
         // get scope proxy for TTL scope
         m_scope_ttl = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-ttl")));
         QVERIFY(m_scope != nullptr);
+        m_scope_ttl->setActive(true);
     }
 
     void cleanup()
@@ -187,9 +189,18 @@ private Q_SLOTS:
         QCOMPARE(headerCustomizations["background"], QVariant("color://black"));
         QCOMPARE(customizations["shape-images"], QVariant(false));
 
-        QCOMPARE(m_scope->isActive(), false);
-        m_scope->setActive(true);
         QCOMPARE(m_scope->isActive(), true);
+        m_scope->setActive(false);
+        QCOMPARE(m_scope->isActive(), false);
+
+        QCOMPARE(m_scope_ttl->id(), QString("mock-scope-ttl"));
+        QCOMPARE(m_scope_ttl->name(), QString("mock-ttl.DisplayName"));
+        QCOMPARE(m_scope_ttl->iconHint(), QString("/mock-ttl.Icon"));
+        QCOMPARE(m_scope_ttl->description(), QString("mock-ttl.Description"));
+        QCOMPARE(m_scope_ttl->searchHint(), QString());
+        QCOMPARE(m_scope_ttl->shortcut(), QString());
+        QCOMPARE(m_scope_ttl->visible(), true);
+        QCOMPARE(m_scope_ttl->searchQuery(), QString());
     }
 
     void testCategoryQuery()
@@ -273,7 +284,6 @@ private Q_SLOTS:
         }
 
         performSearch(m_scope, QString(""));
-        m_scope->setActive(true);
 
         QStringList args;
         args << "/com/canonical/unity/scopes";
@@ -291,7 +301,6 @@ private Q_SLOTS:
 
     void testActiveTtlScope()
     {
-        m_scope_ttl->setActive(true);
         performSearch(m_scope_ttl, "query text");
 
         // get ResultsModel instance
@@ -329,18 +338,11 @@ private Q_SLOTS:
 
     void testInactiveTtlScope()
     {
-        QSignalSpy dirtySpy(m_scope_ttl, SIGNAL(resultsDirtyChanged()));
-
         m_scope_ttl->setActive(false);
-        performSearch(m_scope_ttl, "banana");
-
-        if (dirtySpy.isEmpty())
-        {
-            QVERIFY(dirtySpy.wait());
-        }
+        m_scope_ttl->setSearchQuery("banana");
 
         // Model should go dirty
-        QVERIFY(m_scope_ttl->resultsDirty());
+        QTRY_VERIFY(m_scope_ttl->resultsDirty());
     }
 
     void testAlbumArtResult()
@@ -656,13 +658,14 @@ private Q_SLOTS:
         unity::scopes::Result::SPtr result;
         QVERIFY(getFirstResult(m_scope, result));
 
-        QSignalSpy spy(m_scope, SIGNAL(gotoScope(QString)));
+        QSignalSpy spy(m_scope, SIGNAL(searchQueryChanged()));
         m_scope->activate(QVariant::fromValue(result));
         // this is likely to be invoked synchronously
         if (spy.count() == 0) {
             QVERIFY(spy.wait());
         }
         QVERIFY(spy.count() > 0);
+        QCOMPARE(m_scope->searchQuery(), QString("next-scope-query"));
     }
 
 };

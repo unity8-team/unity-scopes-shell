@@ -167,6 +167,14 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
     return attributes;
 }
 
+QHash<int, QByteArray> ResultsModel::roleNames() const
+{
+    QHash<int, QByteArray> roles(unity::shell::scopes::ResultsModelInterface::roleNames());
+    roles.insert(ExtraRoles::RoleScopeId, "scopeId");
+
+    return roles;
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
@@ -217,6 +225,18 @@ ResultsModel::data(const QModelIndex& index, int role) const
             }
             return backgroundUriToVariant(backgroundVariant.toString());
         }
+        case RoleOverlayColor:
+            return componentValue(result, "overlay-color");
+        case RoleScopeId:
+            if (result->uri().compare(0, 8, "scope://") == 0) {
+                try {
+                    scopes::CannedQuery q(scopes::CannedQuery::from_uri(result->uri()));
+                    return QString::fromStdString(q.scope_id());
+                } catch (...) {
+                    // silently ignore and return "undefined"
+                }
+            }
+            return QVariant();
         default:
             return QVariant();
     }

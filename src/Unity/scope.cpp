@@ -74,7 +74,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
 {
-    m_categories = new Categories(this);
+    m_categories.reset(new Categories(this));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
@@ -216,13 +216,20 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString scopeId(QString::fromStdString(query.scope_id()));
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
-    // figure out if this scope is already favourited
-    Scope* scope = m_scopesInstance->getScopeById(scopeId);
+
+    Scope* scope = nullptr;
+    if (scopeId == id()) {
+        scope = this;
+    } else {
+        // figure out if this scope is already favourited
+        scope = m_scopesInstance->getScopeById(scopeId);
+    }
+
     if (scope != nullptr) {
         // TODO: change filters?
         scope->setCurrentDepartmentId(departmentId);
         scope->setSearchQuery(searchString);
-        Q_EMIT gotoScope(scopeId);
+        if (scope != this) Q_EMIT gotoScope(scopeId);
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
@@ -405,7 +412,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
         ResultsModel* category_model = m_categories->lookupCategory(category->id());
         if (category_model == nullptr) {
-            category_model = new ResultsModel(m_categories);
+            category_model = new ResultsModel(m_categories.data());
             category_model->setCategoryId(QString::fromStdString(category->id()));
             category_model->addResults(category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
@@ -416,6 +423,16 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
             m_categories->updateResultCount(category_model);
         }
     }
+}
+
+scopes::ScopeProxy Scope::proxy() const
+{
+    return m_proxy;
+}
+
+scopes::ScopeProxy Scope::proxy_for_result(scopes::Result::SPtr const& result) const
+{
+    return result->target_scope_proxy();
 }
 
 void Scope::invalidateLastSearch()
@@ -463,6 +480,9 @@ void Scope::setScopesInstance(Scopes* scopes)
     m_scopesInstance = scopes;
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
+        m_locationService = m_scopesInstance->locationService();
+        // TODO Notify the user the the location has changed
+        // connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
     }
 }
 
@@ -521,6 +541,16 @@ void Scope::dispatchSearch()
                 meta["no-internet"] = true;
             }
         }
+        try {
+            // TODO Verify that the scope is allowed to access the location data
+            if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+            {
+                meta.set_location(m_locationService->location());
+            }
+        }
+        catch (std::domain_error& e)
+        {
+        }
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
@@ -552,8 +582,18 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     {
         scopes::Variant settings_definitions;
         settings_definitions = m_scopeMetadata->settings_definitions();
+        QDir shareDir;
+        if(qEnvironmentVariableIsSet("UNITY_SCOPES_SETTINGS_DIR"))
+        {
+            shareDir = qgetenv("UNITY_SCOPES_SETTINGS_DIR");
+        }
+        else
+        {
+            shareDir = QDir::home().filePath(".local/share");
+        }
+
         m_settingsModel.reset(
-                new SettingsModel(QDir::home().filePath(".local/share"), id(),
+                new SettingsModel(shareDir, id(),
                         scopeVariantToQVariant(settings_definitions), this));
     }
     catch (unity::scopes::NotFoundException&)
@@ -595,7 +635,16 @@ QString Scope::description() const
 
 QString Scope::searchHint() const
 {
-    return QString::fromStdString(m_scopeMetadata ? m_scopeMetadata->search_hint() : "");
+    std::string search_hint;
+    try {
+        if (m_scopeMetadata) {
+            search_hint = m_scopeMetadata->search_hint();
+        }
+    } catch (...) {
+        // throws if the value isn't set, safe to ignore
+    }
+
+    return QString::fromStdString(search_hint);
 }
 
 bool Scope::searchInProgress() const
@@ -625,7 +674,7 @@ QString Scope::shortcut() const
 
 unity::shell::scopes::CategoriesInterface* Scope::categories() const
 {
-    return m_categories;
+    return m_categories.data();
 }
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
@@ -735,7 +784,7 @@ void Scope::setSearchQuery(const QString& search_query)
         m_searchQuery = search_query;
 
         // FIXME: use a timeout
-        dispatchSearch();
+        invalidateResults();
 
         Q_EMIT searchQueryChanged();
     }
@@ -760,6 +809,18 @@ void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
         Q_EMIT isActiveChanged();
+
+        if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+        {
+            if (m_isActive)
+            {
+                m_locationService->activate();
+            }
+            else
+            {
+                m_locationService->deactivate();
+            }
+        }
 
         if (active && m_resultsDirty) {
             dispatchSearch();
@@ -788,7 +849,7 @@ void Scope::activate(QVariant const& result_var)
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
             m_activationController->setListener(listener);
 
-            auto proxy = result->target_scope_proxy();
+            auto proxy = proxy_for_result(result);
             unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
             scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
             m_activationController->setController(controller);
@@ -851,30 +912,15 @@ bool Scope::resultsDirty() const {
 
 void Scope::activateUri(QString const& uri)
 {
-    /* Tries various methods to trigger a sensible action for the given 'uri'.
-       If it has no understanding of the given scheme it falls back on asking
-       Qt to open the uri.
-    */
+    /*
+     * If it's a scope URI, perform the query, otherwise ask Qt to open it.
+     */
     QUrl url(uri);
-    if (url.scheme() == QLatin1String("application")) {
-        QString path(url.path().isEmpty() ? url.authority() : url.path());
-        if (path.startsWith("/")) {
-            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
-                if (path.startsWith(dir)) {
-                    path.remove(0, dir.length());
-                    path.replace('/', '-');
-                    break;
-                }
-            }
-        }
-
-        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
-    } else if (url.scheme() == QLatin1String("scope")) {
+    if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;
         performQuery(uri);
     } else {
         qDebug() << "Trying to open" << uri;
-        /* Try our luck */
         QDesktopServices::openUrl(url);
     }
 }

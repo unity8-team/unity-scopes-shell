@@ -22,9 +22,13 @@
 
 #include <unity/shell/scopes/ScopesInterface.h>
 
+#include "locationservice.h"
+
 // Qt
 #include <QList>
 #include <QThread>
+#include <QStringList>
+#include <QSharedPointer>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -52,9 +56,15 @@ public:
 
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
+    QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
+    QStringList getFavoriteIds() const;
+
     void refreshScopeMetadata();
 
     bool loaded() const override;
+    unity::shell::scopes::ScopeInterface* overviewScope() const override;
+
+    LocationService::Ptr locationService() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
@@ -71,8 +81,11 @@ private:
 
     QList<Scope*> m_scopes;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
+    Scope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
+
+    LocationService::Ptr m_locationService;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
 

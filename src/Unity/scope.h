@@ -41,6 +41,7 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
+#include "locationservice.h"
 
 namespace scopes_ng
 {
@@ -147,6 +148,7 @@ public:
     void activateUri(QString const& uri);
 
     bool resultsDirty() const;
+    virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
 public Q_SLOTS:
     void invalidateResults();
@@ -160,17 +162,24 @@ private Q_SLOTS:
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
 
+protected:
+    void setSearchInProgress(bool searchInProgress);
+    void invalidateLastSearch();
+    virtual void dispatchSearch();
+
+    unity::scopes::ScopeProxy proxy() const;
+
+    QScopedPointer<Categories> m_categories;
+    QPointer<Scopes> m_scopesInstance;
+
 private:
     void setScopesInstance(Scopes*);
     void startTtlTimer();
-    void setSearchInProgress(bool searchInProgress);
     void setCurrentDepartmentId(QString const& id);
     void processSearchChunk(PushEvent* pushEvent);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
-    void dispatchSearch();
-    void invalidateLastSearch();
 
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
@@ -194,7 +203,6 @@ private:
     unity::scopes::Department::SCPtr m_rootDepartment;
     unity::scopes::Department::SCPtr m_lastRootDepartment;
     QGSettings* m_settings;
-    Categories* m_categories;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QTimer m_aggregatorTimer;
@@ -204,8 +212,8 @@ private:
     QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
     QMap<Department*, QString> m_inverseDepartments;
-    QPointer<Scopes> m_scopesInstance;
     QMetaObject::Connection m_metadataConnection;
+    LocationService::Ptr m_locationService;
 };
 
 } // namespace scopes_ng

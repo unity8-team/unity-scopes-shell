@@ -112,7 +112,7 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
     // TODO: figure out if the result can produce a preview without sending a request to the scope
     // if (m_previewedResult->has_early_preview()) { ... }
     try {
-        auto proxy = m_previewedResult->target_scope_proxy();
+        auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
 
         QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
@@ -153,7 +153,8 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
     }
 
     try {
-        auto proxy = m_previewedResult->target_scope_proxy();
+        auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
         QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         metadata.set_scope_data(qVariantToScopeVariant(data));
