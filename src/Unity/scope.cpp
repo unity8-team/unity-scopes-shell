@@ -902,30 +902,15 @@ bool Scope::resultsDirty() const {
 
 void Scope::activateUri(QString const& uri)
 {
-    /* Tries various methods to trigger a sensible action for the given 'uri'.
-       If it has no understanding of the given scheme it falls back on asking
-       Qt to open the uri.
-    */
+    /*
+     * If it's a scope URI, perform the query, otherwise ask Qt to open it.
+     */
     QUrl url(uri);
-    if (url.scheme() == QLatin1String("application")) {
-        QString path(url.path().isEmpty() ? url.authority() : url.path());
-        if (path.startsWith("/")) {
-            Q_FOREACH(const QString &dir, QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)) {
-                if (path.startsWith(dir)) {
-                    path.remove(0, dir.length());
-                    path.replace('/', '-');
-                    break;
-                }
-            }
-        }
-
-        Q_EMIT activateApplication(QFileInfo(path).completeBaseName());
-    } else if (url.scheme() == QLatin1String("scope")) {
+    if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;
         performQuery(uri);
     } else {
         qDebug() << "Trying to open" << uri;
-        /* Try our luck */
         QDesktopServices::openUrl(url);
     }
 }
