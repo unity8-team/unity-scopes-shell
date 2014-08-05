@@ -18,18 +18,15 @@
  */
 
 #include <QTest>
-#include <QThread>
 #include <QScopedPointer>
 #include <QSignalSpy>
 
 #include <scopes.h>
 #include <scope.h>
-#include <resultsmodel.h>
 
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
 #include "registry-spawner.h"
-#include "test-utils.h"
 
 using namespace scopes_ng;
 using namespace unity::shell::scopes;
