@@ -61,6 +61,7 @@ run_tests(
     overviewtest
     previewtest
     resultstest
+    settingsendtoendtest
     settingstest
     utilstest
     )

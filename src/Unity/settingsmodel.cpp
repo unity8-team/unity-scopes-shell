@@ -53,8 +53,11 @@ SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
         QString type = data["type"].toString();
 
         QVariantMap defaults;
-        defaults["value"] = data["defaultValue"];
-        properties["defaultValue"] = data["defaultValue"];
+        if(data.contains("defaultValue"))
+        {
+            defaults["value"] = data["defaultValue"];
+            properties["defaultValue"] = data["defaultValue"];
+        }
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
         document->setDocId(SETTING_ID_PATTERN.arg(SETTING_GROUP, id));
