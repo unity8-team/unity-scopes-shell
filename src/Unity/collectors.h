@@ -109,7 +109,7 @@ public:
     virtual void push(unity::scopes::CategorisedResult result) override;
     virtual void push(unity::scopes::Department::SCPtr const& department) override;
     virtual void push(unity::scopes::Filters const& filters, unity::scopes::FilterState const& state) override;
-    virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
+    virtual void finished(unity::scopes::CompletionDetails const& details) override;
 
     SearchResultReceiver(QObject* receiver);
 
@@ -123,7 +123,7 @@ public:
     virtual void push(unity::scopes::ColumnLayoutList const& layouts) override;
     virtual void push(unity::scopes::PreviewWidgetList const& widgets) override;
     virtual void push(std::string const& key, unity::scopes::Variant const& value) override;
-    virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
+    virtual void finished(unity::scopes::CompletionDetails const& details) override;
 
     PreviewDataReceiver(QObject* receiver);
 
@@ -135,7 +135,7 @@ class ActivationReceiver: public unity::scopes::ActivationListenerBase, public S
 {
 public:
     virtual void activated(unity::scopes::ActivationResponse const&) override;
-    virtual void finished(unity::scopes::ListenerBase::Reason reason, std::string const& error_msg) override;
+    virtual void finished(unity::scopes::CompletionDetails const& details) override;
 
     ActivationReceiver(QObject* receiver, std::shared_ptr<unity::scopes::Result> const& result);
 
