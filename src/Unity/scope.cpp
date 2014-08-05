@@ -912,6 +912,11 @@ void Scope::setSearchQuery(const QString& search_query)
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
         m_searchQuery = search_query;
 
+        // atm only empty query can have a filter state
+        if (!m_searchQuery.isEmpty()) {
+            m_filterState = scopes::FilterState();
+        }
+
         // FIXME: use a timeout
         invalidateResults();
 
