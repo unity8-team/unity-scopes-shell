@@ -45,11 +45,16 @@ SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
         QVariantMap data = it.toMap();
         QString id = data["id"].toString();
         QString displayName = data["displayName"].toString();
-        QVariantMap properties = data["parameters"].toMap();
+        QVariantMap properties;
+        if (data.contains("displayValues"))
+        {
+            properties["values"] = data["displayValues"].toList();
+        }
         QString type = data["type"].toString();
 
         QVariantMap defaults;
-        defaults["value"] = properties["defaultValue"];
+        defaults["value"] = data["defaultValue"];
+        properties["defaultValue"] = data["defaultValue"];
 
         QSharedPointer<U1db::Document> document(new U1db::Document);
         document->setDocId(SETTING_ID_PATTERN.arg(SETTING_GROUP, id));
