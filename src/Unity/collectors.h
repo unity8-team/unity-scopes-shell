@@ -27,12 +27,15 @@
 #include <QElapsedTimer>
 
 #include <unity/scopes/ActivationListenerBase.h>
-#include <unity/scopes/SearchListenerBase.h>
-#include <unity/scopes/PreviewListenerBase.h>
-#include <unity/scopes/CategorisedResult.h>
-#include <unity/scopes/QueryCtrl.h>
-#include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/ActivationResponse.h>
+#include <unity/scopes/CategorisedResult.h>
+#include <unity/scopes/FilterBase.h>
+#include <unity/scopes/FilterState.h>
+#include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/PreviewListenerBase.h>
+#include <unity/scopes/PreviewWidget.h>
+#include <unity/scopes/QueryCtrl.h>
+#include <unity/scopes/SearchListenerBase.h>
 
 namespace scopes_ng
 {
@@ -73,7 +76,7 @@ public:
     PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector);
     Type type();
 
-    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr& out_rootDepartment);
+    CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr& out_rootDepartment, unity::scopes::OptionSelectorFilter::SCPtr& out_sortOrder, unity::scopes::FilterState& out_filterState);
     CollectorBase::Status collectPreviewData(unity::scopes::ColumnLayoutList& out_columns, unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
     CollectorBase::Status collectActivationResponse(std::shared_ptr<unity::scopes::ActivationResponse>& out_response, std::shared_ptr<unity::scopes::Result>& out_result);
 
@@ -105,6 +108,7 @@ class SearchResultReceiver: public unity::scopes::SearchListenerBase, public Sco
 public:
     virtual void push(unity::scopes::CategorisedResult result) override;
     virtual void push(unity::scopes::Department::SCPtr const& department) override;
+    virtual void push(unity::scopes::Filters const& filters, unity::scopes::FilterState const& state) override;
     virtual void finished(unity::scopes::CompletionDetails const& details) override;
 
     SearchResultReceiver(QObject* receiver);

@@ -41,7 +41,7 @@ void UnityPlugin::registerTypes(const char *uri)
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scopes>(uri, 0, 2, "Scopes");
     qmlRegisterUncreatableType<unity::shell::scopes::ScopeInterface>(uri, 0, 2, "Scope", "Can't create Scope object in QML. Get them from Scopes instance.");
-    qmlRegisterUncreatableType<unity::shell::scopes::DepartmentInterface>(uri, 0, 2, "Department", "Can't create Department object in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::NavigationInterface>(uri, 0, 2, "Navigation", "Can't create Navigation object in QML. Get them from Scope instance.");
     qmlRegisterUncreatableType<unity::shell::scopes::CategoriesInterface>(uri, 0, 2, "Categories", "Can't create Categories object in QML. Get them from Scope instance.");
     qmlRegisterUncreatableType<unity::shell::scopes::SettingsModelInterface>(uri, 0, 2, "Settings", "Can't create Settings object in QML. Get them from Scope instance.");
     qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 2, "ResultsModel", "Can't create new ResultsModel in QML. Get them from Categories instance.");

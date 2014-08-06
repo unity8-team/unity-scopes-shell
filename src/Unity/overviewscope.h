@@ -35,7 +35,6 @@ public:
 
     /* getters */
     QString id() const override;
-    bool visible() const override;
 
     void dispatchSearch() override;
 

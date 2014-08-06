@@ -1,0 +1,8 @@
+[ScopeConfig]
+DisplayName = mock-double-nav.DisplayName
+Description = mock-double-nav.Description
+Art = /mock-double-nav.Art
+Icon = /mock-double-nav.Icon
+SearchHint = mock-double-nav.SearchHint
+HotKey = mock-double-nav.HotKey
+Author = mock-double-nav.Author

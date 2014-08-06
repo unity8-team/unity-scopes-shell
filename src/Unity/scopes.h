@@ -62,6 +62,7 @@ public:
     void refreshScopeMetadata();
 
     bool loaded() const override;
+    int count() const override;
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
     LocationService::Ptr locationService() const;

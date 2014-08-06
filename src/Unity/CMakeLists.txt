@@ -2,7 +2,7 @@
 include(Plugins)
 
 # Dependencies
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=3)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.0)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(U1DB REQUIRED libu1db-qt5)
@@ -41,7 +41,7 @@ set(QMLPLUGIN_SRC
     # We need these headers here so moc runs and we get the moc-stuff
     # compiled in, otherwise we miss some symbols
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
-    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/DepartmentInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/NavigationInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewStackInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewWidgetModelInterface.h
