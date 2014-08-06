@@ -23,6 +23,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QProcess>
+#include <QTemporaryDir>
 #include <QThread>
 #include <QScopedPointer>
 #include <QSignalSpy>
@@ -34,6 +35,8 @@ class RegistrySpawner
 public:
     RegistrySpawner()
     {
+        qputenv("UNITY_SCOPES_SETTINGS_DIR", m_tempDir.path().toUtf8());
+
         QDir endpointdir(QFileInfo(TEST_RUNTIME_CONFIG).dir());
         endpointdir.cd(QString("endpoints"));
         QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
@@ -67,4 +70,6 @@ public:
 
 private:
     QScopedPointer<QProcess> m_registry;
+
+    QTemporaryDir m_tempDir;
 };

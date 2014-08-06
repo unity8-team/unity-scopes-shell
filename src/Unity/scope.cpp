@@ -657,8 +657,18 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     {
         scopes::Variant settings_definitions;
         settings_definitions = m_scopeMetadata->settings_definitions();
+        QDir shareDir;
+        if(qEnvironmentVariableIsSet("UNITY_SCOPES_SETTINGS_DIR"))
+        {
+            shareDir = qgetenv("UNITY_SCOPES_SETTINGS_DIR");
+        }
+        else
+        {
+            shareDir = QDir::home().filePath(".local/share");
+        }
+
         m_settingsModel.reset(
-                new SettingsModel(QDir::home().filePath(".local/share"), id(),
+                new SettingsModel(shareDir, id(),
                         scopeVariantToQVariant(settings_definitions), this));
     }
     catch (unity::scopes::NotFoundException&)

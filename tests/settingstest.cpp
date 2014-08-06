@@ -37,9 +37,7 @@ const static QByteArray BOOLEAN_DEFINITION =
         "id": "enabledSetting",
         "displayName": "Enabled",
         "type": "boolean",
-        "parameters": {
-            "defaultValue": true
-        }
+        "defaultValue": true
     }
 ]
 )";
@@ -51,10 +49,8 @@ const static QByteArray LIST_DEFINITION =
         "id": "unitTempSetting",
         "displayName": "Temperature Units",
         "type": "list",
-        "parameters": {
-            "defaultValue": 1,
-            "values": ["Celcius", "Fahrenheit"]
-        }
+        "defaultValue": 1,
+        "displayValues": ["Celcius", "Fahrenheit"]
     }
 ]
 )";
@@ -66,9 +62,7 @@ const static QByteArray NUMBER_DEFINITION =
         "id": "ageSetting",
         "displayName": "Age",
         "type": "number",
-        "parameters": {
-            "defaultValue": 23
-        }
+        "defaultValue": 23
     }
 ]
 )";
@@ -80,9 +74,7 @@ const static QByteArray STRING_DEFINITION =
         "id": "locationSetting",
         "displayName": "Location",
         "type": "string",
-        "parameters": {
-            "defaultValue": "London"
-        }
+        "defaultValue": "London"
     }
 ]
 )";
@@ -94,34 +86,26 @@ const static QByteArray MIXED_DEFINITION =
         "id": "locationSetting",
         "displayName": "Location",
         "type": "string",
-        "parameters": {
-            "defaultValue": "London"
-        }
+        "defaultValue": "London"
     },
     {
         "id": "unitTempSetting",
         "displayName": "Temperature Units",
         "type": "list",
-        "parameters": {
-            "defaultValue": 1,
-            "values": ["Celcius", "Fahrenheit"]
-        }
+        "defaultValue": 1,
+        "displayValues": ["Celcius", "Fahrenheit"]
     },
     {
         "id": "ageSetting",
         "displayName": "Age",
         "type": "number",
-        "parameters": {
-            "defaultValue": 23
-        }
+        "defaultValue": 23
     },
     {
         "id": "enabledSetting",
         "displayName": "Enabled",
         "type": "boolean",
-        "parameters": {
-            "defaultValue": true
-        }
+        "defaultValue": true
     }
 ]
 )";
