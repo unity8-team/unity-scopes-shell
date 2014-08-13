@@ -42,7 +42,7 @@ const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::regi
 namespace
 {
 
-CollectorBase::Status getInfoStatus(scopes::CompletionDetails const& details)
+CollectorBase::Status getStatus(scopes::CompletionDetails const& details)
 {
     // Gather info from the completion details
     bool no_internet = false;
@@ -365,7 +365,7 @@ void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterSt
 // this might be called from any thread (might be main, might be any other thread)
 void SearchResultReceiver::finished(scopes::CompletionDetails const& details)
 {
-    postCollectedResults(getInfoStatus(details));
+    postCollectedResults(getStatus(details));
 }
 
 PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
@@ -402,7 +402,7 @@ void PreviewDataReceiver::push(std::string const& key, scopes::Variant const& va
 // this might be called from any thread (might be main, might be any other thread)
 void PreviewDataReceiver::finished(scopes::CompletionDetails const& details)
 {
-    postCollectedResults(getInfoStatus(details));
+    postCollectedResults(getStatus(details));
 }
 
 void ActivationReceiver::activated(scopes::ActivationResponse const& response)
@@ -412,7 +412,7 @@ void ActivationReceiver::activated(scopes::ActivationResponse const& response)
 
 void ActivationReceiver::finished(scopes::CompletionDetails const& details)
 {
-    postCollectedResults(getInfoStatus(details));
+    postCollectedResults(getStatus(details));
 }
 
 ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):
