@@ -39,6 +39,33 @@ using namespace unity;
 
 const QEvent::Type PushEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
 
+namespace
+{
+
+CollectorBase::Status getInfoStatus(scopes::CompletionDetails const& details)
+{
+    // Search for info codes in order of priority
+    for (auto const& info : details.info_list())
+    {
+        if (info.code() == scopes::OperationInfo::NoInternet)
+            return CollectorBase::Status::NO_INTERNET;
+    }
+    for (auto const& info : details.info_list())
+    {
+        if (info.code() == scopes::OperationInfo::NoLocationData)
+            return CollectorBase::Status::NO_LOCATION_DATA;
+    }
+
+    // We get here if no recognised info codes were received
+    if (details.status() == scopes::CompletionDetails::Cancelled)
+    {
+        return CollectorBase::Status::CANCELLED;
+    }
+    return CollectorBase::Status::FINISHED;
+}
+
+}
+
 CollectorBase::CollectorBase(): m_status(Status::INCOMPLETE), m_posted(false)
 {
     m_timer.start();
@@ -324,10 +351,7 @@ void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterSt
 // this might be called from any thread (might be main, might be any other thread)
 void SearchResultReceiver::finished(scopes::CompletionDetails const& details)
 {
-    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
-        CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
-
-    postCollectedResults(status);
+    postCollectedResults(getInfoStatus(details));
 }
 
 PreviewDataReceiver::PreviewDataReceiver(QObject* receiver):
@@ -364,10 +388,7 @@ void PreviewDataReceiver::push(std::string const& key, scopes::Variant const& va
 // this might be called from any thread (might be main, might be any other thread)
 void PreviewDataReceiver::finished(scopes::CompletionDetails const& details)
 {
-    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
-        CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
-
-    postCollectedResults(status);
+    postCollectedResults(getInfoStatus(details));
 }
 
 void ActivationReceiver::activated(scopes::ActivationResponse const& response)
@@ -377,10 +398,7 @@ void ActivationReceiver::activated(scopes::ActivationResponse const& response)
 
 void ActivationReceiver::finished(scopes::CompletionDetails const& details)
 {
-    CollectorBase::Status status = details.status() == scopes::CompletionDetails::CompletionStatus::Cancelled ?
-        CollectorBase::Status::CANCELLED : CollectorBase::Status::FINISHED;
-
-    postCollectedResults(status);
+    postCollectedResults(getInfoStatus(details));
 }
 
 ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):

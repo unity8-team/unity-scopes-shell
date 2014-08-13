@@ -134,7 +134,20 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         flushUpdates();
 
         setSearchInProgress(false);
-        setStatus(status == CollectorBase::Status::FINISHED ? Status::Okay : Status::Unknown);
+
+        switch (status) {
+            case CollectorBase::Status::FINISHED:
+                setStatus(Status::Okay);
+                break;
+            case CollectorBase::Status::NO_INTERNET:
+                setStatus(Status::NoInternet);
+                break;
+            case CollectorBase::Status::NO_LOCATION_DATA:
+                setStatus(Status::NoLocationData);
+                break;
+            default:
+                setStatus(Status::Unknown);
+        }
 
         // Don't schedule a refresh if the query suffered an error
         if (status == CollectorBase::Status::FINISHED) {
