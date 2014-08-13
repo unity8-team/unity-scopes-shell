@@ -626,6 +626,8 @@ void Scope::dispatchSearch()
         catch (std::domain_error& e)
         {
         }
+        meta.set_internet_connectivity(m_network_manager.isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
