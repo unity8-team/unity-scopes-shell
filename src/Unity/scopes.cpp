@@ -114,7 +114,7 @@ Scopes::Scopes(QObject *parent)
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
     QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
 
-    if (m_dashSettings && m_dashSettings->keys().contains("favorite-scopes"))
+    if (m_dashSettings && m_dashSettings->keys().contains("favoriteScopes"))
     {
         getFavoriteScopes();
     }
@@ -217,7 +217,7 @@ void Scopes::discoveryFinished()
 void Scopes::getFavoriteScopes()
 {
     if (m_dashSettings) {
-        for (auto const& fv: m_dashSettings->get("favorite-scopes").toList())
+        for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
             try
             {
