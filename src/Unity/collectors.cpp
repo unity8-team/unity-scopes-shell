@@ -44,20 +44,34 @@ namespace
 
 CollectorBase::Status getInfoStatus(scopes::CompletionDetails const& details)
 {
-    // Search for info codes in order of priority
+    // Gather info from the completion details
+    bool no_internet = false;
+    bool no_location_data = false;
     for (auto const& info : details.info_list())
     {
-        if (info.code() == scopes::OperationInfo::NoInternet)
-            return CollectorBase::Status::NO_INTERNET;
-    }
-    for (auto const& info : details.info_list())
-    {
-        if (info.code() == scopes::OperationInfo::NoLocationData)
-            return CollectorBase::Status::NO_LOCATION_DATA;
+        switch (info.code())
+        {
+            case scopes::OperationInfo::NoInternet:
+                no_internet = true;
+                break;
+            case scopes::OperationInfo::NoLocationData:
+                no_location_data = true;
+                break;
+            default:
+                break;
+        }
     }
 
-    // We get here if no recognised info codes were received
-    if (details.status() == scopes::CompletionDetails::Cancelled)
+    // Return status (in order of priority)
+    if (no_internet)
+    {
+        return CollectorBase::Status::NO_INTERNET;
+    }
+    else if (no_location_data)
+    {
+        return CollectorBase::Status::NO_LOCATION_DATA;
+    }
+    else if (details.status() == scopes::CompletionDetails::Cancelled)
     {
         return CollectorBase::Status::CANCELLED;
     }
