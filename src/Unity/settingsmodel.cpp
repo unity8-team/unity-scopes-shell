@@ -31,13 +31,13 @@ static const QString SETTING_GROUP("default");
 
 static const QString SETTING_ID_PATTERN("%1-%2");
 
-SettingsModel::SettingsModel(const QDir& shareDir, const QString& scopeId,
+SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
         int settingsTimeout)
         : SettingsModelInterface(parent), m_settingsTimeout(settingsTimeout)
 {
-    shareDir.mkdir(scopeId);
-    QDir databaseDir = shareDir.filePath(scopeId);
+    configDir.mkpath(scopeId);
+    QDir databaseDir = configDir.filePath(scopeId);
     m_database.setPath(databaseDir.filePath("settings.db"));
 
     for (const auto &it : settingsDefinitions.toList())
@@ -108,8 +108,8 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 break;
             case Roles::RoleValue:
             {
-                QSharedPointer<U1db::Document> document = m_documents[data->id];
-                QVariantMap contents = document->getContents().toMap();
+                QVariantMap contents = m_database.getDocUnchecked(
+                        SETTING_ID_PATTERN.arg(SETTING_GROUP, data->id)).toMap();
                 result = contents["value"];
                 break;
             }
@@ -118,6 +118,20 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
         }
     }
 
+    return result;
+}
+
+QVariant SettingsModel::value(const QString& id) const
+{
+    QVariant result;
+
+    QSharedPointer<U1db::Document> document = m_documents[id];
+    if (document)
+    {
+        QVariantMap contents = m_database.getDocUnchecked(
+                SETTING_ID_PATTERN.arg(SETTING_GROUP, id)).toMap();
+        result = contents["value"];
+    }
     return result;
 }
 

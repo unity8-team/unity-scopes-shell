@@ -57,7 +57,7 @@ Q_OBJECT
     };
 
 public:
-    explicit SettingsModel(const QDir& shareDir, const QString& scopeId,
+    explicit SettingsModel(const QDir& configDir, const QString& scopeId,
             const QVariant& settingsDefinitions, QObject* parent = 0,
             int settingsTimeout = 300);
 
@@ -70,6 +70,8 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     int count() const override;
+
+    QVariant value(const QString& id) const;
 
 protected Q_SLOTS:
     void settings_timeout();
