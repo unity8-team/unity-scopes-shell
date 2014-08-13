@@ -29,6 +29,7 @@
 #include <QThread>
 #include <QStringList>
 #include <QSharedPointer>
+#include <QGSettings>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -71,6 +72,8 @@ Q_SIGNALS:
     void metadataRefreshed();
 
 private Q_SLOTS:
+    void dashSettingsChanged(QString const &key);
+    void getFavoriteScopes();
     void populateScopes();
     void discoveryFinished();
     void refreshFinished();
@@ -81,6 +84,8 @@ private:
     class Priv;
 
     QList<Scope*> m_scopes;
+    QStringList m_favoriteScopes;
+    QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     Scope* m_overviewScope;
     QThread* m_listThread;

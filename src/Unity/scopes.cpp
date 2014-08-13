@@ -111,6 +111,10 @@ Scopes::Scopes(QObject *parent)
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
+    m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
+    QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
+    getFavoriteScopes();
+
     m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
 }
@@ -159,16 +163,11 @@ void Scopes::discoveryFinished()
                             std::bind(&Scopes::Priv::safeInvalidateScopeResults,
                                       m_priv.get(), SCOPES_SCOPE_ID))));
 
-    // FIXME: use a dconf setting for this
-    QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
-
     beginResetModel();
 
-    if (!enabledScopes.isNull()) {
-        QList<QByteArray> scopeList = enabledScopes.split(';');
-        for (int i = 0; i < scopeList.size(); i++) {
-            std::string scope_name(scopeList[i].constData());
-            auto it = scopes.find(scope_name);
+    if (!m_favoriteScopes.empty()) {
+        for (auto const scope_id: m_favoriteScopes) {
+            auto it = scopes.find(scope_id.toStdString());
             if (it != scopes.end()) {
                 auto scope = new Scope(this);
                 scope->setScopeData(it->second);
@@ -176,6 +175,7 @@ void Scopes::discoveryFinished()
             }
         }
     } else {
+        qWarning() << "The list of favorite scopes is empty";
         // add all the scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             auto scope = new Scope(this);
@@ -208,6 +208,35 @@ void Scopes::discoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+}
+
+void Scopes::getFavoriteScopes()
+{
+    if (m_dashSettings) {
+        for (auto const& fv: m_dashSettings->get("favorite-scopes").toList())
+        {
+            try
+            {
+                auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
+                m_favoriteScopes.push_back(QString::fromStdString(query.scope_id()));
+            }
+            catch (const InvalidArgumentException &e)
+            {
+                qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
+            }
+        }
+    }
+}
+
+void Scopes::dashSettingsChanged(QString const& key)
+{
+    if (key != "favoriteScopes") {
+        return;
+    }
+
+    getFavoriteScopes();
+
+    //TODO update overview
 }
 
 void Scopes::refreshFinished()
