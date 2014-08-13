@@ -113,7 +113,11 @@ Scopes::Scopes(QObject *parent)
 
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
     QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
-    getFavoriteScopes();
+
+    if (m_dashSettings && m_dashSettings->keys().contains("favorite-scopes"))
+    {
+        getFavoriteScopes();
+    }
 
     m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
