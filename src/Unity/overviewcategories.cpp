@@ -84,7 +84,7 @@ void OverviewCategories::setAllScopes(const QList<unity::scopes::ScopeMetadata::
     QModelIndex changedIndex(index(1));
     dataChanged(changedIndex, changedIndex, roles);
 }
- 
+
 void OverviewCategories::setFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
 {
     m_favouriteScopes->setResults(scopes);

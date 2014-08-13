@@ -25,6 +25,7 @@
 #include "utils.h"
 
 #include <unity/scopes/Result.h>
+#include <QSet>
 
 namespace scopes_ng {
 
@@ -68,9 +69,51 @@ OverviewResultsModel::OverviewResultsModel(QObject* parent)
 
 void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results)
 {
-    beginResetModel();
-    m_results = results;
-    endResetModel();
+    /*if (m_results.empty())
+    {
+        beginResetModel();
+        m_results = results;
+        endResetModel();
+        return;
+    }*/
+
+    QSet<QString> newResult;
+    for (auto const res: results) {
+        newResult.insert(QString::fromStdString(res->scope_id()));
+    }
+
+    int row = 0;
+    for (auto it = m_results.begin(); it != m_results.end();)
+    {
+        if (!newResult.contains(QString::fromStdString((*it)->scope_id())))
+        {
+            beginRemoveRows(QModelIndex(), row, row);
+            it = m_results.erase(it);
+            endRemoveRows();
+        }
+        else
+        {
+            ++it;
+            ++row;
+        }
+    }
+
+    QSet<QString> oldResult;
+    for (auto const res: m_results) {
+        oldResult.insert(QString::fromStdString(res->scope_id()));
+    }
+
+    row = 0;
+    for (auto const newRes: results)
+    {
+        if (!oldResult.contains(QString::fromStdString(newRes->scope_id())))
+        {
+            beginInsertRows(QModelIndex(), row, row);
+            m_results.insert(row, newRes);
+            endInsertRows();
+        }
+        ++row;
+    }
 }
 
 QString OverviewResultsModel::categoryId() const

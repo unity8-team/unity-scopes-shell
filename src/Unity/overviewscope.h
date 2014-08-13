@@ -38,6 +38,8 @@ public:
 
     void dispatchSearch() override;
 
+    void updateFavorites(const QStringList& favorites);
+
     unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const override;
 
 private Q_SLOTS:

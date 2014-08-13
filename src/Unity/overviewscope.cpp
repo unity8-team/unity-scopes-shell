@@ -106,6 +106,27 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
     }
 }
 
+void OverviewScope::updateFavorites(const QStringList& favorites)
+{
+    QList<scopes::ScopeMetadata::SPtr> favourites;
+    auto allMetadata = m_scopesInstance->getAllMetadata();
+    for (auto const id: favorites)
+    {
+        auto it = allMetadata.find(id);
+        if (it != allMetadata.end()) {
+            favourites.append(it.value());
+        }
+    }
+
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    categories->setFavouriteScopes(favourites);
+}
+
 void OverviewScope::dispatchSearch()
 {
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());

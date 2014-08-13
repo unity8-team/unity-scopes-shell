@@ -240,7 +240,10 @@ void Scopes::dashSettingsChanged(QString const& key)
 
     getFavoriteScopes();
 
-    //TODO update overview
+    if (m_overviewScope)
+    {
+        m_overviewScope->updateFavorites(m_favoriteScopes);
+    }
 }
 
 void Scopes::refreshFinished()

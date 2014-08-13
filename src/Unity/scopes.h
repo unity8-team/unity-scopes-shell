@@ -41,6 +41,7 @@ namespace scopes_ng
 {
 
 class Scope;
+class OverviewScope;
 
 class Q_DECL_EXPORT Scopes : public unity::shell::scopes::ScopesInterface
 {
@@ -87,7 +88,7 @@ private:
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
-    Scope* m_overviewScope;
+    OverviewScope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
 
