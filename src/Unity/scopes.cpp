@@ -112,11 +112,10 @@ Scopes::Scopes(QObject *parent)
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
-    QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
-
     if (m_dashSettings && m_dashSettings->keys().contains("favoriteScopes"))
     {
         getFavoriteScopes();
+        QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
     m_overviewScope = new OverviewScope(this);
@@ -217,6 +216,7 @@ void Scopes::discoveryFinished()
 void Scopes::getFavoriteScopes()
 {
     if (m_dashSettings) {
+        m_favoriteScopes.clear();
         for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
             try
@@ -324,13 +324,13 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
 
 QStringList Scopes::getFavoriteIds() const
 {
-    QStringList ids;
+    /*QStringList ids;
 
     Q_FOREACH(Scope* scope, m_scopes) {
         ids << scope->id();
-    }
+    }*/
 
-    return ids;
+    return m_favoriteScopes;
 }
 
 QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
