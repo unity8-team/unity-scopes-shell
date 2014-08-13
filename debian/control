@@ -31,6 +31,7 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
+         unity-schemas (>= 7.3.1),
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
           unity-scopes-impl-1,
