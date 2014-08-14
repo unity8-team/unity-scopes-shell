@@ -98,6 +98,11 @@ void OverviewCategories::setFavouriteScopes(const QList<unity::scopes::ScopeMeta
     dataChanged(changedIndex, changedIndex, roles);
 }
 
+void OverviewCategories::updateFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+{
+    m_favouriteScopes->setResults(scopes);
+}
+
 int OverviewCategories::rowCount(const QModelIndex& parent) const
 {
     if (m_isSurfacing) {

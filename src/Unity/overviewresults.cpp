@@ -69,19 +69,20 @@ OverviewResultsModel::OverviewResultsModel(QObject* parent)
 
 void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results)
 {
-    /*if (m_results.empty())
+    if (m_results.empty())
     {
         beginResetModel();
         m_results = results;
         endResetModel();
         return;
-    }*/
+    }
 
     QSet<QString> newResult;
     for (auto const res: results) {
         newResult.insert(QString::fromStdString(res->scope_id()));
     }
 
+    // itearate over old results, remove rows that are not present in new results
     int row = 0;
     for (auto it = m_results.begin(); it != m_results.end();)
     {
@@ -103,6 +104,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         oldResult.insert(QString::fromStdString(res->scope_id()));
     }
 
+    // iterate over new results, insert rows if not in previous model
     row = 0;
     for (auto const newRes: results)
     {

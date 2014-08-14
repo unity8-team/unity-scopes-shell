@@ -46,6 +46,7 @@ public:
 
     void setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
     void setFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void updateFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
 
 private:
     bool m_isSurfacing;

@@ -124,7 +124,7 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         return;
     }
 
-    categories->setFavouriteScopes(favourites);
+    categories->updateFavouriteScopes(favourites);
 }
 
 void OverviewScope::dispatchSearch()
