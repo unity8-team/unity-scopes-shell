@@ -176,6 +176,9 @@ void Scopes::discoveryFinished()
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
             }
+            else {
+                qWarning() << "Missing favorite scope:" << scope_id;
+            }
         }
     } else {
         qWarning() << "The list of favorite scopes is empty";
@@ -318,12 +321,6 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
 
 QStringList Scopes::getFavoriteIds() const
 {
-    /*QStringList ids;
-
-    Q_FOREACH(Scope* scope, m_scopes) {
-        ids << scope->id();
-    }*/
-
     return m_favoriteScopes;
 }
 

@@ -26,6 +26,7 @@
 #include <QSignalSpy>
 #include <QVariantList>
 #include <QDBusConnection>
+#include <QGSettings>
 
 #include <scopes.h>
 #include <scope.h>
@@ -64,6 +65,10 @@ private Q_SLOTS:
 
     void init()
     {
+        QStringList favs;
+        favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav";
+        setFavouriteScopes(favs);
+
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);

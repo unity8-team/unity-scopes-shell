@@ -98,3 +98,10 @@ bool previewForFirstResult(Scope* scope, QString const& searchString, QScopedPoi
 
     return true;
 }
+
+void setFavouriteScopes(const QStringList& cannedQueries)
+{
+    setenv("GSETTINGS_BACKEND", "memory", 1);
+    QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
+    settings.set("favoriteScopes", QVariant(cannedQueries));
+}
