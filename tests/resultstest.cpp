@@ -675,16 +675,22 @@ private Q_SLOTS:
 
     void testInfoStatus()
     {
+        // No info (Status::Okay)
         performSearch(m_scope_info, QString("no_info"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Okay);
+        // NoInternet (Status::NoInternet)
         performSearch(m_scope_info, QString("no_internet"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoInternet);
+        // NoLocationData (Status::NoLocationData)
         performSearch(m_scope_info, QString("no_location"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoLocationData);
+        // DefaultSettingsUsed (unknown to shell but known to run-time so Status::Okay)
         performSearch(m_scope_info, QString("shell_unknown"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Okay);
+        // DefaultSettingsUsed (unknown to runtime so Status::Unknown)
         performSearch(m_scope_info, QString("runtime_unknown"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Unknown);
+        // NoLocationData and NoInternet (Status::NoInternet takes priority)
         performSearch(m_scope_info, QString("no_location_no_internet"));
         QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoInternet);
     }
