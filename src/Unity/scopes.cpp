@@ -179,12 +179,6 @@ void Scopes::discoveryFinished()
         }
     } else {
         qWarning() << "The list of favorite scopes is empty";
-        // add all the scopes
-        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
-            auto scope = new Scope(this);
-            scope->setScopeData(it->second);
-            m_scopes.append(scope);
-        }
     }
 
     // HACK! deal with the overview scope
