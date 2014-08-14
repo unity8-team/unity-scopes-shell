@@ -85,7 +85,6 @@ class MyScope : public ScopeBase
 {
 public:
     MyScope()
-        : m_req_no(0)
     {
     }
 
@@ -98,9 +97,6 @@ public:
     {
         return nullptr;
     }
-
-private:
-    atomic_int m_req_no;
 };
 
 extern "C"
