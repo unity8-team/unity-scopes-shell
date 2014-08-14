@@ -114,7 +114,7 @@ Scopes::Scopes(QObject *parent)
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
     if (m_dashSettings && m_dashSettings->keys().contains("favoriteScopes"))
     {
-        getFavoriteScopes();
+        //processFavoriteScopes();
         QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
@@ -168,7 +168,7 @@ void Scopes::discoveryFinished()
 
     beginResetModel();
 
-    if (!m_favoriteScopes.empty()) {
+    /*if (!m_favoriteScopes.empty()) {
         for (auto const scope_id: m_favoriteScopes) {
             auto it = scopes.find(scope_id.toStdString());
             if (it != scopes.end()) {
@@ -182,7 +182,7 @@ void Scopes::discoveryFinished()
         }
     } else {
         qWarning() << "The list of favorite scopes is empty";
-    }
+    }*/
 
     // HACK! deal with the overview scope
     {
@@ -199,6 +199,7 @@ void Scopes::discoveryFinished()
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
 
+    processFavoriteScopes();
     endResetModel();
 
     m_loaded = true;
@@ -210,21 +211,68 @@ void Scopes::discoveryFinished()
     m_listThread = nullptr;
 }
 
-void Scopes::getFavoriteScopes()
+void Scopes::processFavoriteScopes()
 {
     if (m_dashSettings) {
         m_favoriteScopes.clear();
+        QSet<QString> favScopesLut;
         for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
             try
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
-                m_favoriteScopes.push_back(QString::fromStdString(query.scope_id()));
+                const QString id = QString::fromStdString(query.scope_id());
+                m_favoriteScopes.push_back(id);
+                favScopesLut.insert(id);
+
             }
             catch (const InvalidArgumentException &e)
             {
                 qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
             }
+        }
+
+        QSet<QString> oldScopes;
+        int row = 0;
+        // remove un-favorited scopes
+        for (auto it = m_scopes.begin(); it != m_scopes.end();)
+        {
+            if (!favScopesLut.contains((*it)->id()))
+            {
+                beginRemoveRows(QModelIndex(), row, row);
+                (*it)->deleteLater();
+                it = m_scopes.erase(it);
+                endRemoveRows();
+            }
+            else
+            {
+                oldScopes.insert((*it)->id());
+                ++it;
+                ++row;
+            }
+        }
+
+        // add new favorites
+        row = 0;
+        for (auto const fav: m_favoriteScopes)
+        {
+            if (!oldScopes.contains(fav))
+            {
+                auto it = m_cachedMetadata.find(fav);
+                if (it != m_cachedMetadata.end())
+                {
+                    auto scope = new Scope(this);
+                    scope->setScopeData(*(it.value()));
+                    beginInsertRows(QModelIndex(), row, row);
+                    m_scopes.insert(row, scope);
+                    endInsertRows();
+                }
+                else
+                {
+                    qWarning() << "No such scope:" << fav;
+                }
+            }
+            ++row;
         }
     }
 }
@@ -235,7 +283,7 @@ void Scopes::dashSettingsChanged(QString const& key)
         return;
     }
 
-    getFavoriteScopes();
+    processFavoriteScopes();
 
     if (m_overviewScope)
     {

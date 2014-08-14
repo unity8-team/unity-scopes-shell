@@ -74,7 +74,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void dashSettingsChanged(QString const &key);
-    void getFavoriteScopes();
+    void processFavoriteScopes();
     void populateScopes();
     void discoveryFinished();
     void refreshFinished();
