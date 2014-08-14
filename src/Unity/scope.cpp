@@ -74,6 +74,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_delayedClear(false)
     , m_hasNavigation(false)
     , m_hasAltNavigation(false)
+    , m_favorite(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
@@ -734,7 +735,7 @@ unity::shell::scopes::ScopeInterface::Status Scope::status() const
 
 bool Scope::favorite() const
 {
-    return true;
+    return m_favorite;
 }
 
 QString Scope::shortcut() const
@@ -974,9 +975,12 @@ void Scope::setActive(const bool active) {
 
 void Scope::setFavorite(const bool value)
 {
-    Q_UNUSED(value);
-
-    qWarning("Unimplemented: %s", __func__);
+    if (value != m_favorite)
+    {
+        m_favorite = value;
+        Q_EMIT favoriteChanged(value);
+        m_scopesInstance->setFavorite(id(), value);
+    }
 }
 
 void Scope::activate(QVariant const& result_var)

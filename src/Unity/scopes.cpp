@@ -196,8 +196,13 @@ void Scopes::discoveryFinished()
 
 void Scopes::processFavoriteScopes()
 {
+    //
+    // read the favoriteScopes array value from gsettings.
+    // process it and turn its values into scope ids.
+    // create new Scope objects or remove existing according to the list of favorities.
+    // notify about scopes model changes accordingly.
     if (m_dashSettings) {
-        m_favoriteScopes.clear();
+        QStringList newFavorites;
         QSet<QString> favScopesLut;
         for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
@@ -205,7 +210,7 @@ void Scopes::processFavoriteScopes()
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
                 const QString id = QString::fromStdString(query.scope_id());
-                m_favoriteScopes.push_back(id);
+                newFavorites.push_back(id);
                 favScopesLut.insert(id);
 
             }
@@ -215,6 +220,12 @@ void Scopes::processFavoriteScopes()
             }
         }
 
+        // this prevents further processing if we get called back when calling scope->setFavorite() below
+        if (m_favoriteScopes == newFavorites)
+            return;
+
+        m_favoriteScopes = newFavorites;
+
         QSet<QString> oldScopes;
         int row = 0;
         // remove un-favorited scopes
@@ -223,6 +234,7 @@ void Scopes::processFavoriteScopes()
             if (!favScopesLut.contains((*it)->id()))
             {
                 beginRemoveRows(QModelIndex(), row, row);
+                (*it)->setFavorite(false);
                 (*it)->deleteLater();
                 it = m_scopes.erase(it);
                 endRemoveRows();
@@ -246,6 +258,7 @@ void Scopes::processFavoriteScopes()
                 {
                     auto scope = new Scope(this);
                     scope->setScopeData(*(it.value()));
+                    scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
                     m_scopes.insert(row, scope);
                     endInsertRows();
@@ -353,6 +366,38 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
 QStringList Scopes::getFavoriteIds() const
 {
     return m_favoriteScopes;
+}
+
+void Scopes::setFavorite(QString const& scopeId, bool value)
+{
+    if (m_dashSettings)
+    {
+        QStringList cannedQueries;
+        bool changed = false;
+
+        for (auto const& fav: m_favoriteScopes)
+        {
+            if (value == false && fav == scopeId) {
+                changed = true;
+                continue; // skip it
+            }
+            // TODO: use CannedQuery::to_uri() when we really support them
+            const QString query = "scope://" + fav;
+            cannedQueries.push_back(query);
+        }
+
+        if (value && !m_favoriteScopes.contains(scopeId)) {
+            const QString query = "scope://" + scopeId;
+            cannedQueries.push_back(query);
+            changed = true;
+        }
+
+        if (changed) {
+            // update gsettings entry
+            // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
+            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+        }
+    }
 }
 
 QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
