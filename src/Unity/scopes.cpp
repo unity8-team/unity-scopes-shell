@@ -112,9 +112,8 @@ Scopes::Scopes(QObject *parent)
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
-    if (m_dashSettings && m_dashSettings->keys().contains("favoriteScopes"))
+    if (m_dashSettings)
     {
-        //processFavoriteScopes();
         QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
@@ -167,22 +166,6 @@ void Scopes::discoveryFinished()
                                       m_priv.get(), SCOPES_SCOPE_ID))));
 
     beginResetModel();
-
-    /*if (!m_favoriteScopes.empty()) {
-        for (auto const scope_id: m_favoriteScopes) {
-            auto it = scopes.find(scope_id.toStdString());
-            if (it != scopes.end()) {
-                auto scope = new Scope(this);
-                scope->setScopeData(it->second);
-                m_scopes.append(scope);
-            }
-            else {
-                qWarning() << "Missing favorite scope:" << scope_id;
-            }
-        }
-    } else {
-        qWarning() << "The list of favorite scopes is empty";
-    }*/
 
     // HACK! deal with the overview scope
     {
