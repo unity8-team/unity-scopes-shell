@@ -212,7 +212,6 @@ void Scopes::processFavoriteScopes()
                 const QString id = QString::fromStdString(query.scope_id());
                 newFavorites.push_back(id);
                 favScopesLut.insert(id);
-
             }
             catch (const InvalidArgumentException &e)
             {
