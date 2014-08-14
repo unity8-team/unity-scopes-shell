@@ -26,7 +26,6 @@
 #include <QSignalSpy>
 #include <QVariantList>
 #include <QDBusConnection>
-#include <QGSettings>
 
 #include <scopes.h>
 #include <scope.h>
