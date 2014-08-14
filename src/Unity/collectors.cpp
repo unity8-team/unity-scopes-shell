@@ -47,6 +47,7 @@ CollectorBase::Status getStatus(scopes::CompletionDetails const& details)
     // Gather info from the completion details
     bool no_internet = false;
     bool no_location_data = false;
+    bool unknown = false;
     for (auto const& info : details.info_list())
     {
         switch (info.code())
@@ -56,6 +57,9 @@ CollectorBase::Status getStatus(scopes::CompletionDetails const& details)
                 break;
             case scopes::OperationInfo::NoLocationData:
                 no_location_data = true;
+                break;
+            case scopes::OperationInfo::Unknown:
+                unknown = true;
                 break;
             default:
                 break;
@@ -70,6 +74,10 @@ CollectorBase::Status getStatus(scopes::CompletionDetails const& details)
     else if (no_location_data)
     {
         return CollectorBase::Status::NO_LOCATION_DATA;
+    }
+    else if (unknown)
+    {
+        return CollectorBase::Status::UNKNOWN;
     }
     else if (details.status() == scopes::CompletionDetails::Cancelled)
     {

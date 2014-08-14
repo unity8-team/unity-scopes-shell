@@ -137,6 +137,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
 
         switch (status) {
             case CollectorBase::Status::FINISHED:
+            case CollectorBase::Status::CANCELLED:
                 setStatus(Status::Okay);
                 break;
             case CollectorBase::Status::NO_INTERNET:
