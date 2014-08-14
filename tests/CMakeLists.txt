@@ -57,6 +57,7 @@ endmacro(run_tests)
 
 run_tests(
     departmentstest
+    favouritestest
     locationtest
     overviewtest
     previewtest

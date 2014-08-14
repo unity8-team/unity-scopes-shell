@@ -105,3 +105,14 @@ void setFavouriteScopes(const QStringList& cannedQueries)
     QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
     settings.set("favoriteScopes", QVariant(cannedQueries));
 }
+
+QStringList getFavoriteScopes()
+{
+    setenv("GSETTINGS_BACKEND", "memory", 1);
+    QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
+    QStringList favs;
+    for (auto const favvar: settings.get("favoriteScopes").toList()) {
+        favs.push_back(favvar.toString());
+    }
+    return favs;
+}
