@@ -132,6 +132,8 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
 
 QVariant SettingsModel::value(const QString& id) const
 {
+    m_settings->sync();
+
     QVariant result;
 
     QSharedPointer<Data> data = m_data_by_id[id];
