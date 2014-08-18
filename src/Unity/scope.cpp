@@ -631,10 +631,13 @@ void Scope::dispatchSearch()
             }
         }
         try {
-            // TODO Verify that the scope is allowed to access the location data
-            if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+            if (m_settingsModel && m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
-                meta.set_location(m_locationService->location());
+                QVariant locationEnabled = m_settingsModel->value("internal.location");
+                if (locationEnabled.type() == QVariant::Bool && locationEnabled.toBool())
+                {
+                    meta.set_location(m_locationService->location());
+                }
             }
         }
         catch (std::domain_error& e)
@@ -674,13 +677,13 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
         scopes::Variant settings_definitions;
         settings_definitions = m_scopeMetadata->settings_definitions();
         QDir shareDir;
-        if(qEnvironmentVariableIsSet("UNITY_SCOPES_SETTINGS_DIR"))
+        if(qEnvironmentVariableIsSet("UNITY_SCOPES_CONFIG_DIR"))
         {
-            shareDir = qgetenv("UNITY_SCOPES_SETTINGS_DIR");
+            shareDir = qgetenv("UNITY_SCOPES_CONFIG_DIR");
         }
         else
         {
-            shareDir = QDir::home().filePath(".local/share");
+            shareDir = QDir::home().filePath(".config/unity-scopes");
         }
 
         m_settingsModel.reset(
