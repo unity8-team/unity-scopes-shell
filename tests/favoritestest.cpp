@@ -101,6 +101,7 @@ private Q_SLOTS:
         scope1->setFavorite(false);
         QTRY_COMPARE(spy.count(), 1);
         QTRY_COMPARE(m_scopes->rowCount(), 1);
+        QCOMPARE(m_scopes->data(m_scopes->index(0), Scopes::RoleId), QVariant(QString("mock-scope-double-nav")));
     }
 
     void testFavoritesOverviewUpdates()
