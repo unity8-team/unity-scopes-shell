@@ -32,7 +32,7 @@
 using namespace scopes_ng;
 using namespace unity::shell::scopes;
 
-class FavouritesTest: public QObject
+class FavoritesTest: public QObject
 {
     Q_OBJECT
 private:
@@ -149,5 +149,5 @@ private Q_SLOTS:
     }
 };
 
-QTEST_GUILESS_MAIN(FavouritesTest)
-#include <favouritestest.moc>
+QTEST_GUILESS_MAIN(FavoritesTest)
+#include <favoritestest.moc>

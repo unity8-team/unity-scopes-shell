@@ -45,15 +45,15 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     void setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
-    void setFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
-    void updateFavouriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
 
 private:
     bool m_isSurfacing;
 
     QList<QSharedPointer<ScopesCategoryData>> m_surfaceCategories;
     QScopedPointer<OverviewResultsModel> m_allScopes;
-    QScopedPointer<OverviewResultsModel> m_favouriteScopes;
+    QScopedPointer<OverviewResultsModel> m_favoriteScopes;
 };
 
 } // namespace scopes_ng

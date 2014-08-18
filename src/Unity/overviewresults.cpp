@@ -69,8 +69,7 @@ OverviewResultsModel::OverviewResultsModel(QObject* parent)
 
 void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results)
 {
-    if (m_results.empty())
-    {
+    if (m_results.empty()) {
         beginResetModel();
         m_results = results;
         endResetModel();
@@ -86,14 +85,11 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     int row = 0;
     for (auto it = m_results.begin(); it != m_results.end();)
     {
-        if (!newResult.contains(QString::fromStdString((*it)->scope_id())))
-        {
+        if (!newResult.contains(QString::fromStdString((*it)->scope_id()))) {
             beginRemoveRows(QModelIndex(), row, row);
             it = m_results.erase(it);
             endRemoveRows();
-        }
-        else
-        {
+        } else {
             ++it;
             ++row;
         }

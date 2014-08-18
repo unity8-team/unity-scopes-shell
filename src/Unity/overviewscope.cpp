@@ -66,11 +66,11 @@ void OverviewScope::metadataChanged()
     }
 
     QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
-    QList<scopes::ScopeMetadata::SPtr> favourites;
+    QList<scopes::ScopeMetadata::SPtr> favorites;
     Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
-            favourites.append(it.value());
+            favorites.append(it.value());
         }
     }
 
@@ -88,7 +88,7 @@ void OverviewScope::metadataChanged()
 
     // FIXME: filter invisible scopes?
     categories->setAllScopes(allScopes);
-    categories->setFavouriteScopes(favourites);
+    categories->setFavoriteScopes(favorites);
 }
 
 QString OverviewScope::id() const
@@ -108,13 +108,13 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
 
 void OverviewScope::updateFavorites(const QStringList& favorites)
 {
-    QList<scopes::ScopeMetadata::SPtr> favourites;
+    QList<scopes::ScopeMetadata::SPtr> favs;
     auto allMetadata = m_scopesInstance->getAllMetadata();
     for (auto const id: favorites)
     {
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
-            favourites.append(it.value());
+            favs.append(it.value());
         }
     }
 
@@ -124,7 +124,7 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         return;
     }
 
-    categories->updateFavouriteScopes(favourites);
+    categories->updateFavoriteScopes(favs);
 }
 
 void OverviewScope::dispatchSearch()
