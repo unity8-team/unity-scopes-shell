@@ -25,6 +25,7 @@
 #include <scopes.h>
 #include <scope.h>
 #include <overviewresults.h>
+#include <unity/shell/scopes/ScopeInterface.h>
 
 #include "registry-spawner.h"
 #include "test-utils.h"
@@ -101,7 +102,20 @@ private Q_SLOTS:
         scope1->setFavorite(false);
         QTRY_COMPARE(spy.count(), 1);
         QTRY_COMPARE(m_scopes->rowCount(), 1);
+        QVERIFY(m_scopes->getScopeById("mock-scope-departments") == nullptr);
         QCOMPARE(m_scopes->data(m_scopes->index(0), Scopes::RoleId), QVariant(QString("mock-scope-double-nav")));
+
+        // favorite a scope
+        auto overviewScope = m_scopes->overviewScope();
+        QVERIFY(overviewScope != nullptr);
+        connect(overviewScope, &unity::shell::scopes::ScopeInterface::openScope, [](unity::shell::scopes::ScopeInterface* scope) {
+                QCOMPARE(scope->favorite(), false);
+                scope->setFavorite(true);
+        });
+
+        QVERIFY(m_scopes->getScopeById("mock-scope") == nullptr);
+        overviewScope->performQuery("scope://mock-scope");
+        QTRY_VERIFY(m_scopes->getScopeById("mock-scope") != nullptr);
     }
 
     void testFavoritesOverviewUpdates()
