@@ -248,8 +248,9 @@ void Scopes::processFavoriteScopes()
 
         // add new favorites
         row = 0;
-        for (auto const fav: m_favoriteScopes)
+        for (auto favIt = m_favoriteScopes.begin(); favIt != m_favoriteScopes.end(); )
         {
+            auto const fav = *favIt;
             if (!oldScopes.contains(fav))
             {
                 auto it = m_cachedMetadata.find(fav);
@@ -265,9 +266,12 @@ void Scopes::processFavoriteScopes()
                 else
                 {
                     qWarning() << "No such scope:" << fav;
+                    favIt = m_favoriteScopes.erase(favIt);
+                    continue;
                 }
             }
             ++row;
+            ++favIt;
         }
     }
 }
