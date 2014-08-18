@@ -134,7 +134,21 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         flushUpdates();
 
         setSearchInProgress(false);
-        setStatus(status == CollectorBase::Status::FINISHED ? Status::Okay : Status::Unknown);
+
+        switch (status) {
+            case CollectorBase::Status::FINISHED:
+            case CollectorBase::Status::CANCELLED:
+                setStatus(Status::Okay);
+                break;
+            case CollectorBase::Status::NO_INTERNET:
+                setStatus(Status::NoInternet);
+                break;
+            case CollectorBase::Status::NO_LOCATION_DATA:
+                setStatus(Status::NoLocationData);
+                break;
+            default:
+                setStatus(Status::Unknown);
+        }
 
         // Don't schedule a refresh if the query suffered an error
         if (status == CollectorBase::Status::FINISHED) {
@@ -626,6 +640,8 @@ void Scope::dispatchSearch()
         catch (std::domain_error& e)
         {
         }
+        meta.set_internet_connectivity(m_network_manager.isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
