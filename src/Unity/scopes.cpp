@@ -82,6 +82,7 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 }
 
 int Scopes::LIST_DELAY = -1;
+const int Scopes::SCOPE_DELETE_DELAY = 3;
 
 class Scopes::Priv : public QObject {
     Q_OBJECT
@@ -234,7 +235,9 @@ void Scopes::processFavoriteScopes()
             {
                 beginRemoveRows(QModelIndex(), row, row);
                 (*it)->setFavorite(false);
-                (*it)->deleteLater();
+                //
+                // we need to delay actual deletion of Scope object so that shell can animate it
+                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater));
                 it = m_scopes.erase(it);
                 endRemoveRows();
             }

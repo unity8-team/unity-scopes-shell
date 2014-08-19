@@ -83,6 +83,7 @@ private Q_SLOTS:
 
 private:
     static int LIST_DELAY;
+    static const int SCOPE_DELETE_DELAY;
     class Priv;
 
     QList<Scope*> m_scopes;
