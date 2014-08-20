@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.4-0ubuntu1) UNRELEASED; urgency=medium
+
+  [ Pete Woods ]
+  * Switch to QSettings, removing U1DB dependencies Support new location
+    setting.
+
+  [ Marcus Tomlinson ]
+  * Added support for ScopeInterface::Status::NoInternet and
+    NoLocationData completion statuses
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 18 Aug 2014 18:41:35 +0000
+
 unity-scopes-shell (0.5.3+14.10.20140806-0ubuntu1) utopic; urgency=medium
 
   [ Michal Hruby ]
