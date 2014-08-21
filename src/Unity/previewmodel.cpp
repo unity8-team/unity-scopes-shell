@@ -32,6 +32,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QDebug>
 
 namespace scopes_ng
 {
@@ -235,6 +236,35 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
         }
 
         if (!widget_type.isEmpty()) {
+
+            if (widget_type == "expandable") {
+                QList<QSharedPointer<PreviewWidgetData>> widgetData;
+                for (auto const w: widget.widgets())
+                {
+                    QHash<QString, QString> components2;
+                    QVariantMap attributes2;
+                    // collect all components and map their values if present in result
+                    for (auto const& kv_pair : w.attribute_mappings()) {
+                        components2[QString::fromStdString(kv_pair.first)] = QString::fromStdString(kv_pair.second);
+                    }
+                    processComponents(components2, attributes2);
+
+                    // collect all attributes and their values
+                    for (auto const& attr_pair : w.attribute_values()) {
+                        attributes2[QString::fromStdString(attr_pair.first)] = scopeVariantToQVariant(attr_pair.second);
+                    }
+                    qDebug() << "Adding subwidget" << QString::fromStdString(w.id()) << QString::fromStdString(w.widget_type()) << attributes2.size();
+
+                    auto data = new PreviewWidgetData(QString::fromStdString(w.id()), QString::fromStdString(w.widget_type()), components2, attributes2);
+                    widgetData.append(QSharedPointer<PreviewWidgetData>(data));
+                }
+                qDebug() << "Adding to submodel" << widgetData.size();
+
+                PreviewWidgetModel* submodel = new PreviewWidgetModel(this);
+                submodel->addWidgets(widgetData);
+                attributes["widgets"] = QVariant::fromValue(submodel);
+            }
+
             auto preview_data = new PreviewWidgetData(id, widget_type, components, attributes);
             for (auto attr_it = components.begin(); attr_it != components.end(); ++attr_it) {
                 m_dataToWidgetMap.insert(attr_it.value(), preview_data);
