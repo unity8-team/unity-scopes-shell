@@ -32,7 +32,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QDebug>
 
 namespace scopes_ng
 {
@@ -236,7 +235,7 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
         }
 
         if (!widget_type.isEmpty()) {
-
+            QList<QSharedPointer<PreviewWidgetData>> collapsedWidgets; // only used if type == 'expandable'
             if (widget_type == "expandable") {
                 QList<QSharedPointer<PreviewWidgetData>> widgetData;
                 for (auto const w: widget.widgets())
@@ -253,19 +252,26 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
                     for (auto const& attr_pair : w.attribute_values()) {
                         attributes2[QString::fromStdString(attr_pair.first)] = scopeVariantToQVariant(attr_pair.second);
                     }
-                    qDebug() << "Adding subwidget" << QString::fromStdString(w.id()) << QString::fromStdString(w.widget_type()) << attributes2.size();
 
-                    auto data = new PreviewWidgetData(QString::fromStdString(w.id()), QString::fromStdString(w.widget_type()), components2, attributes2);
-                    widgetData.append(QSharedPointer<PreviewWidgetData>(data));
+                    auto subWidgetData = QSharedPointer<PreviewWidgetData>(new PreviewWidgetData(QString::fromStdString(w.id()), QString::fromStdString(w.widget_type()),
+                                components2, attributes2));
+                    for (auto attr_it = components2.begin(); attr_it != components2.end(); ++attr_it) {
+                        m_dataToWidgetMap.insert(attr_it.value(), subWidgetData.data());
+                    }
+
+                    collapsedWidgets.append(subWidgetData);
+                    widgetData.append(subWidgetData);
                 }
-                qDebug() << "Adding to submodel" << widgetData.size();
 
                 PreviewWidgetModel* submodel = new PreviewWidgetModel(this);
                 submodel->addWidgets(widgetData);
-                attributes["widgets"] = QVariant::fromValue(submodel);
+                attributes["widgets"] = QVariant::fromValue(submodel); // insert model of this sub-widget into the outer widget's attributes
             }
 
             auto preview_data = new PreviewWidgetData(id, widget_type, components, attributes);
+            if (collapsedWidgets.size()) {
+                preview_data->collapsedWidgets = collapsedWidgets;
+            }
             for (auto attr_it = components.begin(); attr_it != components.end(); ++attr_it) {
                 m_dataToWidgetMap.insert(attr_it.value(), preview_data);
             }
@@ -349,6 +355,25 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
                 // returns true if the notification was emitted
                 if (m_previewWidgetModels[j]->widgetChanged(widget)) {
                     break;
+                }
+            }
+        } else { // check if it's expandable widget
+            if (widget->type == "expandable") {
+                auto const widgetsModelIt = widget->data.find("widgets");
+                if (widgetsModelIt!= widget->data.end() && widgetsModelIt.value().canConvert<PreviewWidgetModel*>()) {
+                    for (auto it = widget->collapsedWidgets.begin(); it != widget->collapsedWidgets.end(); it++) {
+                        auto subwidget = *it;
+                        if (changedWidgets.contains(subwidget.data())) {
+                            processComponents(subwidget->component_map, subwidget->data);
+                            auto model = widgetsModelIt.value().value<PreviewWidgetModel*>();
+                            // returns true if the notification was emitted
+                            if (model->widgetChanged(subwidget.data())) {
+                                break;
+                            }
+                        }
+                    }
+                } else { // this should never happen
+                    qWarning() << "Can't convert model to PreviewWidgetModel";
                 }
             }
         }
