@@ -136,6 +136,16 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "expandable-widget")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:expandable-widget");
+            res.set_art("art");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else if (query_ == "perform-query")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
@@ -292,6 +302,26 @@ public:
                 widgets.push_back(extra);
             }
             reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("expandable-widget") != std::string::npos)
+        {
+            PreviewWidget w1("exp", "expandable");
+            w1.add_attribute_value("title", Variant("Expandable widget"));
+            PreviewWidget w2("txt", "text");
+            w2.add_attribute_value("title", Variant("Subwidget"));
+            w2.add_attribute_value("text", Variant("Lorum ipsum"));
+            PreviewWidget w3("img", "image");
+            w3.add_attribute_mapping("source", "src");
+            w1.add_widget(w2);
+            w1.add_widget(w3);
+
+            PreviewWidget w4("img", "image");
+            w4.add_attribute_value("source", Variant("foo.png"));
+
+            PreviewWidgetList widgets({w1, w4});
+            reply->push(widgets);
+            reply->push("src", Variant("bar.png"));
             return;
         }
 
