@@ -5,7 +5,6 @@ include(Plugins)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.3)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(U1DB REQUIRED libu1db-qt5)
 pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
 
 include_directories(

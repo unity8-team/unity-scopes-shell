@@ -134,7 +134,21 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
         flushUpdates();
 
         setSearchInProgress(false);
-        setStatus(status == CollectorBase::Status::FINISHED ? Status::Okay : Status::Unknown);
+
+        switch (status) {
+            case CollectorBase::Status::FINISHED:
+            case CollectorBase::Status::CANCELLED:
+                setStatus(Status::Okay);
+                break;
+            case CollectorBase::Status::NO_INTERNET:
+                setStatus(Status::NoInternet);
+                break;
+            case CollectorBase::Status::NO_LOCATION_DATA:
+                setStatus(Status::NoLocationData);
+                break;
+            default:
+                setStatus(Status::Unknown);
+        }
 
         // Don't schedule a refresh if the query suffered an error
         if (status == CollectorBase::Status::FINISHED) {
@@ -617,15 +631,20 @@ void Scope::dispatchSearch()
             }
         }
         try {
-            // TODO Verify that the scope is allowed to access the location data
-            if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
+            if (m_settingsModel && m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
-                meta.set_location(m_locationService->location());
+                QVariant locationEnabled = m_settingsModel->value("internal.location");
+                if (locationEnabled.type() == QVariant::Bool && locationEnabled.toBool())
+                {
+                    meta.set_location(m_locationService->location());
+                }
             }
         }
         catch (std::domain_error& e)
         {
         }
+        meta.set_internet_connectivity(m_network_manager.isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
@@ -658,13 +677,13 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
         scopes::Variant settings_definitions;
         settings_definitions = m_scopeMetadata->settings_definitions();
         QDir shareDir;
-        if(qEnvironmentVariableIsSet("UNITY_SCOPES_SETTINGS_DIR"))
+        if(qEnvironmentVariableIsSet("UNITY_SCOPES_CONFIG_DIR"))
         {
-            shareDir = qgetenv("UNITY_SCOPES_SETTINGS_DIR");
+            shareDir = qgetenv("UNITY_SCOPES_CONFIG_DIR");
         }
         else
         {
-            shareDir = QDir::home().filePath(".local/share");
+            shareDir = QDir::home().filePath(".config/unity-scopes");
         }
 
         m_settingsModel.reset(

@@ -20,14 +20,13 @@
 #ifndef NG_PREVIEW_SETTTINGSMODEL_H_
 #define NG_PREVIEW_SETTTINGSMODEL_H_
 
-#include <libu1db-qt5/database.h>
-#include <libu1db-qt5/document.h>
 #include <unity/SymbolExport.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
 #include <QAbstractListModel>
 #include <QList>
 #include <QSharedPointer>
+#include <QSettings>
 
 QT_BEGIN_NAMESPACE
 class QDir;
@@ -47,17 +46,21 @@ Q_OBJECT
         QString displayName;
         QString type;
         QVariant properties;
+        QVariant defaultValue;
+        QVariant::Type variantType;
 
         Data(QString const& id_, QString const& displayName_,
-                QString const& type_, QVariant const& properties_)
-                : id(id_), displayName(displayName_), type(type_), properties(
-                        properties_)
+                QString const& type_, QVariant const& properties_,
+                QVariant const& defaultValue_, QVariant::Type variantType_) :
+                id(id_), displayName(displayName_), type(type_), properties(
+                        properties_), defaultValue(defaultValue_), variantType(
+                        variantType_)
         {
         }
     };
 
 public:
-    explicit SettingsModel(const QDir& shareDir, const QString& scopeId,
+    explicit SettingsModel(const QDir& configDir, const QString& scopeId,
             const QVariant& settingsDefinitions, QObject* parent = 0,
             int settingsTimeout = 300);
 
@@ -71,6 +74,8 @@ public:
 
     int count() const override;
 
+    QVariant value(const QString& id) const;
+
 protected Q_SLOTS:
     void settings_timeout();
 
@@ -79,9 +84,9 @@ protected:
 
     QList<QSharedPointer<Data>> m_data;
 
-    U1db::Database m_database;
+    QMap<QString, QSharedPointer<Data>> m_data_by_id;
 
-    QMap<QString, QSharedPointer<U1db::Document>> m_documents;
+    QScopedPointer<QSettings> m_settings;
 
     QMap<QString, QSharedPointer<QTimer>> m_timers;
 };

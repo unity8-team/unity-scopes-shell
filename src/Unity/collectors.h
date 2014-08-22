@@ -47,7 +47,7 @@ class ActivationCollector;
 class CollectorBase
 {
 public:
-    enum Status { INCOMPLETE, FINISHED, CANCELLED };
+    enum Status { UNKNOWN, INCOMPLETE, FINISHED, CANCELLED, NO_INTERNET, NO_LOCATION_DATA };
 
     CollectorBase();
     virtual ~CollectorBase();
