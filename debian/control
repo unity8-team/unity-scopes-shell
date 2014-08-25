@@ -4,7 +4,7 @@ Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
                libunity-api-dev (>= 7.88),
-               libunity-scopes-dev (>= 0.6.2~),
+               libunity-scopes-dev (>= 0.6.3~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
