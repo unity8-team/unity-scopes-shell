@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMetaType>
 #include <QMetaObject>
+#include <QNetworkConfigurationManager>
 #include <QPointer>
 #include <QMultiMap>
 #include <QSet>
@@ -237,6 +238,7 @@ private:
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
     LocationService::Ptr m_locationService;
+    QNetworkConfigurationManager m_network_manager;
 };
 
 } // namespace scopes_ng

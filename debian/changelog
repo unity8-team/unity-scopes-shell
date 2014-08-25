@@ -1,3 +1,25 @@
+unity-scopes-shell (0.5.4+14.10.20140820.is.0.5.3+14.10.20140806-0ubuntu1) utopic; urgency=medium
+
+  * Do a quick emergency revert of the last landing as it is causing a
+    regression in local music search.
+
+ -- Åukasz 'sil2100' Zemczak <lukasz.zemczak@canonical.com>  Thu, 21 Aug 2014 11:10:22 +0200
+
+unity-scopes-shell (0.5.4+14.10.20140820-0ubuntu1) utopic; urgency=medium
+
+  [ Pete Woods ]
+  * Switch to QSettings, removing U1DB dependencies Support new location
+    setting.
+
+  [ Marcus Tomlinson ]
+  * Added support for ScopeInterface::Status::NoInternet and
+    NoLocationData completion statuses
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 20 Aug 2014 15:16:59 +0000
+
 unity-scopes-shell (0.5.3+14.10.20140806-0ubuntu1) utopic; urgency=medium
 
   [ Michal Hruby ]

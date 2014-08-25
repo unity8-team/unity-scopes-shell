@@ -88,6 +88,7 @@ private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
     Scope* m_scope_ttl;
+    Scope* m_scope_info;
     QScopedPointer<RegistrySpawner> m_registry;
 
 private Q_SLOTS:
@@ -124,8 +125,13 @@ private Q_SLOTS:
 
         // get scope proxy for TTL scope
         m_scope_ttl = qobject_cast<scopes_ng::Scope*>(m_scopes->getScopeById(QString("mock-scope-ttl")));
-        QVERIFY(m_scope != nullptr);
+        QVERIFY(m_scope_ttl != nullptr);
         m_scope_ttl->setActive(true);
+
+        // get scope proxy for info scope (sends info() messages)
+        m_scope_info = qobject_cast<scopes_ng::Scope*>(m_scopes->getScopeById(QString("mock-scope-info")));
+        QVERIFY(m_scope_info != nullptr);
+        m_scope_info->setActive(true);
     }
 
     void cleanup()
@@ -133,6 +139,7 @@ private Q_SLOTS:
         m_scopes.reset();
         m_scope = nullptr;
         m_scope_ttl = nullptr;
+        m_scope_info = nullptr;
     }
 
     void testScopeCommunication()
@@ -667,6 +674,28 @@ private Q_SLOTS:
         }
         QVERIFY(spy.count() > 0);
         QCOMPARE(m_scope->searchQuery(), QString("next-scope-query"));
+    }
+
+    void testInfoStatus()
+    {
+        // No info (Status::Okay)
+        performSearch(m_scope_info, QString("no_info"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Okay);
+        // NoInternet (Status::NoInternet)
+        performSearch(m_scope_info, QString("no_internet"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoInternet);
+        // NoLocationData (Status::NoLocationData)
+        performSearch(m_scope_info, QString("no_location"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoLocationData);
+        // DefaultSettingsUsed (unknown to shell but known to run-time so Status::Okay)
+        performSearch(m_scope_info, QString("shell_unknown"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Okay);
+        // DefaultSettingsUsed (unknown to runtime so Status::Unknown)
+        performSearch(m_scope_info, QString("runtime_unknown"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::Unknown);
+        // NoLocationData and NoInternet (Status::NoInternet takes priority)
+        performSearch(m_scope_info, QString("no_location_no_internet"));
+        QCOMPARE(m_scope_info->status(), unity::shell::scopes::ScopeInterface::Status::NoInternet);
     }
 
 };

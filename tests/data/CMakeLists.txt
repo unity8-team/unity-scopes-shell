@@ -1,6 +1,7 @@
 add_subdirectory(mock-scope)
 add_subdirectory(mock-scope-departments)
 add_subdirectory(mock-scope-double-nav)
+add_subdirectory(mock-scope-info)
 add_subdirectory(mock-scope-ttl)
 add_subdirectory(scopes)
 

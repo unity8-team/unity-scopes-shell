@@ -73,6 +73,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         beginResetModel();
         m_results = results;
         endResetModel();
+        Q_EMIT countChanged();
         return;
     }
 
@@ -112,6 +113,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         }
         ++row;
     }
+    Q_EMIT countChanged();
 }
 
 QString OverviewResultsModel::categoryId() const

@@ -1,0 +1,5 @@
+[ScopeConfig]
+DisplayName = mock-info.DisplayName
+Description = mock-info.Description
+Icon = /mock-info.Icon
+Author = mock-info.Author
