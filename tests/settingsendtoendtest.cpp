@@ -26,6 +26,7 @@
 
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
+#include "test-utils.h"
 #include "registry-spawner.h"
 
 using namespace scopes_ng;
@@ -52,6 +53,9 @@ private Q_SLOTS:
 
     void init()
     {
+        const QStringList favs {"scope://mock-scope-departments", "scope://mock-scope-double-nav", "scope://mock-scope"};
+        setFavouriteScopes(favs);
+
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);

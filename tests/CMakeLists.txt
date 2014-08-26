@@ -36,6 +36,7 @@ macro(run_tests)
         add_executable(${_test}Exec
                        ${_test}.cpp 
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
                       )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
@@ -57,6 +58,7 @@ endmacro(run_tests)
 
 run_tests(
     departmentstest
+    favoritestest
     locationtest
     overviewtest
     previewtest

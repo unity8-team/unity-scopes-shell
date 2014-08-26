@@ -4,7 +4,7 @@ Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
                libunity-api-dev (>= 7.88),
-               libunity-scopes-dev (>= 0.6.2~),
+               libunity-scopes-dev (>= 0.6.3~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
@@ -15,6 +15,7 @@ Build-Depends: cmake,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
                qtdeclarative5-qtquick2-plugin,
+               unity-schemas (>= 7.3.1),
 Standards-Version: 3.9.5
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
@@ -30,6 +31,7 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
          ${shlibs:Depends},
+         unity-schemas (>= 7.3.1),
 Provides: unity-scopes-impl,
           unity-scopes-impl-0,
           unity-scopes-impl-1,

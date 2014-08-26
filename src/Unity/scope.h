@@ -111,6 +111,8 @@ public:
 
     virtual bool event(QEvent* ev) override;
 
+    Q_PROPERTY(bool favorite READ favorite WRITE setFavorite NOTIFY favoriteChanged)
+
     /* getters */
     QString id() const override;
     QString name() const override;
@@ -162,6 +164,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void resultsDirtyChanged();
+    void favoriteChanged(bool);
 
 private Q_SLOTS:
     void flushUpdates();
@@ -207,6 +210,7 @@ private:
     bool m_delayedClear;
     bool m_hasNavigation;
     bool m_hasAltNavigation;
+    bool m_favorite;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;

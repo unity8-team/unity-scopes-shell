@@ -29,6 +29,7 @@
 #include <QThread>
 #include <QStringList>
 #include <QSharedPointer>
+#include <QGSettings>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -40,6 +41,7 @@ namespace scopes_ng
 {
 
 class Scope;
+class OverviewScope;
 
 class Q_DECL_EXPORT Scopes : public unity::shell::scopes::ScopesInterface
 {
@@ -58,6 +60,7 @@ public:
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
     QStringList getFavoriteIds() const;
+    void setFavorite(QString const& scopeId, bool value);
 
     void refreshScopeMetadata();
 
@@ -71,6 +74,8 @@ Q_SIGNALS:
     void metadataRefreshed();
 
 private Q_SLOTS:
+    void dashSettingsChanged(QString const &key);
+    void processFavoriteScopes();
     void populateScopes();
     void discoveryFinished();
     void refreshFinished();
@@ -78,11 +83,14 @@ private Q_SLOTS:
 
 private:
     static int LIST_DELAY;
+    static const int SCOPE_DELETE_DELAY;
     class Priv;
 
     QList<Scope*> m_scopes;
+    QStringList m_favoriteScopes;
+    QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
-    Scope* m_overviewScope;
+    OverviewScope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
 
