@@ -66,11 +66,11 @@ void OverviewScope::metadataChanged()
     }
 
     QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
-    QList<scopes::ScopeMetadata::SPtr> favourites;
+    QList<scopes::ScopeMetadata::SPtr> favorites;
     Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
-            favourites.append(it.value());
+            favorites.append(it.value());
         }
     }
 
@@ -88,7 +88,7 @@ void OverviewScope::metadataChanged()
 
     // FIXME: filter invisible scopes?
     categories->setAllScopes(allScopes);
-    categories->setFavouriteScopes(favourites);
+    categories->setFavoriteScopes(favorites);
 }
 
 QString OverviewScope::id() const
@@ -104,6 +104,27 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
         // our fake results don't have a proxy associated, return the default one
         return proxy();
     }
+}
+
+void OverviewScope::updateFavorites(const QStringList& favorites)
+{
+    QList<scopes::ScopeMetadata::SPtr> favs;
+    auto allMetadata = m_scopesInstance->getAllMetadata();
+    for (auto const id: favorites)
+    {
+        auto it = allMetadata.find(id);
+        if (it != allMetadata.end()) {
+            favs.append(it.value());
+        }
+    }
+
+    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
+    if (!categories) {
+        qWarning("Unable to cast m_categories to OverviewCategories");
+        return;
+    }
+
+    categories->updateFavoriteScopes(favs);
 }
 
 void OverviewScope::dispatchSearch()

@@ -104,6 +104,9 @@ private Q_SLOTS:
 
     void init()
     {
+        const QStringList favs {"scope://mock-scope", "scope://mock-scope-ttl", "scope://mock-scope-info"};
+        setFavouriteScopes(favs);
+
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
