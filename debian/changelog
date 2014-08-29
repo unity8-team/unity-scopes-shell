@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.4+14.10.20140826-0ubuntu3) UNRELEASED; urgency=medium
+
+  * Implemented support for expandable widgets. Require unity-scopes-api 0.6.4.
+
+ -- Pawel Stolowski <pawel.stolowski@ubuntu.com>  Fri, 29 Aug 2014 16:27:55 +0200
+
 unity-scopes-shell (0.5.4+14.10.20140826-0ubuntu1) utopic; urgency=medium
 
   [ Pawel Stolowski ]
