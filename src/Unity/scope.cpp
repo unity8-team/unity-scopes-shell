@@ -92,7 +92,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::VeryCoarseTimer);
-    QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
+    connect(&m_invalidateTimer, SIGNAL(timeout()), this, SLOT(invalidateResults(bool)));
 }
 
 Scope::~Scope()
@@ -1059,9 +1059,9 @@ void Scope::cancelActivation()
     m_activationController->invalidate();
 }
 
-void Scope::invalidateResults()
+void Scope::invalidateResults(bool forceSearch)
 {
-    if (m_isActive) {
+    if (m_isActive || forceSearch) {
         dispatchSearch();
     } else {
         // mark the results as dirty, so next setActive() re-sends the query

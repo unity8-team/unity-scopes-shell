@@ -160,7 +160,7 @@ public:
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
 public Q_SLOTS:
-    void invalidateResults();
+    void invalidateResults(bool forceSearch = false);
 
 Q_SIGNALS:
     void resultsDirtyChanged();

@@ -201,6 +201,7 @@ void Scopes::queryScopesOnStartup()
 {
     for (auto scope: m_scopes) {
         scope->setSearchQuery("");
+        scope->invalidateResults(true); // force search
     }
 }
 
