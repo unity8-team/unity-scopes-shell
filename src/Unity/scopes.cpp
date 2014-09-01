@@ -193,6 +193,15 @@ void Scopes::discoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+
+    queryScopesOnStartup();
+}
+
+void Scopes::queryScopesOnStartup()
+{
+    for (auto scope: m_scopes) {
+        scope->setSearchQuery("");
+    }
 }
 
 void Scopes::processFavoriteScopes()
