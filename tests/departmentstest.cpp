@@ -87,6 +87,9 @@ private Q_SLOTS:
         m_scope_navs = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-double-nav")));
         QVERIFY(m_scope_navs != nullptr);
         m_scope_navs->setActive(true);
+
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        QTRY_COMPARE(m_scope_navs->searchInProgress(), false);
     }
 
     void cleanup()
@@ -105,8 +108,6 @@ private Q_SLOTS:
 
     void testRootDepartment()
     {
-        performSearch(m_scope, QString(""));
-
         QCOMPARE(m_scope->hasNavigation(), true);
         QCOMPARE(m_scope->hasAltNavigation(), false);
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
@@ -140,8 +141,6 @@ private Q_SLOTS:
 
     void testChildDepartmentModel()
     {
-        performSearch(m_scope, QString(""));
-
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
         QVERIFY(departmentModel != nullptr);
@@ -168,8 +167,6 @@ private Q_SLOTS:
 
     void testLeafActivationUpdatesModel()
     {
-        performSearch(m_scope, QString(""));
-
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
@@ -200,7 +197,7 @@ private Q_SLOTS:
 
     void testGoingBack()
     {
-        performSearch(m_scope, QString(""));
+        performSearch(m_scope, QString("x"));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
@@ -222,7 +219,6 @@ private Q_SLOTS:
     {
         QScopedPointer<NavigationInterface> navModel;
         QScopedPointer<NavigationInterface> departmentModel;
-        performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QCOMPARE(m_scope->hasNavigation(), true);
@@ -251,8 +247,6 @@ private Q_SLOTS:
 
     void testDoubleNavigation()
     {
-        performSearch(m_scope_navs, QString(""));
-
         QCOMPARE(m_scope_navs->hasNavigation(), true);
         QCOMPARE(m_scope_navs->hasAltNavigation(), true);
         QCOMPARE(m_scope_navs->currentNavigationId(), QString(""));
@@ -291,8 +285,6 @@ private Q_SLOTS:
 
     void testDoubleNavChangeActive()
     {
-        performSearch(m_scope_navs, QString(""));
-
         QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
         QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
         QVERIFY(sortOrderModel != nullptr);

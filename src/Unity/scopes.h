@@ -95,6 +95,7 @@ private:
     OverviewScope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
+    bool m_queryOnStartup;
 
     LocationService::Ptr m_locationService;
 

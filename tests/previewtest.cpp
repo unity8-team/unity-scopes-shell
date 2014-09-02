@@ -79,6 +79,8 @@ private Q_SLOTS:
         m_scope = m_scopes->getScopeById("mock-scope");
         QVERIFY(m_scope != nullptr);
         m_scope->setActive(true);
+
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
     }
 
     void cleanup()
@@ -90,7 +92,7 @@ private Q_SLOTS:
     void testScopePreview()
     {
         QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString(""), preview_stack));
+        QVERIFY(previewForFirstResult(m_scope, QString("x"), preview_stack));
         unity::scopes::Result::SPtr result;
         QVERIFY(getFirstResult(m_scope, result));
 
