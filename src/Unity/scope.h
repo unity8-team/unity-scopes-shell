@@ -31,6 +31,7 @@
 #include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
+#include <QUuid>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -198,6 +199,7 @@ private:
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
+    QUuid m_session_id;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;

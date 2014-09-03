@@ -625,6 +625,9 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        if (!m_session_id.isNull()) {
+            meta["session-id"] = m_session_id.toString().toStdString();
+        }
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
             if (remoteSearch.toString() == QString("none")) {
@@ -940,6 +943,15 @@ void Scope::setSearchQuery(const QString& search_query)
     */
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
+        // regenerate session id uuid if previous or current search string is empty,
+        // don't regenerate it if currenty query appends to previous query or removes
+        // caharcters from previous query.
+        if (m_session_id.isNull() ||
+                m_searchQuery.isEmpty() || search_query.isEmpty() ||
+                !(m_searchQuery.startsWith(search_query) ||
+                    search_query.startsWith(m_searchQuery))) {
+            m_session_id = QUuid::createUuid();
+        }
         m_searchQuery = search_query;
 
         // atm only empty query can have a filter state
@@ -1049,7 +1061,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
-    stack->setAssociatedScope(this);
+    stack->setAssociatedScope(this, m_session_id);
     stack->loadForResult(result);
     return stack;
 }

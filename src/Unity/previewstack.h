@@ -28,6 +28,7 @@
 #include <QSharedPointer>
 #include <QMultiMap>
 #include <QPointer>
+#include <QUuid>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
@@ -59,7 +60,7 @@ public:
 
     void setWidgetColumnCount(int columnCount) override;
     int widgetColumnCount() const override;
-    void setAssociatedScope(scopes_ng::Scope*);
+    void setAssociatedScope(scopes_ng::Scope*, QUuid const&);
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);
@@ -79,6 +80,7 @@ private:
     std::shared_ptr<ScopeDataReceiverBase> m_lastActivation;
 
     unity::scopes::Result::SPtr m_previewedResult;
+    QUuid m_session_id;
 };
 
 } // namespace scopes_ng
