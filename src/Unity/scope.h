@@ -200,6 +200,7 @@ private:
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
     QUuid m_session_id;
+    int m_query_id;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;

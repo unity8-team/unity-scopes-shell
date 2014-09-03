@@ -54,6 +54,7 @@
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/SearchMetadata.h>
 #include <unity/scopes/ActionMetadata.h>
+#include <unity/scopes/Variant.h>
 
 namespace scopes_ng
 {
@@ -67,6 +68,7 @@ const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
 Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
+    , m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -628,6 +630,7 @@ void Scope::dispatchSearch()
         if (!m_session_id.isNull()) {
             meta["session-id"] = uuidToString(m_session_id);
         }
+        meta["query-id"] = unity::scopes::Variant(m_query_id);
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
             if (remoteSearch.toString() == QString("none")) {
@@ -951,6 +954,9 @@ void Scope::setSearchQuery(const QString& search_query)
                 !(m_searchQuery.startsWith(search_query) ||
                     search_query.startsWith(m_searchQuery))) {
             m_session_id = QUuid::createUuid();
+            m_query_id = 0;
+        } else {
+            ++m_query_id;
         }
         m_searchQuery = search_query;
 
