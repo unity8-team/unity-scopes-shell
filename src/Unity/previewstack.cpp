@@ -122,7 +122,7 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
             metadata.set_scope_data(extra_data);
         }
         if (!m_session_id.isNull()) {
-            metadata["session-id"] = m_session_id.toString().toStdString();
+            metadata["session-id"] = uuidToString(m_session_id);
         }
 
         std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(m_activePreview));

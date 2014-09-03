@@ -123,4 +123,14 @@ QVariant backgroundUriToVariant(QString const& uri)
     }
 }
 
+Q_DECL_EXPORT std::string uuidToString(QUuid const& uuid)
+{
+    // workaround: use mid to get rid of curly braces; see https://bugreports.qt-project.org/browse/QTBUG-885
+    auto const uuid_str = uuid.toString();
+    if (uuid_str.startsWith("{")) {
+        return uuid_str.mid(1, 36).toStdString();
+    }
+    return uuid_str.toStdString();
+}
+
 } // namespace scopes_ng

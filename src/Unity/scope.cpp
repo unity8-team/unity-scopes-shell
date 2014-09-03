@@ -626,7 +626,7 @@ void Scope::dispatchSearch()
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
         if (!m_session_id.isNull()) {
-            meta["session-id"] = m_session_id.toString().toStdString();
+            meta["session-id"] = uuidToString(m_session_id);
         }
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
