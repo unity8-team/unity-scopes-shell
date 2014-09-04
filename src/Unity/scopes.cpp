@@ -94,11 +94,17 @@ public:
 
 Scopes::Scopes(QObject *parent)
     : unity::shell::scopes::ScopesInterface(parent)
+    , m_noFavorites(false)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_priv(new Priv())
 {
+    QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
+    if (!noFav.isNull()) {
+        m_noFavorites = true;
+    }
+
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
     if (LIST_DELAY < 0) {
@@ -168,6 +174,15 @@ void Scopes::discoveryFinished()
 
     beginResetModel();
 
+    if (m_noFavorites) {
+        // add all the scopes
+        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+            auto scope = new Scope(this);
+            scope->setScopeData(it->second);
+            m_scopes.append(scope);
+        }
+    }
+
     // HACK! deal with the overview scope
     {
         auto it = scopes.find(SCOPES_SCOPE_ID);
@@ -197,6 +212,10 @@ void Scopes::discoveryFinished()
 
 void Scopes::processFavoriteScopes()
 {
+    if (m_noFavorites) {
+        return;
+    }
+
     //
     // read the favoriteScopes array value from gsettings.
     // process it and turn its values into scope ids.
