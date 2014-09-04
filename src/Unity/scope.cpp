@@ -946,13 +946,16 @@ void Scope::setSearchQuery(const QString& search_query)
     */
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
-        // regenerate session id uuid if previous or current search string is empty,
-        // don't regenerate it if currenty query appends to previous query or removes
-        // caharcters from previous query.
-        if (m_session_id.isNull() ||
-                m_searchQuery.isEmpty() || search_query.isEmpty() ||
-                !(m_searchQuery.startsWith(search_query) ||
-                    search_query.startsWith(m_searchQuery))) {
+        // regenerate session id uuid if previous or current search string is empty or
+        // if current and previous query have no common prefix;
+        // don't regenerate it if current query appends to previous query or removes
+        // characters from previous query.
+        bool search_empty = m_searchQuery.isEmpty() || search_query.isEmpty();
+
+        // only check for common prefix if search is not empty
+        bool common_prefix = (!search_empty) && (m_searchQuery.startsWith(search_query) || search_query.startsWith(m_searchQuery));
+
+        if (m_session_id.isNull() || search_empty || !common_prefix) {
             m_session_id = QUuid::createUuid();
             m_query_id = 0;
         } else {
