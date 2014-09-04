@@ -328,13 +328,14 @@ public:
         }
 
         PreviewWidgetList widgets;
-        PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri", "attribute-1": "extra-data"}})");
+        PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri", "attribute-1": "extra-data", "session-id": "session-id-val"}})");
         PreviewWidget w2(R"({"id": "img", "type": "image", "components": {"source": "art"}, "zoomable": false})");
         widgets.push_back(w1);
         widgets.push_back(w2);
         reply->push(widgets);
 
         reply->push("extra-data", Variant("foo"));
+        reply->push("session-id-val", Variant(action_metadata()["session-id"]));
     }
 
 private:
