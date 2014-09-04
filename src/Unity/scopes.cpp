@@ -175,11 +175,13 @@ void Scopes::discoveryFinished()
     beginResetModel();
 
     if (m_noFavorites) {
-        // add all the scopes
+        // add all visible scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
-            auto scope = new Scope(this);
-            scope->setScopeData(it->second);
-            m_scopes.append(scope);
+            if (!it->second.invisible()) {
+                auto scope = new Scope(this);
+                scope->setScopeData(it->second);
+                m_scopes.append(scope);
+            }
         }
     }
 
