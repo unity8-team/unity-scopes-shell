@@ -628,7 +628,7 @@ void Scope::dispatchSearch()
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
         if (!m_session_id.isNull()) {
-            meta["session-id"] = uuidToString(m_session_id);
+            meta["session-id"] = uuidToString(m_session_id).toStdString();
         }
         meta["query-id"] = unity::scopes::Variant(m_query_id);
         if (m_settings) {
@@ -1103,6 +1103,14 @@ void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 
 bool Scope::resultsDirty() const {
     return m_resultsDirty;
+}
+
+QString Scope::sessionId() const {
+    return uuidToString(m_session_id);
+}
+
+int Scope::queryId() const {
+    return m_query_id;
 }
 
 void Scope::activateUri(QString const& uri)

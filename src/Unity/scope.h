@@ -160,6 +160,9 @@ public:
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
+    QString sessionId() const;
+    int queryId() const;
+
 public Q_SLOTS:
     void invalidateResults();
 
