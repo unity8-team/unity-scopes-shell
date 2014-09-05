@@ -1017,6 +1017,19 @@ void Scope::activate(QVariant const& result_var)
         return;
     }
 
+    if (result->contains("online_account_details"))
+    {
+        scopes::VariantMap details = result->value("online_account_details").get_dict();
+        if (details.find("service_name") != details.end() &&
+            details.find("service_type") != details.end() &&
+            details.find("provider_name") != details.end())
+        {
+            loginToAccount(QString(details.at("service_name").get_string().c_str()),
+                           QString(details.at("service_type").get_string().c_str()),
+                           QString(details.at("provider_name").get_string().c_str()));
+        }
+    }
+
     if (result->direct_activation()) {
         activateUri(QString::fromStdString(result->uri()));
     } else {
