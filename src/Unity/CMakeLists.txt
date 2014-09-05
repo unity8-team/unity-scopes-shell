@@ -57,6 +57,7 @@ target_link_libraries(Unity-qml
     ${GSETTINGSQT_LDFLAGS}
     ${U1DB_LDFLAGS}
     ${UBUNTU_LOCATION_SERVICE_LDFLAGS}
+    online-accounts-client
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)

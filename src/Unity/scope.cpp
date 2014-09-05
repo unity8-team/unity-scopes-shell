@@ -46,6 +46,8 @@
 
 #include <libintl.h>
 
+#include <online-accounts-client/Setup>
+
 #include <unity/scopes/ListenerBase.h>
 #include <unity/scopes/CannedQuery.h>
 #include <unity/scopes/OptionSelectorFilter.h>
@@ -1097,6 +1099,36 @@ void Scope::activateUri(QString const& uri)
         qDebug() << "Trying to open" << uri;
         QDesktopServices::openUrl(url);
     }
+}
+
+bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
+{
+    // Check if at least one account has the specified service enabled
+    bool account_enabled = false;
+    {
+        QEventLoop loop;
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
+                                              [&account_enabled, &loop](scopes::OnlineAccountClient::ServiceDetails const& details)
+        {
+            if (details.service_enabled)
+            {
+                account_enabled = true;
+            }
+            loop.exit();
+        }, true);
+
+        loop.exec();
+    }
+
+    if (!account_enabled)
+    {
+        OnlineAccountsClient::Setup setup;
+        setup.setApplicationId(service_name);
+        setup.setServiceTypeId(service_type);
+        setup.setProviderId(provider_name);
+        setup.exec();
+    }
+    return true;
 }
 
 } // namespace scopes_ng

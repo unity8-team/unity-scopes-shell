@@ -141,6 +141,20 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
     if (previewModel != nullptr) {
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
         if (widgetData != nullptr) {
+            if (widgetData->data.contains("online_account_details"))
+            {
+                QVariantMap details = widgetData->data.value("online_account_details").toMap();
+                if (m_associatedScope &&
+                    details.contains("service_name") &&
+                    details.contains("service_type") &&
+                    details.contains("provider_name"))
+                {
+                    m_associatedScope->loginToAccount(details.value("service_name").toString(),
+                                                      details.value("service_type").toString(),
+                                                      details.value("provider_name").toString());
+                }
+            }
+
             if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
                 if (m_associatedScope) {
                     m_associatedScope->activateUri(data.value("uri").toString());

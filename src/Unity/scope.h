@@ -159,6 +159,8 @@ public:
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
+    bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
+
 public Q_SLOTS:
     void invalidateResults();
 
