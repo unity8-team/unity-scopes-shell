@@ -82,6 +82,8 @@ private Q_SLOTS:
     void invalidateScopeResults(QString const&);
 
 private:
+    void queryScopesOnStartup();
+
     static int LIST_DELAY;
     static const int SCOPE_DELETE_DELAY;
     class Priv;
@@ -93,6 +95,7 @@ private:
     OverviewScope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
+    bool m_queryOnStartup;
 
     LocationService::Ptr m_locationService;
 

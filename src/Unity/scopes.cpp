@@ -97,6 +97,7 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_queryOnStartup(true)
     , m_priv(new Priv())
 {
     // delaying spawning the worker thread, causes problems with qmlplugindump
@@ -193,6 +194,23 @@ void Scopes::discoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+
+    if (m_queryOnStartup)
+    {
+        m_queryOnStartup = false;
+        queryScopesOnStartup();
+    }
+}
+
+void Scopes::queryScopesOnStartup()
+{
+    for (auto scope: m_scopes) {
+        if (!scope->isActive()) {
+            scope->setSearchQuery("");
+            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+            scope->dispatchSearch();
+        }
+    }
 }
 
 void Scopes::processFavoriteScopes()

@@ -91,7 +91,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     m_clearTimer.setSingleShot(true);
     QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_invalidateTimer.setSingleShot(true);
-    m_invalidateTimer.setTimerType(Qt::VeryCoarseTimer);
+    m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
 }
 

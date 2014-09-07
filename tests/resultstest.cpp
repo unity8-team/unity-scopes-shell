@@ -104,6 +104,8 @@ private Q_SLOTS:
 
     void init()
     {
+        m_scopes.reset(nullptr);
+
         const QStringList favs {"scope://mock-scope", "scope://mock-scope-ttl", "scope://mock-scope-info"};
         setFavouriteScopes(favs);
 
@@ -132,6 +134,10 @@ private Q_SLOTS:
         m_scope_info = qobject_cast<scopes_ng::Scope*>(m_scopes->getScopeById(QString("mock-scope-info")));
         QVERIFY(m_scope_info != nullptr);
         m_scope_info->setActive(true);
+
+        QTRY_COMPARE(m_scope_ttl->searchInProgress(), false);
+        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        QTRY_COMPARE(m_scope_info->searchInProgress(), false);
     }
 
     void cleanup()
@@ -144,8 +150,6 @@ private Q_SLOTS:
 
     void testScopeCommunication()
     {
-        performSearch(m_scope, QString(""));
-
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -227,8 +231,6 @@ private Q_SLOTS:
 
     void testTwoSearches()
     {
-        performSearch(m_scope, QString(""));
-
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         auto categories_count = categories->rowCount();
@@ -242,8 +244,6 @@ private Q_SLOTS:
 
     void testBasicResultData()
     {
-        performSearch(m_scope, QString(""));
-
         // get ResultsModel instance
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -309,7 +309,8 @@ private Q_SLOTS:
 
     void testActiveTtlScope()
     {
-        performSearch(m_scope_ttl, "query text");
+        const QString query("query text");
+        performSearch(m_scope_ttl, query);
 
         // get ResultsModel instance
         auto categories = m_scope_ttl->categories();
@@ -321,26 +322,31 @@ private Q_SLOTS:
         QVERIFY(results->rowCount() > 0);
 
         auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
-                QString("query text0"));
+
+        QVERIFY(results->data(idx, ResultsModel::Roles::RoleTitle).toString().startsWith("query text"));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
+        // get the number appended to result title by scope (increased with every search by mock-scope-ttl).
+        // this is required because whenever Scopes object is re-created with every test case from this file,
+        // the search is executed automatically for all test scopes, and this affects internal counter of mock-ttl-scope
+        // and values tested in this test case. The values are differnt if you run entire test suite or just select tests.
+        auto resultCount = results->data(idx, ResultsModel::Roles::RoleTitle).toString().mid(query.length()).toInt();
 
         // The scope should refresh every 250 ms, and increment the query
         // counter each time.
         waitForResultsChange(m_scope_ttl);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
-                QString("query text1"));
+                QString("query text" + QString::number(++resultCount)));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
         waitForResultsChange(m_scope_ttl);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
-                QString("query text2"));
+                QString("query text" + QString::number(++resultCount)));
         QVERIFY(!m_scope_ttl->resultsDirty());
 
         waitForResultsChange(m_scope_ttl);
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleTitle).toString(),
-                QString("query text3"));
+                QString("query text" + QString::number(++resultCount)));
         QVERIFY(!m_scope_ttl->resultsDirty());
     }
 
@@ -410,8 +416,8 @@ private Q_SLOTS:
         CountObject* countObject = new CountObject(m_scope);
         categories->addSpecialCategory("special", "Special", "", rawTemplate, countObject);
 
-        // should have 1 category now
-        QCOMPARE(categories->rowCount(), 1);
+        // should have 2 categories now
+        QCOMPARE(categories->rowCount(), 2);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 0);
         countObject->setCount(1);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCount).toInt(), 1);
@@ -546,7 +552,7 @@ private Q_SLOTS:
 
     void testCategoryDefinitionChange()
     {
-        performSearch(m_scope, QString(""));
+        performSearch(m_scope, QString("z"));
 
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -620,7 +626,7 @@ private Q_SLOTS:
 
     void testScopeActivation()
     {
-        performSearch(m_scope, QString(""));
+        performSearch(m_scope, QString("v"));
 
         unity::scopes::Result::SPtr result;
         QVERIFY(getFirstResult(m_scope, result));
