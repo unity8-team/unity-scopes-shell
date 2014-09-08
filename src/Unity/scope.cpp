@@ -1146,43 +1146,21 @@ void Scope::activateUri(QString const& uri)
     }
 }
 
-static bool getServiceStatus(QString const& service_name, QString const& service_type, QString const& provider_name)
-{
-    QEventLoop loop;
-    QTimer clearTimer;
-    clearTimer.setSingleShot(true);
-    QObject::connect(&clearTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
-    bool account_enabled = false;
-    clearTimer.start(500);
-
-    {
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
-                                              [&account_enabled, &clearTimer](scopes::OnlineAccountClient::ServiceDetails const& details)
-        {
-            if (details.service_enabled)
-            {
-                // We've found an enabled account, set flag and quit the event loop
-                account_enabled = true;
-                clearTimer.start(0);
-            }
-            else
-            {
-                // This service is disabled, wait a bit longer for another
-                clearTimer.start(100);
-            }
-        });
-
-        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
-    }
-
-    return account_enabled;
-}
-
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
+    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+    bool account_enabled = false;
+
     // Check if at least one account has the specified service enabled
-    bool account_enabled = getServiceStatus(service_name, service_type, provider_name);
+    auto service_statuses = oa_client.get_service_statuses();
+    for (auto const& status : service_statuses)
+    {
+        if (status.service_enabled)
+        {
+            account_enabled = true;
+            break;
+        }
+    }
 
     // Start the signon UI if no enabled services were found
     if (!account_enabled)
@@ -1198,7 +1176,15 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
-        account_enabled = getServiceStatus(service_name, service_type, provider_name);
+        service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
+        {
+            if (status.service_enabled)
+            {
+                account_enabled = true;
+                break;
+            }
+        }
     }
 
     return account_enabled;
