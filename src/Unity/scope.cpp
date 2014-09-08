@@ -1114,7 +1114,7 @@ void Scope::activateUri(QString const& uri)
     }
 }
 
-static bool account_service_status(QString const& service_name, QString const& service_type, QString const& provider_name)
+static bool getServiceStatus(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
     QEventLoop loop;
     QTimer clearTimer;
@@ -1150,7 +1150,7 @@ static bool account_service_status(QString const& service_name, QString const& s
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
     // Check if at least one account has the specified service enabled
-    bool account_enabled = account_service_status(service_name, service_type, provider_name);
+    bool account_enabled = getServiceStatus(service_name, service_type, provider_name);
 
     // Start the signon UI if no enabled services were found
     if (!account_enabled)
@@ -1166,7 +1166,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
-        account_enabled = account_service_status(service_name, service_type, provider_name);
+        account_enabled = getServiceStatus(service_name, service_type, provider_name);
     }
 
     return account_enabled;
