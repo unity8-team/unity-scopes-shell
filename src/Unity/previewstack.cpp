@@ -151,7 +151,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                     details.contains("login_passed_action") &&
                     details.contains("login_failed_action"))
                 {
-                    scopes::PreviewWidget::PostLoginAction action_code = scopes::PreviewWidget::Unknown;
+                    scopes::OnlineAccountClient::PostLoginAction action_code = scopes::OnlineAccountClient::Unknown;
 
                     bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
                                                                      details.value("service_type").toString(),
@@ -159,24 +159,27 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                     if (success)
                     {
                         int pass_action_code = details.value("login_passed_action").toInt();
-                        if (pass_action_code >= 0 && pass_action_code <= scopes::PreviewWidget::LastActionCode_)
+                        if (pass_action_code >= 0 && pass_action_code <= scopes::OnlineAccountClient::LastActionCode_)
                         {
-                            action_code = static_cast<scopes::PreviewWidget::PostLoginAction>(pass_action_code);
+                            action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(pass_action_code);
                         }
                     }
                     else
                     {
                         int fail_action_code = details.value("login_failed_action").toInt();
-                        if (fail_action_code >= 0 && fail_action_code <= scopes::PreviewWidget::LastActionCode_)
+                        if (fail_action_code >= 0 && fail_action_code <= scopes::OnlineAccountClient::LastActionCode_)
                         {
-                            action_code = static_cast<scopes::PreviewWidget::PostLoginAction>(fail_action_code);
+                            action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(fail_action_code);
                         }
                     }
                     switch (action_code)
                     {
-                        case scopes::PreviewWidget::DoNothing:
+                        case scopes::OnlineAccountClient::DoNothing:
                             return;
-                        case scopes::PreviewWidget::ContinueActivation:
+                        case scopes::OnlineAccountClient::InvalidateResults:
+                            m_associatedScope->invalidateResults();
+                            return;
+                        case scopes::OnlineAccountClient::ContinueActivation:
                             break;
                         default:
                             break;

@@ -1026,7 +1026,7 @@ void Scope::activate(QVariant const& result_var)
             details.find("login_passed_action") != details.end() &&
             details.find("login_failed_action") != details.end())
         {
-            scopes::Result::PostLoginAction action_code = scopes::Result::Unknown;
+            scopes::OnlineAccountClient::PostLoginAction action_code = scopes::OnlineAccountClient::Unknown;
 
             bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
                                           QString(details.at("service_type").get_string().c_str()),
@@ -1034,27 +1034,27 @@ void Scope::activate(QVariant const& result_var)
             if (success)
             {
                 int pass_action_code = details.at("login_passed_action").get_int();
-                if (pass_action_code >= 0 && pass_action_code <= scopes::Result::LastActionCode_)
+                if (pass_action_code >= 0 && pass_action_code <= scopes::OnlineAccountClient::LastActionCode_)
                 {
-                    action_code = static_cast<scopes::Result::PostLoginAction>(pass_action_code);
+                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(pass_action_code);
                 }
             }
             else
             {
                 int fail_action_code = details.at("login_failed_action").get_int();
-                if (fail_action_code >= 0 && fail_action_code <= scopes::Result::LastActionCode_)
+                if (fail_action_code >= 0 && fail_action_code <= scopes::OnlineAccountClient::LastActionCode_)
                 {
-                    action_code = static_cast<scopes::Result::PostLoginAction>(fail_action_code);
+                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(fail_action_code);
                 }
             }
             switch (action_code)
             {
-                case scopes::Result::DoNothing:
+                case scopes::OnlineAccountClient::DoNothing:
                     return;
-                case scopes::Result::InvalidateResults:
+                case scopes::OnlineAccountClient::InvalidateResults:
                     invalidateResults();
                     return;
-                case scopes::Result::ContinueActivation:
+                case scopes::OnlineAccountClient::ContinueActivation:
                     break;
                 default:
                     break;
@@ -1157,7 +1157,7 @@ static bool getServiceStatus(QString const& service_name, QString const& service
     clearTimer.start(500);
 
     {
-        scopes::OnlineAccountClient oa_client(scopes::OnlineAccountClient::RunInExternalMainLoop, service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
                                               [&account_enabled, &clearTimer](scopes::OnlineAccountClient::ServiceDetails const& details)
         {
             if (details.service_enabled)
