@@ -1034,7 +1034,8 @@ void Scope::activate(QVariant const& result_var)
             }
             else if (details.at("invalidate_results").get_bool())
             {
-                ///!invalidate results;
+                invalidateResults();
+                return;
             }
         }
     }
@@ -1131,7 +1132,7 @@ static bool getServiceStatus(QString const& service_name, QString const& service
     QObject::connect(&clearTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     bool account_enabled = false;
-    clearTimer.start(200);
+    clearTimer.start(500);
 
     {
         scopes::OnlineAccountClient oa_client(scopes::OnlineAccountClient::RunInExternalMainLoop, service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
