@@ -1022,11 +1022,20 @@ void Scope::activate(QVariant const& result_var)
         scopes::VariantMap details = result->value("online_account_details").get_dict();
         if (details.find("service_name") != details.end() &&
             details.find("service_type") != details.end() &&
-            details.find("provider_name") != details.end())
+            details.find("provider_name") != details.end() &&
+            details.find("invalidate_results") != details.end())
         {
-            loginToAccount(QString(details.at("service_name").get_string().c_str()),
-                           QString(details.at("service_type").get_string().c_str()),
-                           QString(details.at("provider_name").get_string().c_str()));
+            bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
+                                          QString(details.at("service_type").get_string().c_str()),
+                                          QString(details.at("provider_name").get_string().c_str()));
+            if (!success)
+            {
+                return;
+            }
+            else if (details.at("invalidate_results").get_bool())
+            {
+                ///!invalidate results;
+            }
         }
     }
 
@@ -1125,7 +1134,7 @@ static bool getServiceStatus(QString const& service_name, QString const& service
     clearTimer.start(200);
 
     {
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
+        scopes::OnlineAccountClient oa_client(scopes::OnlineAccountClient::RunInExternalMainLoop, service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
                                               [&account_enabled, &clearTimer](scopes::OnlineAccountClient::ServiceDetails const& details)
         {
             if (details.service_enabled)
@@ -1139,7 +1148,7 @@ static bool getServiceStatus(QString const& service_name, QString const& service
                 // This service is disabled, wait a bit longer for another
                 clearTimer.start(100);
             }
-        }, true);
+        });
 
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
     }

@@ -149,9 +149,13 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                     details.contains("service_type") &&
                     details.contains("provider_name"))
                 {
-                    m_associatedScope->loginToAccount(details.value("service_name").toString(),
-                                                      details.value("service_type").toString(),
-                                                      details.value("provider_name").toString());
+                    bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
+                                                                     details.value("service_type").toString(),
+                                                                     details.value("provider_name").toString());
+                    if (!success)
+                    {
+                        return;
+                    }
                 }
             }
 
