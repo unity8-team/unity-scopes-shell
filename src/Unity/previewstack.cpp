@@ -147,14 +147,39 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                 if (m_associatedScope &&
                     details.contains("service_name") &&
                     details.contains("service_type") &&
-                    details.contains("provider_name"))
+                    details.contains("provider_name") &&
+                    details.contains("login_passed_action") &&
+                    details.contains("login_failed_action"))
                 {
+                    scopes::PreviewWidget::PostLoginAction action_code = scopes::PreviewWidget::Unknown;
+
                     bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
                                                                      details.value("service_type").toString(),
                                                                      details.value("provider_name").toString());
-                    if (!success)
+                    if (success)
                     {
-                        return;
+                        int pass_action_code = details.value("login_passed_action").toInt();
+                        if (pass_action_code >= 0 && pass_action_code <= scopes::PreviewWidget::LastActionCode_)
+                        {
+                            action_code = static_cast<scopes::PreviewWidget::PostLoginAction>(pass_action_code);
+                        }
+                    }
+                    else
+                    {
+                        int fail_action_code = details.value("login_failed_action").toInt();
+                        if (fail_action_code >= 0 && fail_action_code <= scopes::PreviewWidget::LastActionCode_)
+                        {
+                            action_code = static_cast<scopes::PreviewWidget::PostLoginAction>(fail_action_code);
+                        }
+                    }
+                    switch (action_code)
+                    {
+                        case scopes::PreviewWidget::DoNothing:
+                            return;
+                        case scopes::PreviewWidget::ContinueActivation:
+                            break;
+                        default:
+                            break;
                     }
                 }
             }

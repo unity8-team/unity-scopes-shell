@@ -1023,19 +1023,41 @@ void Scope::activate(QVariant const& result_var)
         if (details.find("service_name") != details.end() &&
             details.find("service_type") != details.end() &&
             details.find("provider_name") != details.end() &&
-            details.find("invalidate_results") != details.end())
+            details.find("login_passed_action") != details.end() &&
+            details.find("login_failed_action") != details.end())
         {
+            scopes::Result::PostLoginAction action_code = scopes::Result::Unknown;
+
             bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
                                           QString(details.at("service_type").get_string().c_str()),
                                           QString(details.at("provider_name").get_string().c_str()));
-            if (!success)
+            if (success)
             {
-                return;
+                int pass_action_code = details.at("login_passed_action").get_int();
+                if (pass_action_code >= 0 && pass_action_code <= scopes::Result::LastActionCode_)
+                {
+                    action_code = static_cast<scopes::Result::PostLoginAction>(pass_action_code);
+                }
             }
-            else if (details.at("invalidate_results").get_bool())
+            else
             {
-                invalidateResults();
-                return;
+                int fail_action_code = details.at("login_failed_action").get_int();
+                if (fail_action_code >= 0 && fail_action_code <= scopes::Result::LastActionCode_)
+                {
+                    action_code = static_cast<scopes::Result::PostLoginAction>(fail_action_code);
+                }
+            }
+            switch (action_code)
+            {
+                case scopes::Result::DoNothing:
+                    return;
+                case scopes::Result::InvalidateResults:
+                    invalidateResults();
+                    return;
+                case scopes::Result::ContinueActivation:
+                    break;
+                default:
+                    break;
             }
         }
     }
