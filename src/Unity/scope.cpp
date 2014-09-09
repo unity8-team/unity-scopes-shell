@@ -1026,38 +1026,24 @@ void Scope::activate(QVariant const& result_var)
             details.find("login_passed_action") != details.end() &&
             details.find("login_failed_action") != details.end())
         {
-            scopes::OnlineAccountClient::PostLoginAction action_code = scopes::OnlineAccountClient::Unknown;
-
             bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
                                           QString(details.at("service_type").get_string().c_str()),
                                           QString(details.at("provider_name").get_string().c_str()));
-            if (success)
+
+            int action_code_index = success ? details.at("login_passed_action").get_int() : details.at("login_failed_action").get_int();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
-                int pass_action_code = details.at("login_passed_action").get_int();
-                if (pass_action_code >= 0 && pass_action_code <= scopes::OnlineAccountClient::LastActionCode_)
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
                 {
-                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(pass_action_code);
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return;
+                    default:
+                        break;
                 }
-            }
-            else
-            {
-                int fail_action_code = details.at("login_failed_action").get_int();
-                if (fail_action_code >= 0 && fail_action_code <= scopes::OnlineAccountClient::LastActionCode_)
-                {
-                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(fail_action_code);
-                }
-            }
-            switch (action_code)
-            {
-                case scopes::OnlineAccountClient::DoNothing:
-                    return;
-                case scopes::OnlineAccountClient::InvalidateResults:
-                    invalidateResults();
-                    return;
-                case scopes::OnlineAccountClient::ContinueActivation:
-                    break;
-                default:
-                    break;
             }
         }
     }
@@ -1104,38 +1090,24 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
             details.find("login_passed_action") != details.end() &&
             details.find("login_failed_action") != details.end())
         {
-            scopes::OnlineAccountClient::PostLoginAction action_code = scopes::OnlineAccountClient::Unknown;
-
             bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
                                           QString(details.at("service_type").get_string().c_str()),
                                           QString(details.at("provider_name").get_string().c_str()));
-            if (success)
+
+            int action_code_index = success ? details.at("login_passed_action").get_int() : details.at("login_failed_action").get_int();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
-                int pass_action_code = details.at("login_passed_action").get_int();
-                if (pass_action_code >= 0 && pass_action_code <= scopes::OnlineAccountClient::LastActionCode_)
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
                 {
-                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(pass_action_code);
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return nullptr;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return nullptr;
+                    default:
+                        break;
                 }
-            }
-            else
-            {
-                int fail_action_code = details.at("login_failed_action").get_int();
-                if (fail_action_code >= 0 && fail_action_code <= scopes::OnlineAccountClient::LastActionCode_)
-                {
-                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(fail_action_code);
-                }
-            }
-            switch (action_code)
-            {
-                case scopes::OnlineAccountClient::DoNothing:
-                    return nullptr;
-                case scopes::OnlineAccountClient::InvalidateResults:
-                    invalidateResults();
-                    return nullptr;
-                case scopes::OnlineAccountClient::ContinueActivation:
-                    break;
-                default:
-                    break;
             }
         }
     }
