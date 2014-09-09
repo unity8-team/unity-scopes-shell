@@ -1095,6 +1095,51 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
+    if (result->contains("online_account_details"))
+    {
+        scopes::VariantMap details = result->value("online_account_details").get_dict();
+        if (details.find("service_name") != details.end() &&
+            details.find("service_type") != details.end() &&
+            details.find("provider_name") != details.end() &&
+            details.find("login_passed_action") != details.end() &&
+            details.find("login_failed_action") != details.end())
+        {
+            scopes::OnlineAccountClient::PostLoginAction action_code = scopes::OnlineAccountClient::Unknown;
+
+            bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
+                                          QString(details.at("service_type").get_string().c_str()),
+                                          QString(details.at("provider_name").get_string().c_str()));
+            if (success)
+            {
+                int pass_action_code = details.at("login_passed_action").get_int();
+                if (pass_action_code >= 0 && pass_action_code <= scopes::OnlineAccountClient::LastActionCode_)
+                {
+                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(pass_action_code);
+                }
+            }
+            else
+            {
+                int fail_action_code = details.at("login_failed_action").get_int();
+                if (fail_action_code >= 0 && fail_action_code <= scopes::OnlineAccountClient::LastActionCode_)
+                {
+                    action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(fail_action_code);
+                }
+            }
+            switch (action_code)
+            {
+                case scopes::OnlineAccountClient::DoNothing:
+                    return nullptr;
+                case scopes::OnlineAccountClient::InvalidateResults:
+                    invalidateResults();
+                    return nullptr;
+                case scopes::OnlineAccountClient::ContinueActivation:
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     PreviewStack* stack = new PreviewStack(nullptr);
     stack->setAssociatedScope(this);
     stack->loadForResult(result);
