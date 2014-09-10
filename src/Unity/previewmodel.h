@@ -43,6 +43,7 @@ struct PreviewWidgetData
     QString type;
     QHash<QString, QString> component_map;
     QVariantMap data;
+    QList<QSharedPointer<PreviewWidgetData>> collapsedWidgets; // only used if type == 'expandable'
 
     PreviewWidgetData(QString const& id_, QString const& type_, QHash<QString, QString> const& components, QVariantMap const& data_): id(id_), type(type_), component_map(components), data(data_)
     {
