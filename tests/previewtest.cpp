@@ -117,6 +117,7 @@ private Q_SLOTS:
         QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
         QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
         QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
+        QCOMPARE(props[QString("session-id")].toString(), m_scope->sessionId());
 
         idx = preview_widgets->index(1);
         QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));

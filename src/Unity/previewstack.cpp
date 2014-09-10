@@ -31,6 +31,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QUuid>
 
 #include <unity/scopes/ActionMetadata.h>
 #include <unity/scopes/Scope.h>
@@ -76,9 +77,10 @@ bool PreviewStack::event(QEvent* ev)
     return false;
 }
 
-void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope)
+void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id)
 {
     m_associatedScope = scope;
+    m_session_id = session_id;
 }
 
 void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
@@ -118,6 +120,9 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
+        }
+        if (!m_session_id.isNull()) {
+            metadata["session-id"] = uuidToString(m_session_id).toStdString();
         }
 
         std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(m_activePreview));

@@ -260,6 +260,167 @@ private Q_SLOTS:
         QCOMPARE(results->data(idx, ResultsModel::Roles::RoleCategoryId), categories->data(categories->index(0), Categories::Roles::RoleCategoryId));
     }
 
+    void testSessionId()
+    {
+        std::string lastSessionId;
+
+        performSearch(m_scope, QString(""));
+
+        QVERIFY(!m_scope->sessionId().isEmpty());
+        QCOMPARE(m_scope->queryId(), 0);
+
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 0);
+
+            lastSessionId = sessionId;
+        }
+
+        // new search
+        performSearch(m_scope, QString("m"));
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 0);
+
+            // new session id
+            QVERIFY(sessionId != lastSessionId);
+
+            lastSessionId = sessionId;
+        }
+
+        // appends to previous search
+        performSearch(m_scope, QString("met"));
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 1);
+
+            // session id unchanged
+            QVERIFY(sessionId == lastSessionId);
+
+            lastSessionId = sessionId;
+        }
+
+        // removes characters from previous search
+        performSearch(m_scope, QString("me"));
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 2);
+
+            // session id unchanged
+            QVERIFY(sessionId == lastSessionId);
+
+            lastSessionId = sessionId;
+        }
+
+        // new non-empty search again
+        performSearch(m_scope, QString("iron"));
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 0);
+
+            // new session id
+            QVERIFY(sessionId != lastSessionId);
+
+            lastSessionId = sessionId;
+        }
+
+        // new empty search again
+        performSearch(m_scope, QString(""));
+        {
+            auto categories = m_scope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            auto results = results_var.value<ResultsModel*>();
+            QVERIFY(results->rowCount() > 0);
+
+            auto idx = results->index(0);
+            auto result = results->data(idx, ResultsModel::Roles::RoleResult).value<std::shared_ptr<unity::scopes::Result>>();
+
+            auto sessionId = (*result)["session-id"].get_string();
+            auto queryId = (*result)["query-id"].get_int();
+
+            // mock scope should send session-id and query-id it received back via custom result's values
+            QCOMPARE(sessionId, m_scope->sessionId().toStdString());
+            QCOMPARE(queryId, m_scope->queryId());
+            QCOMPARE(queryId, 0);
+
+            // new session id
+            QVERIFY(sessionId != lastSessionId);
+
+            lastSessionId = sessionId;
+        }
+    }
+
     void testResultMetadata()
     {
         performSearch(m_scope, QString("metadata"));

@@ -31,6 +31,7 @@
 #include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
+#include <QUuid>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -159,6 +160,9 @@ public:
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
+    QString sessionId() const;
+    int queryId() const;
+
 public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
@@ -198,6 +202,8 @@ private:
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
+    QUuid m_session_id;
+    int m_query_id;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
