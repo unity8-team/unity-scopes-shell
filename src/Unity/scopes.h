@@ -89,6 +89,7 @@ private:
     class Priv;
 
     QList<Scope*> m_scopes;
+    bool m_noFavorites;
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
