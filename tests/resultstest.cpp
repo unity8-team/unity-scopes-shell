@@ -264,8 +264,6 @@ private Q_SLOTS:
     {
         std::string lastSessionId;
 
-        performSearch(m_scope, QString(""));
-
         QVERIFY(!m_scope->sessionId().isEmpty());
         QCOMPARE(m_scope->queryId(), 0);
 
@@ -451,8 +449,6 @@ private Q_SLOTS:
         if (!QDBusConnection::sessionBus().isConnected()) {
             QSKIP("DBus unavailable, skipping test");
         }
-
-        performSearch(m_scope, QString(""));
 
         QStringList args;
         args << "/com/canonical/unity/scopes";
