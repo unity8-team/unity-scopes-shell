@@ -3,9 +3,14 @@ include(Plugins)
 
 # Dependencies
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.3)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.5)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
+
+find_library(ONLINE_ACCOUNTS_CLIENT online-accounts-client)
+if(NOT ONLINE_ACCOUNTS_CLIENT)
+  message(FATAL_ERROR "online-accounts-client lib not found.")
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -57,7 +62,7 @@ target_link_libraries(Unity-qml
     ${GSETTINGSQT_LDFLAGS}
     ${U1DB_LDFLAGS}
     ${UBUNTU_LOCATION_SERVICE_LDFLAGS}
-    online-accounts-client
+    ${ONLINE_ACCOUNTS_CLIENT}
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)
