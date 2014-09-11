@@ -4,6 +4,30 @@ unity-scopes-shell (0.5.5-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Thu, 11 Sep 2014 06:23:45 +0200
 
+unity-scopes-shell (0.5.4+14.10.20140910.1-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Fix tests after merging proposed branches with trunk
+
+  [ Pawel Stolowski ]
+  * Ignore favorite scopes list and expose all scopes present in scopes-
+    registry if UNITY_SCOPES_NO_FAVORITES environment variable is set.
+    (LP: #1365041)
+  * Implemented support for expandable widgets. Require unity-scopes-api
+    0.6.4.
+  * Generate session_id (uuid) and pass it with search and preview
+    request via SearchMetadata / ActionMetadata hints. (LP: #1308585)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 10 Sep 2014 11:47:46 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140907-0ubuntu1) utopic; urgency=low
+
+  [ Pawel Stolowski ]
+  * Query all (favorite) scopes on startup to provide better "after
+    boot" experience.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Sun, 07 Sep 2014 19:29:20 +0000
+
 unity-scopes-shell (0.5.4+14.10.20140902-0ubuntu1) utopic; urgency=low
 
   [ Michał Sawicz ]

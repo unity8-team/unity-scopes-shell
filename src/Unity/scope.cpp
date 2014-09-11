@@ -56,6 +56,7 @@
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/SearchMetadata.h>
 #include <unity/scopes/ActionMetadata.h>
+#include <unity/scopes/Variant.h>
 
 namespace scopes_ng
 {
@@ -69,6 +70,7 @@ const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
 Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
+    , m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -93,7 +95,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     m_clearTimer.setSingleShot(true);
     QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_invalidateTimer.setSingleShot(true);
-    m_invalidateTimer.setTimerType(Qt::VeryCoarseTimer);
+    m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
 }
 
@@ -627,6 +629,10 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        if (!m_session_id.isNull()) {
+            meta["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        meta["query-id"] = unity::scopes::Variant(m_query_id);
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
             if (remoteSearch.toString() == QString("none")) {
@@ -942,6 +948,21 @@ void Scope::setSearchQuery(const QString& search_query)
     */
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
+        // regenerate session id uuid if previous or current search string is empty or
+        // if current and previous query have no common prefix;
+        // don't regenerate it if current query appends to previous query or removes
+        // characters from previous query.
+        bool search_empty = m_searchQuery.isEmpty() || search_query.isEmpty();
+
+        // only check for common prefix if search is not empty
+        bool common_prefix = (!search_empty) && (m_searchQuery.startsWith(search_query) || search_query.startsWith(m_searchQuery));
+
+        if (m_session_id.isNull() || search_empty || !common_prefix) {
+            m_session_id = QUuid::createUuid();
+            m_query_id = 0;
+        } else {
+            ++m_query_id;
+        }
         m_searchQuery = search_query;
 
         // atm only empty query can have a filter state
@@ -1113,7 +1134,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
-    stack->setAssociatedScope(this);
+    stack->setAssociatedScope(this, m_session_id);
     stack->loadForResult(result);
     return stack;
 }
@@ -1146,6 +1167,14 @@ void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 
 bool Scope::resultsDirty() const {
     return m_resultsDirty;
+}
+
+QString Scope::sessionId() const {
+    return uuidToString(m_session_id);
+}
+
+int Scope::queryId() const {
+    return m_query_id;
 }
 
 void Scope::activateUri(QString const& uri)

@@ -31,6 +31,7 @@
 #include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
+#include <QUuid>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -159,10 +160,14 @@ public:
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
+    QString sessionId() const;
+    int queryId() const;
+
     bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
 
 public Q_SLOTS:
     void invalidateResults();
+    virtual void dispatchSearch();
 
 Q_SIGNALS:
     void resultsDirtyChanged();
@@ -178,7 +183,6 @@ protected:
     void setSearchInProgress(bool searchInProgress);
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
-    virtual void dispatchSearch();
 
     unity::scopes::ScopeProxy proxy() const;
 
@@ -200,6 +204,8 @@ private:
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
     static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
+    QUuid m_session_id;
+    int m_query_id;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;

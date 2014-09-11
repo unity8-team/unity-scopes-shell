@@ -82,17 +82,21 @@ private Q_SLOTS:
     void invalidateScopeResults(QString const&);
 
 private:
+    void queryScopesOnStartup();
+
     static int LIST_DELAY;
     static const int SCOPE_DELETE_DELAY;
     class Priv;
 
     QList<Scope*> m_scopes;
+    bool m_noFavorites;
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     OverviewScope* m_overviewScope;
     QThread* m_listThread;
     bool m_loaded;
+    bool m_queryOnStartup;
 
     LocationService::Ptr m_locationService;
 
