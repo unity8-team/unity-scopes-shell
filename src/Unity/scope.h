@@ -163,7 +163,7 @@ public:
     QString sessionId() const;
     int queryId() const;
 
-    bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
+    static bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
 
 public Q_SLOTS:
     void invalidateResults();

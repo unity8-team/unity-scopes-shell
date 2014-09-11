@@ -150,16 +150,15 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
             if (widgetData->data.contains("online_account_details"))
             {
                 QVariantMap details = widgetData->data.value("online_account_details").toMap();
-                if (m_associatedScope &&
-                    details.contains("service_name") &&
+                if (details.contains("service_name") &&
                     details.contains("service_type") &&
                     details.contains("provider_name") &&
                     details.contains("login_passed_action") &&
                     details.contains("login_failed_action"))
                 {
-                    bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
-                                                                     details.value("service_type").toString(),
-                                                                     details.value("provider_name").toString());
+                    bool success = Scope::loginToAccount(details.value("service_name").toString(),
+                                                         details.value("service_type").toString(),
+                                                         details.value("provider_name").toString());
                     int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
                     if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                     {
@@ -169,7 +168,10 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                             case scopes::OnlineAccountClient::DoNothing:
                                 return;
                             case scopes::OnlineAccountClient::InvalidateResults:
-                                m_associatedScope->invalidateResults();
+                                if (m_associatedScope)
+                                {
+                                    m_associatedScope->invalidateResults();
+                                }
                                 return;
                             default:
                                 break;
