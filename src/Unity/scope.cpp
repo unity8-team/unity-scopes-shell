@@ -1047,9 +1047,9 @@ void Scope::activate(QVariant const& result_var)
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(QString(details.value("service_name").toString()),
-                                          QString(details.value("service_type").toString()),
-                                          QString(details.value("provider_name").toString()));
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
 
             int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
@@ -1111,9 +1111,9 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(QString(details.value("service_name").toString()),
-                                          QString(details.value("service_type").toString()),
-                                          QString(details.value("provider_name").toString()));
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
 
             int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
