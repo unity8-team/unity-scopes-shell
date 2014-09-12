@@ -1040,18 +1040,18 @@ void Scope::activate(QVariant const& result_var)
 
     if (result->contains("online_account_details"))
     {
-        scopes::VariantMap details = result->value("online_account_details").get_dict();
-        if (details.find("service_name") != details.end() &&
-            details.find("service_type") != details.end() &&
-            details.find("provider_name") != details.end() &&
-            details.find("login_passed_action") != details.end() &&
-            details.find("login_failed_action") != details.end())
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
-                                          QString(details.at("service_type").get_string().c_str()),
-                                          QString(details.at("provider_name").get_string().c_str()));
+            bool success = loginToAccount(QString(details.value("service_name").toString()),
+                                          QString(details.value("service_type").toString()),
+                                          QString(details.value("provider_name").toString()));
 
-            int action_code_index = success ? details.at("login_passed_action").get_int() : details.at("login_failed_action").get_int();
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
                 scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -1104,18 +1104,18 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
 
     if (result->contains("online_account_details"))
     {
-        scopes::VariantMap details = result->value("online_account_details").get_dict();
-        if (details.find("service_name") != details.end() &&
-            details.find("service_type") != details.end() &&
-            details.find("provider_name") != details.end() &&
-            details.find("login_passed_action") != details.end() &&
-            details.find("login_failed_action") != details.end())
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(QString(details.at("service_name").get_string().c_str()),
-                                          QString(details.at("service_type").get_string().c_str()),
-                                          QString(details.at("provider_name").get_string().c_str()));
+            bool success = loginToAccount(QString(details.value("service_name").toString()),
+                                          QString(details.value("service_type").toString()),
+                                          QString(details.value("provider_name").toString()));
 
-            int action_code_index = success ? details.at("login_passed_action").get_int() : details.at("login_failed_action").get_int();
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
                 scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
