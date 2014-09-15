@@ -11,7 +11,11 @@ set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
 
 add_subdirectory(data)
 
-add_definitions(-DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py")
+add_definitions(
+    -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
+    -DTEST_SCOPEREGISTRY_BIN="${SCOPESLIB_SCOPEREGISTRY_BIN}"
+    -DTEST_RUNTIME_CONFIG="${SCOPES_TEST_RUNTIME}"
+    )
 
 include_directories(
     ${Unity-qml_SOURCE_DIR}
@@ -22,6 +26,24 @@ include_directories(
     ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
     ${QTDBUSTEST_INCLUDE_DIRS}
     ${QTDBUSMOCK_INCLUDE_DIRS}
+    )
+
+add_library(
+    test-utils SHARED
+    registry-spawner.cpp
+    test-utils.cpp
+    )
+
+target_link_libraries(
+    test-utils
+    Unity-qml
+    ${GSETTINGSQT_LDFLAGS}
+    )
+
+qt5_use_modules(
+    test-utils
+    Network
+    Test
     )
 
 macro(run_tests)
@@ -40,9 +62,8 @@ macro(run_tests)
                       )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
-                PROPERTIES ENVIRONMENT "UNITY_SCOPES_LIST_DELAY=5;UNITY_SCOPES_RESULTS_TTL_OVERRIDE=250" RUN_SERIAL TRUE)
-        set_target_properties(${_test}Exec
-                PROPERTIES COMPILE_FLAGS "-DTEST_SCOPEREGISTRY_BIN='\"${SCOPESLIB_SCOPEREGISTRY_BIN}\"' -DTEST_RUNTIME_CONFIG='\"${SCOPES_TEST_RUNTIME}\"'")
+                PROPERTIES
+                  RUN_SERIAL TRUE)
 
         target_link_libraries(${_test}Exec
             Unity-qml
@@ -50,6 +71,7 @@ macro(run_tests)
             ${GSETTINGSQT_LDFLAGS}
             ${QTDBUSTEST_LIBRARIES}
             ${QTDBUSMOCK_LIBRARIES}
+            test-utils
             )
 
         set(_test_list "${_test_list};${_test}")

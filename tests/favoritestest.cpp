@@ -22,6 +22,7 @@
 #include <QScopedPointer>
 #include <QSignalSpy>
 
+#include <categories.h>
 #include <scopes.h>
 #include <scope.h>
 #include <overviewresults.h>
