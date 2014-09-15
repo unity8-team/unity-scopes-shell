@@ -1195,21 +1195,21 @@ void Scope::activateUri(QString const& uri)
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
     scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-    bool account_enabled = false;
+    bool service_authenticated = false;
 
     // Check if at least one account has the specified service enabled
     auto service_statuses = oa_client.get_service_statuses();
     for (auto const& status : service_statuses)
     {
-        if (status.service_enabled)
+        if (status.service_authenticated)
         {
-            account_enabled = true;
+            service_authenticated = true;
             break;
         }
     }
 
     // Start the signon UI if no enabled services were found
-    if (!account_enabled)
+    if (!service_authenticated)
     {
         OnlineAccountsClient::Setup setup;
         setup.setApplicationId(service_name);
@@ -1226,15 +1226,15 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
-            if (status.service_enabled)
+            if (status.service_authenticated)
             {
-                account_enabled = true;
+                service_authenticated = true;
                 break;
             }
         }
     }
 
-    return account_enabled;
+    return service_authenticated;
 }
 
 } // namespace scopes_ng
