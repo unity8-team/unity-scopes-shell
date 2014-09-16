@@ -36,6 +36,7 @@ public:
     RegistrySpawner()
     {
         qputenv("UNITY_SCOPES_CONFIG_DIR", m_tempDir.path().toUtf8());
+        qputenv("TEST_DESKTOP_FILES_DIR", "");
 
         QDir endpointdir(QFileInfo(TEST_RUNTIME_CONFIG).dir());
         endpointdir.cd(QString("endpoints"));

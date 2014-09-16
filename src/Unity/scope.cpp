@@ -46,6 +46,8 @@
 
 #include <libintl.h>
 
+#include <online-accounts-client/Setup>
+
 #include <unity/scopes/ListenerBase.h>
 #include <unity/scopes/CannedQuery.h>
 #include <unity/scopes/OptionSelectorFilter.h>
@@ -1036,6 +1038,37 @@ void Scope::activate(QVariant const& result_var)
         return;
     }
 
+    if (result->contains("online_account_details"))
+    {
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
+        {
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
+
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+            {
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
+                {
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
     if (result->direct_activation()) {
         activateUri(QString::fromStdString(result->uri()));
     } else {
@@ -1067,6 +1100,37 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     if (!result) {
         qWarning("preview(): received null result");
         return nullptr;
+    }
+
+    if (result->contains("online_account_details"))
+    {
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
+        {
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
+
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+            {
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
+                {
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return nullptr;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return nullptr;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
@@ -1126,6 +1190,51 @@ void Scope::activateUri(QString const& uri)
         qDebug() << "Trying to open" << uri;
         QDesktopServices::openUrl(url);
     }
+}
+
+bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
+{
+    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+    bool service_authenticated = false;
+
+    // Check if at least one account has the specified service enabled
+    auto service_statuses = oa_client.get_service_statuses();
+    for (auto const& status : service_statuses)
+    {
+        if (status.service_authenticated)
+        {
+            service_authenticated = true;
+            break;
+        }
+    }
+
+    // Start the signon UI if no enabled services were found
+    if (!service_authenticated)
+    {
+        OnlineAccountsClient::Setup setup;
+        setup.setApplicationId(service_name);
+        setup.setServiceTypeId(service_type);
+        setup.setProviderId(provider_name);
+        setup.exec();
+
+        QEventLoop loop;
+        connect(&setup, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
+
+        // Check again whether the service was successfully enabled
+        oa_client.refresh_service_statuses();
+        service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
+        {
+            if (status.service_authenticated)
+            {
+                service_authenticated = true;
+                break;
+            }
+        }
+    }
+
+    return service_authenticated;
 }
 
 } // namespace scopes_ng
