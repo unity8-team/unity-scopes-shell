@@ -1,3 +1,14 @@
+unity-scopes-shell (0.5.4+14.10.20140916-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Add typing timeout
+
+  [ Marcus Tomlinson ]
+  * Support for online account login on activation of scope result (LP:
+    #1369562)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 16 Sep 2014 10:51:42 +0000
+
 unity-scopes-shell (0.5.4+14.10.20140910.1-0ubuntu1) utopic; urgency=low
 
   [ Pete Woods ]
