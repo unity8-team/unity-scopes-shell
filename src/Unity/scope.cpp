@@ -64,6 +64,7 @@ namespace scopes_ng
 using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
+const int TYPING_TIMEOUT = 300;
 const int CLEAR_TIMEOUT = 240;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
@@ -90,6 +91,16 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
 
     setScopesInstance(qobject_cast<scopes_ng::Scopes*>(parent));
 
+    m_typingTimer.setSingleShot(true);
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE"))
+    {
+        m_typingTimer.setInterval(QString::fromUtf8(qgetenv("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE")).toInt());
+    }
+    else
+    {
+        m_typingTimer.setInterval(TYPING_TIMEOUT);
+    }
+    QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_clearTimer.setSingleShot(true);
@@ -282,6 +293,13 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             qWarning("Unable to find scope \"%s\" after metadata refresh", query.scope_id().c_str());
         }
     }
+}
+
+void Scope::typingFinished()
+{
+    invalidateResults();
+
+    Q_EMIT searchQueryChanged();
 }
 
 void Scope::flushUpdates()
@@ -970,10 +988,7 @@ void Scope::setSearchQuery(const QString& search_query)
             m_filterState = scopes::FilterState();
         }
 
-        // FIXME: use a timeout
-        invalidateResults();
-
-        Q_EMIT searchQueryChanged();
+        m_typingTimer.start();
     }
 }
 

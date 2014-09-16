@@ -17,60 +17,24 @@
  *  Michal Hruby <michal.hruby@canonical.com>
  */
 
-#include <QObject>
-#include <QTest>
-#include <QFile>
-#include <QFileInfo>
-#include <QDir>
+#ifndef REGISTRY_SPAWNER_H
+#define REGISTRY_SPAWNER_H
+
 #include <QProcess>
 #include <QTemporaryDir>
-#include <QThread>
 #include <QScopedPointer>
-#include <QSignalSpy>
 
-#define SCOPES_TMP_ENDPOINT_DIR "/tmp/scopes-test-endpoints"
-
-class RegistrySpawner
+class Q_DECL_EXPORT RegistrySpawner
 {
 public:
-    RegistrySpawner()
-    {
-        qputenv("UNITY_SCOPES_CONFIG_DIR", m_tempDir.path().toUtf8());
-        qputenv("TEST_DESKTOP_FILES_DIR", "");
+    RegistrySpawner();
 
-        QDir endpointdir(QFileInfo(TEST_RUNTIME_CONFIG).dir());
-        endpointdir.cd(QString("endpoints"));
-        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
-        // symlinking to workaround "File name too long" issue
-        QVERIFY2(QFile::link(endpointdir.absolutePath(), SCOPES_TMP_ENDPOINT_DIR),
-            "Unable to create symlink " SCOPES_TMP_ENDPOINT_DIR);
-        // startup our private scope registry
-        QString registryBin(TEST_SCOPEREGISTRY_BIN);
-        QStringList arguments;
-        arguments << TEST_RUNTIME_CONFIG;
-
-        m_registry.reset(new QProcess(nullptr));
-        m_registry->setProcessChannelMode(QProcess::ForwardedChannels);
-        m_registry->start(registryBin, arguments);
-        QVERIFY(m_registry->waitForStarted());
-
-        qputenv("UNITY_SCOPES_RUNTIME_PATH", TEST_RUNTIME_CONFIG);
-        qputenv("UNITY_SCOPES_NO_LOCATION", "1");
-    }
-
-    ~RegistrySpawner()
-    {
-        if (m_registry) {
-            m_registry->terminate();
-            if (!m_registry->waitForFinished()) {
-                m_registry->kill();
-            }
-        }
-        QFile::remove(SCOPES_TMP_ENDPOINT_DIR);
-    }
+    ~RegistrySpawner();
 
 private:
     QScopedPointer<QProcess> m_registry;
 
     QTemporaryDir m_tempDir;
 };
+
+#endif // REGISTRY_SPAWNER_H

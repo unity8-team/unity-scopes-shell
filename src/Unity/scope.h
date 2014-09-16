@@ -174,6 +174,7 @@ Q_SIGNALS:
     void favoriteChanged(bool);
 
 private Q_SLOTS:
+    void typingFinished();
     void flushUpdates();
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
@@ -236,6 +237,7 @@ private:
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;
+    QTimer m_typingTimer;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;

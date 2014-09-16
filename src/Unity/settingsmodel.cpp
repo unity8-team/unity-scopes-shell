@@ -50,7 +50,7 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         }
         QString type = data["type"].toString();
 
-        QVariant::Type variantType;
+        QVariant::Type variantType = QVariant::Invalid;
 
         if(type == "boolean")
         {

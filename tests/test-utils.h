@@ -17,102 +17,40 @@
  *  Michal Hruby <michal.hruby@canonical.com>
  */
 
-#include <QObject>
-#include <QTest>
-#include <QFile>
-#include <QFileInfo>
-#include <QDir>
-#include <QProcess>
-#include <QThread>
-#include <QScopedPointer>
-#include <QSignalSpy>
+#ifndef TEST_UTILS_H
+#define TEST_UTILS_H
 
-#include <scopes.h>
 #include <scope.h>
-#include <categories.h>
-#include <resultsmodel.h>
-#include <previewmodel.h>
-#include <previewstack.h>
-#include <previewwidgetmodel.h>
 
-using namespace scopes_ng;
+#include <unity/scopes/Result.h>
 
-void checkedFirstResult(Scope* scope, unity::scopes::Result::SPtr& result, bool& success)
+#include <QScopedPointer>
+#include <QStringList>
+
+namespace scopes_ng
 {
-    // ensure categories have > 0 rows
-    auto categories = scope->categories();
-    QVERIFY(categories->rowCount() > 0);
-    QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-    QVERIFY(results_var.canConvert<ResultsModel*>());
 
-    // ensure results have some data
-    auto results = results_var.value<ResultsModel*>();
-    QVERIFY(results->rowCount() > 0);
-    auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-    QCOMPARE(result_var.isNull(), false);
-    result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-    success = true;
+Q_DECL_EXPORT
+void checkedFirstResult(Scope* scope, unity::scopes::Result::SPtr& result, bool& success);
+
+Q_DECL_EXPORT
+bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result);
+
+Q_DECL_EXPORT
+void performSearch(Scope* scope, QString const& searchString);
+
+Q_DECL_EXPORT
+void waitForResultsChange(Scope* scope);
+
+Q_DECL_EXPORT
+bool previewForFirstResult(Scope* scope, QString const& searchString, QScopedPointer<PreviewStack>& preview_stack);
+
+Q_DECL_EXPORT
+void setFavouriteScopes(const QStringList& cannedQueries);
+
+Q_DECL_EXPORT
+QStringList getFavoriteScopes();
+
 }
 
-bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result)
-{
-    bool success = false;
-    checkedFirstResult(scope, result, success);
-    return success;
-}
-
-void performSearch(Scope* scope, QString const& searchString)
-{
-    QCOMPARE(scope->searchInProgress(), false);
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
-    // perform a search
-    scope->setSearchQuery(searchString);
-    QVERIFY(scope->searchInProgress() || spy.count() > 1);
-    if (scope->searchInProgress()) {
-        // wait for the search to finish
-        QVERIFY(spy.wait());
-    }
-    QCOMPARE(scope->searchInProgress(), false);
-}
-
-void waitForResultsChange(Scope* scope)
-{
-    QCOMPARE(scope->searchInProgress(), false);
-    // wait for the search to finish
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
-    QVERIFY(spy.wait());
-    if(spy.size() == 1) {
-        QVERIFY(spy.wait());
-    }
-    QCOMPARE(scope->searchInProgress(), false);
-}
-
-bool previewForFirstResult(Scope* scope, QString const& searchString, QScopedPointer<PreviewStack>& preview_stack)
-{
-    performSearch(scope, searchString);
-
-    unity::scopes::Result::SPtr result;
-    if (!getFirstResult(scope, result))
-        return false;
-    preview_stack.reset(static_cast<PreviewStack*>(scope->preview(QVariant::fromValue(result))));
-
-    return true;
-}
-
-void setFavouriteScopes(const QStringList& cannedQueries)
-{
-    setenv("GSETTINGS_BACKEND", "memory", 1);
-    QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
-    settings.set("favoriteScopes", QVariant(cannedQueries));
-}
-
-QStringList getFavoriteScopes()
-{
-    setenv("GSETTINGS_BACKEND", "memory", 1);
-    QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
-    QStringList favs;
-    for (auto const favvar: settings.get("favoriteScopes").toList()) {
-        favs.push_back(favvar.toString());
-    }
-    return favs;
-}
+#endif //TEST_UTILS_H
