@@ -33,7 +33,7 @@ class Q_DECL_EXPORT UbuntuLocationService : public LocationService
 public:
     UbuntuLocationService(GeoIp::Ptr geoIp = GeoIp::Ptr(new GeoIp));
 
-    virtual ~UbuntuLocationService() = default;
+    ~UbuntuLocationService() = default;
 
     unity::scopes::Location location() const override;
 

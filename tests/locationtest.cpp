@@ -160,6 +160,11 @@ private Q_SLOTS:
         locationService.reset(new UbuntuLocationService(GeoIp::Ptr(new GeoIp(url))));
     }
 
+    void cleanup()
+    {
+        locationService.reset();
+    }
+
     void compareVariant(const Variant& expected_in, const Variant& actual_in)
     {
         VariantMap expected(expected_in.get_dict());
