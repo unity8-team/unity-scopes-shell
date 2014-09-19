@@ -86,11 +86,11 @@ public:
     protected:
         void run() override
         {
-            QMutexLocker lock(&p.m_mutex);
-
             // Starting a new location service session
             try
             {
+                QMutexLocker lock(&p.m_mutex);
+
                 p.m_session = p.m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
