@@ -180,19 +180,26 @@ public Q_SLOTS:
             return;
         }
 
-        if (m_activationCount > 0
-                && m_session->updates().position_status
-                        == culss::Interface::Updates::Status::disabled)
+        try
         {
-            m_session->updates().position_status =
-                    culss::Interface::Updates::Status::enabled;
+            if (m_activationCount > 0
+                    && m_session->updates().position_status
+                            == culss::Interface::Updates::Status::disabled)
+            {
+                m_session->updates().position_status =
+                        culss::Interface::Updates::Status::enabled;
+            }
+            else if (m_activationCount == 0
+                    && m_session->updates().position_status
+                            == culss::Interface::Updates::Status::enabled)
+            {
+                m_session->updates().position_status =
+                        culss::Interface::Updates::Status::disabled;
+            }
         }
-        else if (m_activationCount == 0
-                && m_session->updates().position_status
-                        == culss::Interface::Updates::Status::enabled)
+        catch (exception& e)
         {
-            m_session->updates().position_status =
-                    culss::Interface::Updates::Status::disabled;
+            qWarning() << e.what();
         }
     }
 
