@@ -224,6 +224,7 @@ private Q_SLOTS:
 
         // The GPS update should return now
         QVERIFY(spy.wait());
+        QTRY_COMPARE((unsigned int) locationService->location().serialize().size(), 12u);
         compareVariant(gps(), Variant(locationService->location().serialize()));
     }
 };

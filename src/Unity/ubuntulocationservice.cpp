@@ -89,6 +89,11 @@ public:
             // Starting a new location service session
             try
             {
+                if (p.m_session)
+                {
+                    return;
+                }
+
                 auto session = p.m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
