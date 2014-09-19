@@ -98,6 +98,11 @@ void OverviewCategories::setFavoriteScopes(const QList<unity::scopes::ScopeMetad
     dataChanged(changedIndex, changedIndex, roles);
 }
 
+void OverviewCategories::updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+{
+    m_otherScopes->setResults(scopes);
+}
+
 void OverviewCategories::updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
 {
     m_favoriteScopes->setResults(scopes);

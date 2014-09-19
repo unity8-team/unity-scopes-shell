@@ -46,6 +46,7 @@ public:
 
     void setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
     void setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
     void updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
 
 private:

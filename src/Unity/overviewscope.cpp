@@ -138,7 +138,7 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         otherScopes << info.data;
     }
 
-    categories->setOtherScopes(otherScopes); //FIXME update
+    categories->updateOtherScopes(otherScopes);
     categories->updateFavoriteScopes(favs);
 }
 
