@@ -112,7 +112,7 @@ public:
     };
 
     Priv(GeoIp::Ptr geoIp) :
-            m_geoIp(geoIp)
+            m_mutex(QMutex::Recursive), m_geoIp(geoIp)
     {
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
@@ -297,7 +297,6 @@ scopes::Location UbuntuLocationService::location() const
 
 bool UbuntuLocationService::isActive() const
 {
-    QMutexLocker lock(&p->m_mutex);
     return p->m_session ? true : false;
 }
 
