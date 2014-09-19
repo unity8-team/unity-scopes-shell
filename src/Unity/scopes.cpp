@@ -445,6 +445,11 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
     }
 }
 
+void Scopes::moveFavoriteTo(QString const& scopeId, int index)
+{
+    //TODO
+}
+
 QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
 {
     return m_cachedMetadata;

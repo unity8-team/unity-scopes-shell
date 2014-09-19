@@ -71,6 +71,7 @@ void OverviewScope::metadataChanged()
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
             favorites.append(it.value());
+            allMetadata.erase(it);
         }
     }
 
@@ -87,7 +88,7 @@ void OverviewScope::metadataChanged()
     }
 
     // FIXME: filter invisible scopes?
-    categories->setAllScopes(allScopes);
+    categories->setOtherScopes(allScopes);
     categories->setFavoriteScopes(favorites);
 }
 
@@ -115,6 +116,7 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
             favs.append(it.value());
+            allMetadata.erase(it);
         }
     }
 
@@ -124,6 +126,19 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         return;
     }
 
+    QList<ScopeInfo> scopes;
+    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
+        if (metadata->invisible()) continue;
+        scopes.append(ScopeInfo(metadata));
+    }
+    qSort(scopes.begin(), scopes.end());
+
+    QList<scopes::ScopeMetadata::SPtr> otherScopes;
+    Q_FOREACH(ScopeInfo const& info, scopes) {
+        otherScopes << info.data;
+    }
+
+    categories->setOtherScopes(otherScopes); //FIXME update
     categories->updateFavoriteScopes(favs);
 }
 
