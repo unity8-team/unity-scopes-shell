@@ -170,7 +170,10 @@ private Q_SLOTS:
         VariantMap expected(expected_in.get_dict());
         VariantMap actual(actual_in.get_dict());
 
-        QCOMPARE(expected.size(), actual.size());
+        QVERIFY2(
+                expected.size() <= actual.size(),
+                qPrintable(QString("We need at least %1 entries, had %2").arg(
+                        expected.size()).arg(actual.size())));
         for(const auto entry: expected)
         {
             QVERIFY(actual.find(entry.first) != actual.end());
@@ -204,12 +207,20 @@ private Q_SLOTS:
         compareVariant(geoip(), Variant(locationService->location().serialize()));
 
         // Call the object that the location service client creates
-        QDBusMessage reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(":1.4", SESSION_PATH.arg(0),
-                                               SESSION_INTERFACE,
-                                               "UpdatePosition")
-                    << 1.0 << 2.0 << true << 3.0 << true << 4.0 << true << 5.0 << qint64(1234));
-        QCOMPARE(QString(), reply.errorMessage());
+        QDBusInterface remoteObject(":1.4", SESSION_PATH.arg(0), SESSION_INTERFACE,
+                                    QDBusConnection::systemBus());
+
+        QString errorMessage("never called");
+        for (int i = 0; i < 10 && !errorMessage.isEmpty(); ++i)
+        {
+            QDBusMessage reply = remoteObject.callWithArgumentList(
+                    QDBus::Block,
+                    "UpdatePosition",
+                    QVariantList() << 1.0 << 2.0 << true << 3.0 << true << 4.0
+                            << true << 5.0 << qint64(1234));
+            errorMessage = reply.errorMessage();
+        }
+        QCOMPARE(QString(), errorMessage);
 
         // The GPS update should return now
         QVERIFY(spy.wait());

@@ -89,17 +89,16 @@ public:
             // Starting a new location service session
             try
             {
-                QMutexLocker lock(&p.m_mutex);
-
-                p.m_session = p.m_locationService->create_session_for_criteria(
+                auto session = p.m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
-                p.m_session->updates().position.changed().connect(
+                session->updates().position.changed().connect(
                         bind(&UbuntuLocationService::Priv::positionChanged,
                              &p, _1));
 
-                p.m_session->updates().position_status =
-                        culss::Interface::Updates::Status::enabled;
+                p.m_session = session;
+
+                p.updateFromOtherThread();
             }
             catch (exception& e)
             {
@@ -112,7 +111,7 @@ public:
     };
 
     Priv(GeoIp::Ptr geoIp) :
-            m_mutex(QMutex::Recursive), m_geoIp(geoIp)
+            m_geoIp(geoIp)
     {
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
@@ -153,6 +152,8 @@ public:
 Q_SIGNALS:
     void locationChanged();
 
+    void updateFromOtherThread();
+
 public Q_SLOTS:
     void update()
     {
@@ -162,18 +163,31 @@ public Q_SLOTS:
             return;
         }
 
-        QMutexLocker lock(&m_mutex);
-
-        if (m_activationCount > 0 && !m_session)
+        if (m_activationCount > 0)
         {
             // Update the GeoIp data again
             m_geoIp->start();
-
-            QThreadPool::globalInstance()->start(new SessionTask(*this));
         }
-        else if (m_activationCount == 0 && m_session)
+
+        if (!m_session)
         {
-            m_session.reset();
+            QThreadPool::globalInstance()->start(new SessionTask(*this));
+            return;
+        }
+
+        if (m_activationCount > 0
+                && m_session->updates().position_status
+                        == culss::Interface::Updates::Status::disabled)
+        {
+            m_session->updates().position_status =
+                    culss::Interface::Updates::Status::enabled;
+        }
+        else if (m_activationCount == 0
+                && m_session->updates().position_status
+                        == culss::Interface::Updates::Status::enabled)
+        {
+            m_session->updates().position_status =
+                    culss::Interface::Updates::Status::disabled;
         }
     }
 
@@ -204,8 +218,6 @@ public Q_SLOTS:
     }
 
 public:
-    QMutex m_mutex;
-
     dbus::Bus::Ptr m_bus;
 
     culs::Stub::Ptr m_locationService;
@@ -230,6 +242,9 @@ UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
 {
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+
+    // Connect to signals (which will be queued)
+    connect(p.data(), &Priv::updateFromOtherThread, p.data(), &Priv::update, Qt::QueuedConnection);
 
     // Wire up the deactivate timer
     connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
@@ -297,7 +312,8 @@ scopes::Location UbuntuLocationService::location() const
 
 bool UbuntuLocationService::isActive() const
 {
-    return p->m_session ? true : false;
+    return p->m_session ? (p->m_session->updates().position_status ==
+            culss::Interface::Updates::Status::enabled) : false;
 }
 
 void UbuntuLocationService::activate()
