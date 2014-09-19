@@ -447,7 +447,41 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
 
 void Scopes::moveFavoriteTo(QString const& scopeId, int index)
 {
-    //TODO
+    if (m_dashSettings)
+    {
+        QStringList cannedQueries;
+        bool found = false;
+
+        int i = 0;
+        for (auto const& fav: m_favoriteScopes)
+        {
+            if (fav == scopeId) {
+                if (index == i)
+                    return; // same position
+
+                // we are removing existing favorite and inserting new one with higher index,
+                // so need to decrease it to compensate for removed item
+                if (index > i) {
+                    --index;
+                }
+                found = true;
+            } else {
+                const QString query = "scope://" + fav;
+                cannedQueries.push_back(query);
+            }
+
+            ++i;
+        }
+
+        if (found) {
+            // insert scopeId at new position
+            const QString query = "scope://" + scopeId;
+            cannedQueries.insert(index, query);
+            // update gsettings entry
+            // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
+            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+        }
+    }
 }
 
 QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const
