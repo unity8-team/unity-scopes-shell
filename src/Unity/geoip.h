@@ -96,4 +96,6 @@ protected:
 
 } // namespace scopes_ng
 
+Q_DECLARE_METATYPE(scopes_ng::GeoIp::Result)
+
 #endif /* GEOIP_H_ */
