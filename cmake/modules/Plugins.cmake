@@ -50,7 +50,7 @@ macro(export_qmlplugin PLUGIN VERSION PLUGIN_SUBPATH)
     if(NOT CMAKE_CROSSCOMPILING)
         # create the plugin.qmltypes file
         add_custom_target(${PLUGIN}-qmltypes ALL
-            COMMAND UNITY_SCOPES_LIST_DELAY=10000 ${qmlplugindump_exe} -notrelocatable ${PLUGIN} ${VERSION} ${CMAKE_CURRENT_BINARY_DIR}/../ > ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
+            COMMAND UNITY_SCOPES_NO_LOCATION=1 UNITY_SCOPES_LIST_DELAY=10000 ${qmlplugindump_exe} -notrelocatable ${PLUGIN} ${VERSION} ${CMAKE_CURRENT_BINARY_DIR}/../ > ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
         )
         add_dependencies(${PLUGIN}-qmltypes ${PLUGIN}-qmlfiles ${qmlplugin_TARGETS})
 
