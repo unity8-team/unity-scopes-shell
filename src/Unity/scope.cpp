@@ -988,7 +988,13 @@ void Scope::setSearchQuery(const QString& search_query)
             m_filterState = scopes::FilterState();
         }
 
-        m_typingTimer.start();
+        // only use typing delay if scope is active, otherwise apply immediately
+        if (m_isActive) {
+            m_typingTimer.start();
+        } else {
+            invalidateResults();
+            Q_EMIT searchQueryChanged();
+        }
     }
 }
 
