@@ -76,7 +76,11 @@ class UbuntuLocationService::Priv : public QObject
 Q_OBJECT
 
 public:
-    Priv() = default;
+    Priv() :
+            m_lastLocationMutex(QMutex::Recursive), m_resultMutex(
+                    QMutex::Recursive)
+    {
+    }
 
     void init(GeoIp::Ptr geoIp)
     {
@@ -179,6 +183,8 @@ public Q_SLOTS:
 
     void positionChanged(const cul::Update<cul::Position>& newPosition)
     {
+        QMutexLocker lock(&m_lastLocationMutex);
+
         if (m_locationUpdatedAtLeastOnce)
         {
             culu::Quantity<culu::Length> distance = cul::haversine_distance(
@@ -223,13 +229,15 @@ public Q_SLOTS:
     }
 
 public:
-    culss::Interface::Ptr m_session;
-
     dbus::Bus::Ptr m_bus;
 
     culs::Stub::Ptr m_locationService;
 
+    culss::Interface::Ptr m_session;
+
     cul::Position m_lastLocation;
+
+    QMutex m_lastLocationMutex;
 
     bool m_locationUpdatedAtLeastOnce = false;
 
@@ -239,11 +247,11 @@ public:
 
     GeoIp::Ptr m_geoIp;
 
+    QSharedPointer<QThread> m_dbusThread;
+
     QMutex m_resultMutex;
 
     GeoIp::Result m_result;
-
-    QSharedPointer<QThread> m_dbusThread;
 };
 
 UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
@@ -303,6 +311,7 @@ scopes::Location UbuntuLocationService::location() const
         location.set_city(result.city.toStdString());
     }
 
+    QMutexLocker lock(&p->m_lastLocationMutex);
     // We need to be active, and the location session must have updated at least once
     if (isActive() && p->m_locationUpdatedAtLeastOnce)
     {
