@@ -89,11 +89,6 @@ public:
             // Starting a new location service session
             try
             {
-                if (p.m_session)
-                {
-                    return;
-                }
-
                 auto session = p.m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
@@ -101,9 +96,16 @@ public:
                         bind(&UbuntuLocationService::Priv::positionChanged,
                              &p, _1));
 
+                QMutexLocker lock(&p.m_mutex);
+
+                if (p.m_session)
+                {
+                    return;
+                }
+
                 p.m_session = session;
 
-                p.updateFromOtherThread();
+                p.enqueueUpdate();
             }
             catch (exception& e)
             {
@@ -116,7 +118,7 @@ public:
     };
 
     Priv(GeoIp::Ptr geoIp) :
-            m_geoIp(geoIp)
+            m_geoIp(geoIp), m_mutex(QMutex::Recursive)
     {
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
@@ -157,7 +159,7 @@ public:
 Q_SIGNALS:
     void locationChanged();
 
-    void updateFromOtherThread();
+    void enqueueUpdate();
 
 public Q_SLOTS:
     void update()
@@ -247,6 +249,9 @@ public:
     GeoIp::Ptr m_geoIp;
 
     GeoIp::Result m_result;
+
+    QMutex m_mutex;
+
 };
 
 UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
@@ -256,7 +261,7 @@ UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
 
     // Connect to signals (which will be queued)
-    connect(p.data(), &Priv::updateFromOtherThread, p.data(), &Priv::update, Qt::QueuedConnection);
+    connect(p.data(), &Priv::enqueueUpdate, p.data(), &Priv::update, Qt::QueuedConnection);
 
     // Wire up the deactivate timer
     connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
@@ -332,7 +337,7 @@ void UbuntuLocationService::activate()
 {
     ++p->m_activationCount;
     p->m_deactivateTimer.stop();
-    p->update();
+    p->enqueueUpdate();
 }
 
 void UbuntuLocationService::deactivate()
