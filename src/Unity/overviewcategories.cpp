@@ -56,7 +56,7 @@ OverviewCategories::OverviewCategories(QObject* parent)
     m_favoriteScopes.reset(new OverviewResultsModel(this));
 
     m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("favorites", CATEGORY_JSON)));
-    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("all", CATEGORY_JSON)));
+    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("other", CATEGORY_JSON)));
 }
 
 OverviewCategories::~OverviewCategories()
