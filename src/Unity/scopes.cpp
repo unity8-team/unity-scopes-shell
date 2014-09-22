@@ -41,6 +41,7 @@ namespace scopes_ng
 using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
+#define CLICK_SCOPE_ID "clickscope"
 
 void ScopeListWorker::run()
 {
@@ -250,13 +251,24 @@ void Scopes::processFavoriteScopes()
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
                 const QString id = QString::fromStdString(query.scope_id());
-                newFavorites.push_back(id);
+                // HACK: ensure apps are first
+                if (id == CLICK_SCOPE_ID) {
+                    newFavorites.push_front(id);
+                } else {
+                    newFavorites.push_back(id);
+                }
                 favScopesLut.insert(id);
             }
             catch (const InvalidArgumentException &e)
             {
                 qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
             }
+        }
+
+        // make sure Apps are never un-favorited
+        if (!newFavorites.contains(CLICK_SCOPE_ID)) {
+            newFavorites.push_front(CLICK_SCOPE_ID);
+            favScopesLut.insert(CLICK_SCOPE_ID);
         }
 
         // this prevents further processing if we get called back when calling scope->setFavorite() below
