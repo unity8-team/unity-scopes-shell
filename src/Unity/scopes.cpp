@@ -134,6 +134,11 @@ Scopes::~Scopes()
     }
 }
 
+QString Scopes::userAgentString() const
+{
+    return m_userAgent;
+}
+
 int Scopes::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent)
@@ -207,6 +212,8 @@ void Scopes::lsbReleaseFinished()
         m_versions.clear();
         m_userAgent = q.toString();
     }
+
+    qDebug() << "User agent string:" << m_userAgent;
 
     // initiate scopes
     // delaying spawning the worker thread, causes problems with qmlplugindump

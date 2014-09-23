@@ -69,6 +69,7 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
     LocationService::Ptr locationService() const;
+    QString userAgentString() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
