@@ -32,6 +32,7 @@
 #include <QProcess>
 #include <QFile>
 #include <QUrlQuery>
+#include <QTextStream>
 
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
@@ -204,7 +205,10 @@ void Scopes::lsbReleaseFinished()
 
         QFile buildFile("/etc/ubuntu-build");
         if (buildFile.open(QIODevice::ReadOnly)) {
-            m_versions.push_back(qMakePair(QString("build"), QString(buildFile.readLine()).trimmed()));
+            QTextStream str(&buildFile);
+            QString bld;
+            str >> bld;
+            m_versions.push_back(qMakePair(QString("build"), bld));
         }
 
         QUrlQuery q;
