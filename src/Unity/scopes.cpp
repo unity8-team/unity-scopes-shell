@@ -109,14 +109,6 @@ Scopes::Scopes(QObject *parent)
         m_noFavorites = true;
     }
 
-    // delaying spawning the worker thread, causes problems with qmlplugindump
-    // without it
-    if (LIST_DELAY < 0) {
-        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
-        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
-    }
-    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
-
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
@@ -130,6 +122,8 @@ Scopes::Scopes(QObject *parent)
 
     m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
+
+    createUserAgentString();
 }
 
 Scopes::~Scopes()
@@ -213,6 +207,15 @@ void Scopes::lsbReleaseFinished()
         m_versions.clear();
         m_userAgent = q.toString();
     }
+
+    // initiate scopes
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    if (LIST_DELAY < 0) {
+        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
+        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    }
+    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
 }
 
 void Scopes::populateScopes()
