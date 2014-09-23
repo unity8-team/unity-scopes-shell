@@ -204,7 +204,7 @@ void Scopes::lsbReleaseFinished()
 
         QFile buildFile("/etc/ubuntu-build");
         if (buildFile.open(QIODevice::ReadOnly)) {
-            m_versions.push_back(qMakePair(QString("build"), QString(buildFile.readLine())));
+            m_versions.push_back(qMakePair(QString("build"), QString(buildFile.readLine()).trimmed()));
         }
 
         QUrlQuery q;
