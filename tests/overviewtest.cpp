@@ -108,7 +108,7 @@ private Q_SLOTS:
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
-        QCOMPARE(categories->data(categories->index(1), Categories::Roles::RoleCategoryId), QVariant(QString("all")));
+        QCOMPARE(categories->data(categories->index(1), Categories::Roles::RoleCategoryId), QVariant(QString("other")));
 
         QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
         QVERIFY(results_var.canConvert<OverviewResultsModel*>());
