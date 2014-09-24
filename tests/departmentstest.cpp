@@ -49,6 +49,7 @@ private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
     Scope* m_scope_navs;
+    Scope* m_scope_flipflop;
     QScopedPointer<RegistrySpawner> m_registry;
 
 private Q_SLOTS:
@@ -88,8 +89,13 @@ private Q_SLOTS:
         QVERIFY(m_scope_navs != nullptr);
         m_scope_navs->setActive(true);
 
+        m_scope_flipflop = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments-flipflop")));
+        QVERIFY(m_scope_flipflop != nullptr);
+        m_scope_flipflop->setActive(true);
+
         QTRY_COMPARE(m_scope->searchInProgress(), false);
         QTRY_COMPARE(m_scope_navs->searchInProgress(), false);
+        QTRY_COMPARE(m_scope_flipflop->searchInProgress(), false);
     }
 
     void cleanup()
@@ -304,6 +310,47 @@ private Q_SLOTS:
         QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
         QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(true));
     }
+
+    void testDepartmentDissapear()
+    {
+        performSearch(m_scope_flipflop, QString(""));
+
+        QCOMPARE(m_scope_flipflop->hasNavigation(), true);
+        QCOMPARE(m_scope_flipflop->hasAltNavigation(), false);
+        QCOMPARE(m_scope_flipflop->currentNavigationId(), QString(""));
+
+        QScopedPointer<NavigationInterface> departmentModel(m_scope_flipflop->getNavigation(m_scope_flipflop->currentNavigationId()));
+        QVERIFY(departmentModel != nullptr);
+
+        QVERIFY(departmentModel->navigationId().isEmpty());
+        QCOMPARE(departmentModel->label(), QString("All departments"));
+        QCOMPARE(departmentModel->allLabel(), QString(""));
+        QCOMPARE(departmentModel->parentNavigationId(), QString());
+        QCOMPARE(departmentModel->parentLabel(), QString());
+        QCOMPARE(departmentModel->loaded(), true);
+        QCOMPARE(departmentModel->isRoot(), true);
+        QCOMPARE(departmentModel->hidden(), false);
+
+        QCOMPARE(departmentModel->rowCount(), 5);
+
+        refreshSearch(m_scope_flipflop);
+        QCOMPARE(departmentModel->rowCount(), 4);
+
+//        QModelIndex idx;
+//
+//        idx = departmentModel->index(0);
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+//
+//        idx = departmentModel->index(4);
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+    }
+
 };
 
 QTEST_GUILESS_MAIN(DepartmentsTest)

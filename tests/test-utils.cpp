@@ -61,6 +61,20 @@ bool scopes_ng::getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result
     return success;
 }
 
+void scopes_ng::refreshSearch(Scope* scope)
+{
+    QCOMPARE(scope->searchInProgress(), false);
+    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+    // refresh the search
+    scope->refresh();
+    QVERIFY(scope->searchInProgress() || spy.count() > 1);
+    if (scope->searchInProgress()) {
+        // wait for the search to finish
+        QVERIFY(spy.wait());
+    }
+    QCOMPARE(scope->searchInProgress(), false);
+}
+
 void scopes_ng::performSearch(Scope* scope, QString const& searchString)
 {
     QCOMPARE(scope->searchInProgress(), false);
