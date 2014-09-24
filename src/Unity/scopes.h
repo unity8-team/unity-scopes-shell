@@ -82,6 +82,7 @@ private Q_SLOTS:
     void refreshFinished();
     void invalidateScopeResults(QString const&);
 
+    void initPopulateScopes();
     void dpkgFinished();
     void lsbReleaseFinished();
 

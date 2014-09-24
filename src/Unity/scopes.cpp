@@ -156,6 +156,7 @@ void Scopes::createUserAgentString()
 {
     QProcess *dpkg = new QProcess(this);
     connect(dpkg, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dpkgFinished()));
+    connect(dpkg, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
     dpkg->start("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8", QIODevice::ReadOnly);
 }
 
@@ -188,6 +189,7 @@ void Scopes::dpkgFinished()
 
         QProcess *lsb_release = new QProcess(this);
         connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
+        connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
         lsb_release->start("lsb_release -r", QIODevice::ReadOnly);
     }
 }
@@ -218,7 +220,11 @@ void Scopes::lsbReleaseFinished()
     }
 
     qDebug() << "User agent string:" << m_userAgent;
+    initPopulateScopes();
+}
 
+void Scopes::initPopulateScopes()
+{
     // initiate scopes
     // delaying spawning the worker thread, causes problems with qmlplugindump
     // without it
