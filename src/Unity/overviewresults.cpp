@@ -123,7 +123,14 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         if (newResult.contains(id)) {
             pos = newResult[id];
             if (pos != i) {
-                beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos);
+                if (pos > i)
+                {
+                    beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos - i - 1);
+                }
+                else
+                {
+                    beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos);
+                }
                 m_results.move(i, pos);
                 endMoveRows();
                 continue;
