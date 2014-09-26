@@ -244,9 +244,10 @@ void Scopes::processFavoriteScopes()
     // notify about scopes model changes accordingly.
     if (m_dashSettings) {
         QStringList newFavorites;
-        QSet<QString> favScopesLut;
+        QMap<QString, int> favScopesLut;
         for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
+            int pos = 0;
             try
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
@@ -256,8 +257,9 @@ void Scopes::processFavoriteScopes()
                     newFavorites.push_front(id);
                 } else {
                     newFavorites.push_back(id);
+                    pos = newFavorites.size() - 1;
                 }
-                favScopesLut.insert(id);
+                favScopesLut[id] = pos;
             }
             catch (const InvalidArgumentException &e)
             {
@@ -268,7 +270,7 @@ void Scopes::processFavoriteScopes()
         // make sure Apps are never un-favorited
         if (!newFavorites.contains(CLICK_SCOPE_ID)) {
             newFavorites.push_front(CLICK_SCOPE_ID);
-            favScopesLut.insert(CLICK_SCOPE_ID);
+            favScopesLut[CLICK_SCOPE_ID] = 0;
         }
 
         // this prevents further processing if we get called back when calling scope->setFavorite() below
@@ -299,6 +301,17 @@ void Scopes::processFavoriteScopes()
                 ++row;
             }
         }
+
+
+        // move favorited scopes
+        /*row = 0;
+        for (auto it = m_scopes.begin(); it != m_scopes.end();)
+        {
+            int pos = favScopesLut[(*it)->id()];
+            if (pos != row)
+            {
+            }
+        }*/
 
         // add new favorites
         row = 0;
@@ -464,18 +477,15 @@ void Scopes::moveFavoriteTo(QString const& scopeId, int index)
         QStringList cannedQueries;
         bool found = false;
 
+        if (index == 0)
+            return;
+
         int i = 0;
         for (auto const& fav: m_favoriteScopes)
         {
             if (fav == scopeId) {
                 if (index == i)
                     return; // same position
-
-                // we are removing existing favorite and inserting new one with higher index,
-                // so need to decrease it to compensate for removed item
-                if (index > i) {
-                    --index;
-                }
                 found = true;
             } else {
                 const QString query = "scope://" + fav;
