@@ -302,17 +302,6 @@ void Scopes::processFavoriteScopes()
             }
         }
 
-
-        // move favorited scopes
-        /*row = 0;
-        for (auto it = m_scopes.begin(); it != m_scopes.end();)
-        {
-            int pos = favScopesLut[(*it)->id()];
-            if (pos != row)
-            {
-            }
-        }*/
-
         // add new favorites
         row = 0;
         for (auto favIt = m_favoriteScopes.begin(); favIt != m_favoriteScopes.end(); )
@@ -339,6 +328,23 @@ void Scopes::processFavoriteScopes()
             }
             ++row;
             ++favIt;
+        }
+
+        // iterate over results, move rows if positions changes
+        for (int i = 0; i<m_scopes.size(); )
+        {
+            auto scope = m_scopes.at(i);
+            const QString id = scope->id();
+            if (favScopesLut.contains(id)) {
+                int pos = favScopesLut[id];
+                if (pos != i) {
+                    beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos + (pos > i ? 1 : 0));
+                    m_scopes.move(i, pos);
+                    endMoveRows();
+                    continue;
+                }
+            }
+            i++;
         }
     }
 }
