@@ -1,3 +1,24 @@
+unity-scopes-shell (0.5.4+14.10.20140925-0ubuntu1) utopic; urgency=low
+
+  [ Marcus Tomlinson ]
+  * OnlineAccountsClient::Setup::finished signature changed causing a
+    hang. Use safer C++11-style connect() (LP: #1373807)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 25 Sep 2014 09:53:15 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140922.2-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Connect to the location service on a background thread (LP:
+    #1370524)
+
+  [ Pawel Stolowski ]
+  * Use typing timer only when scope is active, otherwise invalidate
+    results and emit the signal for query change immediately. (LP:
+    #1354518)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 22 Sep 2014 15:02:07 +0000
+
 unity-scopes-shell (0.5.4+14.10.20140916-0ubuntu1) utopic; urgency=low
 
   [ Pete Woods ]
