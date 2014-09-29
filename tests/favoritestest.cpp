@@ -142,6 +142,42 @@ private Q_SLOTS:
         QTRY_COMPARE(results->rowCount(), 0);
     }
 
+    void testFavoritesReordering()
+    {
+        QStringList favs;
+        favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav" << "scope://mock-scope";
+        setFavouriteScopes(favs);
+
+        // should have one scope now
+        QTRY_COMPARE(m_scopes->rowCount(), 3);
+        QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(0))->id(), QString("mock-scope-departments"));
+        QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(1))->id(), QString("mock-scope-double-nav"));
+        QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(2))->id(), QString("mock-scope"));
+
+        {
+            QSignalSpy spy(m_scopes.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
+            m_scopes->moveFavoriteTo("mock-scope", 1);
+
+            // check new positions
+            QTRY_COMPARE(spy.count(), 1);
+
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(0))->id(), QString("mock-scope-departments"));
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(1))->id(), QString("mock-scope"));
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(2))->id(), QString("mock-scope-double-nav"));
+        }
+        {
+            QSignalSpy spy(m_scopes.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
+            m_scopes->moveFavoriteTo("mock-scope", 2);
+
+            // check new positions
+            QTRY_COMPARE(spy.count(), 1);
+
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(0))->id(), QString("mock-scope-departments"));
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(1))->id(), QString("mock-scope-double-nav"));
+            QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(2))->id(), QString("mock-scope"));
+        }
+    }
+
     void testGSettingsUpdates()
     {
         QStringList favs;
@@ -153,7 +189,7 @@ private Q_SLOTS:
         auto scope1 = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
         QVERIFY(scope1 != nullptr);
 
-        // un-facorite one scope
+        // un-favorite one scope
         scope1->setFavorite(false);
         QTRY_COMPARE(getFavoriteScopes().size(), 1);
         QCOMPARE(getFavoriteScopes().at(0), QString("scope://mock-scope-double-nav"));

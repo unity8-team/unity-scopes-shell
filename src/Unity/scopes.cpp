@@ -269,8 +269,10 @@ void Scopes::processFavoriteScopes()
 
         // make sure Apps are never un-favorited
         if (!newFavorites.contains(CLICK_SCOPE_ID)) {
-            newFavorites.push_front(CLICK_SCOPE_ID);
-            favScopesLut[CLICK_SCOPE_ID] = 0;
+            if (m_cachedMetadata.contains(CLICK_SCOPE_ID)) {
+                newFavorites.push_front(CLICK_SCOPE_ID);
+                favScopesLut[CLICK_SCOPE_ID] = 0;
+            }
         }
 
         // this prevents further processing if we get called back when calling scope->setFavorite() below
@@ -483,6 +485,7 @@ void Scopes::moveFavoriteTo(QString const& scopeId, int index)
         QStringList cannedQueries;
         bool found = false;
 
+        // position 0 is reserved for Apps, no scope can be moved to that position
         if (index == 0)
             return;
 
