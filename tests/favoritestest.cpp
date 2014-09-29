@@ -164,6 +164,20 @@ private Q_SLOTS:
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(0))->id(), QString("mock-scope-departments"));
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(1))->id(), QString("mock-scope"));
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(2))->id(), QString("mock-scope-double-nav"));
+
+            // check overview model
+            auto categories = m_overviewScope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
+
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            QVERIFY(results_var.canConvert<OverviewResultsModel*>());
+            OverviewResultsModel* results = results_var.value<OverviewResultsModel*>();
+            QTRY_COMPARE(results->rowCount(), 3);
+
+            QTRY_COMPARE(results->data(results->index(0), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope-departments")));
+            QTRY_COMPARE(results->data(results->index(1), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope")));
+            QTRY_COMPARE(results->data(results->index(2), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope-double-nav")));
         }
         {
             QSignalSpy spy(m_scopes.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
@@ -175,6 +189,20 @@ private Q_SLOTS:
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(0))->id(), QString("mock-scope-departments"));
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(1))->id(), QString("mock-scope-double-nav"));
             QTRY_COMPARE(qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(2))->id(), QString("mock-scope"));
+
+            // check overview model
+            auto categories = m_overviewScope->categories();
+            QVERIFY(categories->rowCount() > 0);
+            QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
+
+            QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
+            QVERIFY(results_var.canConvert<OverviewResultsModel*>());
+            OverviewResultsModel* results = results_var.value<OverviewResultsModel*>();
+            QTRY_COMPARE(results->rowCount(), 3);
+
+            QTRY_COMPARE(results->data(results->index(0), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope-departments")));
+            QTRY_COMPARE(results->data(results->index(1), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope-double-nav")));
+            QTRY_COMPARE(results->data(results->index(2), OverviewResultsModel::RoleScopeId), QVariant(QString("mock-scope")));
         }
     }
 
