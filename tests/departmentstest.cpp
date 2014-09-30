@@ -66,7 +66,7 @@ private Q_SLOTS:
     void init()
     {
         QStringList favs;
-        favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav";
+        favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav" << "scope://mock-scope-departments-flipflop";
         setFavouriteScopes(favs);
 
         m_scopes.reset(new Scopes(nullptr));
@@ -313,8 +313,6 @@ private Q_SLOTS:
 
     void testDepartmentDissapear()
     {
-        performSearch(m_scope_flipflop, QString(""));
-
         QCOMPARE(m_scope_flipflop->hasNavigation(), true);
         QCOMPARE(m_scope_flipflop->hasAltNavigation(), false);
         QCOMPARE(m_scope_flipflop->currentNavigationId(), QString(""));
@@ -334,21 +332,23 @@ private Q_SLOTS:
         QCOMPARE(departmentModel->rowCount(), 5);
 
         refreshSearch(m_scope_flipflop);
+
+        // one department removed
         QCOMPARE(departmentModel->rowCount(), 4);
 
-//        QModelIndex idx;
-//
-//        idx = departmentModel->index(0);
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
-//
-//        idx = departmentModel->index(4);
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-//        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QModelIndex idx;
+
+        idx = departmentModel->index(0);
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+
+        idx = departmentModel->index(3);
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
     }
 
 };
