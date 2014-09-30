@@ -1247,7 +1247,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         setup.exec();
 
         QEventLoop loop;
-        connect(&setup, SIGNAL(finished()), &loop, SLOT(quit()));
+        connect(&setup, &OnlineAccountsClient::Setup::finished, &loop, &QEventLoop::quit);
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
