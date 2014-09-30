@@ -411,6 +411,17 @@ void Scope::flushUpdates()
     }
 }
 
+
+unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
+{
+    for (auto s: m_tempScopes) {
+        if (s->id() == id) {
+            return s;
+        }
+    }
+    return nullptr;
+}
+
 void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
 {
     DepartmentNode* parentNode = nullptr;
