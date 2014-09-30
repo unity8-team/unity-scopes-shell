@@ -1215,7 +1215,8 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
-    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(),
+                                          provider_name.toStdString(), scopes::OnlineAccountClient::RunInExternalUiMainLoop);
     bool service_authenticated = false;
 
     // Check if at least one account has the specified service enabled
