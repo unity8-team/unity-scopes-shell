@@ -197,6 +197,7 @@ void Scopes::discoveryFinished()
     }
 
     // cache all the metadata
+    m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
@@ -360,6 +361,9 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         Q_FOREACH(Scope* scope, m_scopes) {
             scope->invalidateResults();
         }
+    } else if (scopeName == "scopes") {
+        populateScopes();
+        return;
     }
 
     Scope* scope = getScopeById(scopeName);
