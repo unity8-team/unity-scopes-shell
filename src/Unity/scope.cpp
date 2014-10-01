@@ -993,7 +993,13 @@ void Scope::setSearchQuery(const QString& search_query)
             m_filterState = scopes::FilterState();
         }
 
-        m_typingTimer.start();
+        // only use typing delay if scope is active, otherwise apply immediately
+        if (m_isActive) {
+            m_typingTimer.start();
+        } else {
+            invalidateResults();
+            Q_EMIT searchQueryChanged();
+        }
     }
 }
 
@@ -1238,7 +1244,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         setup.exec();
 
         QEventLoop loop;
-        connect(&setup, SIGNAL(finished()), &loop, SLOT(quit()));
+        connect(&setup, &OnlineAccountsClient::Setup::finished, &loop, &QEventLoop::quit);
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
