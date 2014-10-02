@@ -149,6 +149,8 @@ int Scopes::count() const
     return m_scopes.count();
 }
 
+// *N.B.* populateScopes() is intended for use only on start-up!
+// In any other circumstance, use refreshScopeMetadata() to invalidate results.
 void Scopes::populateScopes()
 {
     auto thread = new ScopeListWorker;
