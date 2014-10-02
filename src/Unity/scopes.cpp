@@ -363,9 +363,21 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
     }
 
     Scope* scope = getScopeById(scopeName);
-    if (scope == nullptr) return;
+    if (scope == nullptr) {
+        // check temporary scopes
+        for (auto s: m_scopes) {
+            scope = qobject_cast<Scope*>(s->findTempScope(scopeName));
+            if (scope) {
+                break;
+            }
+        }
+    }
 
-    scope->invalidateResults();
+    if (scope) {
+        scope->invalidateResults();
+    } else {
+        qWarning() << "invalidateScopeResults: no such scope '" << scopeName << "'";
+    }
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
