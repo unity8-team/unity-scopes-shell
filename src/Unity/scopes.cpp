@@ -197,6 +197,7 @@ void Scopes::discoveryFinished()
     }
 
     // cache all the metadata
+    m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
@@ -250,8 +251,16 @@ void Scopes::processFavoriteScopes()
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
                 const QString id = QString::fromStdString(query.scope_id());
-                newFavorites.push_back(id);
-                favScopesLut.insert(id);
+                if (m_cachedMetadata.find(id) != m_cachedMetadata.end())
+                {
+                    newFavorites.push_back(id);
+                    favScopesLut.insert(id);
+                }
+                else
+                {
+                    // If a scope that was favorited no longer exists, unfavorite it in m_dashSettings
+                    setFavorite(id, false);
+                }
             }
             catch (const InvalidArgumentException &e)
             {
@@ -339,6 +348,7 @@ void Scopes::refreshFinished()
     auto scopes = thread->metadataMap();
 
     // cache all the metadata
+    m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
@@ -360,6 +370,9 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         Q_FOREACH(Scope* scope, m_scopes) {
             scope->invalidateResults();
         }
+    } else if (scopeName == "scopes") {
+        populateScopes();
+        return;
     }
 
     Scope* scope = getScopeById(scopeName);
