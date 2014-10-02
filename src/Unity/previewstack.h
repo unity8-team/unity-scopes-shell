@@ -60,7 +60,7 @@ public:
 
     void setWidgetColumnCount(int columnCount) override;
     int widgetColumnCount() const override;
-    void setAssociatedScope(scopes_ng::Scope*, QUuid const&);
+    void setAssociatedScope(scopes_ng::Scope*, QUuid const&, QString const&);
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);
@@ -81,6 +81,7 @@ private:
 
     unity::scopes::Result::SPtr m_previewedResult;
     QUuid m_session_id;
+    QString m_userAgent;
 };
 
 } // namespace scopes_ng

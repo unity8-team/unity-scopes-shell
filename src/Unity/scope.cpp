@@ -666,6 +666,11 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        auto const userAgent = m_scopesInstance->userAgentString();
+        if (!userAgent.isEmpty()) {
+            meta["user-agent"] = userAgent.toStdString();
+        }
+
         if (!m_session_id.isNull()) {
             meta["session-id"] = uuidToString(m_session_id).toStdString();
         }
@@ -1174,7 +1179,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
-    stack->setAssociatedScope(this, m_session_id);
+    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;
 }
