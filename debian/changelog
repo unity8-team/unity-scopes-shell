@@ -1,3 +1,12 @@
+unity-scopes-shell (0.5.4+14.10.20141002.1-0ubuntu1) utopic; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Use refreshScopeMetadata() rather than populateScopes() when
+    invalidating results (populateScopes() is intended for use only on
+    start-up) (LP: #1376755)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 Oct 2014 19:20:45 +0000
+
 unity-scopes-shell (0.5.4+14.10.20141002-0ubuntu1) utopic; urgency=low
 
   [ Pete Woods ]
