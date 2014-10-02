@@ -29,6 +29,10 @@
 #include <QDebug>
 #include <QTimer>
 #include <QDBusConnection>
+#include <QProcess>
+#include <QFile>
+#include <QUrlQuery>
+#include <QTextStream>
 
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
@@ -106,14 +110,6 @@ Scopes::Scopes(QObject *parent)
         m_noFavorites = true;
     }
 
-    // delaying spawning the worker thread, causes problems with qmlplugindump
-    // without it
-    if (LIST_DELAY < 0) {
-        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
-        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
-    }
-    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
-
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
@@ -127,6 +123,8 @@ Scopes::Scopes(QObject *parent)
 
     m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
+
+    createUserAgentString();
 }
 
 Scopes::~Scopes()
@@ -135,6 +133,11 @@ Scopes::~Scopes()
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
     }
+}
+
+QString Scopes::userAgentString() const
+{
+    return m_userAgent;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -147,6 +150,89 @@ int Scopes::rowCount(const QModelIndex& parent) const
 int Scopes::count() const
 {
     return m_scopes.count();
+}
+
+void Scopes::createUserAgentString()
+{
+    QProcess *dpkg = new QProcess(this);
+    connect(dpkg, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dpkgFinished()));
+    connect(dpkg, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
+    dpkg->start("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8", QIODevice::ReadOnly);
+}
+
+void Scopes::dpkgFinished()
+{
+    QProcess *dpkg = qobject_cast<QProcess *>(sender());
+    if (dpkg) {
+        while (dpkg->canReadLine()) {
+            const QString line = dpkg->readLine();
+            const QStringList lineParts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            QString key;
+            if (lineParts.size() == 2) {
+                if (lineParts.at(0).startsWith("libunity-scopes")) {
+                    key = "scopes-api";
+                }
+                else if (lineParts.at(0).startsWith("unity-plugin-scopes")) {
+                    key = "plugin";
+                }
+                else if (lineParts.at(0).startsWith("unity8")) {
+                    key = "unity8";
+                }
+                if (!key.isEmpty()) {
+                    m_versions.push_back(qMakePair(key, lineParts.at(1)));
+                } else {
+                    qWarning() << "Unexpected dpkg-query output:" << line;
+                }
+            }
+        }
+        dpkg->deleteLater();
+
+        QProcess *lsb_release = new QProcess(this);
+        connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
+        connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
+        lsb_release->start("lsb_release -r", QIODevice::ReadOnly);
+    }
+}
+
+void Scopes::lsbReleaseFinished()
+{
+    QProcess *lsb_release = qobject_cast<QProcess *>(sender());
+    if (lsb_release) {
+        const QString out = lsb_release->readAllStandardOutput();
+        const QStringList parts = out.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (parts.size() == 2) {
+            m_versions.push_back(qMakePair(QString("release"), parts.at(1)));
+        }
+        lsb_release->deleteLater();
+
+        QFile buildFile("/etc/ubuntu-build");
+        if (buildFile.open(QIODevice::ReadOnly)) {
+            QTextStream str(&buildFile);
+            QString bld;
+            str >> bld;
+            m_versions.push_back(qMakePair(QString("build"), bld));
+        }
+
+        QUrlQuery q;
+        q.setQueryItems(m_versions);
+        m_versions.clear();
+        m_userAgent = q.toString();
+    }
+
+    qDebug() << "User agent string:" << m_userAgent;
+    initPopulateScopes();
+}
+
+void Scopes::initPopulateScopes()
+{
+    // initiate scopes
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    if (LIST_DELAY < 0) {
+        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
+        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    }
+    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
 }
 
 // *N.B.* populateScopes() is intended for use only on start-up!
@@ -287,7 +373,7 @@ void Scopes::processFavoriteScopes()
                 (*it)->setFavorite(false);
                 //
                 // we need to delay actual deletion of Scope object so that shell can animate it
-                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater));
+                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater()));
                 it = m_scopes.erase(it);
                 endRemoveRows();
             }
@@ -380,9 +466,21 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
     }
 
     Scope* scope = getScopeById(scopeName);
-    if (scope == nullptr) return;
+    if (scope == nullptr) {
+        // check temporary scopes
+        for (auto s: m_scopes) {
+            scope = qobject_cast<Scope*>(s->findTempScope(scopeName));
+            if (scope) {
+                break;
+            }
+        }
+    }
 
-    scope->invalidateResults();
+    if (scope) {
+        scope->invalidateResults();
+    } else {
+        qWarning() << "invalidateScopeResults: no such scope '" << scopeName << "'";
+    }
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
