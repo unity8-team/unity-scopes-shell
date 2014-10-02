@@ -276,7 +276,7 @@ void Scopes::processFavoriteScopes()
                 (*it)->setFavorite(false);
                 //
                 // we need to delay actual deletion of Scope object so that shell can animate it
-                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater));
+                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater()));
                 it = m_scopes.erase(it);
                 endRemoveRows();
             }
