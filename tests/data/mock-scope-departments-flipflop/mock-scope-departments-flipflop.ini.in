@@ -1,0 +1,8 @@
+[ScopeConfig]
+DisplayName = mock-departments-flipflop.DisplayName
+Description = mock-departments-flipflop.Description
+Art = /mock-departments-flipflop.Art
+Icon = /mock-departments-flipflop.Icon
+SearchHint = mock-departments-flipflop.SearchHint
+HotKey = mock-departments-flipflop.HotKey
+Author = mock-departments-flipflop.Author
