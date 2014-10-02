@@ -411,6 +411,17 @@ void Scope::flushUpdates()
     }
 }
 
+
+unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
+{
+    for (auto s: m_tempScopes) {
+        if (s->id() == id) {
+            return s;
+        }
+    }
+    return nullptr;
+}
+
 void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
 {
     DepartmentNode* parentNode = nullptr;
@@ -442,6 +453,7 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
     Q_FOREACH(DepartmentNode* child, node->childNodes()) {
         cachedChildrenIds << child->id();
     }
+
     auto subdeps = scopeNode->subdepartments();
     QMap<QString, scopes::Department::SCPtr> childIdMap;
     for (auto it = subdeps.begin(); it != subdeps.end(); ++it) {
@@ -469,6 +481,13 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
                 return scopeNode;
             }
         }
+    }
+
+    // department has been removed (not reported by scope); make sure it's only treated as such when
+    // we're examining children of *current* department, othwerwise it would break on partial trees when visiting a leaf.
+    if (firstMismatchingChild == nullptr && scopeNode->subdepartments().size() < cachedChildrenIds.size() &&
+            m_currentNavigationId.toStdString() == scopeNode->id()) {
+        return scopeNode;
     }
 
     return firstMismatchingChild; // will be nullptr if everything matches
@@ -647,6 +666,11 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        auto const userAgent = m_scopesInstance->userAgentString();
+        if (!userAgent.isEmpty()) {
+            meta["user-agent"] = userAgent.toStdString();
+        }
+
         if (!m_session_id.isNull()) {
             meta["session-id"] = uuidToString(m_session_id).toStdString();
         }
@@ -1155,7 +1179,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
-    stack->setAssociatedScope(this, m_session_id);
+    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;
 }

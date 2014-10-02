@@ -90,6 +90,9 @@ void OverviewScope::metadataChanged()
     // FIXME: filter invisible scopes?
     categories->setOtherScopes(allScopes);
     categories->setFavoriteScopes(favorites);
+
+    // Metadata has changed, invalidate the search results
+    invalidateResults();
 }
 
 QString OverviewScope::id() const

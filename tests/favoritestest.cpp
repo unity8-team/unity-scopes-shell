@@ -100,11 +100,15 @@ private Q_SLOTS:
 
         // unfavorite 1st scope
         QSignalSpy spy(scope1, SIGNAL(favoriteChanged(bool)));
+        QSignalSpy spy2(scope1, SIGNAL(destroyed(QObject *)));
         scope1->setFavorite(false);
         QTRY_COMPARE(spy.count(), 1);
         QTRY_COMPARE(m_scopes->rowCount(), 1);
         QVERIFY(m_scopes->getScopeById("mock-scope-departments") == nullptr);
         QCOMPARE(m_scopes->data(m_scopes->index(0), Scopes::RoleId), QVariant(QString("mock-scope-double-nav")));
+
+        // the scope should be destroyed after un-favoriting
+        QTRY_COMPARE(spy2.count(), 1);
 
         // favorite a scope
         auto overviewScope = m_scopes->overviewScope();
