@@ -353,6 +353,8 @@ void Scopes::refreshFinished()
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
 
+    processFavoriteScopes();
+
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
@@ -371,7 +373,7 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
             scope->invalidateResults();
         }
     } else if (scopeName == "scopes") {
-        populateScopes();
+        refreshScopeMetadata();
         return;
     }
 
