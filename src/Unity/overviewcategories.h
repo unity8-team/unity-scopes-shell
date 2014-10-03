@@ -44,15 +44,16 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
     void setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
     void updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
 
 private:
     bool m_isSurfacing;
 
     QList<QSharedPointer<ScopesCategoryData>> m_surfaceCategories;
-    QScopedPointer<OverviewResultsModel> m_allScopes;
+    QScopedPointer<OverviewResultsModel> m_otherScopes;
     QScopedPointer<OverviewResultsModel> m_favoriteScopes;
 };
 

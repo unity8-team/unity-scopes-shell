@@ -45,6 +45,7 @@ namespace scopes_ng
 using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
+#define CLICK_SCOPE_ID "clickscope"
 
 void ScopeListWorker::run()
 {
@@ -330,17 +331,25 @@ void Scopes::processFavoriteScopes()
     // notify about scopes model changes accordingly.
     if (m_dashSettings) {
         QStringList newFavorites;
-        QSet<QString> favScopesLut;
+        QMap<QString, int> favScopesLut;
         for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
         {
+            int pos = 0;
             try
             {
                 auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
                 const QString id = QString::fromStdString(query.scope_id());
+
                 if (m_cachedMetadata.find(id) != m_cachedMetadata.end())
                 {
-                    newFavorites.push_back(id);
-                    favScopesLut.insert(id);
+                    // HACK: ensure apps are first
+                    if (id == CLICK_SCOPE_ID) {
+                        newFavorites.push_front(id);
+                    } else {
+                        newFavorites.push_back(id);
+                        pos = newFavorites.size() - 1;
+                    }
+                    favScopesLut[id] = pos;
                 }
                 else
                 {
@@ -351,6 +360,14 @@ void Scopes::processFavoriteScopes()
             catch (const InvalidArgumentException &e)
             {
                 qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
+            }
+        }
+
+        // make sure Apps are never un-favorited
+        if (!newFavorites.contains(CLICK_SCOPE_ID)) {
+            if (m_cachedMetadata.contains(CLICK_SCOPE_ID)) {
+                newFavorites.push_front(CLICK_SCOPE_ID);
+                favScopesLut[CLICK_SCOPE_ID] = 0;
             }
         }
 
@@ -409,6 +426,23 @@ void Scopes::processFavoriteScopes()
             }
             ++row;
             ++favIt;
+        }
+
+        // iterate over results, move rows if positions changes
+        for (int i = 0; i<m_scopes.size(); )
+        {
+            auto scope = m_scopes.at(i);
+            const QString id = scope->id();
+            if (favScopesLut.contains(id)) {
+                int pos = favScopesLut[id];
+                if (pos != i) {
+                    beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos + (pos > i ? 1 : 0));
+                    m_scopes.move(i, pos);
+                    endMoveRows();
+                    continue;
+                }
+            }
+            i++;
         }
     }
 }
@@ -549,6 +583,43 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
         }
 
         if (changed) {
+            // update gsettings entry
+            // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
+            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+        }
+    }
+}
+
+void Scopes::moveFavoriteTo(QString const& scopeId, int index)
+{
+    if (m_dashSettings)
+    {
+        QStringList cannedQueries;
+        bool found = false;
+
+        // position 0 is reserved for Apps, no scope can be moved to that position
+        if (index == 0)
+            return;
+
+        int i = 0;
+        for (auto const& fav: m_favoriteScopes)
+        {
+            if (fav == scopeId) {
+                if (index == i)
+                    return; // same position
+                found = true;
+            } else {
+                const QString query = "scope://" + fav;
+                cannedQueries.push_back(query);
+            }
+
+            ++i;
+        }
+
+        if (found) {
+            // insert scopeId at new position
+            const QString query = "scope://" + scopeId;
+            cannedQueries.insert(index, query);
             // update gsettings entry
             // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
             m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));

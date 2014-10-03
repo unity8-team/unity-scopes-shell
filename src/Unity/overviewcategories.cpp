@@ -52,11 +52,11 @@ OverviewCategories::OverviewCategories(QObject* parent)
     : scopes_ng::Categories(parent)
     , m_isSurfacing(true)
 {
-    m_allScopes.reset(new OverviewResultsModel(this));
+    m_otherScopes.reset(new OverviewResultsModel(this));
     m_favoriteScopes.reset(new OverviewResultsModel(this));
 
     m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("favorites", CATEGORY_JSON)));
-    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("all", CATEGORY_JSON)));
+    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("other", CATEGORY_JSON)));
 }
 
 OverviewCategories::~OverviewCategories()
@@ -72,9 +72,9 @@ void OverviewCategories::setSurfacingMode(bool surfacingMode)
     }
 }
 
-void OverviewCategories::setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+void OverviewCategories::setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
 {
-    m_allScopes->setResults(scopes);
+    m_otherScopes->setResults(scopes);
 
     if (!m_isSurfacing) return;
 
@@ -96,6 +96,11 @@ void OverviewCategories::setFavoriteScopes(const QList<unity::scopes::ScopeMetad
 
     QModelIndex changedIndex(index(0));
     dataChanged(changedIndex, changedIndex, roles);
+}
+
+void OverviewCategories::updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+{
+    m_otherScopes->setResults(scopes);
 }
 
 void OverviewCategories::updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
@@ -120,7 +125,7 @@ OverviewCategories::data(const QModelIndex& index, int role) const
     }
 
     ScopesCategoryData* catData = m_surfaceCategories.at(index.row()).data();
-    OverviewResultsModel* results = index.row() == 0 ? m_favoriteScopes.data() : m_allScopes.data();
+    OverviewResultsModel* results = index.row() == 0 ? m_favoriteScopes.data() : m_otherScopes.data();
 
     switch (role) {
         case RoleCategoryId:

@@ -77,9 +77,10 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         return;
     }
 
-    QSet<QString> newResult;
+    int pos = 0;
+    QMap<QString, int> newResult;
     for (auto const res: results) {
-        newResult.insert(QString::fromStdString(res->scope_id()));
+        newResult[QString::fromStdString(res->scope_id())] = pos++;
     }
 
     // itearate over old results, remove rows that are not present in new results
@@ -113,6 +114,24 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         }
         ++row;
     }
+
+    // iterate over results, move rows if positions changes
+    for (int i = 0; i<m_results.size(); )
+    {
+        auto scope_meta = m_results.at(i);
+        const QString id = QString::fromStdString(scope_meta->scope_id());
+        if (newResult.contains(id)) {
+            pos = newResult[id];
+            if (pos != i) {
+                beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos + (pos > i ? 1 : 0));
+                m_results.move(i, pos);
+                endMoveRows();
+                continue;
+            }
+        }
+        i++;
+    }
+
     Q_EMIT countChanged();
 }
 
