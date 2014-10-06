@@ -72,6 +72,11 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     if (m_results.empty()) {
         beginResetModel();
         m_results = results;
+        for (auto const newRes: results)
+        {
+            updateChildScopes(newRes, scopeIdToName);
+        }
+
         endResetModel();
         Q_EMIT countChanged();
         return;
@@ -141,6 +146,7 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     auto const children = scopeMetadata->child_scope_ids();
     if (children.size())
     {
+        // iterate over child scope ids, join their display names and insert into m_childScopes for current scope
         QStringList childNames;
         for (auto const& id: children)
         {
