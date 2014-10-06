@@ -67,11 +67,16 @@ OverviewResultsModel::OverviewResultsModel(QObject* parent)
 {
 }
 
-void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results)
+void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results, const QMap<QString, QString>& scopeIdToName)
 {
     if (m_results.empty()) {
         beginResetModel();
         m_results = results;
+        for (auto const newRes: results)
+        {
+            updateChildScopes(newRes, scopeIdToName);
+        }
+
         endResetModel();
         Q_EMIT countChanged();
         return;
@@ -106,6 +111,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     row = 0;
     for (auto const newRes: results)
     {
+        updateChildScopes(newRes, scopeIdToName);
         if (!oldResult.contains(QString::fromStdString(newRes->scope_id())))
         {
             beginInsertRows(QModelIndex(), row, row);
@@ -133,6 +139,28 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     }
 
     Q_EMIT countChanged();
+}
+
+void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName)
+{
+    auto const children = scopeMetadata->child_scope_ids();
+    if (children.size())
+    {
+        // iterate over child scope ids, join their display names and insert into m_childScopes for current scope
+        QStringList childNames;
+        for (auto const& id: children)
+        {
+            auto it = scopeIdToName.find(QString::fromStdString(id));
+            if (it != scopeIdToName.end())
+            {
+                childNames << *it;
+            }
+        }
+        if (!childNames.empty())
+        {
+            m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(", ");
+        }
+    }
 }
 
 QString OverviewResultsModel::categoryId() const
@@ -209,8 +237,14 @@ OverviewResultsModel::data(const QModelIndex& index, int role) const
             }
             return QString::fromStdString(art);
         }
-        case RoleSubtitle:
+        case RoleSubtitle: {
+            auto it = m_childScopes.find(QString::fromStdString(metadata->scope_id()));
+            if (it != m_childScopes.end())
+            {
+                return *it;
+            }
             return QVariant();
+        }
         case RoleMascot:
             return QVariant();
         case RoleEmblem:

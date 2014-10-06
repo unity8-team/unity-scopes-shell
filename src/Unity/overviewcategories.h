@@ -44,10 +44,10 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
-    void setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
-    void updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
-    void updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes);
+    void setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName);
+    void setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName);
+    void updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName);
+    void updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName);
 
 private:
     bool m_isSurfacing;

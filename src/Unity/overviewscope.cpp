@@ -66,6 +66,13 @@ void OverviewScope::metadataChanged()
     }
 
     QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
+
+    QMap<QString, QString> scopeIdToName;
+    for (auto m: allMetadata)
+    {
+        scopeIdToName[QString::fromStdString(m->scope_id())] = QString::fromStdString(m->display_name());
+    }
+
     QList<scopes::ScopeMetadata::SPtr> favorites;
     Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
         auto it = allMetadata.find(id);
@@ -88,8 +95,8 @@ void OverviewScope::metadataChanged()
     }
 
     // FIXME: filter invisible scopes?
-    categories->setOtherScopes(allScopes);
-    categories->setFavoriteScopes(favorites);
+    categories->setOtherScopes(allScopes, scopeIdToName);
+    categories->setFavoriteScopes(favorites, scopeIdToName);
 
     // Metadata has changed, invalidate the search results
     invalidateResults();
@@ -114,6 +121,13 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
 {
     QList<scopes::ScopeMetadata::SPtr> favs;
     auto allMetadata = m_scopesInstance->getAllMetadata();
+
+    QMap<QString, QString> scopeIdToName;
+    for (auto m: allMetadata)
+    {
+        scopeIdToName[QString::fromStdString(m->scope_id())] = QString::fromStdString(m->display_name());
+    }
+
     for (auto const id: favorites)
     {
         auto it = allMetadata.find(id);
@@ -141,8 +155,8 @@ void OverviewScope::updateFavorites(const QStringList& favorites)
         otherScopes << info.data;
     }
 
-    categories->updateOtherScopes(otherScopes);
-    categories->updateFavoriteScopes(favs);
+    categories->updateOtherScopes(otherScopes, scopeIdToName);
+    categories->updateFavoriteScopes(favs, scopeIdToName);
 }
 
 void OverviewScope::dispatchSearch()
