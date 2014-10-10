@@ -1239,18 +1239,19 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
-    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(),
-                                          provider_name.toStdString(), scopes::OnlineAccountClient::RunInExternalMainLoop);
     bool service_enabled = false;
-
-    // Check if at least one account has the specified service enabled
-    auto service_statuses = oa_client.get_service_statuses();
-    for (auto const& status : service_statuses)
     {
-        if (status.service_enabled)
+        // Check if at least one account has the specified service enabled
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
+                                              scopes::OnlineAccountClient::RunInExternalMainLoop);
+        auto service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
         {
-            service_enabled = true;
-            break;
+            if (status.service_enabled)
+            {
+                service_enabled = true;
+                break;
+            }
         }
     }
 
@@ -1268,8 +1269,9 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
-        oa_client.refresh_service_statuses();
-        service_statuses = oa_client.get_service_statuses();
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
+                                              scopes::OnlineAccountClient::RunInExternalMainLoop);
+        auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
             if (status.service_enabled)
