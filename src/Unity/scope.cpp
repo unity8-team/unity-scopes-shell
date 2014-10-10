@@ -1239,25 +1239,26 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
-    scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-    bool service_authenticated = false;
-
-    // Check if at least one account has the specified service enabled
-    auto service_statuses = oa_client.get_service_statuses();
-    for (auto const& status : service_statuses)
+    bool service_enabled = false;
     {
-        if (status.service_authenticated)
+        // Check if at least one account has the specified service enabled
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+        auto service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
         {
-            service_authenticated = true;
-            break;
+            if (status.service_enabled)
+            {
+                service_enabled = true;
+                break;
+            }
         }
     }
 
     // Start the signon UI if no enabled services were found
-    if (!service_authenticated)
+    if (!service_enabled)
     {
         OnlineAccountsClient::Setup setup;
-        setup.setApplicationId(service_name);
+        setup.setApplicationId(id());
         setup.setServiceTypeId(service_type);
         setup.setProviderId(provider_name);
         setup.exec();
@@ -1267,19 +1268,19 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
-        oa_client.refresh_service_statuses();
-        service_statuses = oa_client.get_service_statuses();
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+        auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
-            if (status.service_authenticated)
+            if (status.service_enabled)
             {
-                service_authenticated = true;
+                service_enabled = true;
                 break;
             }
         }
     }
 
-    return service_authenticated;
+    return service_enabled;
 }
 
 } // namespace scopes_ng
