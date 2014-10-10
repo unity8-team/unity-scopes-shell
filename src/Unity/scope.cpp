@@ -1234,7 +1234,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     if (!service_enabled)
     {
         OnlineAccountsClient::Setup setup;
-        setup.setApplicationId(service_name);
+        setup.setApplicationId(id());
         setup.setServiceTypeId(service_type);
         setup.setProviderId(provider_name);
         setup.exec();

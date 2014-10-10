@@ -156,9 +156,9 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                     details.contains("login_passed_action") &&
                     details.contains("login_failed_action"))
                 {
-                    bool success = Scope::loginToAccount(details.value("service_name").toString(),
-                                                         details.value("service_type").toString(),
-                                                         details.value("provider_name").toString());
+                    bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
+                                                                     details.value("service_type").toString(),
+                                                                     details.value("provider_name").toString());
                     int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
                     if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                     {
