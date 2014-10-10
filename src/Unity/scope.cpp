@@ -1242,8 +1242,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     bool service_enabled = false;
     {
         // Check if at least one account has the specified service enabled
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
-                                              scopes::OnlineAccountClient::RunInExternalMainLoop);
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
         auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
@@ -1269,8 +1268,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
         // Check again whether the service was successfully enabled
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString(),
-                                              scopes::OnlineAccountClient::RunInExternalMainLoop);
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
         auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
