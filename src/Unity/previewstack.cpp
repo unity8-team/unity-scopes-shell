@@ -151,7 +151,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
         if (widgetData != nullptr) {
 
-            if (widgetData->data.contains("online_account_details"))
+            if (m_associatedScope && widgetData->data.contains("online_account_details"))
             {
                 QVariantMap details = widgetData->data.value("online_account_details").toMap();
                 if (details.contains("service_name") &&
@@ -172,10 +172,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                             case scopes::OnlineAccountClient::DoNothing:
                                 return;
                             case scopes::OnlineAccountClient::InvalidateResults:
-                                if (m_associatedScope)
-                                {
-                                    m_associatedScope->invalidateResults();
-                                }
+                                m_associatedScope->invalidateResults();
                                 return;
                             default:
                                 break;
