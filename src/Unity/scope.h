@@ -163,6 +163,8 @@ public:
     QString sessionId() const;
     int queryId() const;
 
+    unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
+
     bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
 
 public Q_SLOTS:
@@ -203,7 +205,7 @@ private:
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
-    static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
+    unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
     QUuid m_session_id;
     int m_query_id;

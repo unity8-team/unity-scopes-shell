@@ -37,6 +37,9 @@ Q_DECL_EXPORT
 bool getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result);
 
 Q_DECL_EXPORT
+void refreshSearch(scopes_ng::Scope*);
+
+Q_DECL_EXPORT
 void performSearch(Scope* scope, QString const& searchString);
 
 Q_DECL_EXPORT

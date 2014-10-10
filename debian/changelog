@@ -1,3 +1,35 @@
+unity-scopes-shell (0.5.4+14.10.20141002.1-0ubuntu1) utopic; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Use refreshScopeMetadata() rather than populateScopes() when
+    invalidating results (populateScopes() is intended for use only on
+    start-up) (LP: #1376755)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 Oct 2014 19:20:45 +0000
+
+unity-scopes-shell (0.5.4+14.10.20141002-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Remove missing departments (LP: #1354362)
+
+  [ Pawel Stolowski ]
+  * Remove missing departments (LP: #1354362)
+  * Iterate over temprary dash pages of every scope to find matching
+    scope when dbus signal for results invalidation was received. This
+    is only done if there was no match among favorite scopes. (LP:
+    #1365544)
+  * Fix signature of the deleteLater slot when scheduling scope for
+    removal after un-favoriting.
+  * Send build number, release name and package versions of unity8,
+    shell plugin and scopes api with user-agent hint in SearchMetadata
+    and PreviewMetadata. (LP: #1372834)
+
+  [ Marcus Tomlinson ]
+  * Handle "scopes" scope invalidation by re-populating the overview
+    scope. (LP: #1375718)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 Oct 2014 07:18:26 +0000
+
 unity-scopes-shell (0.5.4+14.10.20140925-0ubuntu1) utopic; urgency=low
 
   [ Marcus Tomlinson ]

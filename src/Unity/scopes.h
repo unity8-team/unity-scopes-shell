@@ -69,6 +69,7 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
     LocationService::Ptr locationService() const;
+    QString userAgentString() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
@@ -81,8 +82,13 @@ private Q_SLOTS:
     void refreshFinished();
     void invalidateScopeResults(QString const&);
 
+    void initPopulateScopes();
+    void dpkgFinished();
+    void lsbReleaseFinished();
+
 private:
     void queryScopesOnStartup();
+    void createUserAgentString();
 
     static int LIST_DELAY;
     static const int SCOPE_DELETE_DELAY;
@@ -95,6 +101,8 @@ private:
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     OverviewScope* m_overviewScope;
     QThread* m_listThread;
+    QList<QPair<QString, QString>> m_versions;
+    QString m_userAgent;
     bool m_loaded;
     bool m_queryOnStartup;
 

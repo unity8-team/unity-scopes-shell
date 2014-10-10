@@ -77,10 +77,11 @@ bool PreviewStack::event(QEvent* ev)
     return false;
 }
 
-void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id)
+void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
 {
     m_associatedScope = scope;
     m_session_id = session_id;
+    m_userAgent = userAgent;
 }
 
 void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
@@ -123,6 +124,9 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
         }
         if (!m_session_id.isNull()) {
             metadata["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        if (!m_userAgent.isEmpty()) {
+            metadata["user-agent"] = m_userAgent.toStdString();
         }
 
         std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(m_activePreview));
