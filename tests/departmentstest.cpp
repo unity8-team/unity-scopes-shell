@@ -114,6 +114,8 @@ private Q_SLOTS:
 
     void testRootDepartment()
     {
+        performSearch(m_scope, QString(""));
+
         QCOMPARE(m_scope->hasNavigation(), true);
         QCOMPARE(m_scope->hasAltNavigation(), false);
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
@@ -147,6 +149,8 @@ private Q_SLOTS:
 
     void testChildDepartmentModel()
     {
+        performSearch(m_scope, QString(""));
+
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
         QVERIFY(departmentModel != nullptr);
@@ -173,6 +177,8 @@ private Q_SLOTS:
 
     void testLeafActivationUpdatesModel()
     {
+        performSearch(m_scope, QString(""));
+
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
         QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
@@ -223,6 +229,8 @@ private Q_SLOTS:
 
     void testIncompleteTreeOnLeaf()
     {
+        performSearch(m_scope, QString(""));
+
         QScopedPointer<NavigationInterface> navModel;
         QScopedPointer<NavigationInterface> departmentModel;
 
