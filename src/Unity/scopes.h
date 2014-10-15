@@ -87,7 +87,7 @@ private Q_SLOTS:
     void lsbReleaseFinished();
 
 private:
-    void queryScopesOnStartup();
+    void prepopulateNextScopes();
     void createUserAgentString();
 
     static int LIST_DELAY;
@@ -104,7 +104,6 @@ private:
     QList<QPair<QString, QString>> m_versions;
     QString m_userAgent;
     bool m_loaded;
-    bool m_queryOnStartup;
 
     LocationService::Ptr m_locationService;
 

@@ -102,7 +102,6 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
-    , m_queryOnStartup(true)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -270,6 +269,7 @@ void Scopes::discoveryFinished()
                 auto scope = new Scope(this);
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
+                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
             }
         }
     }
@@ -300,21 +300,24 @@ void Scopes::discoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
-
-    if (m_queryOnStartup)
-    {
-        m_queryOnStartup = false;
-        queryScopesOnStartup();
-    }
 }
 
-void Scopes::queryScopesOnStartup()
+void Scopes::prepopulateNextScopes()
 {
-    for (auto scope: m_scopes) {
-        if (!scope->isActive()) {
-            scope->setSearchQuery("");
-            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-            scope->dispatchSearch();
+    for (QList<Scope*>::iterator it = m_scopes.begin(); it != m_scopes.end(); it++) {
+        // query next two scopes following currently active scope
+        if ((*it)->isActive()) {
+            ++it;
+            for (int i = 0; i<2 && it != m_scopes.end(); i++) {
+                auto scope = *(it++);
+                if (!scope->initialQueryDone()) {
+                    qDebug() << "Pre-populating scope" << scope->id();
+                    scope->setSearchQuery("");
+                    // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+                    scope->dispatchSearch();
+                }
+            }
+            break;
         }
     }
 }
@@ -400,6 +403,7 @@ void Scopes::processFavoriteScopes()
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
                     m_scopes.insert(row, scope);
+                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     endInsertRows();
                 }
                 else
