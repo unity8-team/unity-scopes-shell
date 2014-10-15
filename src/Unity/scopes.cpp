@@ -267,9 +267,9 @@ void Scopes::discoveryFinished()
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
                 auto scope = new Scope(this);
+                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
-                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
             }
         }
     }
@@ -399,11 +399,11 @@ void Scopes::processFavoriteScopes()
                 if (it != m_cachedMetadata.end())
                 {
                     auto scope = new Scope(this);
+                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
                     m_scopes.insert(row, scope);
-                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     endInsertRows();
                 }
                 else
