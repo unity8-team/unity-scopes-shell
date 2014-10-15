@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.4+14.10.20141015-0ubuntu1) utopic; urgency=low
+
+  [ Pawel Stolowski ]
+  * Don't query all favorite scopes on startup - query only next two
+    scopes following current active. (LP: #1374481)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 15 Oct 2014 15:39:34 +0000
+
 unity-scopes-shell (0.5.4+14.10.20141010.1-0ubuntu1) utopic; urgency=low
 
   [ Ubuntu daily release ]
