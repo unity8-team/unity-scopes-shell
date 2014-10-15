@@ -81,13 +81,13 @@ private Q_SLOTS:
     void discoveryFinished();
     void refreshFinished();
     void invalidateScopeResults(QString const&);
+    void prepopulateNextScopes();
 
     void initPopulateScopes();
     void dpkgFinished();
     void lsbReleaseFinished();
 
 private:
-    void prepopulateNextScopes();
     void createUserAgentString();
 
     static int LIST_DELAY;
