@@ -80,6 +80,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_hasNavigation(false)
     , m_hasAltNavigation(false)
     , m_favorite(false)
+    , m_initialQueryDone(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
@@ -635,6 +636,8 @@ void Scope::setFilterState(scopes::FilterState const& filterState)
 
 void Scope::dispatchSearch()
 {
+    m_initialQueryDone = true;
+
     invalidateLastSearch();
     m_delayedClear = true;
     m_clearTimer.start(CLEAR_TIMEOUT);
@@ -1281,6 +1284,11 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     }
 
     return service_enabled;
+}
+
+bool Scope::initialQueryDone() const
+{
+    return m_initialQueryDone;
 }
 
 } // namespace scopes_ng

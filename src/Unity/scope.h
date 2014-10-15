@@ -162,6 +162,7 @@ public:
 
     QString sessionId() const;
     int queryId() const;
+    bool initialQueryDone() const;
 
     unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
 
@@ -222,6 +223,7 @@ private:
     bool m_hasNavigation;
     bool m_hasAltNavigation;
     bool m_favorite;
+    bool m_initialQueryDone;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;
