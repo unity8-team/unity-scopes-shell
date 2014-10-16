@@ -150,6 +150,8 @@ private Q_SLOTS:
 
     void testScopeCommunication()
     {
+        performSearch(m_scope, QString(""));
+
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -231,6 +233,7 @@ private Q_SLOTS:
 
     void testTwoSearches()
     {
+        performSearch(m_scope, QString(""));
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         auto categories_count = categories->rowCount();
@@ -244,6 +247,8 @@ private Q_SLOTS:
 
     void testBasicResultData()
     {
+        performSearch(m_scope, QString(""));
+
         // get ResultsModel instance
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -262,6 +267,8 @@ private Q_SLOTS:
 
     void testSessionId()
     {
+        performSearch(m_scope, QString(""));
+
         std::string lastSessionId;
 
         QVERIFY(!m_scope->sessionId().isEmpty());
@@ -567,6 +574,8 @@ private Q_SLOTS:
     void testSpecialCategory()
     {
         QCOMPARE(m_scope->searchInProgress(), false);
+
+        performSearch(m_scope, QString(""));
 
         auto categories = m_scope->categories();
         QString rawTemplate(R"({"schema-version": 1, "template": {"category-layout": "special"}})");

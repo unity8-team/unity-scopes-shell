@@ -162,10 +162,11 @@ public:
 
     QString sessionId() const;
     int queryId() const;
+    bool initialQueryDone() const;
 
     unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
 
-    static bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
+    bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
 
 public Q_SLOTS:
     void invalidateResults();
@@ -222,6 +223,7 @@ private:
     bool m_hasNavigation;
     bool m_hasAltNavigation;
     bool m_favorite;
+    bool m_initialQueryDone;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;

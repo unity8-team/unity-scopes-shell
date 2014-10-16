@@ -103,7 +103,6 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
-    , m_queryOnStartup(true)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -269,6 +268,7 @@ void Scopes::discoveryFinished()
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
                 auto scope = new Scope(this);
+                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
             }
@@ -301,21 +301,24 @@ void Scopes::discoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
-
-    if (m_queryOnStartup)
-    {
-        m_queryOnStartup = false;
-        queryScopesOnStartup();
-    }
 }
 
-void Scopes::queryScopesOnStartup()
+void Scopes::prepopulateNextScopes()
 {
-    for (auto scope: m_scopes) {
-        if (!scope->isActive()) {
-            scope->setSearchQuery("");
-            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-            scope->dispatchSearch();
+    for (QList<Scope*>::iterator it = m_scopes.begin(); it != m_scopes.end(); it++) {
+        // query next two scopes following currently active scope
+        if ((*it)->isActive()) {
+            ++it;
+            for (int i = 0; i<2 && it != m_scopes.end(); i++) {
+                auto scope = *(it++);
+                if (!scope->initialQueryDone()) {
+                    qDebug() << "Pre-populating scope" << scope->id();
+                    scope->setSearchQuery("");
+                    // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+                    scope->dispatchSearch();
+                }
+            }
+            break;
         }
     }
 }
@@ -413,6 +416,7 @@ void Scopes::processFavoriteScopes()
                 if (it != m_cachedMetadata.end())
                 {
                     auto scope = new Scope(this);
+                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
