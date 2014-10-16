@@ -87,6 +87,7 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 
 int Scopes::LIST_DELAY = -1;
 const int Scopes::SCOPE_DELETE_DELAY = 3;
+const int LOCATION_STARTUP_TIMEOUT = 1000;
 
 class Scopes::Priv : public QObject {
     Q_OBJECT
@@ -289,6 +290,34 @@ void Scopes::discoveryFinished()
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
+
+    if (m_locationService->hasLocation())
+    {
+        // If we already have a location just query the scopes now
+        completeDiscoveryFinished();
+    }
+    else
+    {
+        // Otherwise we have to wait for location data
+        // Either the the location data needs to change, or the timeout happens
+        connect(m_locationService.data(), &LocationService::locationChanged,
+                this, &Scopes::completeDiscoveryFinished);
+        connect(&m_startupQueryTimeout, &QTimer::timeout, this,
+                &Scopes::completeDiscoveryFinished);
+        m_startupQueryTimeout.setSingleShot(true);
+        m_startupQueryTimeout.setInterval(LOCATION_STARTUP_TIMEOUT);
+        m_startupQueryTimeout.start();
+    }
+}
+
+void Scopes::completeDiscoveryFinished()
+{
+    // Kill off everything that could potentially trigger the startup queries
+    m_startupQueryTimeout.stop();
+    disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
+               &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &LocationService::locationChanged,
+               this, &Scopes::completeDiscoveryFinished);
 
     processFavoriteScopes();
     endResetModel();

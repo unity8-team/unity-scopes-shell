@@ -355,6 +355,11 @@ bool UbuntuLocationService::isActive() const
             culss::Interface::Updates::Status::enabled) : false;
 }
 
+bool UbuntuLocationService::hasLocation() const
+{
+    return p->m_result.valid || p->m_locationUpdatedAtLeastOnce;
+}
+
 void UbuntuLocationService::activate()
 {
     Q_EMIT enqueueActivate();
