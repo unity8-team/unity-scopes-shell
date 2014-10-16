@@ -291,7 +291,7 @@ void Scopes::discoveryFinished()
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
 
-    if (m_locationService->hasLocation())
+    if (m_locationService->hasLocation() || qEnvironmentVariableIsSet("UNITY_SCOPES_NO_WAIT_LOCATION"))
     {
         // If we already have a location just query the scopes now
         completeDiscoveryFinished();
