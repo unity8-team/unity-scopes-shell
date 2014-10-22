@@ -45,7 +45,6 @@ namespace scopes_ng
 using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
-#define CLICK_SCOPE_ID "clickscope"
 
 void ScopeListWorker::run()
 {
@@ -347,13 +346,8 @@ void Scopes::processFavoriteScopes()
 
                 if (m_cachedMetadata.find(id) != m_cachedMetadata.end())
                 {
-                    // HACK: ensure apps are first
-                    if (id == CLICK_SCOPE_ID) {
-                        newFavorites.push_front(id);
-                    } else {
-                        newFavorites.push_back(id);
-                        pos = newFavorites.size() - 1;
-                    }
+                    newFavorites.push_back(id);
+                    pos = newFavorites.size() - 1;
                     favScopesLut[id] = pos;
                 }
                 else
@@ -365,14 +359,6 @@ void Scopes::processFavoriteScopes()
             catch (const InvalidArgumentException &e)
             {
                 qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
-            }
-        }
-
-        // make sure Apps are never un-favorited
-        if (!newFavorites.contains(CLICK_SCOPE_ID)) {
-            if (m_cachedMetadata.contains(CLICK_SCOPE_ID)) {
-                newFavorites.push_front(CLICK_SCOPE_ID);
-                favScopesLut[CLICK_SCOPE_ID] = 0;
             }
         }
 
