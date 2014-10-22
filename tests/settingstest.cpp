@@ -288,6 +288,22 @@ private Q_SLOTS:
         verifyValue(2, 123);
         verifyValue(3, false);
     }
+
+    void testReadUnicode()
+    {
+        QDir configDir(tempDir->path());
+        QDir iniDir(configDir.filePath("unicode"));
+        QString iniFile = iniDir.filePath("settings.ini");
+
+        QVERIFY(configDir.mkpath("unicode"));
+        QVERIFY(QFile::copy(TEST_SETTINGS_UNICODE, iniFile));
+
+        // Create an initial settings model
+        newSettingsModel("unicode", STRING_DEFINITION);
+
+        // Verify the initial values
+        verifyValue(0, "北京京");
+    }
 };
 
 }

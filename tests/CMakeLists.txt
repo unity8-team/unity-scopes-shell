@@ -15,6 +15,7 @@ add_definitions(
     -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
     -DTEST_SCOPEREGISTRY_BIN="${SCOPESLIB_SCOPEREGISTRY_BIN}"
     -DTEST_RUNTIME_CONFIG="${SCOPES_TEST_RUNTIME}"
+    -DTEST_SETTINGS_UNICODE="${CMAKE_CURRENT_SOURCE_DIR}/data/settings-unicode.ini"
     )
 
 include_directories(
