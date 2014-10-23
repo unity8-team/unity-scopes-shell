@@ -591,10 +591,6 @@ void Scopes::moveFavoriteTo(QString const& scopeId, int index)
         QStringList cannedQueries;
         bool found = false;
 
-        // position 0 is reserved for Apps, no scope can be moved to that position
-        if (index == 0)
-            return;
-
         int i = 0;
         for (auto const& fav: m_favoriteScopes)
         {
