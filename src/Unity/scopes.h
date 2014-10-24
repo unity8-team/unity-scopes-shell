@@ -60,8 +60,8 @@ public:
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
     QStringList getFavoriteIds() const;
-    Q_INVOKABLE void setFavorite(QString const& scopeId, bool value);
-    Q_INVOKABLE void moveFavoriteTo(QString const& scopeId, int index);
+    Q_INVOKABLE void setFavorite(QString const& scopeId, bool value) override;
+    Q_INVOKABLE void moveFavoriteTo(QString const& scopeId, int index) override;
 
     void refreshScopeMetadata();
 
