@@ -59,7 +59,6 @@ bool operator<(ScopeInfo const& first, ScopeInfo const& second)
 
 void OverviewScope::metadataChanged()
 {
-
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
     if (!categories) {
         qWarning("Unable to cast m_categories to OverviewCategories");
@@ -71,8 +70,8 @@ void OverviewScope::metadataChanged()
     QList<scopes::ScopeMetadata::SPtr> otherScopes;
     processFavorites(m_scopesInstance->getFavoriteIds(), favorites, otherScopes, scopeIdToName);
     
-    categories->setOtherScopes(otherScopes, scopeIdToName);
     categories->setFavoriteScopes(favorites, scopeIdToName);
+    categories->setOtherScopes(otherScopes, scopeIdToName);
 
     // Metadata has changed, invalidate the search results
     invalidateResults();
@@ -93,7 +92,7 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
     }
 }
 
-    void OverviewScope::processFavorites(const QStringList& favs, QList<scopes::ScopeMetadata::SPtr> favorites, QList<scopes::ScopeMetadata::SPtr> otherScopes, QMap<QString, QString> scopeIdToName)
+void OverviewScope::processFavorites(const QStringList& favs, QList<scopes::ScopeMetadata::SPtr>& favorites, QList<scopes::ScopeMetadata::SPtr>& otherScopes, QMap<QString, QString>& scopeIdToName)
 {
     auto allMetadata = m_scopesInstance->getAllMetadata();
 
@@ -113,7 +112,8 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
 
     QList<ScopeInfo> scopes;
     Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
-        if (metadata->invisible()) continue;
+        if (metadata->invisible())
+            continue;
         scopes.append(ScopeInfo(metadata));
     }
     qSort(scopes.begin(), scopes.end());
@@ -136,8 +136,8 @@ void OverviewScope::updateFavorites(const QStringList& favs)
     QList<scopes::ScopeMetadata::SPtr> otherScopes;
     processFavorites(favs, favorites, otherScopes, scopeIdToName);
 
-    categories->updateOtherScopes(otherScopes, scopeIdToName);
     categories->updateFavoriteScopes(favorites, scopeIdToName);
+    categories->updateOtherScopes(otherScopes, scopeIdToName);
 }
 
 void OverviewScope::dispatchSearch()
