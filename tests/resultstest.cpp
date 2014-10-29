@@ -94,6 +94,7 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
+        qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
         m_registry.reset(new RegistrySpawner);
     }
 

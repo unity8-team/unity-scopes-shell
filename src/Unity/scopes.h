@@ -27,6 +27,7 @@
 // Qt
 #include <QList>
 #include <QThread>
+#include <QTimer>
 #include <QStringList>
 #include <QSharedPointer>
 #include <QGSettings>
@@ -86,6 +87,7 @@ private Q_SLOTS:
     void initPopulateScopes();
     void dpkgFinished();
     void lsbReleaseFinished();
+    void completeDiscoveryFinished();
 
 private:
     void createUserAgentString();
@@ -106,6 +108,7 @@ private:
     bool m_loaded;
 
     LocationService::Ptr m_locationService;
+    QTimer m_startupQueryTimeout;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
 
