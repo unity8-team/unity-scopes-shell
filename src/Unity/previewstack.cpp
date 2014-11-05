@@ -31,6 +31,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QUuid>
 
 #include <unity/scopes/ActionMetadata.h>
 #include <unity/scopes/Scope.h>
@@ -76,9 +77,11 @@ bool PreviewStack::event(QEvent* ev)
     return false;
 }
 
-void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope)
+void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
 {
     m_associatedScope = scope;
+    m_session_id = session_id;
+    m_userAgent = userAgent;
 }
 
 void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
@@ -119,6 +122,12 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
         }
+        if (!m_session_id.isNull()) {
+            metadata["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        if (!m_userAgent.isEmpty()) {
+            metadata["user-agent"] = m_userAgent.toStdString();
+        }
 
         std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(m_activePreview));
         std::weak_ptr<ScopeDataReceiverBase> wl(listener);
@@ -141,6 +150,37 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
     if (previewModel != nullptr) {
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
         if (widgetData != nullptr) {
+
+            if (m_associatedScope && widgetData->data.contains("online_account_details"))
+            {
+                QVariantMap details = widgetData->data.value("online_account_details").toMap();
+                if (details.contains("service_name") &&
+                    details.contains("service_type") &&
+                    details.contains("provider_name") &&
+                    details.contains("login_passed_action") &&
+                    details.contains("login_failed_action"))
+                {
+                    bool success = m_associatedScope->loginToAccount(details.value("service_name").toString(),
+                                                                     details.value("service_type").toString(),
+                                                                     details.value("provider_name").toString());
+                    int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+                    if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+                    {
+                        scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                        switch (action_code)
+                        {
+                            case scopes::OnlineAccountClient::DoNothing:
+                                return;
+                            case scopes::OnlineAccountClient::InvalidateResults:
+                                m_associatedScope->invalidateResults();
+                                return;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+
             if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
                 if (m_associatedScope) {
                     m_associatedScope->activateUri(data.value("uri").toString());

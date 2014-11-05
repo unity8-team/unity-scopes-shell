@@ -1,4 +1,148 @@
-unity-scopes-shell (0.5.4-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.5.4+14.10.20141029.1~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Pete Woods ]
+  * Wait for location data at startup (with 1 second timeout) (LP:
+    #1374481)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 29 Oct 2014 13:16:23 +0000
+
+unity-scopes-shell (0.5.4+14.10.20141015-0ubuntu1) utopic; urgency=low
+
+  [ Pawel Stolowski ]
+  * Don't query all favorite scopes on startup - query only next two
+    scopes following current active. (LP: #1374481)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 15 Oct 2014 15:39:34 +0000
+
+unity-scopes-shell (0.5.4+14.10.20141010.1-0ubuntu1) utopic; urgency=low
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+  [ Marcus Tomlinson ]
+  * Set application ID as scope ID (not service name), and consider a
+    log-in to be successful if the account is enabled (some scopes do
+    not use oath tokens).
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 10 Oct 2014 19:27:49 +0000
+
+unity-scopes-shell (0.5.4+14.10.20141002.1-0ubuntu1) utopic; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Use refreshScopeMetadata() rather than populateScopes() when
+    invalidating results (populateScopes() is intended for use only on
+    start-up) (LP: #1376755)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 Oct 2014 19:20:45 +0000
+
+unity-scopes-shell (0.5.4+14.10.20141002-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Remove missing departments (LP: #1354362)
+
+  [ Pawel Stolowski ]
+  * Remove missing departments (LP: #1354362)
+  * Iterate over temprary dash pages of every scope to find matching
+    scope when dbus signal for results invalidation was received. This
+    is only done if there was no match among favorite scopes. (LP:
+    #1365544)
+  * Fix signature of the deleteLater slot when scheduling scope for
+    removal after un-favoriting.
+  * Send build number, release name and package versions of unity8,
+    shell plugin and scopes api with user-agent hint in SearchMetadata
+    and PreviewMetadata. (LP: #1372834)
+
+  [ Marcus Tomlinson ]
+  * Handle "scopes" scope invalidation by re-populating the overview
+    scope. (LP: #1375718)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 Oct 2014 07:18:26 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140925-0ubuntu1) utopic; urgency=low
+
+  [ Marcus Tomlinson ]
+  * OnlineAccountsClient::Setup::finished signature changed causing a
+    hang. Use safer C++11-style connect() (LP: #1373807)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 25 Sep 2014 09:53:15 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140922.2-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Connect to the location service on a background thread (LP:
+    #1370524)
+
+  [ Pawel Stolowski ]
+  * Use typing timer only when scope is active, otherwise invalidate
+    results and emit the signal for query change immediately. (LP:
+    #1354518)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 22 Sep 2014 15:02:07 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140916-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Add typing timeout
+
+  [ Marcus Tomlinson ]
+  * Support for online account login on activation of scope result (LP:
+    #1369562)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 16 Sep 2014 10:51:42 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140910.1-0ubuntu1) utopic; urgency=low
+
+  [ Pete Woods ]
+  * Fix tests after merging proposed branches with trunk
+
+  [ Pawel Stolowski ]
+  * Ignore favorite scopes list and expose all scopes present in scopes-
+    registry if UNITY_SCOPES_NO_FAVORITES environment variable is set.
+    (LP: #1365041)
+  * Implemented support for expandable widgets. Require unity-scopes-api
+    0.6.4.
+  * Generate session_id (uuid) and pass it with search and preview
+    request via SearchMetadata / ActionMetadata hints. (LP: #1308585)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 10 Sep 2014 11:47:46 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140907-0ubuntu1) utopic; urgency=low
+
+  [ Pawel Stolowski ]
+  * Query all (favorite) scopes on startup to provide better "after
+    boot" experience.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Sun, 07 Sep 2014 19:29:20 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140902-0ubuntu1) utopic; urgency=low
+
+  [ Michał Sawicz ]
+  * Do not mangle attributes.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 02 Sep 2014 09:03:15 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140826-0ubuntu1) utopic; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Support for scope favoriting - requires new version 7.3.1 of unity-schemas.
+  * Support scope favouriting.
+
+  [ Pete Woods ]
+  * Made the location test work in all locales
+
+  [ Albert Astals ]
+  * emit countChanged on model reset
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 26 Aug 2014 13:47:52 +0000
+
+unity-scopes-shell (0.5.4+14.10.20140820.is.0.5.3+14.10.20140806-0ubuntu1) utopic; urgency=medium
+
+  * Do a quick emergency revert of the last landing as it is causing a
+    regression in local music search.
+
+ -- Åukasz 'sil2100' Zemczak <lukasz.zemczak@canonical.com>  Thu, 21 Aug 2014 11:10:22 +0200
+
+unity-scopes-shell (0.5.4+14.10.20140820-0ubuntu1) utopic; urgency=medium
 
   [ Pete Woods ]
   * Switch to QSettings, removing U1DB dependencies Support new location
@@ -8,7 +152,10 @@ unity-scopes-shell (0.5.4-0ubuntu1) UNRELEASED; urgency=medium
   * Added support for ScopeInterface::Status::NoInternet and
     NoLocationData completion statuses
 
- -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 18 Aug 2014 18:41:35 +0000
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 20 Aug 2014 15:16:59 +0000
 
 unity-scopes-shell (0.5.3+14.10.20140806-0ubuntu1) utopic; urgency=medium
 

@@ -3,9 +3,10 @@ include(Plugins)
 
 # Dependencies
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.2)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.7)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
+pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -57,6 +58,7 @@ target_link_libraries(Unity-qml
     ${GSETTINGSQT_LDFLAGS}
     ${U1DB_LDFLAGS}
     ${UBUNTU_LOCATION_SERVICE_LDFLAGS}
+    ${ONLINE_ACCOUNTS_CLIENT_LDFLAGS}
     )
 
 qt5_use_modules(Unity-qml Qml Gui DBus)

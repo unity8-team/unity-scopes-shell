@@ -22,6 +22,7 @@
 
 // Qt
 #include <QVariant>
+#include <QUuid>
 
 #include <unity/scopes/Variant.h>
 
@@ -31,6 +32,7 @@ namespace scopes_ng
 Q_DECL_EXPORT QVariant scopeVariantToQVariant(unity::scopes::Variant const& variant);
 Q_DECL_EXPORT unity::scopes::Variant qVariantToScopeVariant(QVariant const& variant);
 Q_DECL_EXPORT QVariant backgroundUriToVariant(QString const& uri);
+Q_DECL_EXPORT QString uuidToString(QUuid const& uuid);
 
 } // namespace scopes_ng
 

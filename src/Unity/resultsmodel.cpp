@@ -140,23 +140,12 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
     }
 
     QVariantList attributes;
-    QString defaultStyle("default");
     scopes::VariantArray arr(v.get_array());
     for (unsigned i = 0; i < arr.size(); i++) {
         if (arr[i].which() != scopes::Variant::Type::Dict) {
             continue;
         }
         QVariantMap attribute(scopeVariantToQVariant(arr[i]).toMap());
-        if (!attribute.contains("value")) {
-            continue;
-        }
-        QVariant valueVar(attribute.value("value"));
-        if (valueVar.type() == QVariant::String && valueVar.toString().trimmed().isEmpty()) {
-            continue;
-        }
-        if (!attribute.contains("style")) {
-            attribute["style"] = defaultStyle;
-        }
         attributes << QVariant(attribute);
         // we'll limit the number of attributes
         if (attributes.size() >= m_maxAttributes) {

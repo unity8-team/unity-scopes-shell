@@ -46,6 +46,8 @@
 
 #include <libintl.h>
 
+#include <online-accounts-client/Setup>
+
 #include <unity/scopes/ListenerBase.h>
 #include <unity/scopes/CannedQuery.h>
 #include <unity/scopes/OptionSelectorFilter.h>
@@ -54,6 +56,7 @@
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/SearchMetadata.h>
 #include <unity/scopes/ActionMetadata.h>
+#include <unity/scopes/Variant.h>
 
 namespace scopes_ng
 {
@@ -61,12 +64,14 @@ namespace scopes_ng
 using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
+const int TYPING_TIMEOUT = 300;
 const int CLEAR_TIMEOUT = 240;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
 Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
+    , m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -74,6 +79,8 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_delayedClear(false)
     , m_hasNavigation(false)
     , m_hasAltNavigation(false)
+    , m_favorite(false)
+    , m_initialQueryDone(false)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
@@ -85,12 +92,22 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
 
     setScopesInstance(qobject_cast<scopes_ng::Scopes*>(parent));
 
+    m_typingTimer.setSingleShot(true);
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE"))
+    {
+        m_typingTimer.setInterval(QString::fromUtf8(qgetenv("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE")).toInt());
+    }
+    else
+    {
+        m_typingTimer.setInterval(TYPING_TIMEOUT);
+    }
+    QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_aggregatorTimer.setSingleShot(true);
     QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_clearTimer.setSingleShot(true);
     QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
     m_invalidateTimer.setSingleShot(true);
-    m_invalidateTimer.setTimerType(Qt::VeryCoarseTimer);
+    m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
 }
 
@@ -279,6 +296,13 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     }
 }
 
+void Scope::typingFinished()
+{
+    invalidateResults();
+
+    Q_EMIT searchQueryChanged();
+}
+
 void Scope::flushUpdates()
 {
     if (m_delayedClear) {
@@ -388,6 +412,17 @@ void Scope::flushUpdates()
     }
 }
 
+
+unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
+{
+    for (auto s: m_tempScopes) {
+        if (s->id() == id) {
+            return s;
+        }
+    }
+    return nullptr;
+}
+
 void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
 {
     DepartmentNode* parentNode = nullptr;
@@ -419,6 +454,7 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
     Q_FOREACH(DepartmentNode* child, node->childNodes()) {
         cachedChildrenIds << child->id();
     }
+
     auto subdeps = scopeNode->subdepartments();
     QMap<QString, scopes::Department::SCPtr> childIdMap;
     for (auto it = subdeps.begin(); it != subdeps.end(); ++it) {
@@ -446,6 +482,13 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
                 return scopeNode;
             }
         }
+    }
+
+    // department has been removed (not reported by scope); make sure it's only treated as such when
+    // we're examining children of *current* department, othwerwise it would break on partial trees when visiting a leaf.
+    if (firstMismatchingChild == nullptr && scopeNode->subdepartments().size() < cachedChildrenIds.size() &&
+            m_currentNavigationId.toStdString() == scopeNode->id()) {
+        return scopeNode;
     }
 
     return firstMismatchingChild; // will be nullptr if everything matches
@@ -593,6 +636,8 @@ void Scope::setFilterState(scopes::FilterState const& filterState)
 
 void Scope::dispatchSearch()
 {
+    m_initialQueryDone = true;
+
     invalidateLastSearch();
     m_delayedClear = true;
     m_clearTimer.start(CLEAR_TIMEOUT);
@@ -624,6 +669,15 @@ void Scope::dispatchSearch()
 
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        auto const userAgent = m_scopesInstance->userAgentString();
+        if (!userAgent.isEmpty()) {
+            meta["user-agent"] = userAgent.toStdString();
+        }
+
+        if (!m_session_id.isNull()) {
+            meta["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        meta["query-id"] = unity::scopes::Variant(m_query_id);
         if (m_settings) {
             QVariant remoteSearch(m_settings->get("remote-content-search"));
             if (remoteSearch.toString() == QString("none")) {
@@ -753,7 +807,7 @@ unity::shell::scopes::ScopeInterface::Status Scope::status() const
 
 bool Scope::favorite() const
 {
-    return true;
+    return m_favorite;
 }
 
 QString Scope::shortcut() const
@@ -939,6 +993,21 @@ void Scope::setSearchQuery(const QString& search_query)
     */
 
     if (m_searchQuery.isNull() || search_query != m_searchQuery) {
+        // regenerate session id uuid if previous or current search string is empty or
+        // if current and previous query have no common prefix;
+        // don't regenerate it if current query appends to previous query or removes
+        // characters from previous query.
+        bool search_empty = m_searchQuery.isEmpty() || search_query.isEmpty();
+
+        // only check for common prefix if search is not empty
+        bool common_prefix = (!search_empty) && (m_searchQuery.startsWith(search_query) || search_query.startsWith(m_searchQuery));
+
+        if (m_session_id.isNull() || search_empty || !common_prefix) {
+            m_session_id = QUuid::createUuid();
+            m_query_id = 0;
+        } else {
+            ++m_query_id;
+        }
         m_searchQuery = search_query;
 
         // atm only empty query can have a filter state
@@ -946,10 +1015,13 @@ void Scope::setSearchQuery(const QString& search_query)
             m_filterState = scopes::FilterState();
         }
 
-        // FIXME: use a timeout
-        invalidateResults();
-
-        Q_EMIT searchQueryChanged();
+        // only use typing delay if scope is active, otherwise apply immediately
+        if (m_isActive) {
+            m_typingTimer.start();
+        } else {
+            invalidateResults();
+            Q_EMIT searchQueryChanged();
+        }
     }
 }
 
@@ -993,9 +1065,12 @@ void Scope::setActive(const bool active) {
 
 void Scope::setFavorite(const bool value)
 {
-    Q_UNUSED(value);
-
-    qWarning("Unimplemented: %s", __func__);
+    if (value != m_favorite)
+    {
+        m_favorite = value;
+        Q_EMIT favoriteChanged(value);
+        m_scopesInstance->setFavorite(id(), value);
+    }
 }
 
 void Scope::activate(QVariant const& result_var)
@@ -1009,6 +1084,37 @@ void Scope::activate(QVariant const& result_var)
     if (!result) {
         qWarning("activate(): received null result");
         return;
+    }
+
+    if (result->contains("online_account_details"))
+    {
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
+        {
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
+
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+            {
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
+                {
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     if (result->direct_activation()) {
@@ -1044,8 +1150,39 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
+    if (result->contains("online_account_details"))
+    {
+        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
+        if (details.contains("service_name") &&
+            details.contains("service_type") &&
+            details.contains("provider_name") &&
+            details.contains("login_passed_action") &&
+            details.contains("login_failed_action"))
+        {
+            bool success = loginToAccount(details.value("service_name").toString(),
+                                          details.value("service_type").toString(),
+                                          details.value("provider_name").toString());
+
+            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+            {
+                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                switch (action_code)
+                {
+                    case scopes::OnlineAccountClient::DoNothing:
+                        return nullptr;
+                    case scopes::OnlineAccountClient::InvalidateResults:
+                        invalidateResults();
+                        return nullptr;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
     PreviewStack* stack = new PreviewStack(nullptr);
-    stack->setAssociatedScope(this);
+    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;
 }
@@ -1080,6 +1217,14 @@ bool Scope::resultsDirty() const {
     return m_resultsDirty;
 }
 
+QString Scope::sessionId() const {
+    return uuidToString(m_session_id);
+}
+
+int Scope::queryId() const {
+    return m_query_id;
+}
+
 void Scope::activateUri(QString const& uri)
 {
     /*
@@ -1093,6 +1238,57 @@ void Scope::activateUri(QString const& uri)
         qDebug() << "Trying to open" << uri;
         QDesktopServices::openUrl(url);
     }
+}
+
+bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
+{
+    bool service_enabled = false;
+    {
+        // Check if at least one account has the specified service enabled
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+        auto service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
+        {
+            if (status.service_enabled)
+            {
+                service_enabled = true;
+                break;
+            }
+        }
+    }
+
+    // Start the signon UI if no enabled services were found
+    if (!service_enabled)
+    {
+        OnlineAccountsClient::Setup setup;
+        setup.setApplicationId(id());
+        setup.setServiceTypeId(service_type);
+        setup.setProviderId(provider_name);
+        setup.exec();
+
+        QEventLoop loop;
+        connect(&setup, &OnlineAccountsClient::Setup::finished, &loop, &QEventLoop::quit);
+        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
+
+        // Check again whether the service was successfully enabled
+        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
+        auto service_statuses = oa_client.get_service_statuses();
+        for (auto const& status : service_statuses)
+        {
+            if (status.service_enabled)
+            {
+                service_enabled = true;
+                break;
+            }
+        }
+    }
+
+    return service_enabled;
+}
+
+bool Scope::initialQueryDone() const
+{
+    return m_initialQueryDone;
 }
 
 } // namespace scopes_ng

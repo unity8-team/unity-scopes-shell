@@ -27,8 +27,10 @@
 // Qt
 #include <QList>
 #include <QThread>
+#include <QTimer>
 #include <QStringList>
 #include <QSharedPointer>
+#include <QGSettings>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -40,6 +42,7 @@ namespace scopes_ng
 {
 
 class Scope;
+class OverviewScope;
 
 class Q_DECL_EXPORT Scopes : public unity::shell::scopes::ScopesInterface
 {
@@ -58,6 +61,7 @@ public:
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
     QStringList getFavoriteIds() const;
+    void setFavorite(QString const& scopeId, bool value);
 
     void refreshScopeMetadata();
 
@@ -66,27 +70,45 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
     LocationService::Ptr locationService() const;
+    QString userAgentString() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
 
 private Q_SLOTS:
+    void dashSettingsChanged(QString const &key);
+    void processFavoriteScopes();
     void populateScopes();
     void discoveryFinished();
     void refreshFinished();
     void invalidateScopeResults(QString const&);
+    void prepopulateNextScopes();
+
+    void initPopulateScopes();
+    void dpkgFinished();
+    void lsbReleaseFinished();
+    void completeDiscoveryFinished();
 
 private:
+    void createUserAgentString();
+
     static int LIST_DELAY;
+    static const int SCOPE_DELETE_DELAY;
     class Priv;
 
     QList<Scope*> m_scopes;
+    bool m_noFavorites;
+    QStringList m_favoriteScopes;
+    QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
-    Scope* m_overviewScope;
+    OverviewScope* m_overviewScope;
     QThread* m_listThread;
+    QList<QPair<QString, QString>> m_versions;
+    QString m_userAgent;
     bool m_loaded;
 
     LocationService::Ptr m_locationService;
+    QTimer m_startupQueryTimeout;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
 

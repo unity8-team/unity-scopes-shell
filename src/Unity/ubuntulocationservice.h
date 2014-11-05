@@ -24,18 +24,23 @@
 #include "locationservice.h"
 
 #include <QSharedPointer>
+#include <QThread>
 
 namespace scopes_ng
 {
 
 class Q_DECL_EXPORT UbuntuLocationService : public LocationService
 {
+    Q_OBJECT
+
 public:
     UbuntuLocationService(GeoIp::Ptr geoIp = GeoIp::Ptr(new GeoIp));
 
-    virtual ~UbuntuLocationService() = default;
+    virtual ~UbuntuLocationService();
 
     unity::scopes::Location location() const override;
+
+    bool hasLocation() const override;
 
     bool isActive() const override;
 
@@ -43,8 +48,15 @@ public:
 
     void deactivate() override;
 
+Q_SIGNALS:
+    void enqueueActivate();
+
+    void enqueueDeactivate();
+
 protected:
     class Priv;
+
+    QThread m_thread;
 
     QSharedPointer<Priv> p;
 };

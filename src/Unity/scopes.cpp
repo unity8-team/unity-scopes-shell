@@ -29,6 +29,10 @@
 #include <QDebug>
 #include <QTimer>
 #include <QDBusConnection>
+#include <QProcess>
+#include <QFile>
+#include <QUrlQuery>
+#include <QTextStream>
 
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
@@ -82,6 +86,8 @@ scopes::MetadataMap ScopeListWorker::metadataMap() const
 }
 
 int Scopes::LIST_DELAY = -1;
+const int Scopes::SCOPE_DELETE_DELAY = 3;
+const int LOCATION_STARTUP_TIMEOUT = 1000;
 
 class Scopes::Priv : public QObject {
     Q_OBJECT
@@ -93,26 +99,32 @@ public:
 
 Scopes::Scopes(QObject *parent)
     : unity::shell::scopes::ScopesInterface(parent)
+    , m_noFavorites(false)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_priv(new Priv())
 {
-    // delaying spawning the worker thread, causes problems with qmlplugindump
-    // without it
-    if (LIST_DELAY < 0) {
-        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
-        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
+    if (!noFav.isNull()) {
+        m_noFavorites = true;
     }
-    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
 
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
     QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
+    m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
+    if (m_dashSettings)
+    {
+        QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
+    }
+
     m_overviewScope = new OverviewScope(this);
     m_locationService.reset(new UbuntuLocationService());
+
+    createUserAgentString();
 }
 
 Scopes::~Scopes()
@@ -121,6 +133,11 @@ Scopes::~Scopes()
         // libunity-scopes supports timeouts, so this shouldn't block forever
         m_listThread->wait();
     }
+}
+
+QString Scopes::userAgentString() const
+{
+    return m_userAgent;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -135,6 +152,91 @@ int Scopes::count() const
     return m_scopes.count();
 }
 
+void Scopes::createUserAgentString()
+{
+    QProcess *dpkg = new QProcess(this);
+    connect(dpkg, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dpkgFinished()));
+    connect(dpkg, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
+    dpkg->start("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8", QIODevice::ReadOnly);
+}
+
+void Scopes::dpkgFinished()
+{
+    QProcess *dpkg = qobject_cast<QProcess *>(sender());
+    if (dpkg) {
+        while (dpkg->canReadLine()) {
+            const QString line = dpkg->readLine();
+            const QStringList lineParts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            QString key;
+            if (lineParts.size() == 2) {
+                if (lineParts.at(0).startsWith("libunity-scopes")) {
+                    key = "scopes-api";
+                }
+                else if (lineParts.at(0).startsWith("unity-plugin-scopes")) {
+                    key = "plugin";
+                }
+                else if (lineParts.at(0).startsWith("unity8")) {
+                    key = "unity8";
+                }
+                if (!key.isEmpty()) {
+                    m_versions.push_back(qMakePair(key, lineParts.at(1)));
+                } else {
+                    qWarning() << "Unexpected dpkg-query output:" << line;
+                }
+            }
+        }
+        dpkg->deleteLater();
+
+        QProcess *lsb_release = new QProcess(this);
+        connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
+        connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
+        lsb_release->start("lsb_release -r", QIODevice::ReadOnly);
+    }
+}
+
+void Scopes::lsbReleaseFinished()
+{
+    QProcess *lsb_release = qobject_cast<QProcess *>(sender());
+    if (lsb_release) {
+        const QString out = lsb_release->readAllStandardOutput();
+        const QStringList parts = out.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (parts.size() == 2) {
+            m_versions.push_back(qMakePair(QString("release"), parts.at(1)));
+        }
+        lsb_release->deleteLater();
+
+        QFile buildFile("/etc/ubuntu-build");
+        if (buildFile.open(QIODevice::ReadOnly)) {
+            QTextStream str(&buildFile);
+            QString bld;
+            str >> bld;
+            m_versions.push_back(qMakePair(QString("build"), bld));
+        }
+
+        QUrlQuery q;
+        q.setQueryItems(m_versions);
+        m_versions.clear();
+        m_userAgent = q.toString();
+    }
+
+    qDebug() << "User agent string:" << m_userAgent;
+    initPopulateScopes();
+}
+
+void Scopes::initPopulateScopes()
+{
+    // initiate scopes
+    // delaying spawning the worker thread, causes problems with qmlplugindump
+    // without it
+    if (LIST_DELAY < 0) {
+        QByteArray listDelay = qgetenv("UNITY_SCOPES_LIST_DELAY");
+        LIST_DELAY = listDelay.isNull() ? 100 : listDelay.toInt();
+    }
+    QTimer::singleShot(LIST_DELAY, this, SLOT(populateScopes()));
+}
+
+// *N.B.* populateScopes() is intended for use only on start-up!
+// In any other circumstance, use refreshScopeMetadata() to invalidate results.
 void Scopes::populateScopes()
 {
     auto thread = new ScopeListWorker;
@@ -159,28 +261,17 @@ void Scopes::discoveryFinished()
                             std::bind(&Scopes::Priv::safeInvalidateScopeResults,
                                       m_priv.get(), SCOPES_SCOPE_ID))));
 
-    // FIXME: use a dconf setting for this
-    QByteArray enabledScopes = qgetenv("UNITY_SCOPES_LIST");
-
     beginResetModel();
 
-    if (!enabledScopes.isNull()) {
-        QList<QByteArray> scopeList = enabledScopes.split(';');
-        for (int i = 0; i < scopeList.size(); i++) {
-            std::string scope_name(scopeList[i].constData());
-            auto it = scopes.find(scope_name);
-            if (it != scopes.end()) {
+    if (m_noFavorites) {
+        // add all visible scopes
+        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
+            if (!it->second.invisible()) {
                 auto scope = new Scope(this);
+                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
             }
-        }
-    } else {
-        // add all the scopes
-        for (auto it = scopes.begin(); it != scopes.end(); ++it) {
-            auto scope = new Scope(this);
-            scope->setScopeData(it->second);
-            m_scopes.append(scope);
         }
     }
 
@@ -195,10 +286,40 @@ void Scopes::discoveryFinished()
     }
 
     // cache all the metadata
+    m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
 
+    if (m_locationService->hasLocation() || qEnvironmentVariableIsSet("UNITY_SCOPES_NO_WAIT_LOCATION"))
+    {
+        // If we already have a location just query the scopes now
+        completeDiscoveryFinished();
+    }
+    else
+    {
+        // Otherwise we have to wait for location data
+        // Either the the location data needs to change, or the timeout happens
+        connect(m_locationService.data(), &LocationService::locationChanged,
+                this, &Scopes::completeDiscoveryFinished);
+        connect(&m_startupQueryTimeout, &QTimer::timeout, this,
+                &Scopes::completeDiscoveryFinished);
+        m_startupQueryTimeout.setSingleShot(true);
+        m_startupQueryTimeout.setInterval(LOCATION_STARTUP_TIMEOUT);
+        m_startupQueryTimeout.start();
+    }
+}
+
+void Scopes::completeDiscoveryFinished()
+{
+    // Kill off everything that could potentially trigger the startup queries
+    m_startupQueryTimeout.stop();
+    disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
+               &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &LocationService::locationChanged,
+               this, &Scopes::completeDiscoveryFinished);
+
+    processFavoriteScopes();
     endResetModel();
 
     m_loaded = true;
@@ -210,6 +331,137 @@ void Scopes::discoveryFinished()
     m_listThread = nullptr;
 }
 
+void Scopes::prepopulateNextScopes()
+{
+    for (QList<Scope*>::iterator it = m_scopes.begin(); it != m_scopes.end(); it++) {
+        // query next two scopes following currently active scope
+        if ((*it)->isActive()) {
+            ++it;
+            for (int i = 0; i<2 && it != m_scopes.end(); i++) {
+                auto scope = *(it++);
+                if (!scope->initialQueryDone()) {
+                    qDebug() << "Pre-populating scope" << scope->id();
+                    scope->setSearchQuery("");
+                    // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+                    scope->dispatchSearch();
+                }
+            }
+            break;
+        }
+    }
+}
+
+void Scopes::processFavoriteScopes()
+{
+    if (m_noFavorites) {
+        return;
+    }
+
+    //
+    // read the favoriteScopes array value from gsettings.
+    // process it and turn its values into scope ids.
+    // create new Scope objects or remove existing according to the list of favorities.
+    // notify about scopes model changes accordingly.
+    if (m_dashSettings) {
+        QStringList newFavorites;
+        QSet<QString> favScopesLut;
+        for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
+        {
+            try
+            {
+                auto const query = unity::scopes::CannedQuery::from_uri(fv.toString().toStdString());
+                const QString id = QString::fromStdString(query.scope_id());
+                if (m_cachedMetadata.find(id) != m_cachedMetadata.end())
+                {
+                    newFavorites.push_back(id);
+                    favScopesLut.insert(id);
+                }
+                else
+                {
+                    // If a scope that was favorited no longer exists, unfavorite it in m_dashSettings
+                    setFavorite(id, false);
+                }
+            }
+            catch (const InvalidArgumentException &e)
+            {
+                qWarning() << "Invalid canned query '" << fv.toString() << "'" << QString::fromStdString(e.what());
+            }
+        }
+
+        // this prevents further processing if we get called back when calling scope->setFavorite() below
+        if (m_favoriteScopes == newFavorites)
+            return;
+
+        m_favoriteScopes = newFavorites;
+
+        QSet<QString> oldScopes;
+        int row = 0;
+        // remove un-favorited scopes
+        for (auto it = m_scopes.begin(); it != m_scopes.end();)
+        {
+            if (!favScopesLut.contains((*it)->id()))
+            {
+                beginRemoveRows(QModelIndex(), row, row);
+                (*it)->setFavorite(false);
+                //
+                // we need to delay actual deletion of Scope object so that shell can animate it
+                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater()));
+                it = m_scopes.erase(it);
+                endRemoveRows();
+            }
+            else
+            {
+                oldScopes.insert((*it)->id());
+                ++it;
+                ++row;
+            }
+        }
+
+        // add new favorites
+        row = 0;
+        for (auto favIt = m_favoriteScopes.begin(); favIt != m_favoriteScopes.end(); )
+        {
+            auto const fav = *favIt;
+            if (!oldScopes.contains(fav))
+            {
+                auto it = m_cachedMetadata.find(fav);
+                if (it != m_cachedMetadata.end())
+                {
+                    auto scope = new Scope(this);
+                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
+                    scope->setScopeData(*(it.value()));
+                    scope->setFavorite(true);
+                    beginInsertRows(QModelIndex(), row, row);
+                    m_scopes.insert(row, scope);
+                    endInsertRows();
+                }
+                else
+                {
+                    qWarning() << "No such scope:" << fav;
+                    favIt = m_favoriteScopes.erase(favIt);
+                    continue;
+                }
+            }
+            ++row;
+            ++favIt;
+        }
+    }
+}
+
+void Scopes::dashSettingsChanged(QString const& key)
+{
+    if (key != "favoriteScopes") {
+        return;
+    }
+
+    processFavoriteScopes();
+
+    if (m_overviewScope)
+    {
+        m_overviewScope->updateFavorites(m_favoriteScopes);
+    }
+}
+
 void Scopes::refreshFinished()
 {
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
@@ -217,9 +469,12 @@ void Scopes::refreshFinished()
     auto scopes = thread->metadataMap();
 
     // cache all the metadata
+    m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
         m_cachedMetadata[QString::fromStdString(it->first)] = std::make_shared<unity::scopes::ScopeMetadata>(it->second);
     }
+
+    processFavoriteScopes();
 
     Q_EMIT metadataRefreshed();
 
@@ -238,12 +493,27 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         Q_FOREACH(Scope* scope, m_scopes) {
             scope->invalidateResults();
         }
+    } else if (scopeName == "scopes") {
+        refreshScopeMetadata();
+        return;
     }
 
     Scope* scope = getScopeById(scopeName);
-    if (scope == nullptr) return;
+    if (scope == nullptr) {
+        // check temporary scopes
+        for (auto s: m_scopes) {
+            scope = qobject_cast<Scope*>(s->findTempScope(scopeName));
+            if (scope) {
+                break;
+            }
+        }
+    }
 
-    scope->invalidateResults();
+    if (scope) {
+        scope->invalidateResults();
+    } else {
+        qWarning() << "invalidateScopeResults: no such scope '" << scopeName << "'";
+    }
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
@@ -288,13 +558,39 @@ Scope* Scopes::getScopeById(QString const& scopeId) const
 
 QStringList Scopes::getFavoriteIds() const
 {
-    QStringList ids;
+    return m_favoriteScopes;
+}
 
-    Q_FOREACH(Scope* scope, m_scopes) {
-        ids << scope->id();
+void Scopes::setFavorite(QString const& scopeId, bool value)
+{
+    if (m_dashSettings)
+    {
+        QStringList cannedQueries;
+        bool changed = false;
+
+        for (auto const& fav: m_favoriteScopes)
+        {
+            if (value == false && fav == scopeId) {
+                changed = true;
+                continue; // skip it
+            }
+            // TODO: use CannedQuery::to_uri() when we really support them
+            const QString query = "scope://" + fav;
+            cannedQueries.push_back(query);
+        }
+
+        if (value && !m_favoriteScopes.contains(scopeId)) {
+            const QString query = "scope://" + scopeId;
+            cannedQueries.push_back(query);
+            changed = true;
+        }
+
+        if (changed) {
+            // update gsettings entry
+            // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
+            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+        }
     }
-
-    return ids;
 }
 
 QMap<QString, unity::scopes::ScopeMetadata::SPtr> Scopes::getAllMetadata() const

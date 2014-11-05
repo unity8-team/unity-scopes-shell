@@ -20,7 +20,9 @@
 #include "ubuntulocationservice.h"
 
 #include <QDebug>
-#include <QThread>
+#include <QMutexLocker>
+#include <QRunnable>
+#include <QThreadPool>
 #include <QTimer>
 
 #include <com/ubuntu/location/service/stub.h>
@@ -48,44 +50,47 @@ namespace
      * moving away from an active scope.
      */
     static const int DEACTIVATE_INTERVAL = 5000;
+
+    class DBusThread : public QThread
+    {
+
+    public:
+        DBusThread(dbus::Bus::Ptr bus) :
+                m_bus(bus)
+        {
+        }
+
+    protected:
+        void run() override
+        {
+            m_bus->run();
+        }
+
+        dbus::Bus::Ptr m_bus;
+    };
+
 }
-
-class WorkerThread : public QThread
-{
-Q_OBJECT
-
-public:
-    WorkerThread(dbus::Bus::Ptr bus) :
-            m_bus(bus)
-    {
-    }
-
-protected:
-    void run() override
-    {
-        m_bus->run();
-    }
-
-    dbus::Bus::Ptr m_bus;
-};
 
 class UbuntuLocationService::Priv : public QObject
 {
 Q_OBJECT
 
 public:
-    Priv(GeoIp::Ptr geoIp) :
-            m_geoIp(geoIp)
+    Priv() :
+            m_lastLocationMutex(QMutex::Recursive), m_resultMutex(
+                    QMutex::Recursive)
     {
+    }
+
+    void init(GeoIp::Ptr geoIp)
+    {
+        m_geoIp = geoIp;
+        m_geoIp->moveToThread(thread());
+
+        m_deactivateTimer.moveToThread(thread());
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
-
-        // If the location service is disabled
-        if (qEnvironmentVariableIsSet("UNITY_SCOPES_NO_LOCATION"))
-        {
-            return;
-        }
 
         m_geoIp->start();
 
@@ -94,8 +99,8 @@ public:
             m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
             m_bus->install_executor(dbus::asio::make_executor(m_bus));
 
-            m_thread.reset(new WorkerThread(m_bus));
-            m_thread->start();
+            m_dbusThread.reset(new DBusThread(m_bus));
+            m_dbusThread->start();
 
             m_locationService = dbus::resolve_service_on_bus<culs::Interface,
                     culs::Stub>(m_bus);
@@ -104,6 +109,12 @@ public:
         {
             qWarning() << e.what();
         }
+
+        // Wire up the deactivate timer
+        connect(&m_deactivateTimer, &QTimer::timeout, this, &Priv::update, Qt::QueuedConnection);
+
+        // Wire up the network request finished timer
+        connect(m_geoIp.data(), &GeoIp::finished, this, &Priv::requestFinished, Qt::QueuedConnection);
     }
 
     ~Priv()
@@ -112,9 +123,10 @@ public:
         {
             m_bus->stop();
         }
-        if (m_thread && m_thread->isRunning())
+
+        if (m_dbusThread && m_dbusThread->isRunning())
         {
-            m_thread->wait();
+            m_dbusThread->wait();
         }
     }
 
@@ -130,36 +142,49 @@ public Q_SLOTS:
             return;
         }
 
-        if (m_activationCount > 0 && !m_session)
+        if (m_activationCount > 0)
         {
             // Update the GeoIp data again
             m_geoIp->start();
+        }
 
-            // Starting a new location service session
-            try
+        try
+        {
+            if (!m_session)
             {
                 m_session = m_locationService->create_session_for_criteria(
                         cul::Criteria());
 
                 m_session->updates().position.changed().connect(
-                        bind(&Priv::positionChanged, this, _1));
+                        bind(&UbuntuLocationService::Priv::positionChanged,
+                             this, _1));
+            }
 
+            if (m_activationCount > 0
+                    && m_session->updates().position_status
+                            == culss::Interface::Updates::Status::disabled)
+            {
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
             }
-            catch (exception& e)
+            else if (m_activationCount == 0
+                    && m_session->updates().position_status
+                            == culss::Interface::Updates::Status::enabled)
             {
-                qWarning() << e.what();
+                m_session->updates().position_status =
+                        culss::Interface::Updates::Status::disabled;
             }
         }
-        else if (m_activationCount == 0 && m_session)
+        catch (exception& e)
         {
-            m_session.reset();
+            qWarning() << e.what();
         }
     }
 
     void positionChanged(const cul::Update<cul::Position>& newPosition)
     {
+        QMutexLocker lock(&m_lastLocationMutex);
+
         if (m_locationUpdatedAtLeastOnce)
         {
             culu::Quantity<culu::Length> distance = cul::haversine_distance(
@@ -180,8 +205,27 @@ public Q_SLOTS:
 
     void requestFinished(const GeoIp::Result& result)
     {
+        QMutexLocker lock(&m_resultMutex);
         m_result = result;
         Q_EMIT locationChanged();
+    }
+
+    void activate()
+    {
+        ++m_activationCount;
+        m_deactivateTimer.stop();
+        update();
+    }
+
+    void deactivate()
+    {
+        --m_activationCount;
+        if (m_activationCount < 0)
+        {
+            m_activationCount = 0;
+            qWarning() << "Location service refcount error";
+        }
+        m_deactivateTimer.start();
     }
 
 public:
@@ -193,9 +237,9 @@ public:
 
     cul::Position m_lastLocation;
 
-    bool m_locationUpdatedAtLeastOnce = false;
+    QMutex m_lastLocationMutex;
 
-    QScopedPointer<WorkerThread> m_thread;
+    bool m_locationUpdatedAtLeastOnce = false;
 
     int m_activationCount = 0;
 
@@ -203,27 +247,55 @@ public:
 
     GeoIp::Ptr m_geoIp;
 
+    QSharedPointer<QThread> m_dbusThread;
+
+    QMutex m_resultMutex;
+
     GeoIp::Result m_result;
 };
 
 UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
-        p(new Priv(geoIp), &QObject::deleteLater)
+        p(new Priv())
 {
+    p->moveToThread(&m_thread);
+
+    // If the location service is disabled
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_NO_LOCATION"))
+    {
+        return;
+    }
+
+    p->init(geoIp);
+
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+    connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
+    connect(this, &UbuntuLocationService::enqueueDeactivate, p.data(), &Priv::deactivate, Qt::QueuedConnection);
 
-    // Wire up the deactivate timer
-    connect(&p->m_deactivateTimer, &QTimer::timeout, p.data(), &Priv::update);
+    m_thread.start();
+}
 
-    // Wire up the network request finished timer
-    connect(p->m_geoIp.data(), &GeoIp::finished, p.data(), &Priv::requestFinished);
+UbuntuLocationService::~UbuntuLocationService()
+{
+    p.reset();
+
+    m_thread.quit();
+
+    if (m_thread.isRunning())
+    {
+        m_thread.wait();
+    }
 }
 
 scopes::Location UbuntuLocationService::location() const
 {
     scopes::Location location(0.0, 0.0);
 
-    const GeoIp::Result& result(p->m_result);
+    GeoIp::Result result;
+    {
+        QMutexLocker lock(&p->m_resultMutex);
+        result = p->m_result;
+    }
 
     if (result.valid)
     {
@@ -239,10 +311,11 @@ scopes::Location UbuntuLocationService::location() const
         location.set_city(result.city.toStdString());
     }
 
+    QMutexLocker lock(&p->m_lastLocationMutex);
     // We need to be active, and the location session must have updated at least once
     if (isActive() && p->m_locationUpdatedAtLeastOnce)
     {
-        const cul::Position& pos = p->m_lastLocation;
+        cul::Position pos = p->m_lastLocation;
 
         if (pos.accuracy.horizontal)
         {
@@ -278,25 +351,23 @@ scopes::Location UbuntuLocationService::location() const
 
 bool UbuntuLocationService::isActive() const
 {
-    return p->m_session ? true : false;
+    return p->m_session ? (p->m_session->updates().position_status ==
+            culss::Interface::Updates::Status::enabled) : false;
+}
+
+bool UbuntuLocationService::hasLocation() const
+{
+    return p->m_result.valid || p->m_locationUpdatedAtLeastOnce;
 }
 
 void UbuntuLocationService::activate()
 {
-    ++p->m_activationCount;
-    p->m_deactivateTimer.stop();
-    p->update();
+    Q_EMIT enqueueActivate();
 }
 
 void UbuntuLocationService::deactivate()
 {
-    --p->m_activationCount;
-    if (p->m_activationCount < 0)
-    {
-        p->m_activationCount = 0;
-        qWarning() << "Location service refcount error";
-    }
-    p->m_deactivateTimer.start();
+    Q_EMIT enqueueDeactivate();
 }
 
 #include "ubuntulocationservice.moc"

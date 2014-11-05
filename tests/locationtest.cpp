@@ -44,38 +44,39 @@ static const char* SESSION_NAME = "com.ubuntu.location.Service.Session";
 static const QString SESSION_PATH = "/com/ubuntu/location/session/%1";
 static const QString SESSION_INTERFACE = "com.ubuntu.location.Service.Session";
 
-static const string GEOIP_JSON = R"(
-
+static Variant geoip()
 {
-  "area_code":"0",
-  "city":"Accrington",
-  "country_code":"GB",
-  "country_name":"United Kingdom",
-  "horizontal_accuracy":100000.0,
-  "latitude":55.76540,
-  "longitude":-2.74670,
-  "region_code":"H2",
-  "region_name":"Lancashire",
-  "zip_postal_code":"BB5"
+    VariantMap result;
+    result["area_code"] = "0";
+    result["city"] = "Accrington";
+    result["country_code"] = "GB";
+    result["country_name"] = "United Kingdom";
+    result["horizontal_accuracy"] = 100000.0;
+    result["latitude"] = 55.76540;
+    result["longitude"] = -2.74670;
+    result["region_code"] = "H2";
+    result["region_name"] = "Lancashire";
+    result["zip_postal_code"] = "BB5";
+    return Variant(result);
 }
-)";
 
-static const string GPS_JSON = R"(
+static Variant gps()
 {
-  "altitude":3.0,
-  "area_code":"0",
-  "city":"Accrington",
-  "country_code":"GB",
-  "country_name":"United Kingdom",
-  "horizontal_accuracy":4.0,
-  "latitude":1.0,
-  "longitude":2.0,
-  "region_code":"H2",
-  "region_name":"Lancashire",
-  "vertical_accuracy":5.0,
-  "zip_postal_code":"BB5"
+    VariantMap result;
+    result["altitude"] = 3.0;
+    result["area_code"] = "0";
+    result["city"] = "Accrington";
+    result["country_code"] = "GB";
+    result["country_name"] = "United Kingdom";
+    result["horizontal_accuracy"] = 4.0;
+    result["latitude"] = 1.0;
+    result["longitude"] = 2.0;
+    result["region_code"] = "H2";
+    result["region_name"] = "Lancashire";
+    result["vertical_accuracy"] = 5.0;
+    result["zip_postal_code"] = "BB5";
+    return Variant(result);
 }
-)";
 
 class LocationTest: public QObject
 {
@@ -159,6 +160,43 @@ private Q_SLOTS:
         locationService.reset(new UbuntuLocationService(GeoIp::Ptr(new GeoIp(url))));
     }
 
+    void cleanup()
+    {
+        locationService.reset();
+    }
+
+    void compareVariant(const Variant& expected_in, const Variant& actual_in)
+    {
+        VariantMap expected(expected_in.get_dict());
+        VariantMap actual(actual_in.get_dict());
+
+        QVERIFY2(
+                expected.size() <= actual.size(),
+                qPrintable(QString("We need at least %1 entries, had %2").arg(
+                        expected.size()).arg(actual.size())));
+        for(const auto entry: expected)
+        {
+            QVERIFY(actual.find(entry.first) != actual.end());
+
+            Variant expectedVariant = entry.second;
+            Variant actualVariant = actual[entry.first];
+
+            if (expectedVariant.which() == Variant::Double)
+            {
+                bool comparison = qFuzzyCompare(expectedVariant.get_double(), actualVariant.get_double());
+                if (!comparison)
+                {
+                    qWarning() << "Comparison:" << expectedVariant.get_double() << "!=" << actualVariant.get_double();
+                }
+                QVERIFY(comparison);
+            }
+            else
+            {
+                QCOMPARE(expectedVariant, actualVariant);
+            }
+        }
+    }
+
     void testLocation()
     {
         QSignalSpy spy(locationService.data(), SIGNAL(locationChanged()));
@@ -166,20 +204,28 @@ private Q_SLOTS:
 
         // The GeoIP HTTP call should return now
         QVERIFY(spy.wait());
-        QCOMPARE(Variant::deserialize_json(GEOIP_JSON), Variant(locationService->location().serialize()));
+        compareVariant(geoip(), Variant(locationService->location().serialize()));
 
         // Call the object that the location service client creates
-        QDBusMessage reply = QDBusConnection::systemBus().call(
-                QDBusMessage::createMethodCall(":1.4", SESSION_PATH.arg(0),
-                                               SESSION_INTERFACE,
-                                               "UpdatePosition")
-                    << 1.0 << 2.0 << true << 3.0 << true << 4.0 << true << 5.0 << qint64(1234));
-        QCOMPARE(QString(), reply.errorMessage());
+        QDBusInterface remoteObject(":1.4", SESSION_PATH.arg(0), SESSION_INTERFACE,
+                                    QDBusConnection::systemBus());
+
+        QString errorMessage("never called");
+        for (int i = 0; i < 10 && !errorMessage.isEmpty(); ++i)
+        {
+            QDBusMessage reply = remoteObject.callWithArgumentList(
+                    QDBus::Block,
+                    "UpdatePosition",
+                    QVariantList() << 1.0 << 2.0 << true << 3.0 << true << 4.0
+                            << true << 5.0 << qint64(1234));
+            errorMessage = reply.errorMessage();
+        }
+        QCOMPARE(QString(), errorMessage);
 
         // The GPS update should return now
         QVERIFY(spy.wait());
-        qDebug() << QString::fromStdString(Variant(locationService->location().serialize()).serialize_json());
-        QCOMPARE(Variant::deserialize_json(GPS_JSON), Variant(locationService->location().serialize()));
+        QTRY_COMPARE((unsigned int) locationService->location().serialize().size(), 12u);
+        compareVariant(gps(), Variant(locationService->location().serialize()));
     }
 };
 

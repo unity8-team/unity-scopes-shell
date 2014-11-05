@@ -31,6 +31,7 @@
 #include <QMultiMap>
 #include <QSet>
 #include <QGSettings>
+#include <QUuid>
 
 // scopes
 #include <unity/scopes/ActivationResponse.h>
@@ -111,6 +112,8 @@ public:
 
     virtual bool event(QEvent* ev) override;
 
+    Q_PROPERTY(bool favorite READ favorite WRITE setFavorite NOTIFY favoriteChanged)
+
     /* getters */
     QString id() const override;
     QString name() const override;
@@ -157,13 +160,24 @@ public:
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
 
+    QString sessionId() const;
+    int queryId() const;
+    bool initialQueryDone() const;
+
+    unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
+
+    bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
+
 public Q_SLOTS:
     void invalidateResults();
+    virtual void dispatchSearch();
 
 Q_SIGNALS:
     void resultsDirtyChanged();
+    void favoriteChanged(bool);
 
 private Q_SLOTS:
+    void typingFinished();
     void flushUpdates();
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
@@ -173,7 +187,6 @@ protected:
     void setSearchInProgress(bool searchInProgress);
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
-    virtual void dispatchSearch();
 
     unity::scopes::ScopeProxy proxy() const;
 
@@ -193,8 +206,10 @@ private:
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
     static unity::scopes::Department::SCPtr findDepartmentById(unity::scopes::Department::SCPtr const& root, std::string const& id);
-    static unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
+    unity::scopes::Department::SCPtr findUpdateNode(DepartmentNode* node, unity::scopes::Department::SCPtr const& scopeNode);
 
+    QUuid m_session_id;
+    int m_query_id;
     QString m_searchQuery;
     QString m_noResultsHint;
     QString m_formFactor;
@@ -207,6 +222,8 @@ private:
     bool m_delayedClear;
     bool m_hasNavigation;
     bool m_hasAltNavigation;
+    bool m_favorite;
+    bool m_initialQueryDone;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;
@@ -224,6 +241,7 @@ private:
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;
+    QTimer m_typingTimer;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
