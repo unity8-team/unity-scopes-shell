@@ -214,21 +214,9 @@ void Scopes::lsbReleaseFinished()
             m_versions.push_back(qMakePair(QString("build"), bld));
         }
 
-
-        // read /custom/partner-id value if present
-        QFile partnerIdFile(PARTNER_ID_FILE);
-        if (partnerIdFile.exists())
-        {
-            if (partnerIdFile.open(QIODevice::ReadOnly))
-            {
-                QTextStream str(&partnerIdFile);
-                const QString partnerId = str.readLine();
-                m_versions.push_back(qMakePair(QString("partner"), partnerId));
-            }
-            else
-            {
-                qWarning() << "Cannot open" << QString(PARTNER_ID_FILE) << "for reading";
-            }
+        const QString partnerId = readPartnerId();
+        if (!partnerId.isEmpty()) {
+            m_versions.push_back(qMakePair(QString("partner"), partnerId));
         }
 
         QUrlQuery q;
@@ -239,6 +227,26 @@ void Scopes::lsbReleaseFinished()
 
     qDebug() << "User agent string:" << m_userAgent;
     initPopulateScopes();
+}
+
+QString Scopes::readPartnerId()
+{
+    // read /custom/partner-id value if present
+    QString partnerId;
+    QFile partnerIdFile(PARTNER_ID_FILE);
+    if (partnerIdFile.exists())
+    {
+        if (partnerIdFile.open(QIODevice::ReadOnly))
+        {
+            QTextStream str(&partnerIdFile);
+            partnerId = str.readLine();
+        }
+        else
+        {
+            qWarning() << "Cannot open" << QString(PARTNER_ID_FILE) << "for reading";
+        }
+    }
+    return partnerId;
 }
 
 void Scopes::initPopulateScopes()
