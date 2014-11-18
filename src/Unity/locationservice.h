@@ -49,6 +49,8 @@ public:
 
     virtual unity::scopes::Location location() const = 0;
 
+    virtual bool hasLocation() const = 0;
+
     virtual bool isActive() const = 0;
 
 public Q_SLOTS:

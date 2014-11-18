@@ -40,6 +40,8 @@ public:
 
     unity::scopes::Location location() const override;
 
+    bool hasLocation() const override;
+
     bool isActive() const override;
 
     void activate() override;
