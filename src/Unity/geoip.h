@@ -73,6 +73,8 @@ public:
 
     ~GeoIp() = default;
 
+    void whollyMoveThread(QThread *thread);
+
 public Q_SLOTS:
     void start();
 

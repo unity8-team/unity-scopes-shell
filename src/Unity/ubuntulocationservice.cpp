@@ -85,7 +85,7 @@ public:
     void init(GeoIp::Ptr geoIp)
     {
         m_geoIp = geoIp;
-        m_geoIp->moveToThread(thread());
+        m_geoIp->whollyMoveThread(thread());
 
         m_deactivateTimer.moveToThread(thread());
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
