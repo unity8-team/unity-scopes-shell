@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.4+15.04.20141119~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Listen to list update pub/sub mechanism to invalidate smart scopes
+    (LP: #1361221)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 19 Nov 2014 08:20:10 +0000
+
 unity-scopes-shell (0.5.4+14.10.20141029.1~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Pete Woods ]
