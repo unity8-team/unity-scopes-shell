@@ -21,6 +21,8 @@
 
 #include <unity/scopes/OptionSelectorFilter.h>
 
+#include <QDebug>
+
 namespace scopes_ng
 {
 
@@ -108,6 +110,14 @@ void Department::markSubdepartmentActive(QString const& subdepartmentId)
 
 QVariant Department::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_subdepartments.size())
+    {
+        qWarning() << "Department::data - invalid index" << row << "size"
+                << m_subdepartments.size();
+        return QVariant();
+    }
+
     SubdepartmentData* data = m_subdepartments[index.row()].data();
     switch (role) {
         case RoleNavigationId: return data->id;

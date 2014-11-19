@@ -43,7 +43,7 @@ using namespace unity;
 
 PreviewStack::PreviewStack(QObject* parent)
  : unity::shell::scopes::PreviewStackInterface(parent)
- , m_widgetColumnCount(1)
+ , m_widgetColumnCount(1), m_activePreview(nullptr)
 {
 }
 
@@ -279,6 +279,14 @@ unity::shell::scopes::PreviewModelInterface* PreviewStack::getPreviewModel(int i
 
 QVariant PreviewStack::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_previews.size())
+    {
+        qWarning() << "PreviewStack::data - invalid index" << row << "size"
+                << m_previews.size();
+        return QVariant();
+    }
+
     switch (role) {
         case RolePreviewModel:
             return QVariant::fromValue(m_previews.at(index.row()));

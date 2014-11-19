@@ -510,7 +510,15 @@ void Categories::countChanged()
 QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
-    CategoryData* catData = m_categories.at(index.row()).data();
+    int row = index.row();
+    if (row >= m_categories.size())
+    {
+        qWarning() << "Categories::data - invalid index" << row << "size"
+                << m_categories.size();
+        return QVariant();
+    }
+
+    CategoryData* catData = m_categories.at(row).data();
     ResultsModel* resultsModel = catData->resultsModel();
 
     switch (role) {

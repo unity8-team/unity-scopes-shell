@@ -24,6 +24,8 @@
 #include "utils.h"
 #include "iconutils.h"
 
+#include <QDebug>
+
 namespace scopes_ng {
 
 using namespace unity;
@@ -167,6 +169,14 @@ QHash<int, QByteArray> ResultsModel::roleNames() const
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_results.size())
+    {
+        qWarning() << "ResultsModel::data - invalid index" << row << "size"
+                << m_results.size();
+        return QVariant();
+    }
+
     scopes::CategorisedResult* result = m_results.at(index.row()).get();
 
     switch (role) {

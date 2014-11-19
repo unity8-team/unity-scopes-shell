@@ -25,6 +25,7 @@
 #include "utils.h"
 
 // Qt
+#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -100,6 +101,14 @@ int PreviewWidgetModel::rowCount(const QModelIndex&) const
 
 QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_previewWidgets.size())
+    {
+        qWarning() << "PreviewWidgetModel::data - invalid index" << row << "size"
+                << m_previewWidgets.size();
+        return QVariant();
+    }
+
     auto widget_data = m_previewWidgets.at(index.row());
     switch (role) {
         case RoleWidgetId:
