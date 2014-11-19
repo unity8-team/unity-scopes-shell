@@ -44,14 +44,14 @@ namespace scopes_ng {
 class CategoryData
 {
 public:
-    CategoryData(scopes::Category::SCPtr const& category): m_resultsModel(nullptr), m_isSpecial(false)
+    CategoryData(scopes::Category::SCPtr const& category): m_isSpecial(false)
     {
         setCategory(category);
     }
 
     // constructor for special (shell-overriden) categories
     CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
-        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_resultsModel(nullptr), m_countObject(countObject), m_isSpecial(true)
+        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
     {
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
     }
