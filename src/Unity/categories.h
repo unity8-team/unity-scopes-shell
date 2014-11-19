@@ -49,9 +49,9 @@ public:
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json) override;
     Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
-    ResultsModel* lookupCategory(std::string const& category_id);
-    void registerCategory(unity::scopes::Category::SCPtr category, ResultsModel* model);
-    void updateResultCount(ResultsModel* resultsModel);
+    QSharedPointer<ResultsModel> lookupCategory(std::string const& category_id);
+    void registerCategory(unity::scopes::Category::SCPtr category, QSharedPointer<ResultsModel> model);
+    void updateResultCount(QSharedPointer<ResultsModel> resultsModel);
     void clearAll();
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components);
@@ -64,7 +64,7 @@ private:
     int getFirstEmptyCategoryIndex() const;
 
     QList<QSharedPointer<CategoryData>> m_categories;
-    QMap<std::string, ResultsModel*> m_categoryResults;
+    QMap<std::string, QSharedPointer<ResultsModel>> m_categoryResults;
     QMap<QObject*, QString> m_countObjects;
 };
 
