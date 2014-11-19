@@ -516,7 +516,13 @@ Categories::data(const QModelIndex& index, int role) const
     }
 
     QSharedPointer<CategoryData> catData = m_categories.at(row);
-    QSharedPointer<ResultsModel> resultsModel = catData->resultsModel();
+
+    if (!catData)
+    {
+        qWarning() << "Categories::data - invalid category data at" << row << "size"
+                        << m_categories.size();
+        return QVariant();
+    }
 
     switch (role) {
         case RoleCategoryId:
@@ -534,7 +540,17 @@ Categories::data(const QModelIndex& index, int role) const
         case RoleHeaderLink:
             return catData->headerLink();
         case RoleResults:
-            return QVariant::fromValue(resultsModel.data());
+        {
+            QSharedPointer<ResultsModel> resultsModel = catData->resultsModel();
+            if (resultsModel)
+            {
+                return QVariant::fromValue(resultsModel.data());
+            }
+            else
+            {
+                return QVariant();
+            }
+        }
         case RoleCount:
             return catData->resultsModelCount();
         default:
