@@ -49,15 +49,14 @@ public:
         setCategory(category);
     }
 
+    CategoryData(CategoryData const& other) = delete;
+
     // constructor for special (shell-overriden) categories
     CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
         m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
     {
+        setCategory(scopes::Category::SCPtr());
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
-    }
-
-    ~CategoryData()
-    {
     }
 
     void setCategory(scopes::Category::SCPtr const& category)
@@ -301,6 +300,12 @@ QJsonValue* CategoryData::DEFAULTS = nullptr;
 Categories::Categories(QObject* parent)
     : unity::shell::scopes::CategoriesInterface(parent)
 {
+}
+
+Categories::~Categories()
+{
+    m_categories.clear();
+    m_categoryResults.clear();
 }
 
 int Categories::rowCount(const QModelIndex& parent) const
