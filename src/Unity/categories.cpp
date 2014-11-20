@@ -306,6 +306,12 @@ Categories::Categories(QObject* parent)
 {
 }
 
+Categories::~Categories()
+{
+    m_categories.clear();
+    m_categoryResults.clear();
+}
+
 int Categories::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
