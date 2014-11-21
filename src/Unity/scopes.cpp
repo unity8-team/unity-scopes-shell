@@ -508,13 +508,12 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         invalidateScopeResults("musicaggregator");
     } else if (scopeName == "mediascanner-video") {
         invalidateScopeResults("videoaggregator");
-    } else if (scopeName == "smart-scopes") {
-        // emitted when smart scopes proxy discovers new scopes
+    } else if (scopeName == "scopes") {
+        // emitted when smart-scopes proxy or scope registry discovers new scopes
+        refreshScopeMetadata();
         Q_FOREACH(Scope* scope, m_scopes) {
             scope->invalidateResults();
         }
-    } else if (scopeName == "scopes") {
-        refreshScopeMetadata();
         return;
     }
 
