@@ -30,7 +30,6 @@
 #include <QPointer>
 #include <QMultiMap>
 #include <QSet>
-#include <QGSettings>
 #include <QUuid>
 
 // scopes
@@ -43,7 +42,8 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
-#include "locationservice.h"
+
+class QGSettings;
 
 namespace scopes_ng
 {
@@ -51,6 +51,7 @@ namespace scopes_ng
 class Categories;
 class PushEvent;
 class PreviewStack;
+class LocationService;
 class SettingsModel;
 class Scopes;
 
@@ -251,7 +252,7 @@ private:
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
-    LocationService::Ptr m_locationService;
+    QSharedPointer<LocationService> m_locationService;
     QNetworkConfigurationManager m_network_manager;
 };
 

@@ -50,6 +50,9 @@ find_package(Qt5Qml)
 find_package(Qt5Quick)
 find_package(Qt5Gui)
 
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.7)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
+
 # Standard install paths
 include(GNUInstallDirs)
 

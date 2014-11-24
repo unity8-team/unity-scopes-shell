@@ -22,15 +22,12 @@
 
 #include <unity/shell/scopes/ScopesInterface.h>
 
-#include "locationservice.h"
-
 // Qt
 #include <QList>
 #include <QThread>
 #include <QTimer>
 #include <QStringList>
 #include <QSharedPointer>
-#include <QGSettings>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -38,9 +35,12 @@
 #include <unity/scopes/ScopeProxyFwd.h>
 #include <unity/scopes/ScopeMetadata.h>
 
+class QGSettings;
+
 namespace scopes_ng
 {
 
+class LocationService;
 class Scope;
 class OverviewScope;
 
@@ -70,7 +70,7 @@ public:
     int count() const override;
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
 
-    LocationService::Ptr locationService() const;
+    QSharedPointer<LocationService> locationService() const;
     QString userAgentString() const;
 
 Q_SIGNALS:
@@ -111,7 +111,7 @@ private:
     QString m_userAgent;
     bool m_loaded;
 
-    LocationService::Ptr m_locationService;
+    QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;

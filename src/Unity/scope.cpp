@@ -24,6 +24,7 @@
 #include "categories.h"
 #include "collectors.h"
 #include "previewstack.h"
+#include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
 #include "settingsmodel.h"
@@ -32,6 +33,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
+#include <QGSettings>
 #include <QtGui/QDesktopServices>
 #include <QQmlEngine>
 #include <QEvent>

@@ -27,7 +27,7 @@
 class Q_DECL_EXPORT RegistrySpawner
 {
 public:
-    RegistrySpawner();
+    RegistrySpawner(const QString &runtimeConfig);
 
     ~RegistrySpawner();
 

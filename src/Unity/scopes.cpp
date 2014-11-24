@@ -27,6 +27,7 @@
 
 // Qt
 #include <QDebug>
+#include <QGSettings>
 #include <QTimer>
 #include <QDBusConnection>
 #include <QProcess>

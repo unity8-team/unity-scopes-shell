@@ -32,11 +32,11 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#include "registry-spawner.h"
-#include "test-utils.h"
+#include "scope-harness/registry-spawner.h"
+#include "scope-harness/test-utils.h"
 
 using namespace scopes_ng;
-
+//TEST_RUNTIME_CONFIG
 class PreviewTest : public QObject
 {
     Q_OBJECT
@@ -48,7 +48,7 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner());
+        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()

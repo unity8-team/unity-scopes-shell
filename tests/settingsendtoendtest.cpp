@@ -26,8 +26,8 @@
 
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
-#include "test-utils.h"
-#include "registry-spawner.h"
+#include "scope-harness/registry-spawner.h"
+#include "scope-harness/test-utils.h"
 
 using namespace scopes_ng;
 using namespace unity::shell::scopes;
@@ -43,7 +43,7 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner);
+        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()

@@ -23,6 +23,7 @@
 #include <QTest>
 #include <QFile>
 #include <QFileInfo>
+#include <QGSettings>
 #include <QDir>
 #include <QProcess>
 #include <QThread>

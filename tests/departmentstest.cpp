@@ -36,8 +36,8 @@
 #include <previewwidgetmodel.h>
 #include <department.h>
 
-#include "registry-spawner.h"
-#include "test-utils.h"
+#include "scope-harness/registry-spawner.h"
+#include "scope-harness/test-utils.h"
 
 using namespace scopes_ng;
 using namespace unity::shell::scopes;
@@ -56,7 +56,7 @@ private Q_SLOTS:
     void initTestCase()
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
-        m_registry.reset(new RegistrySpawner);
+        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()
