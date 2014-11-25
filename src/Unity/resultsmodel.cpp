@@ -112,15 +112,17 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
         return QVariant();
     }
     std::string const& realFieldName = mappingIt->second;
-    if (!result->contains(realFieldName)) {
+    try {
+        scopes::Variant const& v = result->value(realFieldName);
+        if (v.which() != scopes::Variant::Type::String) {
+            return QVariant();
+        }
+        return QString::fromStdString(v.get_string());
+    } catch (...) {
+        // value() throws if realFieldName is empty or the result
+        // doesn't have a value for it
         return QVariant();
     }
-    scopes::Variant const& v = result->value(realFieldName);
-    if (v.which() != scopes::Variant::Type::String) {
-        return QVariant();
-    }
-
-    return QString::fromStdString(v.get_string());
 }
 
 QVariant
@@ -130,30 +132,33 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
     if (mappingIt == m_componentMapping.end()) {
         return QVariant();
     }
-    std::string const& realFieldName = mappingIt->second;
-    if (!result->contains(realFieldName)) {
+    try {
+        std::string const& realFieldName = mappingIt->second;
+        scopes::Variant const& v = result->value(realFieldName);
+        if (v.which() != scopes::Variant::Type::Array) {
+            return QVariant();
+        }
+
+        QVariantList attributes;
+        scopes::VariantArray arr(v.get_array());
+        for (unsigned i = 0; i < arr.size(); i++) {
+            if (arr[i].which() != scopes::Variant::Type::Dict) {
+                continue;
+            }
+            QVariantMap attribute(scopeVariantToQVariant(arr[i]).toMap());
+            attributes << QVariant(attribute);
+            // we'll limit the number of attributes
+            if (attributes.size() >= m_maxAttributes) {
+                break;
+            }
+        }
+
+        return attributes;
+    } catch (...) {
+        // value() throws if realFieldName is empty or the result
+        // doesn't have a value for it
         return QVariant();
     }
-    scopes::Variant const& v = result->value(realFieldName);
-    if (v.which() != scopes::Variant::Type::Array) {
-        return QVariant();
-    }
-
-    QVariantList attributes;
-    scopes::VariantArray arr(v.get_array());
-    for (unsigned i = 0; i < arr.size(); i++) {
-        if (arr[i].which() != scopes::Variant::Type::Dict) {
-            continue;
-        }
-        QVariantMap attribute(scopeVariantToQVariant(arr[i]).toMap());
-        attributes << QVariant(attribute);
-        // we'll limit the number of attributes
-        if (attributes.size() >= m_maxAttributes) {
-            break;
-        }
-    }
-
-    return attributes;
 }
 
 QHash<int, QByteArray> ResultsModel::roleNames() const
