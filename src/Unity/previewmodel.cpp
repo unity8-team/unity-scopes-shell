@@ -399,6 +399,14 @@ int PreviewModel::rowCount(const QModelIndex&) const
 
 QVariant PreviewModel::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_previewWidgetModels.size())
+    {
+        qWarning() << "PreviewModel::data - invalid index" << row << "size"
+                << m_previewWidgetModels.size();
+        return QVariant();
+    }
+
     switch (role) {
         case RoleColumnModel:
             return QVariant::fromValue(m_previewWidgetModels.at(index.row()));

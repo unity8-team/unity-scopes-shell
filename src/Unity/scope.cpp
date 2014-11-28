@@ -486,7 +486,7 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
 
     // department has been removed (not reported by scope); make sure it's only treated as such when
     // we're examining children of *current* department, othwerwise it would break on partial trees when visiting a leaf.
-    if (firstMismatchingChild == nullptr && scopeNode->subdepartments().size() < cachedChildrenIds.size() &&
+    if (firstMismatchingChild == nullptr && (int) scopeNode->subdepartments().size() < cachedChildrenIds.size() &&
             m_currentNavigationId.toStdString() == scopeNode->id()) {
         return scopeNode;
     }
@@ -529,15 +529,15 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     }
 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
-        ResultsModel* category_model = m_categories->lookupCategory(category->id());
+        QSharedPointer<ResultsModel> category_model = m_categories->lookupCategory(category->id());
         if (category_model == nullptr) {
-            category_model = new ResultsModel(m_categories.data());
+            category_model.reset(new ResultsModel(m_categories.data()));
             category_model->setCategoryId(QString::fromStdString(category->id()));
             category_model->addResults(category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
         } else {
             // FIXME: only update when we know it's necessary
-            m_categories->registerCategory(category, nullptr);
+            m_categories->registerCategory(category, QSharedPointer<ResultsModel>());
             category_model->addResults(category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }

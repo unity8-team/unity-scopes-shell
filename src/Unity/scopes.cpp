@@ -517,6 +517,14 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
 {
+    int row = index.row();
+    if (row >= m_scopes.size())
+    {
+        qWarning() << "Scopes::data - invalid index" << row << "size"
+                << m_scopes.size();
+        return QVariant();
+    }
+
     Scope* scope = m_scopes.at(index.row());
 
     switch (role) {
