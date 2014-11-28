@@ -45,6 +45,7 @@ namespace scopes_ng
 using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
+#define PARTNER_ID_FILE "/custom/partner-id"
 
 void ScopeListWorker::run()
 {
@@ -213,6 +214,11 @@ void Scopes::lsbReleaseFinished()
             m_versions.push_back(qMakePair(QString("build"), bld));
         }
 
+        const QString partnerId = readPartnerId();
+        if (!partnerId.isEmpty()) {
+            m_versions.push_back(qMakePair(QString("partner"), partnerId));
+        }
+
         QUrlQuery q;
         q.setQueryItems(m_versions);
         m_versions.clear();
@@ -221,6 +227,26 @@ void Scopes::lsbReleaseFinished()
 
     qDebug() << "User agent string:" << m_userAgent;
     initPopulateScopes();
+}
+
+QString Scopes::readPartnerId()
+{
+    // read /custom/partner-id value if present
+    QString partnerId;
+    QFile partnerIdFile(PARTNER_ID_FILE);
+    if (partnerIdFile.exists())
+    {
+        if (partnerIdFile.open(QIODevice::ReadOnly))
+        {
+            QTextStream str(&partnerIdFile);
+            partnerId = str.readLine();
+        }
+        else
+        {
+            qWarning() << "Cannot open" << QString(PARTNER_ID_FILE) << "for reading";
+        }
+    }
+    return partnerId;
 }
 
 void Scopes::initPopulateScopes()

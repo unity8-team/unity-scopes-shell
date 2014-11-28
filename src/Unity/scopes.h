@@ -75,6 +75,9 @@ public:
 Q_SIGNALS:
     void metadataRefreshed();
 
+protected:
+    virtual QString readPartnerId();
+
 private Q_SLOTS:
     void dashSettingsChanged(QString const &key);
     void processFavoriteScopes();
