@@ -22,6 +22,7 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QTextCodec>
 #include <QTimer>
 
 using namespace scopes_ng;
@@ -36,6 +37,7 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     QDir databaseDir = configDir.filePath(scopeId);
 
     m_settings.reset(new QSettings(databaseDir.filePath("settings.ini"), QSettings::IniFormat));
+    m_settings->setIniCodec("UTF-8");
 
     for (const auto &it : settingsDefinitions.toList())
     {
