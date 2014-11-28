@@ -1,3 +1,22 @@
+unity-scopes-shell (0.5.4+15.04.20141128-0ubuntu1) vivid; urgency=low
+
+  [ Pete Woods ]
+  * Write the scope settings using UTF-8 to match up with the scope
+    regsitry (LP: #1381010)
+  * Move QNetworkAccessManager onto correct thread
+  * Fix crash exposed by today scope (LP: #1396526)
+
+  [ Pawel Stolowski ]
+  * Fix version check for unity api to match version required by
+    src/Unity/CMakeLists.txt.
+  * Read /custom/partner-id value (if present) and pass it with user-
+    agent hint. (LP: #1389273)
+
+  [ Albert Astals ]
+  * Don't call Result::contains and then Result::value
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 28 Nov 2014 08:52:43 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141119-0ubuntu1) vivid; urgency=low
 
   [ Marcus Tomlinson ]
