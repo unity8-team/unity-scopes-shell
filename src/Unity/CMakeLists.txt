@@ -17,6 +17,10 @@ include_directories(
     ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
 )
 
+add_definitions(
+    -DUNITY_DLL_EXPORTS=1
+    )
+
 set(QMLPLUGIN_SRC
     categories.cpp
     collectors.cpp

@@ -1,20 +1,19 @@
 /*
- * Copyright (C) 2013-2014 Canonical, Ltd.
+ * Copyright (C) 2014 Canonical, Ltd.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 3.
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of version 3 of the GNU Lesser General Public License as published
+ * by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Authors:
- *  Michal Hruby <michal.hruby@canonical.com>
+ * Author: Pete Woods <pete.woods@canonical.com>
  */
 
 #include "test-utils.h"
@@ -30,39 +29,59 @@
 #include <QScopedPointer>
 #include <QSignalSpy>
 
-#include <scopes.h>
-#include <scope.h>
-#include <categories.h>
-#include <resultsmodel.h>
-#include <previewstack.h>
+#include <Unity/scopes.h>
+#include <Unity/scope.h>
+#include <Unity/categories.h>
+#include <Unity/resultsmodel.h>
+#include <Unity/previewstack.h>
 
-using namespace scopes_ng;
+namespace sc = unity::scopes;
+namespace ng = scopes_ng;
 
-void scopes_ng::checkedFirstResult(Scope* scope, unity::scopes::Result::SPtr& result, bool& success)
+namespace unity {
+namespace scopeharness {
+
+void throwIf(bool condition, const std::string& message)
+{
+    if (condition)
+    {
+        throw std::domain_error(message);
+    }
+}
+
+void throwIfNot(bool condition, const std::string& message)
+{
+    if (!condition)
+    {
+        throw std::domain_error(message);
+    }
+}
+
+void checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result, bool& success)
 {
     // ensure categories have > 0 rows
-    auto categories = scope->categories();
     QVERIFY(categories->rowCount() > 0);
-    QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-    QVERIFY(results_var.canConvert<ResultsModel*>());
+    QVariant results_var = categories->data(categories->index(0), ng::Categories::Roles::RoleResults);
+    QVERIFY(results_var.canConvert<ng::ResultsModel*>());
 
     // ensure results have some data
-    auto results = results_var.value<ResultsModel*>();
+    auto results = results_var.value<ng::ResultsModel*>();
+    QVERIFY(results);
     QVERIFY(results->rowCount() > 0);
-    auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
+    auto result_var = results->data(results->index(0), ng::ResultsModel::RoleResult);
     QCOMPARE(result_var.isNull(), false);
-    result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
+    result = result_var.value<std::shared_ptr<sc::Result>>();
     success = true;
 }
 
-bool scopes_ng::getFirstResult(Scope* scope, unity::scopes::Result::SPtr& result)
+bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result)
 {
     bool success = false;
-    checkedFirstResult(scope, result, success);
+    checkedFirstResult(categories, result, success);
     return success;
 }
 
-void scopes_ng::refreshSearch(Scope* scope)
+void refreshSearch(ng::Scope* scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
     QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
@@ -76,7 +95,7 @@ void scopes_ng::refreshSearch(Scope* scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void scopes_ng::performSearch(Scope* scope, QString const& searchString)
+void performSearch(ng::Scope* scope, QString const& searchString)
 {
     QCOMPARE(scope->searchInProgress(), false);
     QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
@@ -92,7 +111,7 @@ void scopes_ng::performSearch(Scope* scope, QString const& searchString)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void scopes_ng::waitForResultsChange(Scope* scope)
+void waitForResultsChange(ng::Scope* scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
     // wait for the search to finish
@@ -104,26 +123,26 @@ void scopes_ng::waitForResultsChange(Scope* scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-bool scopes_ng::previewForFirstResult(Scope* scope, QString const& searchString, QScopedPointer<PreviewStack>& preview_stack)
+bool previewForFirstResult(ng::Scope* scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
 {
     performSearch(scope, searchString);
 
     unity::scopes::Result::SPtr result;
-    if (!getFirstResult(scope, result))
+    if (!getFirstResult(scope->categories(), result))
         return false;
-    preview_stack.reset(static_cast<PreviewStack*>(scope->preview(QVariant::fromValue(result))));
+    preview_stack.reset(static_cast<ng::PreviewStack*>(scope->preview(QVariant::fromValue(result))));
 
     return true;
 }
 
-void scopes_ng::setFavouriteScopes(const QStringList& cannedQueries)
+void setFavouriteScopes(const QStringList& cannedQueries)
 {
     setenv("GSETTINGS_BACKEND", "memory", 1);
     QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
     settings.set("favoriteScopes", QVariant(cannedQueries));
 }
 
-QStringList scopes_ng::getFavoriteScopes()
+QStringList getFavoriteScopes()
 {
     setenv("GSETTINGS_BACKEND", "memory", 1);
     QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
@@ -132,4 +151,7 @@ QStringList scopes_ng::getFavoriteScopes()
         favs.push_back(favvar.toString());
     }
     return favs;
+}
+
+}
 }

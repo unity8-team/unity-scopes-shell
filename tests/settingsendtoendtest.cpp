@@ -26,10 +26,11 @@
 
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
-#include "scope-harness/registry-spawner.h"
-#include "scope-harness/test-utils.h"
+#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/test-utils.h>
 
 using namespace scopes_ng;
+using namespace unity::scopeharness;
 using namespace unity::shell::scopes;
 
 class SettingsEndToEndTest : public QObject
@@ -38,12 +39,12 @@ class SettingsEndToEndTest : public QObject
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
-    QScopedPointer<RegistrySpawner> m_registry;
+    Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()

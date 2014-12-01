@@ -57,6 +57,7 @@ public:
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
 
+    Scope* getScopeByRow(int row) const;
     Scope* getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;

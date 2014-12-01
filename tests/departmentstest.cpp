@@ -36,27 +36,29 @@
 #include <previewwidgetmodel.h>
 #include <department.h>
 
-#include "scope-harness/registry-spawner.h"
-#include "scope-harness/test-utils.h"
+#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/test-utils.h>
 
-using namespace scopes_ng;
-using namespace unity::shell::scopes;
+namespace sc = unity::scopes;
+namespace sh = unity::scopeharness;
+namespace ss = unity::shell::scopes;
+namespace ng = scopes_ng;
 
 class DepartmentsTest : public QObject
 {
     Q_OBJECT
 private:
-    QScopedPointer<Scopes> m_scopes;
-    Scope* m_scope;
-    Scope* m_scope_navs;
-    Scope* m_scope_flipflop;
-    QScopedPointer<RegistrySpawner> m_registry;
+    QScopedPointer<ng::Scopes> m_scopes;
+    ng::Scope* m_scope;
+    ng::Scope* m_scope_navs;
+    ng::Scope* m_scope_flipflop;
+    sh::Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
-        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new sh::PreExistingRegistry(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()
@@ -68,9 +70,9 @@ private Q_SLOTS:
     {
         QStringList favs;
         favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav" << "scope://mock-scope-departments-flipflop";
-        setFavouriteScopes(favs);
+        sh::setFavouriteScopes(favs);
 
-        m_scopes.reset(new Scopes(nullptr));
+        m_scopes.reset(new ng::Scopes(nullptr));
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
         QCOMPARE(m_scopes->loaded(), false);
@@ -107,7 +109,7 @@ private Q_SLOTS:
 
     void testNoDepartments()
     {
-        performSearch(m_scope, QString("foo"));
+        sh::performSearch(m_scope, QString("foo"));
 
         QCOMPARE(m_scope->hasNavigation(), false);
         QCOMPARE(m_scope->hasAltNavigation(), false);
@@ -115,12 +117,12 @@ private Q_SLOTS:
 
     void testRootDepartment()
     {
-        performSearch(m_scope, QString(""));
+        sh::performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->hasNavigation(), true);
         QCOMPARE(m_scope->hasAltNavigation(), false);
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
-        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(m_scope->currentNavigationId()));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(m_scope->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(departmentModel->navigationId().isEmpty());
@@ -136,24 +138,24 @@ private Q_SLOTS:
         QModelIndex idx;
 
         idx = departmentModel->index(0);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("books")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Books")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
 
         idx = departmentModel->index(4);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("toys")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
     }
 
     void testChildDepartmentModel()
     {
-        performSearch(m_scope, QString(""));
+        sh::performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
-        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
         QVERIFY(departmentModel != nullptr);
 
         QSignalSpy spy(departmentModel.data(), SIGNAL(loadedChanged()));
@@ -178,15 +180,15 @@ private Q_SLOTS:
 
     void testLeafActivationUpdatesModel()
     {
-        performSearch(m_scope, QString(""));
+        sh::performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
-        QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
+        QScopedPointer<ss::NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
         m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
         navModel.reset(m_scope->getNavigation(QString("books-audio")));
@@ -199,9 +201,9 @@ private Q_SLOTS:
         bool foundAudiobooks = false;
         for (int i = 0; i < departmentModel->rowCount(); i++) {
             QModelIndex idx(departmentModel->index(i));
-            QVariant data = departmentModel->data(idx, Department::Roles::RoleNavigationId);
+            QVariant data = departmentModel->data(idx, ng::Department::Roles::RoleNavigationId);
             if (data.toString() == QString("books-audio")) {
-                QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive).toBool(), true);
+                QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive).toBool(), true);
                 foundAudiobooks = true;
             }
         }
@@ -210,15 +212,15 @@ private Q_SLOTS:
 
     void testGoingBack()
     {
-        performSearch(m_scope, QString("x"));
+        sh::performSearch(m_scope, QString("x"));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
-        QScopedPointer<NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
+        QScopedPointer<ss::NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
         m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
         QCOMPARE(m_scope->searchInProgress(), false);
-        QScopedPointer<NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
         QCOMPARE(departmentModel->isRoot(), false);
 
         // get the root again without actually loading the department
@@ -230,10 +232,10 @@ private Q_SLOTS:
 
     void testIncompleteTreeOnLeaf()
     {
-        performSearch(m_scope, QString(""));
+        sh::performSearch(m_scope, QString(""));
 
-        QScopedPointer<NavigationInterface> navModel;
-        QScopedPointer<NavigationInterface> departmentModel;
+        QScopedPointer<ss::NavigationInterface> navModel;
+        QScopedPointer<ss::NavigationInterface> departmentModel;
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QCOMPARE(m_scope->hasNavigation(), true);
@@ -266,11 +268,11 @@ private Q_SLOTS:
         QCOMPARE(m_scope_navs->hasAltNavigation(), true);
         QCOMPARE(m_scope_navs->currentNavigationId(), QString(""));
         QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
-        QScopedPointer<NavigationInterface> departmentModel(m_scope_navs->getNavigation(m_scope_navs->currentNavigationId()));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope_navs->getNavigation(m_scope_navs->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(!m_scope_navs->currentAltNavigationId().isEmpty());
-        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
+        QScopedPointer<ss::NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
         QVERIFY(sortOrderModel != nullptr);
 
         QCOMPARE(sortOrderModel->navigationId(), QString(""));
@@ -286,29 +288,29 @@ private Q_SLOTS:
         QModelIndex idx;
 
         idx = sortOrderModel->index(0);
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("featured")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Featured")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleHasChildren), QVariant(false));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(true));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("featured")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Featured")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(true));
 
         idx = sortOrderModel->index(2);
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("best")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Best sellers")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleHasChildren), QVariant(false));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("best")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Best sellers")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
     }
 
     void testDoubleNavChangeActive()
     {
         QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
-        QScopedPointer<NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
+        QScopedPointer<ss::NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
         QVERIFY(sortOrderModel != nullptr);
         QCOMPARE(sortOrderModel->loaded(), true);
         QCOMPARE(sortOrderModel->rowCount(), 3);
 
         QModelIndex idx(sortOrderModel->index(1));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("top")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
 
         // perform a query for the other navigation
         QSignalSpy spy(m_scope_navs, SIGNAL(searchInProgressChanged()));
@@ -316,8 +318,8 @@ private Q_SLOTS:
         QVERIFY(spy.wait());
 
         // the model should be updated
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("top")));
-        QCOMPARE(sortOrderModel->data(idx, Department::Roles::RoleIsActive), QVariant(true));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("top")));
+        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(true));
     }
 
     void testDepartmentDissapear()
@@ -326,7 +328,7 @@ private Q_SLOTS:
         QCOMPARE(m_scope_flipflop->hasAltNavigation(), false);
         QCOMPARE(m_scope_flipflop->currentNavigationId(), QString(""));
 
-        QScopedPointer<NavigationInterface> departmentModel(m_scope_flipflop->getNavigation(m_scope_flipflop->currentNavigationId()));
+        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope_flipflop->getNavigation(m_scope_flipflop->currentNavigationId()));
         QVERIFY(departmentModel != nullptr);
 
         QVERIFY(departmentModel->navigationId().isEmpty());
@@ -340,7 +342,7 @@ private Q_SLOTS:
 
         QCOMPARE(departmentModel->rowCount(), 5);
 
-        refreshSearch(m_scope_flipflop);
+        sh::refreshSearch(m_scope_flipflop);
 
         // one department removed
         QCOMPARE(departmentModel->rowCount(), 4);
@@ -348,16 +350,16 @@ private Q_SLOTS:
         QModelIndex idx;
 
         idx = departmentModel->index(0);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("books")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Books")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("books")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Books")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
 
         idx = departmentModel->index(3);
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleNavigationId), QVariant(QString("toys")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleHasChildren), QVariant(true));
-        QCOMPARE(departmentModel->data(idx, Department::Roles::RoleIsActive), QVariant(false));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("toys")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
+        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
     }
 
 };

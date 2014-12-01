@@ -28,24 +28,26 @@
 #include <overviewresults.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
-#include "scope-harness/registry-spawner.h"
-#include "scope-harness/test-utils.h"
+#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/test-utils.h>
 
-using namespace scopes_ng;
+namespace ng = scopes_ng;
+namespace sh = unity::scopeharness;
 using namespace unity::shell::scopes;
 
 class FavoritesTest: public QObject
 {
     Q_OBJECT
 private:
-    QScopedPointer<Scopes> m_scopes;
-    Scope* m_overviewScope;
-    QScopedPointer<RegistrySpawner> m_registry;
+    QScopedPointer<ng::Scopes> m_scopes;
+    ng::Scope* m_overviewScope;
+    sh::Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new sh::PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -55,9 +57,9 @@ private Q_SLOTS:
 
     void init()
     {
-        setFavouriteScopes(QStringList());
+        sh::setFavouriteScopes(QStringList());
 
-        m_scopes.reset(new Scopes(nullptr));
+        m_scopes.reset(new ng::Scopes(nullptr));
 
         // no scopes on startup
         QCOMPARE(m_scopes->rowCount(), 0);
@@ -81,7 +83,7 @@ private Q_SLOTS:
     {
         QStringList favs;
         favs << "scope://mock-scope-departments";
-        setFavouriteScopes(favs);
+        sh::setFavouriteScopes(favs);
 
         // should have one scope now
         QTRY_COMPARE(m_scopes->rowCount(), 1);
@@ -90,7 +92,7 @@ private Q_SLOTS:
         QCOMPARE(scope1->favorite(), true);
 
         favs << "scope://mock-scope-double-nav";
-        setFavouriteScopes(favs);
+        sh::setFavouriteScopes(favs);
 
         // should have two scopes now
         QTRY_COMPARE(m_scopes->rowCount(), 2);
@@ -105,7 +107,7 @@ private Q_SLOTS:
         QTRY_COMPARE(spy.count(), 1);
         QTRY_COMPARE(m_scopes->rowCount(), 1);
         QVERIFY(m_scopes->getScopeById("mock-scope-departments") == nullptr);
-        QCOMPARE(m_scopes->data(m_scopes->index(0), Scopes::RoleId), QVariant(QString("mock-scope-double-nav")));
+        QCOMPARE(m_scopes->data(m_scopes->index(0), ng::Scopes::RoleId), QVariant(QString("mock-scope-double-nav")));
 
         // the scope should be destroyed after un-favoriting
         QTRY_COMPARE(spy2.count(), 1);
@@ -127,22 +129,22 @@ private Q_SLOTS:
     {
         auto categories = m_overviewScope->categories();
         QVERIFY(categories->rowCount() > 0);
-        QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
+        QCOMPARE(categories->data(categories->index(0), ng::Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
 
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<OverviewResultsModel*>());
-        OverviewResultsModel* results = results_var.value<OverviewResultsModel*>();
+        QVariant results_var = categories->data(categories->index(0), ng::Categories::Roles::RoleResults);
+        QVERIFY(results_var.canConvert<ng::OverviewResultsModel*>());
+        ng::OverviewResultsModel* results = results_var.value<ng::OverviewResultsModel*>();
         QCOMPARE(results->rowCount(), 0);
 
         // favorite one scope, check if it appears in the favorites model
         QStringList favs;
         favs << "scope://mock-scope-departments";
-        setFavouriteScopes(favs);
+        sh::setFavouriteScopes(favs);
 
         QTRY_COMPARE(results->rowCount(), 1);
 
         // unfavorite it, verify it disappears from favorites model
-        setFavouriteScopes(QStringList());
+        sh::setFavouriteScopes(QStringList());
         QTRY_COMPARE(results->rowCount(), 0);
     }
 
@@ -214,7 +216,7 @@ private Q_SLOTS:
     {
         QStringList favs;
         favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav";
-        setFavouriteScopes(favs);
+        sh::setFavouriteScopes(favs);
 
         // should have two scopes
         QTRY_COMPARE(m_scopes->rowCount(), 2);
@@ -223,8 +225,8 @@ private Q_SLOTS:
 
         // un-favorite one scope
         scope1->setFavorite(false);
-        QTRY_COMPARE(getFavoriteScopes().size(), 1);
-        QCOMPARE(getFavoriteScopes().at(0), QString("scope://mock-scope-double-nav"));
+        QTRY_COMPARE(sh::getFavoriteScopes().size(), 1);
+        QCOMPARE(sh::getFavoriteScopes().at(0), QString("scope://mock-scope-double-nav"));
     }
 
     void cleanup()

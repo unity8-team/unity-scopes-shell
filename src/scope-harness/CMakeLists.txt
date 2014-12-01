@@ -3,7 +3,7 @@ _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoper
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src/Unity
+    ${CMAKE_SOURCE_DIR}/src
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
     )
@@ -14,7 +14,10 @@ add_definitions(
 
 add_library(
     scope-harness SHARED
-    registry-spawner.cpp
+    pre-existing-registry.cpp
+    preview-view.cpp
+    results-view.cpp
+    scope-harness.cpp
     test-utils.cpp
     )
 

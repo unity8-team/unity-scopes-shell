@@ -32,23 +32,24 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#include "scope-harness/registry-spawner.h"
-#include "scope-harness/test-utils.h"
+#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/test-utils.h>
 
 using namespace scopes_ng;
-//TEST_RUNTIME_CONFIG
+using namespace unity::scopeharness;
+
 class PreviewTest : public QObject
 {
     Q_OBJECT
 private:
-    QScopedPointer<RegistrySpawner> m_registry;
+    Registry::UPtr m_registry;
     QScopedPointer<Scopes> m_scopes;
     Scope* m_scope;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
     }
 
     void cleanupTestCase()
@@ -94,7 +95,7 @@ private Q_SLOTS:
         QScopedPointer<PreviewStack> preview_stack;
         QVERIFY(previewForFirstResult(m_scope, QString("x"), preview_stack));
         unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
+        QVERIFY(getFirstResult(m_scope->categories(), result));
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);
@@ -134,7 +135,7 @@ private Q_SLOTS:
         QScopedPointer<PreviewStack> preview_stack;
         QVERIFY(previewForFirstResult(m_scope, QString("expandable-widget"), preview_stack));
         unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope, result));
+        QVERIFY(getFirstResult(m_scope->categories(), result));
 
         QCOMPARE(preview_stack->rowCount(), 1);
         QCOMPARE(preview_stack->widgetColumnCount(), 1);

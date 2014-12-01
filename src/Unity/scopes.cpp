@@ -589,6 +589,11 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
 
 unity::shell::scopes::ScopeInterface* Scopes::getScope(int row) const
 {
+    return getScopeByRow(row);
+}
+
+Scope* Scopes::getScopeByRow(int row) const
+{
     if (row >= m_scopes.size() || row < 0) {
         return nullptr;
     }
