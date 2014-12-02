@@ -1,4 +1,4 @@
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=3)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=4)
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.2)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
@@ -15,6 +15,7 @@ add_definitions(
     -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
     -DTEST_SCOPEREGISTRY_BIN="${SCOPESLIB_SCOPEREGISTRY_BIN}"
     -DTEST_RUNTIME_CONFIG="${SCOPES_TEST_RUNTIME}"
+    -DTEST_SETTINGS_UNICODE="${CMAKE_CURRENT_SOURCE_DIR}/data/settings-unicode.ini"
     )
 
 include_directories(

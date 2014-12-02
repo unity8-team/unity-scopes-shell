@@ -25,6 +25,8 @@
 #include "overviewresults.h"
 #include "utils.h"
 
+#include <QDebug>
+
 namespace scopes_ng
 {
 
@@ -122,6 +124,14 @@ OverviewCategories::data(const QModelIndex& index, int role) const
 {
     if (!m_isSurfacing) {
         return Categories::data(index, role);
+    }
+
+    int row = index.row();
+    if (row >= m_surfaceCategories.size())
+    {
+        qWarning() << "OverviewCategories::data - invalid index" << row << "size"
+                << m_surfaceCategories.size();
+        return QVariant();
     }
 
     ScopesCategoryData* catData = m_surfaceCategories.at(index.row()).data();

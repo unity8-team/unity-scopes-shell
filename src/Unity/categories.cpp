@@ -44,23 +44,18 @@ namespace scopes_ng {
 class CategoryData
 {
 public:
-    CategoryData(scopes::Category::SCPtr const& category): m_resultsModel(nullptr), m_isSpecial(false)
+    CategoryData(scopes::Category::SCPtr const& category): m_isSpecial(false)
     {
         setCategory(category);
     }
 
+    CategoryData(CategoryData const& other) = delete;
+
     // constructor for special (shell-overriden) categories
     CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
-        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_resultsModel(nullptr), m_countObject(countObject), m_isSpecial(true)
+        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
     {
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
-    }
-
-    ~CategoryData()
-    {
-        if (m_resultsModel) {
-            delete m_resultsModel;
-        }
     }
 
     void setCategory(scopes::Category::SCPtr const& category)
@@ -191,12 +186,12 @@ public:
         return roles;
     }
 
-    void setResultsModel(ResultsModel* model)
+    void setResultsModel(QSharedPointer<ResultsModel> model)
     {
         m_resultsModel = model;
     }
 
-    ResultsModel* resultsModel() const
+    QSharedPointer<ResultsModel> resultsModel() const
     {
         return m_resultsModel;
     }
@@ -261,7 +256,7 @@ private:
     std::string m_rawTemplate;
     QJsonValue m_rendererTemplate;
     QJsonValue m_components;
-    ResultsModel* m_resultsModel;
+    QSharedPointer<ResultsModel> m_resultsModel;
     QPointer<QObject> m_countObject;
     bool m_isSpecial;
 
@@ -306,6 +301,12 @@ Categories::Categories(QObject* parent)
 {
 }
 
+Categories::~Categories()
+{
+    m_categories.clear();
+    m_categoryResults.clear();
+}
+
 int Categories::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
@@ -313,7 +314,7 @@ int Categories::rowCount(const QModelIndex& parent) const
     return m_categories.size();
 }
 
-ResultsModel* Categories::lookupCategory(std::string const& category_id)
+QSharedPointer<ResultsModel> Categories::lookupCategory(std::string const& category_id)
 {
     return m_categoryResults[category_id];
 }
@@ -344,7 +345,7 @@ int Categories::getFirstEmptyCategoryIndex() const
     return m_categories.size();
 }
 
-void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel* resultsModel)
+void Categories::registerCategory(scopes::Category::SCPtr category, QSharedPointer<ResultsModel> resultsModel)
 {
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
@@ -371,7 +372,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
             m_categories.insert(emptyIndex, catData);
             endInsertRows();
         } else {
-            CategoryData* catData = m_categories[index].data();
+            QSharedPointer<CategoryData> catData = m_categories[index];
             // check if any attributes of the category changed
             QVector<int> changedRoles(catData->updateAttributes(category));
 
@@ -386,15 +387,15 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
             }
         }
     } else {
-        CategoryData* catData = new CategoryData(category);
-        if (resultsModel == nullptr) {
-            resultsModel = new ResultsModel(this);
+        QSharedPointer<CategoryData> catData(new CategoryData(category));
+        if (!resultsModel) {
+            resultsModel.reset(new ResultsModel());
         }
         catData->setResultsModel(resultsModel);
 
         beginInsertRows(QModelIndex(), emptyIndex, emptyIndex);
 
-        m_categories.insert(emptyIndex, QSharedPointer<CategoryData>(catData));
+        m_categories.insert(emptyIndex, catData);
         resultsModel->setCategoryId(QString::fromStdString(category->id()));
         resultsModel->setComponentsMapping(catData->getComponentsMapping());
         resultsModel->setMaxAtrributesCount(catData->getMaxAttributes());
@@ -404,7 +405,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, ResultsModel
     }
 }
 
-void Categories::updateResultCount(ResultsModel* resultsModel)
+void Categories::updateResultCount(QSharedPointer<ResultsModel> resultsModel)
 {
     int idx = -1;
     for (int i = 0; i < m_categories.count(); i++) {
@@ -429,7 +430,7 @@ void Categories::clearAll()
 {
     if (m_categories.count() == 0) return;
 
-    Q_FOREACH(ResultsModel* model, m_categoryResults) {
+    Q_FOREACH(QSharedPointer<ResultsModel> model, m_categoryResults) {
         model->clearResults();
     }
 
@@ -450,7 +451,7 @@ bool Categories::overrideCategoryJson(QString const& categoryId, QString const& 
 {
     int idx = getCategoryIndex(categoryId);
     if (idx >= 0) {
-        CategoryData* catData = m_categories.at(idx).data();
+        QSharedPointer<CategoryData> catData = m_categories.at(idx);
         if (!catData->overrideTemplate(json.toStdString())) {
             return false;
         }
@@ -477,10 +478,10 @@ void Categories::addSpecialCategory(QString const& categoryId, QString const& na
     if (index >= 0) {
         qWarning("ERROR! Category with id \"%s\" already exists!", categoryId.toStdString().c_str());
     } else {
-        CategoryData* catData = new CategoryData(categoryId, name, icon, rawTemplate, countObject);
+        QSharedPointer<CategoryData> catData(new CategoryData(categoryId, name, icon, rawTemplate, countObject));
         // prepend the category
         beginInsertRows(QModelIndex(), 0, 0);
-        m_categories.prepend(QSharedPointer<CategoryData>(catData));
+        m_categories.prepend(catData);
         endInsertRows();
 
         if (countObject) {
@@ -510,8 +511,22 @@ void Categories::countChanged()
 QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
-    CategoryData* catData = m_categories.at(index.row()).data();
-    ResultsModel* resultsModel = catData->resultsModel();
+    int row = index.row();
+    if (row >= m_categories.size())
+    {
+        qWarning() << "Categories::data - invalid index" << row << "size"
+                << m_categories.size();
+        return QVariant();
+    }
+
+    QSharedPointer<CategoryData> catData = m_categories.at(row);
+
+    if (!catData)
+    {
+        qWarning() << "Categories::data - invalid category data at" << row << "size"
+                        << m_categories.size();
+        return QVariant();
+    }
 
     switch (role) {
         case RoleCategoryId:
@@ -529,7 +544,17 @@ Categories::data(const QModelIndex& index, int role) const
         case RoleHeaderLink:
             return catData->headerLink();
         case RoleResults:
-            return QVariant::fromValue(resultsModel);
+        {
+            QSharedPointer<ResultsModel> resultsModel = catData->resultsModel();
+            if (resultsModel)
+            {
+                return QVariant::fromValue(resultsModel.data());
+            }
+            else
+            {
+                return QVariant();
+            }
+        }
         case RoleCount:
             return catData->resultsModelCount();
         default:
