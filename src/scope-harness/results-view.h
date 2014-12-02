@@ -18,15 +18,17 @@
 
 #pragma once
 
+#include <unity/shell/scopes/ScopeInterface.h>
+
+#include <unity/util/DefinesPtrs.h>
+
+#include <scope-harness/types.h>
+
 #include <memory>
 #include <string>
 
 #include <QVariantMap>
 #include <qglobal.h>
-
-#include <unity/shell/scopes/ScopeInterface.h>
-
-#include <unity/util/DefinesPtrs.h>
 
 namespace scopes_ng
 {
@@ -81,12 +83,18 @@ public:
 
     int queryId() const;
 
+    CategoryList categories() const;
+
+    CategoryResultListPair category(unsigned int row) const;
+
+    CategoryResultListPair category(const std::string& categoryId) const;
+
     unity::shell::scopes::ScopeInterface::Status status() const;
 
     // TODO Remove / replace these
-    unity::shell::scopes::CategoriesInterface* categories();
+    unity::shell::scopes::CategoriesInterface* raw_categories() const;
 
-    unity::shell::scopes::ScopeInterface* activeScope();
+    unity::shell::scopes::ScopeInterface* activeScope() const;
 
 protected:
     struct Priv;

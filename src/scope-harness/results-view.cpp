@@ -19,12 +19,14 @@
 #include <QSignalSpy>
 
 #include <Unity/scopes.h>
+#include <Unity/categories.h>
 
 #include <scope-harness/results-view.h>
 #include <scope-harness/test-utils.h>
 
 using namespace std;
 namespace ng = scopes_ng;
+namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
 
 namespace unity
@@ -136,13 +138,89 @@ void ResultsView::waitForResultsChange()
     throwIf(p->m_active_scope->searchInProgress(), "");
 }
 
-ss::CategoriesInterface* ResultsView::categories()
+
+CategoryList ResultsView::categories() const
+{
+    auto cats = raw_categories();
+
+    CategoryList result;
+    for (int i = 0; i < cats->rowCount(); ++i)
+    {
+        try
+        {
+            result.emplace_back(category(i));
+        }
+        catch (range_error& e)
+        {
+        }
+    }
+
+    return result;
+}
+
+CategoryResultListPair ResultsView::category(unsigned int row) const
+{
+    auto cats = raw_categories();
+
+    CategoryResultListPair result;
+    {
+        QVariant variant = cats->data(cats->index(row), 999999);
+
+        if (!variant.canConvert<sc::Category::SCPtr>())
+        {
+            throw std::range_error("Invalid category data at index " + to_string(row));
+        }
+        result.first = variant.value<sc::Category::SCPtr>();
+    }
+
+    QVariant resultsVariant = cats->data(
+            cats->index(row), ss::CategoriesInterface::Roles::RoleResults);
+    auto results = resultsVariant.value<ss::ResultsModelInterface*>();
+    if (results)
+    {
+        for (int i = 0; i < results->rowCount(); ++i)
+        {
+            auto idx = results->index(i);
+            auto r =
+                    results->data(idx,
+                                  ss::ResultsModelInterface::Roles::RoleResult).value<
+                            sc::Result::SPtr>();
+            throwIfNot(r.get(), "Got null result");
+            result.second.emplace_back(r);
+        }
+    }
+
+    return result;
+}
+
+CategoryResultListPair ResultsView::category(const string& categoryId_) const
+{
+    auto cats = raw_categories();
+
+    QString categoryId = QString::fromStdString(categoryId_);
+    int row = -1;
+
+    for (int i = 0; row < cats->rowCount(); ++row)
+    {
+        QVariant variant = cats->data(cats->index(i),
+                                      ss::CategoriesInterface::RoleCategoryId);
+        if (variant.toString() == categoryId)
+        {
+            break;
+        }
+    }
+
+    throwIf(row == -1, "Could not find category");
+    return category(row);
+}
+
+ss::CategoriesInterface* ResultsView::raw_categories() const
 {
     p->checkActiveScope();
     return p->m_active_scope->categories();
 }
 
-ss::ScopeInterface* ResultsView::activeScope()
+ss::ScopeInterface* ResultsView::activeScope() const
 {
     p->checkActiveScope();
     return p->m_active_scope;

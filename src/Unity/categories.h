@@ -73,5 +73,6 @@ private:
 } // namespace scopes_ng
 
 Q_DECLARE_METATYPE(scopes_ng::Categories*)
+Q_DECLARE_METATYPE(std::shared_ptr<const unity::scopes::Category>)
 
 #endif // NG_CATEGORIES_H

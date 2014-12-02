@@ -32,12 +32,21 @@
 #include <unity/shell/scopes/CategoriesInterface.h>
 #include <unity/shell/scopes/ResultsModelInterface.h>
 
+#include <scope-harness/category-matcher.h>
+#include <scope-harness/category-list-matcher.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
+using namespace std;
 namespace sh = unity::scopeharness;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
+
+#define QVERIFY2_PAIR(statement) \
+do {\
+    auto result = (statement);\
+    QVERIFY2(result.success(), result.concat_failures().c_str());\
+} while (0)
 
 class CountObject : public QObject
 {
@@ -114,17 +123,13 @@ private Q_SLOTS:
         resultsView->setQuery("");
 
         // ensure categories have > 0 rows
-        auto categories = resultsView->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleName), QVariant(QString("Category 1")));
-        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleIcon), QVariant(QString("")));
-        QVERIFY(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleHeaderLink).toString().isNull());
-
         // ensure results have some data
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results->rowCount() > 0);
+        QVERIFY2_PAIR(
+                sh::CategoryListMatcher()
+                    .hasAtLeast(1)
+                    .mode(sh::CategoryListMatcher::Mode::id)
+                    .category(sh::CategoryMatcher("cat1").title("Category 1").icon("").headerLink("").hasAtLeast(1))
+                    .match(resultsView->categories()));
     }
 
 //    void testScopesGet()
@@ -186,7 +191,7 @@ private Q_SLOTS:
         resultsView->setQuery("expansion-query");
 
         // ensure categories have > 0 rows
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -202,7 +207,7 @@ private Q_SLOTS:
         resultsView->setQuery("");
 
         // ensure categories have > 0 rows
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         auto categories_count = categories->rowCount();
         QVERIFY(categories_count > 0);
 
@@ -219,7 +224,7 @@ private Q_SLOTS:
         resultsView->setQuery("");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -246,7 +251,7 @@ private Q_SLOTS:
         QCOMPARE(resultsView->queryId(), 0);
 
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -269,7 +274,7 @@ private Q_SLOTS:
         // new search
         resultsView->setQuery("m");
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -295,7 +300,7 @@ private Q_SLOTS:
         // appends to previous search
         resultsView->setQuery("met");
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -321,7 +326,7 @@ private Q_SLOTS:
         // removes characters from previous search
         resultsView->setQuery("m");
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -347,7 +352,7 @@ private Q_SLOTS:
         // new non-empty search again
         resultsView->setQuery("iron");
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -373,7 +378,7 @@ private Q_SLOTS:
         // new empty search again
         resultsView->setQuery("");
         {
-            auto categories = resultsView->categories();
+            auto categories = resultsView->raw_categories();
             QVERIFY(categories->rowCount() > 0);
             QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
             auto results = results_var.value<ss::ResultsModelInterface*>();
@@ -404,7 +409,7 @@ private Q_SLOTS:
         resultsView->setQuery("metadata");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -453,7 +458,7 @@ private Q_SLOTS:
         const QString query("query text");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0),
                 ss::CategoriesInterface::Roles::RoleResults);
@@ -507,7 +512,7 @@ private Q_SLOTS:
         resultsView->setQuery("music");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -527,11 +532,12 @@ private Q_SLOTS:
         resultsView->setQuery("metadata");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
         auto results = results_var.value<ss::ResultsModelInterface*>();
+        QVERIFY(results);
         QVERIFY(results->rowCount() > 0);
 
         auto idx = results->index(0);
@@ -558,7 +564,7 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("");
 
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QString rawTemplate(R"({"schema-version": 1, "template": {"category-layout": "special"}})");
         CountObject* countObject = new CountObject(categories);
         categories->addSpecialCategory("special", "Special", "", rawTemplate, countObject);
@@ -593,7 +599,8 @@ private Q_SLOTS:
         resultsView->setQuery("rating");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
+
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -615,7 +622,7 @@ private Q_SLOTS:
         resultsView->setQuery("attributes");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
         QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
@@ -639,7 +646,7 @@ private Q_SLOTS:
         resultsView->setQuery("background");
 
         // get ResultsModel instance
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
         QVariant renderer_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleRenderer);
         QVariantMap renderer(renderer_var.toMap());
@@ -670,7 +677,7 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("minimal");
 
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
 
         // get renderer_template and components
@@ -715,7 +722,7 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("z");
 
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QVERIFY(categories->rowCount() > 0);
 
         qRegisterMetaType<QVector<int>>();
@@ -742,7 +749,7 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("two-categories");
 
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QCOMPARE(categories->rowCount(), 2);
 
         QStringList order1;
@@ -770,7 +777,7 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("two-categories-one-result");
 
-        auto categories = resultsView->categories();
+        auto categories = resultsView->raw_categories();
         QCOMPARE(categories->rowCount(), 1);
 
         QStringList order1;
@@ -796,7 +803,7 @@ private Q_SLOTS:
         resultsView->setQuery("v");
 
         unity::scopes::Result::SPtr result;
-        QVERIFY(sh::getFirstResult(resultsView->categories(), result));
+        QVERIFY(sh::getFirstResult(resultsView->raw_categories(), result));
 
         QSignalSpy spy(resultsView->activeScope(), SIGNAL(hideDash()));
         resultsView->activeScope()->activate(QVariant::fromValue(result));
