@@ -743,6 +743,7 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
         m_settingsModel.reset(
                 new SettingsModel(shareDir, id(),
                         scopeVariantToQVariant(settings_definitions), this));
+        QObject::connect(m_settingsModel.data(), &SettingsModel::settingsChanged, this, &Scope::invalidateResults);
     }
     catch (unity::scopes::NotFoundException&)
     {

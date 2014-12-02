@@ -197,4 +197,6 @@ void SettingsModel::settings_timeout()
     QVariant value = timer->property("value");
 
     m_settings->setValue(setting_id, value);
+
+    Q_EMIT settingsChanged();
 }
