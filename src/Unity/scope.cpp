@@ -624,6 +624,7 @@ void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
+        qDebug() << "Setting current nav id:" <<  this->id() << id;
         m_currentNavigationId = id;
         Q_EMIT currentNavigationIdChanged();
     }
@@ -702,6 +703,7 @@ void Scope::dispatchSearch()
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
+            qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
             scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
