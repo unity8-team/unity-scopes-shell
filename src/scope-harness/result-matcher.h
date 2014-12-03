@@ -31,43 +31,34 @@ namespace unity
 namespace scopeharness
 {
 
-class ResultMatcher;
-
-class Q_DECL_EXPORT CategoryMatcher
+class Q_DECL_EXPORT ResultMatcher
 {
 public:
-    enum class Mode
-    {
-        all, starts_with, uri
-    };
+    ResultMatcher(const std::string& uri);
 
-    CategoryMatcher(const std::string& id);
+    ~ResultMatcher() = default;
 
-    CategoryMatcher(const CategoryMatcher& other);
+    ResultMatcher(const ResultMatcher& other);
 
-    CategoryMatcher& operator=(const CategoryMatcher& other);
+    ResultMatcher& operator=(const ResultMatcher& other);
 
-    CategoryMatcher& operator=(CategoryMatcher&& other);
+    ResultMatcher& operator=(ResultMatcher&& other);
 
-    ~CategoryMatcher() = default;
+    ResultMatcher& uri(const std::string& uri);
 
-    CategoryMatcher& mode(Mode mode);
+    ResultMatcher& dndUri(const std::string& dndUri);
 
-    CategoryMatcher& title(const std::string& title);
+    ResultMatcher& title(const std::string& title);
 
-    CategoryMatcher& icon(const std::string& icon);
+    ResultMatcher& art(const std::string& art);
 
-    CategoryMatcher& headerLink(const std::string& headerLink);
+    ResultMatcher& property(const std::string& name, const unity::scopes::Variant& value);
 
-    CategoryMatcher& hasAtLeast(unsigned int minimum);
+    MatchResult match(const unity::scopes::Result::SCPtr& result) const;
 
-    CategoryMatcher& result(const ResultMatcher& resultMatcher);
+    void match(MatchResult& matchResult, const unity::scopes::Result::SCPtr& result) const;
 
-    std::string& getId() const;
-
-    MatchResult match(const CategoryResultListPair& category) const;
-
-    void match(MatchResult& matchResult, const CategoryResultListPair& category) const;
+    std::string getUri() const;
 
 protected:
     struct Priv;

@@ -29,9 +29,9 @@ namespace unity
 {
 namespace scopeharness
 {
-typedef std::deque<std::shared_ptr<const unity::scopes::Result>> ResultList;
+typedef std::deque<unity::scopes::Result::SCPtr> ResultList;
 
-typedef std::pair<std::shared_ptr<const unity::scopes::Category>, ResultList> CategoryResultListPair;
+typedef std::pair<unity::scopes::Category::SCPtr, ResultList> CategoryResultListPair;
 
 typedef std::deque<CategoryResultListPair> CategoryList;
 

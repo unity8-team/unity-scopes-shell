@@ -40,6 +40,8 @@ struct CategoryListMatcher::Priv
 
     optional<unsigned int> m_hasAtLeast;
 
+    optional<unsigned int> m_hasExactly;
+
     void all(MatchResult& matchResult, const CategoryList& categoryList)
     {
         if (categoryList.size() != m_categories.size())
@@ -106,6 +108,12 @@ CategoryListMatcher& CategoryListMatcher::hasAtLeast(unsigned int minimum)
     return *this;
 }
 
+CategoryListMatcher& CategoryListMatcher::hasExactly(unsigned int amount)
+{
+    p->m_hasExactly = amount;
+    return *this;
+}
+
 MatchResult CategoryListMatcher::match(const CategoryList& categoryList) const
 {
     MatchResult matchResult;
@@ -114,6 +122,13 @@ MatchResult CategoryListMatcher::match(const CategoryList& categoryList) const
     {
         matchResult.failure(
                 "Expected at least " + to_string(p->m_hasAtLeast.get())
+                        + " categories");
+    }
+
+    if (p->m_hasExactly && categoryList.size() != p->m_hasExactly.get())
+    {
+        matchResult.failure(
+                "Expected exactly " + to_string(p->m_hasExactly.get())
                         + " categories");
     }
 

@@ -17,11 +17,16 @@
  */
 
 #include <scope-harness/category-matcher.h>
+#include <scope-harness/result-matcher.h>
 
 #include <boost/optional.hpp>
 
+#include <unordered_map>
+
 using namespace std;
 using namespace boost;
+
+namespace sc = unity::scopes;
 
 namespace unity
 {
@@ -34,6 +39,8 @@ struct CategoryMatcher::Priv
 
     Mode m_mode = Mode::all;
 
+    deque<ResultMatcher> m_results;
+
     optional<unsigned int> m_hasAtLeast;
 
     optional<string> m_title;
@@ -42,18 +49,51 @@ struct CategoryMatcher::Priv
 
     optional<string> m_headerLink;
 
-    void all(MatchResult& matchResult, const CategoryResultListPair& categoryPair)
+    void all(MatchResult& matchResult, const ResultList& resultList)
     {
+        if (resultList.size() != m_results.size())
+        {
+            matchResult.failure(
+                    "Result list contained " + to_string(resultList.size())
+                            + " expected " + to_string(m_results.size()));
+            return;
+        }
+
+        for (size_t row = 0; row < m_results.size(); ++row)
+        {
+            const auto& expectedResult = m_results[row];
+            const auto& actualResult = resultList[row];
+            expectedResult.match(matchResult, actualResult);
+        }
     }
 
-    void startsWith(MatchResult& matchResult, const CategoryResultListPair& categoryPair)
+    void startsWith(MatchResult& matchResult, const ResultList&)
     {
         matchResult.failure("Starts with not implemented");
     }
 
-    void uri(MatchResult& matchResult, const CategoryResultListPair& categoryPair)
+    void uri(MatchResult& matchResult, const ResultList& resultList)
     {
-        matchResult.failure("URI not implemented");
+        unordered_map<string, sc::Result::SCPtr> resultsByUri;
+        for (const auto& result : resultList)
+        {
+            resultsByUri[result->uri()] = result;
+        }
+
+        for (const auto& expectedResult : m_results)
+        {
+            auto it = resultsByUri.find(expectedResult.getUri());
+            if (it == resultsByUri.end())
+            {
+                matchResult.failure(
+                        "Result with URI " + expectedResult.getUri()
+                                + " could not be found");
+            }
+            else
+            {
+                expectedResult.match(matchResult, it->second);
+            }
+        }
     }
 };
 
@@ -73,6 +113,7 @@ CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
 {
     p->m_id = other.p->m_id;
     p->m_mode = other.p->m_mode;
+    p->m_results = other.p->m_results;
     p->m_hasAtLeast = other.p->m_hasAtLeast;
     p->m_title = other.p->m_title;
     p->m_icon = other.p->m_icon;
@@ -116,6 +157,12 @@ CategoryMatcher& CategoryMatcher::hasAtLeast(unsigned int minimum)
     return *this;
 }
 
+CategoryMatcher& CategoryMatcher::result(const ResultMatcher& resultMatcher)
+{
+    p->m_results.emplace_back(resultMatcher);
+    return *this;
+}
+
 void CategoryMatcher::match(MatchResult& matchResult, const CategoryResultListPair& categoryPair) const
 {
     const auto& category = categoryPair.first;
@@ -152,17 +199,20 @@ void CategoryMatcher::match(MatchResult& matchResult, const CategoryResultListPa
 
     // TODO Support for header link. Where does it come from?
 
-    switch (p->m_mode)
+    if (!p->m_results.empty())
     {
-        case Mode::all:
-            p->all(matchResult, categoryPair);
-            break;
-        case Mode::starts_with:
-            p->startsWith(matchResult, categoryPair);
-            break;
-        case Mode::uri:
-            p->uri(matchResult, categoryPair);
-            break;
+        switch (p->m_mode)
+        {
+            case Mode::all:
+                p->all(matchResult, results);
+                break;
+            case Mode::starts_with:
+                p->startsWith(matchResult, results);
+                break;
+            case Mode::uri:
+                p->uri(matchResult, results);
+                break;
+        }
     }
 }
 

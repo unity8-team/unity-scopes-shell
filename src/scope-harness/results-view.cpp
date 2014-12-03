@@ -77,17 +77,15 @@ void ResultsView::setActiveScope(const std::string &id_)
             p->m_active_scope = scope;
             QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
 
-            qDebug() << "Activating scope:" << scope->id();
             scope->setSearchQuery("");
             scope->setActive(true);
 
             if (!scope->searchInProgress())
             {
-                qDebug() << "Waiting for search to start" << spy.wait(100);
+                spy.wait(100);
             }
             if (scope->searchInProgress())
             {
-                qDebug() << "Waiting for search to complete";
                 throwIfNot(spy.wait(), "Active scope didn't finish searching");
             }
 
@@ -206,6 +204,7 @@ CategoryResultListPair ResultsView::category(const string& categoryId_) const
                                       ss::CategoriesInterface::RoleCategoryId);
         if (variant.toString() == categoryId)
         {
+            row = i;
             break;
         }
     }

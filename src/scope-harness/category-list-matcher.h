@@ -51,6 +51,8 @@ public:
 
     CategoryListMatcher& hasAtLeast(unsigned int minimum);
 
+    CategoryListMatcher& hasExactly(unsigned int amount);
+
     MatchResult match(const CategoryList& resultList) const;
 
 protected:

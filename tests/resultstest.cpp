@@ -34,6 +34,7 @@
 
 #include <scope-harness/category-matcher.h>
 #include <scope-harness/category-list-matcher.h>
+#include <scope-harness/result-matcher.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
@@ -42,7 +43,7 @@ namespace sh = unity::scopeharness;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
 
-#define QVERIFY2_PAIR(statement) \
+#define QVERIFY_MATCHRESULT(statement) \
 do {\
     auto result = (statement);\
     QVERIFY2(result.success(), result.concat_failures().c_str());\
@@ -124,12 +125,18 @@ private Q_SLOTS:
 
         // ensure categories have > 0 rows
         // ensure results have some data
-        QVERIFY2_PAIR(
-                sh::CategoryListMatcher()
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(sh::CategoryListMatcher::Mode::id)
+                .category(sh::CategoryMatcher("cat1")
+                    .title("Category 1")
+                    .icon("")
+                    .headerLink("")
                     .hasAtLeast(1)
-                    .mode(sh::CategoryListMatcher::Mode::id)
-                    .category(sh::CategoryMatcher("cat1").title("Category 1").icon("").headerLink("").hasAtLeast(1))
-                    .match(resultsView->categories()));
+                )
+                .match(resultsView->categories())
+        );
     }
 
 //    void testScopesGet()
@@ -206,15 +213,21 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("");
 
-        // ensure categories have > 0 rows
-        auto categories = resultsView->raw_categories();
-        auto categories_count = categories->rowCount();
-        QVERIFY(categories_count > 0);
+        // ensure categories has 1 row
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .hasExactly(1)
+                .match(resultsView->categories())
+        );
 
         resultsView->setQuery("foo");
 
         // shouldn't create more nor fewer categories
-        QVERIFY(categories->rowCount() == categories_count);
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .hasExactly(1)
+                .match(resultsView->categories())
+        );
     }
 
     void testBasicResultData()
@@ -223,20 +236,21 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results->rowCount() > 0);
-
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleUri).toString(), QString("test:uri"));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleDndUri).toString(), QString("test:dnd_uri"));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"\""));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).toString(), QString("art"));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleCategoryId), categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(sh::CategoryListMatcher::Mode::id)
+                .category(sh::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(sh::CategoryMatcher::Mode::uri)
+                    .result(sh::ResultMatcher("test:uri")
+                        .dndUri("test:dnd_uri")
+                        .title("result for: \"\"")
+                        .art("art")
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testSessionId()
@@ -245,80 +259,68 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("");
 
-        std::string lastSessionId;
+        string lastSessionId;
 
         QVERIFY(!resultsView->sessionId().empty());
         QCOMPARE(resultsView->queryId(), 0);
 
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(0))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 0);
-
-            lastSessionId = sessionId;
+            lastSessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
         }
 
         // new search
         resultsView->setQuery("m");
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(0))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 0);
+            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
-
             lastSessionId = sessionId;
         }
 
         // appends to previous search
         resultsView->setQuery("met");
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(1))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 1);
+            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
 
             // session id unchanged
-            QVERIFY(sessionId == lastSessionId);
+            QCOMPARE(sessionId, lastSessionId);
 
             lastSessionId = sessionId;
         }
@@ -326,22 +328,19 @@ private Q_SLOTS:
         // removes characters from previous search
         resultsView->setQuery("m");
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(2))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 2);
+            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
 
             // session id unchanged
             QVERIFY(sessionId == lastSessionId);
@@ -352,22 +351,19 @@ private Q_SLOTS:
         // new non-empty search again
         resultsView->setQuery("iron");
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(0))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 0);
+            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -378,22 +374,19 @@ private Q_SLOTS:
         // new empty search again
         resultsView->setQuery("");
         {
-            auto categories = resultsView->raw_categories();
-            QVERIFY(categories->rowCount() > 0);
-            QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-            auto results = results_var.value<ss::ResultsModelInterface*>();
-            QVERIFY(results->rowCount() > 0);
+            QVERIFY_MATCHRESULT(
+                sh::CategoryListMatcher()
+                    .category(sh::CategoryMatcher("cat1")
+                        .mode(sh::CategoryMatcher::Mode::uri)
+                        .result(sh::ResultMatcher("test:uri")
+                            .property("session-id", sc::Variant(resultsView->sessionId()))
+                            .property("query-id", sc::Variant(0))
+                        )
+                    )
+                    .match(resultsView->categories())
+            );
 
-            auto idx = results->index(0);
-            auto result = results->data(idx, ss::ResultsModelInterface::Roles::RoleResult).value<std::shared_ptr<sc::Result>>();
-
-            auto sessionId = (*result)["session-id"].get_string();
-            auto queryId = (*result)["query-id"].get_int();
-
-            // mock scope should send session-id and query-id it received back via custom result's values
-            QCOMPARE(sessionId, resultsView->sessionId());
-            QCOMPARE(queryId, resultsView->queryId());
-            QCOMPARE(queryId, 0);
+            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);

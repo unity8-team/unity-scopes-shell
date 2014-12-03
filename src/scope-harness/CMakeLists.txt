@@ -19,6 +19,7 @@ add_library(
     match-result.cpp
     pre-existing-registry.cpp
     preview-view.cpp
+    result-matcher.cpp
     results-view.cpp
     scope-harness.cpp
     test-utils.cpp
