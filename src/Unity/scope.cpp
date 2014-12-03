@@ -105,7 +105,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     m_aggregatorTimer.setSingleShot(true);
     connect(m_aggregatorTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_clearTimer.setSingleShot(true);
-    conntect(m_clearTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
+    connect(m_clearTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
