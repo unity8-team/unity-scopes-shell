@@ -148,7 +148,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     } else { // status in [FINISHED, ERROR]
         m_aggregatorTimer.stop();
 
-        flushUpdates();
+        flushUpdates(true);
 
         setSearchInProgress(false);
 
@@ -303,7 +303,7 @@ void Scope::typingFinished()
     Q_EMIT searchQueryChanged();
 }
 
-void Scope::flushUpdates()
+void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
         // TODO: here we could do resultset diffs
@@ -356,18 +356,21 @@ void Scope::flushUpdates()
 
     m_lastRootDepartment = m_rootDepartment;
 
-    bool containsDepartments = m_rootDepartment.get() != nullptr;
-    // design decision - no navigation when doing searches
-    containsDepartments &= m_searchQuery.isEmpty();
+    if (finalize)
+    {
+        bool containsDepartments = m_rootDepartment.get() != nullptr;
+        // design decision - no navigation when doing searches
+        containsDepartments &= m_searchQuery.isEmpty();
+        
+        if (containsDepartments != m_hasNavigation) {
+            m_hasNavigation = containsDepartments;
+            Q_EMIT hasNavigationChanged();
+        }
 
-    if (containsDepartments != m_hasNavigation) {
-        m_hasNavigation = containsDepartments;
-        Q_EMIT hasNavigationChanged();
-    }
-
-    if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
-        m_currentNavigationId = "";
-        Q_EMIT currentNavigationIdChanged();
+        if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
+            m_currentNavigationId = "";
+            Q_EMIT currentNavigationIdChanged();
+        }
     }
 
     // process the alt navigation (sort order filter)

@@ -178,7 +178,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void typingFinished();
-    void flushUpdates();
+    void flushUpdates(bool finalize = false);
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
