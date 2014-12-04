@@ -356,7 +356,11 @@ void Scope::flushUpdates(bool finalize)
 
     m_lastRootDepartment = m_rootDepartment;
 
-    if (finalize)
+    //
+    // only consider resetting current department id if we are in final flushUpdates
+    // or received departments already. We don't know if we should reset it
+    // until query finishes because departments may still arrive.
+    if (finalize || m_rootDepartment.get() != nullptr)
     {
         bool containsDepartments = m_rootDepartment.get() != nullptr;
         // design decision - no navigation when doing searches
@@ -368,6 +372,7 @@ void Scope::flushUpdates(bool finalize)
         }
 
         if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
+            qDebug() << "Resetting current nav id";
             m_currentNavigationId = "";
             Q_EMIT currentNavigationIdChanged();
         }
@@ -392,26 +397,34 @@ void Scope::flushUpdates(bool finalize)
 
     m_lastSortOrderFilter = m_sortOrderFilter;
 
-    bool containsAltNav = m_sortOrderFilter.get() != nullptr;
-    // design decision - no navigation when doing searches
-    containsAltNav &= m_searchQuery.isEmpty();
+    //
+    // only consider resetting alt nav id if we are in final flushUpdates
+    // or received alt nav filter already. We don't know if we should reset it
+    // until query finishes because filter may still arrive.
+    if (finalize || m_sortOrderFilter.get() != nullptr)
+    {
+        bool containsAltNav = m_sortOrderFilter.get() != nullptr;
+        // design decision - no navigation when doing searches
+        containsAltNav &= m_searchQuery.isEmpty();
 
-    if (containsAltNav != m_hasAltNavigation) {
-        m_hasAltNavigation = containsAltNav;
-        Q_EMIT hasAltNavigationChanged();
-    }
+        if (containsAltNav != m_hasAltNavigation) {
+            m_hasAltNavigation = containsAltNav;
+            Q_EMIT hasAltNavigationChanged();
+        }
 
-    if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
-        m_currentAltNavigationId = "";
-        Q_EMIT currentAltNavigationIdChanged();
-    }
+        if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
+            qDebug() << "Resetting alt nav id";
+            m_currentAltNavigationId = "";
+            Q_EMIT currentAltNavigationIdChanged();
+        }
 
-    if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
-        m_currentAltNavigationId = currentAltNav;
-        Q_EMIT currentAltNavigationIdChanged();
+        if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
+            m_currentAltNavigationId = currentAltNav;
+            Q_EMIT currentAltNavigationIdChanged();
 
-        // update the alt navigation models
-        updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+            // update the alt navigation models
+            updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+        }
     }
 }
 
