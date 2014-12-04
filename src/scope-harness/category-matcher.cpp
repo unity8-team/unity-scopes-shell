@@ -74,10 +74,10 @@ struct CategoryMatcher::Priv
 
     void uri(MatchResult& matchResult, const ResultList& resultList)
     {
-        unordered_map<string, sc::Result::SCPtr> resultsByUri;
+        unordered_map<string, Result> resultsByUri;
         for (const auto& result : resultList)
         {
-            resultsByUri[result->uri()] = result;
+            resultsByUri.insert(make_pair(result.uri(), result));
         }
 
         for (const auto& expectedResult : m_results)

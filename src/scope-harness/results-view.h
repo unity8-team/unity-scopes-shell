@@ -63,6 +63,8 @@ public:
 
     void waitForResultsChange();
 
+    bool overrideCategoryJson(std::string const& categoryId, std::string const& json);
+
     std::string scopeId() const;
 
     std::string displayName() const;

@@ -31,6 +31,8 @@ namespace unity
 namespace scopeharness
 {
 
+class Result;
+
 class Q_DECL_EXPORT ResultMatcher
 {
 public:
@@ -52,11 +54,19 @@ public:
 
     ResultMatcher& art(const std::string& art);
 
+    ResultMatcher& subtitle(const std::string& subtitle);
+
+    ResultMatcher& emblem(const std::string& emblem);
+
+    ResultMatcher& mascot(const std::string& mascot);
+
+    ResultMatcher& attributes(const unity::scopes::Variant& attributes);
+
     ResultMatcher& property(const std::string& name, const unity::scopes::Variant& value);
 
-    MatchResult match(const unity::scopes::Result::SCPtr& result) const;
+    MatchResult match(const Result& result) const;
 
-    void match(MatchResult& matchResult, const unity::scopes::Result::SCPtr& result) const;
+    void match(MatchResult& matchResult, const Result& result) const;
 
     std::string getUri() const;
 

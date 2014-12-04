@@ -29,6 +29,66 @@ namespace unity
 {
 namespace scopeharness
 {
+namespace
+{
+static void check_variant(MatchResult& matchResult, const Result& result,
+    const string& name, const sc::Variant& actualValue, const sc::Variant& expectedValue)
+{
+    if (!(actualValue == expectedValue))
+    {
+        auto actualValueString = actualValue.serialize_json();
+        auto expectedValueString = expectedValue.serialize_json();
+        // serialize_json includes a trailing carriage return
+        actualValueString.pop_back();
+        expectedValueString.pop_back();
+
+        matchResult.failure(
+                "Result with URI '" + result.uri() + "' has '" + name
+                        + "' == '" + actualValueString + "' but expected '"
+                        + expectedValueString + "'");
+    }
+}
+
+static void check_variant(MatchResult& matchResult, const Result& result,
+    const string& name, const sc::Variant& expectedValue)
+{
+//    if (!result.contains(name))
+//    {
+//        matchResult.failure(
+//                "Result with URI '" + result.uri()
+//                        + "' does not contain expected property '" + name
+//                        + "'");
+//        return;
+//    }
+
+    const auto& actualValue = result[name];
+    check_variant(matchResult, result, name, actualValue, expectedValue);
+}
+
+
+static void check_string(MatchResult& matchResult, const Result& result,
+             const string& name, const string& actualValue,
+             const string& expectedValue)
+{
+    try
+    {
+        if (actualValue != expectedValue)
+        {
+            matchResult.failure(
+                    "Result with URI '" + result.uri() + "' has '" + name
+                            + "' == '" + actualValue + "' but expected '"
+                            + expectedValue + "'");
+        }
+    }
+    catch (exception& e)
+    {
+        matchResult.failure(
+                "Result with URI '" + result.uri()
+                        + "' does not contain expected property '" + name
+                        + "'");
+    }
+}
+}
 
 struct ResultMatcher::Priv
 {
@@ -39,6 +99,14 @@ struct ResultMatcher::Priv
     optional<string> m_title;
 
     optional<string> m_art;
+
+    optional<string> m_subtitle;
+
+    optional<string> m_emblem;
+
+    optional<string> m_mascot;
+
+    optional<sc::Variant> m_attributes;
 
     deque<pair<string, sc::Variant>> m_properties;
 };
@@ -61,6 +129,10 @@ ResultMatcher& ResultMatcher::operator=(const ResultMatcher& other)
     p->m_dndUri = other.p->m_dndUri;
     p->m_title = other.p->m_title;
     p->m_art = other.p->m_art;
+    p->m_subtitle = other.p->m_subtitle;
+    p->m_emblem = other.p->m_emblem;
+    p->m_mascot = other.p->m_mascot;
+    p->m_attributes = other.p->m_attributes;
     p->m_properties = other.p->m_properties;
     return *this;
 }
@@ -89,79 +161,79 @@ ResultMatcher& ResultMatcher::art(const string& art)
     return *this;
 }
 
+ResultMatcher& ResultMatcher::subtitle(const string& subtitle)
+{
+    p->m_subtitle = subtitle;
+    return *this;
+}
+
+ResultMatcher& ResultMatcher::emblem(const string& emblem)
+{
+    p->m_emblem = emblem;
+    return *this;
+}
+
+ResultMatcher& ResultMatcher::mascot(const string& mascot)
+{
+    p->m_mascot = mascot;
+    return *this;
+}
+
+ResultMatcher& ResultMatcher::attributes(const sc::Variant& attributes)
+{
+    p->m_attributes = attributes;
+    return *this;
+}
+
 ResultMatcher& ResultMatcher::property(const string& name, const sc::Variant& value)
 {
     p->m_properties.emplace_back(make_pair(name, value));
     return *this;
 }
 
-MatchResult ResultMatcher::match(const unity::scopes::Result::SCPtr& result) const
+MatchResult ResultMatcher::match(const Result& result) const
 {
     MatchResult matchResult;
     match(matchResult, result);
     return matchResult;
 }
 
-void ResultMatcher::match(MatchResult& matchResult, const unity::scopes::Result::SCPtr& result) const
+void ResultMatcher::match(MatchResult& matchResult, const Result& result) const
 {
-    if (result->uri() != p->m_uri)
+    check_string(matchResult, result, "uri", result.uri(), p->m_uri);
+    if (p->m_dndUri)
     {
-        matchResult.failure(
-                "Result has URI '" + result->uri() + "' but expected '"
-                        + p->m_uri + "'");
+        check_string(matchResult, result, "dnd_uri", result.dnd_uri(),
+                     p->m_dndUri.get());
     }
-
-    if (p->m_dndUri && result->dnd_uri() != p->m_dndUri)
+    if (p->m_title)
     {
-        matchResult.failure(
-                "Result with URI '" + result->uri() + "' has DND URI '"
-                        + result->dnd_uri() + "' but expected '" + p->m_dndUri.get()
-                        + "'");
+        check_string(matchResult, result, "title", result.title(), p->m_title.get());
     }
-
-    if (p->m_title && result->title() != p->m_title)
+    if (p->m_art)
     {
-        matchResult.failure(
-                "Result with URI '" + result->uri() + "' has title '"
-                        + result->title() + "' but expected '" + p->m_title.get()
-                        + "'");
+        check_string(matchResult, result, "art", result.art(), p->m_art.get());
     }
-
-    if (p->m_art && result->art() != p->m_art)
+    if (p->m_subtitle)
     {
-        matchResult.failure(
-                "Result with URI '" + result->uri() + "' has art '"
-                        + result->art() + "' but expected '" + p->m_art.get() + "'");
+        check_string(matchResult, result, "subtitle", result.subtitle(), p->m_subtitle.get());
+    }
+    if (p->m_emblem)
+    {
+        check_string(matchResult, result, "emblem", result.emblem(), p->m_emblem.get());
+    }
+    if (p->m_mascot)
+    {
+        check_string(matchResult, result, "mascot", result.mascot(), p->m_mascot.get());
+    }
+    if (p->m_attributes)
+    {
+        check_variant(matchResult, result, "attributes", result.attributes(), p->m_attributes.get());
     }
 
     for (const auto& property : p->m_properties)
     {
-        const auto& name = property.first;
-        const auto& expectedValue = property.second;
-
-        if (!result->contains(name))
-        {
-            matchResult.failure(
-                    "Result with URI '" + result->uri()
-                            + "' does not contain expected property '" + name
-                            + "'");
-            continue;
-        }
-
-        const auto& actualValue = (*result)[name];
-        if (!(actualValue == expectedValue))
-        {
-            auto actualValueString = actualValue.serialize_json();
-            auto expectedValueString = expectedValue.serialize_json();
-            // serialize_json includes a trailing carriage return
-            actualValueString.pop_back();
-            expectedValueString.pop_back();
-
-            matchResult.failure(
-                    "Result with URI '" + result->uri() + "' has '" + name
-                            + "' == '" + actualValueString + "' but expected '"
-                            + expectedValueString + "'");
-        }
+        check_variant(matchResult, result, property.first, property.second);
     }
 }
 

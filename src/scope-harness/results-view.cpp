@@ -136,6 +136,13 @@ void ResultsView::waitForResultsChange()
     throwIf(p->m_active_scope->searchInProgress(), "");
 }
 
+bool ResultsView::overrideCategoryJson(std::string const& categoryId, std::string const& json)
+{
+    p->checkActiveScope();
+
+    return p->m_active_scope->categories()->overrideCategoryJson(
+            QString::fromStdString(categoryId), QString::fromStdString(json));
+}
 
 CategoryList ResultsView::categories() const
 {
@@ -173,18 +180,14 @@ CategoryResultListPair ResultsView::category(unsigned int row) const
 
     QVariant resultsVariant = cats->data(
             cats->index(row), ss::CategoriesInterface::Roles::RoleResults);
-    auto results = resultsVariant.value<ss::ResultsModelInterface*>();
+    ss::ResultsModelInterface* results = resultsVariant.value<
+            ss::ResultsModelInterface*>();
     if (results)
     {
         for (int i = 0; i < results->rowCount(); ++i)
         {
             auto idx = results->index(i);
-            auto r =
-                    results->data(idx,
-                                  ss::ResultsModelInterface::Roles::RoleResult).value<
-                            sc::Result::SPtr>();
-            throwIfNot(r.get(), "Got null result");
-            result.second.emplace_back(r);
+            result.second.emplace_back(Result(results, idx));
         }
     }
 

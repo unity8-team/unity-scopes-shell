@@ -18,18 +18,18 @@
 
 #pragma once
 
+#include <scope-harness/result.h>
+
 #include <unity/scopes/Category.h>
 #include <unity/scopes/Result.h>
 
 #include <deque>
-#include <memory>
-#include <string>
 
 namespace unity
 {
 namespace scopeharness
 {
-typedef std::deque<unity::scopes::Result::SCPtr> ResultList;
+typedef std::deque<Result> ResultList;
 
 typedef std::pair<unity::scopes::Category::SCPtr, ResultList> CategoryResultListPair;
 

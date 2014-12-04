@@ -32,6 +32,9 @@
 #include <unity/shell/scopes/CategoriesInterface.h>
 #include <unity/shell/scopes/ResultsModelInterface.h>
 
+#include <unity/scopes/Variant.h>
+#include <unity/scopes/VariantBuilder.h>
+
 #include <scope-harness/category-matcher.h>
 #include <scope-harness/category-list-matcher.h>
 #include <scope-harness/result-matcher.h>
@@ -277,7 +280,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            lastSessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            lastSessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
         }
 
         // new search
@@ -295,7 +298,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -317,7 +320,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
 
             // session id unchanged
             QCOMPARE(sessionId, lastSessionId);
@@ -340,7 +343,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
 
             // session id unchanged
             QVERIFY(sessionId == lastSessionId);
@@ -363,7 +366,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -386,7 +389,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = (*resultsView->category("cat1").second.front())["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -401,25 +404,22 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("metadata");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results->rowCount() > 0);
-
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
-        // mapped to the same field name
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleSubtitle).toString(), QString("subtitle"));
-        // mapped to a different field name
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleEmblem).toString(), QString("emblem"));
-        // mapped but not present in the result
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleMascot).toString(), QString());
-        // unmapped
-        QVERIFY(results->data(idx, ss::ResultsModelInterface::Roles::RoleAttributes).isNull());
-        QVERIFY(results->data(idx, ss::ResultsModelInterface::Roles::RoleSummary).isNull());
+        // various fields have been mapped
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::uri)
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"metadata\"")
+                        .subtitle("subtitle")
+                        .emblem("emblem")
+                        .mascot(string())
+                        .attributes(sc::Variant())
+//                        .summary(sc::Variant())
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
 //    void testResultsInvalidation()
@@ -504,18 +504,17 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("music");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results->rowCount() > 0);
-
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleUri).toString(), QString("file:///tmp/foo.mp3"));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"music\""));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).toString(), QString("image://albumart/artist=Foo&album=FooAlbum"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::uri)
+                    .result(sh::ResultMatcher("file:///tmp/foo.mp3")
+                        .title("result for: \"music\"")
+                        .art("image://albumart/artist=Foo&album=FooAlbum")
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryOverride()
@@ -524,31 +523,48 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("metadata");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results);
-        QVERIFY(results->rowCount() > 0);
+        auto categories = resultsView->categories();
 
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleEmblem).toString(), QString("emblem"));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).toString(), QString("art"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"metadata\"")
+                        .emblem("emblem")
+                        .art("art")
+                    )
+                )
+                .match(categories)
+        );
 
         // drop all components but title
-        categories->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title"}})");
+        resultsView->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title"}})");
         // check that the model no longer has the components
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
-        QVERIFY(results->data(idx, ss::ResultsModelInterface::Roles::RoleEmblem).isNull());
-        QVERIFY(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).isNull());
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"metadata\"")
+                        .emblem(string())
+                        .art(string())
+                    )
+                )
+                .match(categories)
+        );
 
-        categories->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title", "art": {"field": "art"}}})");
+        resultsView->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title", "art": {"field": "art"}}})");
         // check that the model has the art
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"metadata\""));
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).toString(), QString("art"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"metadata\"")
+                        .emblem(string())
+                        .art("art")
+                    )
+                )
+                .match(categories)
+        );
     }
 
     void testSpecialCategory()
@@ -591,21 +607,23 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("rating");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
+        sc::VariantBuilder builder;
+        builder.add_tuple({{"value", sc::Variant("21 reviews")}});
 
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results);
-        QVERIFY(results->rowCount() > 0);
-
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"rating\""));
-        auto attributes = results->data(idx, ss::ResultsModelInterface::Roles::RoleAttributes).toList();
-        QVERIFY(attributes.size() >= 1);
-        QCOMPARE(attributes.at(0).toMap().value("value").toString(), QString("21 reviews"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::id)
+                .hasAtLeast(1)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::uri)
+                    .hasAtLeast(1)
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"rating\"")
+                        .attributes(builder.end())
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryAttributeLimit()
@@ -614,22 +632,26 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("attributes");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results);
-        QVERIFY(results->rowCount() > 0);
+        // Verify we only have 3 attributes
+        sc::VariantBuilder builder;
+        builder.add_tuple({{"value", sc::Variant("21 reviews")}});
+        builder.add_tuple({{"value", sc::Variant("4 comments")}});
+        builder.add_tuple({{"value", sc::Variant("28 stars")}});
 
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"attributes\""));
-        auto attributes = results->data(idx, ss::ResultsModelInterface::Roles::RoleAttributes).toList();
-        QVERIFY(attributes.size() == 3);
-        QCOMPARE(attributes[0].toMap().value("value").toString(), QString("21 reviews"));
-        QCOMPARE(attributes[1].toMap().value("value").toString(), QString("4 comments"));
-        QCOMPARE(attributes[2].toMap().value("value").toString(), QString("28 stars"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::id)
+                .hasAtLeast(1)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::uri)
+                    .hasAtLeast(1)
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"attributes\"")
+                        .attributes(builder.end())
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryWithBackground()
