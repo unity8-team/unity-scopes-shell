@@ -19,7 +19,6 @@
 #pragma once
 
 #include <scope-harness/match-result.h>
-#include <scope-harness/types.h>
 
 #include <memory>
 #include <string>
@@ -28,6 +27,10 @@
 
 namespace unity
 {
+namespace scopes
+{
+class Variant;
+}
 namespace scopeharness
 {
 
@@ -61,6 +64,8 @@ public:
     ResultMatcher& mascot(const std::string& mascot);
 
     ResultMatcher& attributes(const unity::scopes::Variant& attributes);
+
+    ResultMatcher& background(const unity::scopes::Variant& background);
 
     ResultMatcher& property(const std::string& name, const unity::scopes::Variant& value);
 

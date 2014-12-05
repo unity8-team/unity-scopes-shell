@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <scope-harness/types.h>
+#include <scope-harness/category.h>
 
 #include <memory>
 #include <string>
@@ -47,13 +47,15 @@ public:
 
     CategoryListMatcher& mode(Mode mode);
 
-    CategoryListMatcher& category(CategoryMatcher& categoryMatcher);
+    CategoryListMatcher& category(const CategoryMatcher& categoryMatcher);
+
+    CategoryListMatcher& category(CategoryMatcher&& categoryMatcher);
 
     CategoryListMatcher& hasAtLeast(unsigned int minimum);
 
     CategoryListMatcher& hasExactly(unsigned int amount);
 
-    MatchResult match(const CategoryList& resultList) const;
+    MatchResult match(const Category::List& resultList) const;
 
 protected:
     CategoryListMatcher(const CategoryListMatcher& other) = delete;

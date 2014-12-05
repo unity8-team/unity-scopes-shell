@@ -22,7 +22,7 @@
 
 #include <unity/util/DefinesPtrs.h>
 
-#include <scope-harness/types.h>
+#include <scope-harness/category.h>
 
 #include <memory>
 #include <string>
@@ -85,11 +85,11 @@ public:
 
     int queryId() const;
 
-    CategoryList categories() const;
+    Category::List categories() const;
 
-    CategoryResultListPair category(unsigned int row) const;
+    Category category(unsigned int row) const;
 
-    CategoryResultListPair category(const std::string& categoryId) const;
+    Category category(const std::string& categoryId) const;
 
     unity::shell::scopes::ScopeInterface::Status status() const;
 

@@ -19,7 +19,6 @@
 #pragma once
 
 #include <scope-harness/match-result.h>
-#include <scope-harness/types.h>
 
 #include <memory>
 #include <string>
@@ -28,9 +27,14 @@
 
 namespace unity
 {
+namespace scopes
+{
+class Variant;
+}
 namespace scopeharness
 {
 
+class Category;
 class ResultMatcher;
 
 class Q_DECL_EXPORT CategoryMatcher
@@ -61,13 +65,19 @@ public:
 
     CategoryMatcher& hasAtLeast(unsigned int minimum);
 
+    CategoryMatcher& renderer(const unity::scopes::Variant& renderer);
+
+    CategoryMatcher& components(const unity::scopes::Variant& components);
+
     CategoryMatcher& result(const ResultMatcher& resultMatcher);
+
+    CategoryMatcher& result(ResultMatcher&& resultMatcher);
 
     std::string& getId() const;
 
-    MatchResult match(const CategoryResultListPair& category) const;
+    MatchResult match(const Category& category) const;
 
-    void match(MatchResult& matchResult, const CategoryResultListPair& category) const;
+    void match(MatchResult& matchResult, const Category& category) const;
 
 protected:
     struct Priv;

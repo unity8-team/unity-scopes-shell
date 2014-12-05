@@ -16,7 +16,9 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <scope-harness/category.h>
 #include <scope-harness/category-matcher.h>
+#include <scope-harness/result.h>
 #include <scope-harness/result-matcher.h>
 
 #include <boost/optional.hpp>
@@ -32,6 +34,49 @@ namespace unity
 {
 namespace scopeharness
 {
+namespace
+{
+static void check_variant(MatchResult& matchResult, const Category& category,
+    const string& name, const sc::Variant& actualValue, const sc::Variant& expectedValue)
+{
+    if (!(actualValue == expectedValue))
+    {
+        auto actualValueString = actualValue.serialize_json();
+        auto expectedValueString = expectedValue.serialize_json();
+        // serialize_json includes a trailing carriage return
+        actualValueString.pop_back();
+        expectedValueString.pop_back();
+
+        matchResult.failure(
+                "Category with ID '" + category.id() + "' has '" + name
+                        + "' == '" + actualValueString + "' but expected '"
+                        + expectedValueString + "'");
+    }
+}
+
+static void check_string(MatchResult& matchResult, const Category& category,
+             const string& name, const string& actualValue,
+             const string& expectedValue)
+{
+    try
+    {
+        if (actualValue != expectedValue)
+        {
+            matchResult.failure(
+                    "Category with ID '" + category.id() + "' has '" + name
+                            + "' == '" + actualValue + "' but expected '"
+                            + expectedValue + "'");
+        }
+    }
+    catch (exception& e)
+    {
+        matchResult.failure(
+                "Category with ID '" + category.id()
+                        + "' does not contain expected property '" + name
+                        + "'");
+    }
+}
+}
 
 struct CategoryMatcher::Priv
 {
@@ -49,7 +94,11 @@ struct CategoryMatcher::Priv
 
     optional<string> m_headerLink;
 
-    void all(MatchResult& matchResult, const ResultList& resultList)
+    optional<sc::Variant> m_renderer;
+
+    optional<sc::Variant> m_components;
+
+    void all(MatchResult& matchResult, const Result::List& resultList)
     {
         if (resultList.size() != m_results.size())
         {
@@ -67,12 +116,12 @@ struct CategoryMatcher::Priv
         }
     }
 
-    void startsWith(MatchResult& matchResult, const ResultList&)
+    void startsWith(MatchResult& matchResult, const Result::List&)
     {
         matchResult.failure("Starts with not implemented");
     }
 
-    void uri(MatchResult& matchResult, const ResultList& resultList)
+    void uri(MatchResult& matchResult, const Result::List& resultList)
     {
         unordered_map<string, Result> resultsByUri;
         for (const auto& result : resultList)
@@ -118,6 +167,8 @@ CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
     p->m_title = other.p->m_title;
     p->m_icon = other.p->m_icon;
     p->m_headerLink = other.p->m_headerLink;
+    p->m_renderer = other.p->m_renderer;
+    p->m_components = other.p->m_components;
     return *this;
 }
 
@@ -157,47 +208,72 @@ CategoryMatcher& CategoryMatcher::hasAtLeast(unsigned int minimum)
     return *this;
 }
 
+CategoryMatcher& CategoryMatcher::renderer(const sc::Variant& renderer)
+{
+    p->m_renderer = renderer;
+    return *this;
+}
+
+CategoryMatcher& CategoryMatcher::components(const sc::Variant& components)
+{
+    p->m_components = components;
+    return *this;
+}
+
 CategoryMatcher& CategoryMatcher::result(const ResultMatcher& resultMatcher)
 {
     p->m_results.emplace_back(resultMatcher);
     return *this;
 }
 
-void CategoryMatcher::match(MatchResult& matchResult, const CategoryResultListPair& categoryPair) const
+CategoryMatcher& CategoryMatcher::result(ResultMatcher&& resultMatcher)
 {
-    const auto& category = categoryPair.first;
-    const auto& results = categoryPair.second;
+    p->m_results.emplace_back(move(resultMatcher));
+    return *this;
+}
 
-    if (p->m_id != category->id())
+void CategoryMatcher::match(MatchResult& matchResult, const Category& category) const
+{
+    auto results = category.results();
+
+    if (p->m_id != category.id())
     {
-        matchResult.failure("Category ID " + category->id() + " != " + p->m_id);
+        matchResult.failure("Category ID " + category.id() + " != " + p->m_id);
     }
 
     if (p->m_hasAtLeast && results.size() < p->m_hasAtLeast.get())
     {
         matchResult.failure(
-                "Category with ID " + category->id() + " contains only "
+                "Category with ID " + category.id() + " contains only "
                         + to_string(results.size())
                         + " results. Expected at least "
                         + to_string(p->m_hasAtLeast.get()));
     }
 
-    if (p->m_title && category->title() != p->m_title)
+    if (p->m_title)
     {
-        matchResult.failure(
-                "Category with ID " + category->id() + ", title '"
-                        + category->title() + "' != '" + p->m_title.get()
-                        + "'");
+        check_string(matchResult, category, "title", category.title(), p->m_title.get());
     }
 
-    if (p->m_icon && category->icon() != p->m_icon)
+    if (p->m_icon)
     {
-        matchResult.failure(
-                "Category with ID " + category->icon() + ", icon '"
-                        + category->icon() + "' != '" + p->m_icon.get() + "'");
+        check_string(matchResult, category, "icon", category.icon(), p->m_icon.get());
     }
 
-    // TODO Support for header link. Where does it come from?
+    if (p->m_headerLink)
+    {
+        check_string(matchResult, category, "header_link", category.headerLink(), p->m_headerLink.get());
+    }
+
+    if (p->m_renderer)
+    {
+        check_variant(matchResult, category, "renderer", category.renderer(), p->m_renderer.get());
+    }
+
+    if (p->m_components)
+    {
+        check_variant(matchResult, category, "components", category.components(), p->m_components.get());
+    }
 
     if (!p->m_results.empty())
     {
@@ -216,7 +292,7 @@ void CategoryMatcher::match(MatchResult& matchResult, const CategoryResultListPa
     }
 }
 
-MatchResult CategoryMatcher::match(const CategoryResultListPair& category) const
+MatchResult CategoryMatcher::match(const Category& category) const
 {
     MatchResult matchResult;
     match(matchResult, category);

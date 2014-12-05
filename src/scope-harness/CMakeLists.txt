@@ -14,6 +14,7 @@ add_definitions(
 
 add_library(
     scope-harness SHARED
+    category.cpp
     category-matcher.cpp
     category-list-matcher.cpp
     match-result.cpp

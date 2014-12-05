@@ -16,7 +16,10 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <scope-harness/result.h>
 #include <scope-harness/result-matcher.h>
+
+#include <unity/scopes/Variant.h>
 
 #include <boost/optional.hpp>
 
@@ -108,6 +111,8 @@ struct ResultMatcher::Priv
 
     optional<sc::Variant> m_attributes;
 
+    optional<sc::Variant> m_background;
+
     deque<pair<string, sc::Variant>> m_properties;
 };
 
@@ -133,6 +138,7 @@ ResultMatcher& ResultMatcher::operator=(const ResultMatcher& other)
     p->m_emblem = other.p->m_emblem;
     p->m_mascot = other.p->m_mascot;
     p->m_attributes = other.p->m_attributes;
+    p->m_background = other.p->m_background;
     p->m_properties = other.p->m_properties;
     return *this;
 }
@@ -185,6 +191,12 @@ ResultMatcher& ResultMatcher::attributes(const sc::Variant& attributes)
     return *this;
 }
 
+ResultMatcher& ResultMatcher::background(const sc::Variant& background)
+{
+    p->m_background = background;
+    return *this;
+}
+
 ResultMatcher& ResultMatcher::property(const string& name, const sc::Variant& value)
 {
     p->m_properties.emplace_back(make_pair(name, value));
@@ -229,6 +241,10 @@ void ResultMatcher::match(MatchResult& matchResult, const Result& result) const
     if (p->m_attributes)
     {
         check_variant(matchResult, result, "attributes", result.attributes(), p->m_attributes.get());
+    }
+    if (p->m_background)
+    {
+        check_variant(matchResult, result, "background", result.background(), p->m_background.get());
     }
 
     for (const auto& property : p->m_properties)

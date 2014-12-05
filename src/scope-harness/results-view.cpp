@@ -144,11 +144,11 @@ bool ResultsView::overrideCategoryJson(std::string const& categoryId, std::strin
             QString::fromStdString(categoryId), QString::fromStdString(json));
 }
 
-CategoryList ResultsView::categories() const
+Category::List ResultsView::categories() const
 {
     auto cats = raw_categories();
 
-    CategoryList result;
+    Category::List result;
     for (int i = 0; i < cats->rowCount(); ++i)
     {
         try
@@ -163,38 +163,36 @@ CategoryList ResultsView::categories() const
     return result;
 }
 
-CategoryResultListPair ResultsView::category(unsigned int row) const
+Category ResultsView::category(unsigned int row) const
 {
     auto cats = raw_categories();
+    auto categoryIndex = cats->index(row);
 
-    CategoryResultListPair result;
+    QVariant variant = cats->data(categoryIndex, 999999);
+    if (!variant.canConvert<sc::Category::SCPtr>())
     {
-        QVariant variant = cats->data(cats->index(row), 999999);
-
-        if (!variant.canConvert<sc::Category::SCPtr>())
-        {
-            throw std::range_error("Invalid category data at index " + to_string(row));
-        }
-        result.first = variant.value<sc::Category::SCPtr>();
+        throw std::range_error("Invalid category data at index " + to_string(row));
     }
+    auto rawCategory = variant.value<sc::Category::SCPtr>();
 
     QVariant resultsVariant = cats->data(
             cats->index(row), ss::CategoriesInterface::Roles::RoleResults);
-    ss::ResultsModelInterface* results = resultsVariant.value<
+    ss::ResultsModelInterface* resultModel = resultsVariant.value<
             ss::ResultsModelInterface*>();
-    if (results)
+    Result::List results;
+    if (resultModel)
     {
-        for (int i = 0; i < results->rowCount(); ++i)
+        for (int i = 0; i < resultModel->rowCount(); ++i)
         {
-            auto idx = results->index(i);
-            result.second.emplace_back(Result(results, idx));
+            auto idx = resultModel->index(i);
+            results.emplace_back(Result(resultModel, idx));
         }
     }
 
-    return result;
+    return Category(cats, categoryIndex, results);
 }
 
-CategoryResultListPair ResultsView::category(const string& categoryId_) const
+Category ResultsView::category(const string& categoryId_) const
 {
     auto cats = raw_categories();
 

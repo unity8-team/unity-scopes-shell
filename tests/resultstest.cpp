@@ -134,8 +134,8 @@ private Q_SLOTS:
                 .mode(sh::CategoryListMatcher::Mode::id)
                 .category(sh::CategoryMatcher("cat1")
                     .title("Category 1")
-                    .icon("")
-                    .headerLink("")
+                    .icon(string())
+                    .headerLink(string())
                     .hasAtLeast(1)
                 )
                 .match(resultsView->categories())
@@ -280,7 +280,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            lastSessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            lastSessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
         }
 
         // new search
@@ -298,7 +298,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -320,7 +320,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
 
             // session id unchanged
             QCOMPARE(sessionId, lastSessionId);
@@ -343,7 +343,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
 
             // session id unchanged
             QVERIFY(sessionId == lastSessionId);
@@ -366,7 +366,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -389,7 +389,7 @@ private Q_SLOTS:
                     .match(resultsView->categories())
             );
 
-            auto sessionId = resultsView->category("cat1").second.front()["session-id"].get_string();
+            auto sessionId = resultsView->category("cat1").results().front()["session-id"].get_string();
 
             // new session id
             QVERIFY(sessionId != lastSessionId);
@@ -660,29 +660,41 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("background");
 
-        // get ResultsModel instance
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant renderer_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleRenderer);
-        QVariantMap renderer(renderer_var.toMap());
-        QVERIFY(renderer.contains("card-background"));
-        QVERIFY(renderer["card-background"].canConvert<QVariantMap>());
-        QVariantMap cardBackground(renderer["card-background"].toMap());
-        QCOMPARE(cardBackground["type"], QVariant(QString("color")));
-        QCOMPARE(cardBackground["elements"], QVariant(QVariantList({QString("black")})));
-        QVariant results_var = categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results);
-        QVERIFY(results->rowCount() > 0);
+        sc::VariantMap renderer
+        {
+            {"card-background", sc::Variant(sc::VariantMap{
+                {"elements", sc::Variant(sc::VariantArray{sc::Variant("black")})},
+                {"type", sc::Variant("color")}
+            })},
+            {"card-layout", sc::Variant("vertical")},
+            {"card-size", sc::Variant("small")},
+            {"category-layout", sc::Variant("grid")},
+            {"collapsed-rows", sc::Variant(2.0)},
+            {"overlay-mode", sc::Variant()}
+        };
 
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"background\""));
-        QVariant background(results->data(idx, ss::ResultsModelInterface::Roles::RoleBackground));
-        QVERIFY(background.canConvert<QVariantMap>());
-        QVariantMap map(background.toMap());
-        QCOMPARE(map["type"], QVariant(QString("gradient")));
-        QCOMPARE(map["elements"], QVariant(QVariantList({QString("green"), QString("#ff00aa33")})));
+        sc::VariantMap background
+        {
+            {"elements", sc::Variant(
+                sc::VariantArray{
+                    sc::Variant("green"),
+                    sc::Variant("#ff00aa33")
+                })
+            },
+            {"type", sc::Variant("gradient") }
+        };
+
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .renderer(sc::Variant(renderer))
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"background\"")
+                        .background(sc::Variant(background))
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryDefaults()
@@ -692,43 +704,40 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("minimal");
 
-        auto categories = resultsView->raw_categories();
-        QVERIFY(categories->rowCount() > 0);
+        sc::VariantMap renderer
+        {
+            {"card-layout", sc::Variant("vertical")},
+            {"card-size", sc::Variant("small")},
+            {"category-layout", sc::Variant("grid")},
+            {"collapsed-rows", sc::Variant(2.0)},
+            {"overlay-mode", sc::Variant()}
+        };
 
-        // get renderer_template and components
-        auto cidx = categories->index(0);
-        QVariant components_var = categories->data(cidx, ss::CategoriesInterface::Roles::RoleComponents);
-        QVERIFY(components_var.canConvert<QVariantMap>());
-        QJsonObject components = QJsonValue::fromVariant(components_var).toObject();
-        QVariant renderer_var = categories->data(cidx, ss::CategoriesInterface::Roles::RoleRenderer);
-        QVERIFY(renderer_var.canConvert<QVariantMap>());
-        QJsonObject renderer = QJsonValue::fromVariant(renderer_var).toObject();
+        sc::VariantMap components
+        {
+            {"art", sc::Variant(sc::VariantMap{{"aspect-ratio", sc::Variant(1.0)}})},
+            {"attributes", sc::Variant(sc::VariantMap{{"max-count", sc::Variant(2.0)}})},
+            {"background", sc::Variant()},
+            {"emblem", sc::Variant()},
+            {"mascot", sc::Variant()},
+            {"overlay-color", sc::Variant()},
+            {"subtitle", sc::Variant()},
+            {"summary", sc::Variant()},
+            {"title", sc::Variant(sc::VariantMap{{"field", sc::Variant("title")}})}
+        };
 
-        int num_active_components = 0;
-        for (auto it = components.begin(); it != components.end(); ++it) {
-            if (it.value().isObject() && it.value().toObject().value("field").isString()) {
-                num_active_components++;
-            }
-        }
-        QCOMPARE(num_active_components, 1);
-        QVERIFY(renderer.contains("card-size"));
-        QCOMPARE(renderer.value("card-size"), QJsonValue(QString("small")));
-        QVERIFY(renderer.contains("card-layout"));
-        QCOMPARE(renderer.value("card-layout"), QJsonValue(QString("vertical")));
-        QVERIFY(renderer.contains("category-layout"));
-        QCOMPARE(renderer.value("category-layout"), QJsonValue(QString("grid")));
-
-        // get ResultsModel instance
-        QVariant results_var = categories->data(cidx, ss::CategoriesInterface::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<ss::ResultsModelInterface*>());
-        auto results = results_var.value<ss::ResultsModelInterface*>();
-        QVERIFY(results);
-        QVERIFY(results->rowCount() > 0);
-
-        auto idx = results->index(0);
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleTitle).toString(), QString("result for: \"minimal\""));
-        // components json doesn't specify "art"
-        QCOMPARE(results->data(idx, ss::ResultsModelInterface::Roles::RoleArt).toString(), QString());
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1")
+                    .renderer(sc::Variant(renderer))
+                    .components(sc::Variant(components))
+                    .result(sh::ResultMatcher("test:uri")
+                        .title("result for: \"minimal\"")
+                        .art(string())
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryDefinitionChange()
@@ -764,51 +773,61 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("two-categories");
 
-        auto categories = resultsView->raw_categories();
-        QCOMPARE(categories->rowCount(), 2);
-
-        QStringList order1;
-        order1 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-        order1 << categories->data(categories->index(1), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1"))
+                .category(sh::CategoryMatcher("cat2"))
+                .match(resultsView->categories())
+        );
 
         resultsView->setQuery("two-categories-reversed");
-        QCOMPARE(categories->rowCount(), 2);
-
-        QStringList order2;
-        order2 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-        order2 << categories->data(categories->index(1), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-
-        QCOMPARE(order1[0], QString("cat1"));
-        QCOMPARE(order1[1], QString("cat2"));
-        QCOMPARE(order2[0], QString("cat2"));
-        QCOMPARE(order2[1], QString("cat1"));
-        QCOMPARE(order1[0], order2[1]);
-        QCOMPARE(order1[1], order2[0]);
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat2"))
+                .category(sh::CategoryMatcher("cat1"))
+                .match(resultsView->categories())
+        );
     }
 
     void testCategoryOrderChange2()
     {
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope");
+
         resultsView->setQuery("two-categories-one-result");
-
-        auto categories = resultsView->raw_categories();
-        QCOMPARE(categories->rowCount(), 1);
-
-        QStringList order1;
-        order1 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat1"))
+                .match(resultsView->categories())
+        );
 
         resultsView->setQuery("two-categories-reversed");
-        QCOMPARE(categories->rowCount(), 2);
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .category(sh::CategoryMatcher("cat2"))
+                .category(sh::CategoryMatcher("cat1"))
+                .match(resultsView->categories())
+        );
 
-        QStringList order2;
-        order2 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-        order2 << categories->data(categories->index(1), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-
-        QCOMPARE(order1[0], QString("cat1"));
-        QCOMPARE(order2[0], QString("cat2"));
-        QCOMPARE(order2[1], QString("cat1"));
-        QCOMPARE(order1[0], order2[1]);
+//        resultsView->setQuery("two-categories-one-result");
+//
+//        auto categories = resultsView->raw_categories();
+//        QCOMPARE(categories->rowCount(), 1);
+//
+//        QStringList order1;
+//        order1 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
+//
+//        resultsView->setQuery("two-categories-reversed");
+//        QCOMPARE(categories->rowCount(), 2);
+//
+//        QStringList order2;
+//        order2 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
+//        order2 << categories->data(categories->index(1), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
+//
+//        QCOMPARE(order1[0], QString("cat1"));
+//        QCOMPARE(order2[0], QString("cat2"));
+//        QCOMPARE(order2[1], QString("cat1"));
+//        QCOMPARE(order1[0], order2[1]);
     }
 
     void testScopeActivation()

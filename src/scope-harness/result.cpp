@@ -117,6 +117,12 @@ sc::Variant Result::attributes() const noexcept
                                        ss::ResultsModelInterface::Roles::RoleAttributes));
 }
 
+sc::Variant Result::background() const noexcept
+{
+    return ng::qVariantToScopeVariant(p->m_resultsModel->data(p->m_index,
+                                       ss::ResultsModelInterface::Roles::RoleBackground));
+}
+
 sc::Variant const& Result::operator[](string const& key) const
 {
     return value(key);
