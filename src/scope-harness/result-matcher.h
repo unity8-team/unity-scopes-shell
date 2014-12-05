@@ -49,8 +49,6 @@ public:
 
     ResultMatcher& operator=(ResultMatcher&& other);
 
-    ResultMatcher& uri(const std::string& uri);
-
     ResultMatcher& dndUri(const std::string& dndUri);
 
     ResultMatcher& title(const std::string& title);

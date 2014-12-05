@@ -795,9 +795,15 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
 
         resultsView->setQuery("two-categories-one-result");
+
+        // FIXME: There are actually 3 categories in the CategoryModel at this point
+        // It seems like categories aren't being cleared out (perhaps intentionally?)
         QVERIFY_MATCHRESULT(
             sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1"))
+                .category(sh::CategoryMatcher("cat1")
+                    .result(sh::ResultMatcher("test:uri"))
+                )
+                .category(sh::CategoryMatcher("cat2"))
                 .match(resultsView->categories())
         );
 
@@ -808,26 +814,6 @@ private Q_SLOTS:
                 .category(sh::CategoryMatcher("cat1"))
                 .match(resultsView->categories())
         );
-
-//        resultsView->setQuery("two-categories-one-result");
-//
-//        auto categories = resultsView->raw_categories();
-//        QCOMPARE(categories->rowCount(), 1);
-//
-//        QStringList order1;
-//        order1 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-//
-//        resultsView->setQuery("two-categories-reversed");
-//        QCOMPARE(categories->rowCount(), 2);
-//
-//        QStringList order2;
-//        order2 << categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-//        order2 << categories->data(categories->index(1), ss::CategoriesInterface::Roles::RoleCategoryId).toString();
-//
-//        QCOMPARE(order1[0], QString("cat1"));
-//        QCOMPARE(order2[0], QString("cat2"));
-//        QCOMPARE(order2[1], QString("cat1"));
-//        QCOMPARE(order1[0], order2[1]);
     }
 
     void testScopeActivation()
