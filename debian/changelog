@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.4+15.04.20141205-0ubuntu1) vivid; urgency=low
+
+  [ Pawel Stolowski ]
+  * Support for Manage Dash as per latest designs. (LP: #1368670)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 05 Dec 2014 11:02:19 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141128-0ubuntu1) vivid; urgency=low
 
   [ Pete Woods ]
