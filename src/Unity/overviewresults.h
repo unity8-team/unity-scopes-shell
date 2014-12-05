@@ -25,6 +25,7 @@
 #include <unity/scopes/ScopeMetadata.h>
 
 #include <QHash>
+#include <QMap>
 
 namespace scopes_ng {
 
@@ -39,7 +40,7 @@ public:
 
     explicit OverviewResultsModel(QObject* parent = 0);
 
-    void setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results);
+    void setResults(const QList<unity::scopes::ScopeMetadata::SPtr>& results, const QMap<QString, QString>& scopeIdToName);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -54,7 +55,9 @@ public:
     Q_INVOKABLE int scopeIndex(const QString& scopeId) const;
 
 private:
+    void updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName);
     QList<unity::scopes::ScopeMetadata::SPtr> m_results;
+    QMap<QString, QString> m_childScopes;
 };
 
 } // namespace scopes_ng

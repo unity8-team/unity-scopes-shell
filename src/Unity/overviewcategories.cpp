@@ -54,11 +54,11 @@ OverviewCategories::OverviewCategories(QObject* parent)
     : scopes_ng::Categories(parent)
     , m_isSurfacing(true)
 {
-    m_allScopes.reset(new OverviewResultsModel(this));
+    m_otherScopes.reset(new OverviewResultsModel(this));
     m_favoriteScopes.reset(new OverviewResultsModel(this));
 
     m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("favorites", CATEGORY_JSON)));
-    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("all", CATEGORY_JSON)));
+    m_surfaceCategories.append(QSharedPointer<ScopesCategoryData>(new ScopesCategoryData("other", CATEGORY_JSON)));
 }
 
 OverviewCategories::~OverviewCategories()
@@ -74,9 +74,9 @@ void OverviewCategories::setSurfacingMode(bool surfacingMode)
     }
 }
 
-void OverviewCategories::setAllScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+void OverviewCategories::setOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName)
 {
-    m_allScopes->setResults(scopes);
+    m_otherScopes->setResults(scopes, scopeIdToName);
 
     if (!m_isSurfacing) return;
 
@@ -87,9 +87,9 @@ void OverviewCategories::setAllScopes(const QList<unity::scopes::ScopeMetadata::
     dataChanged(changedIndex, changedIndex, roles);
 }
 
-void OverviewCategories::setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+void OverviewCategories::setFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName)
 {
-    m_favoriteScopes->setResults(scopes);
+    m_favoriteScopes->setResults(scopes, scopeIdToName);
 
     if (!m_isSurfacing) return;
 
@@ -100,9 +100,14 @@ void OverviewCategories::setFavoriteScopes(const QList<unity::scopes::ScopeMetad
     dataChanged(changedIndex, changedIndex, roles);
 }
 
-void OverviewCategories::updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes)
+void OverviewCategories::updateOtherScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName)
 {
-    m_favoriteScopes->setResults(scopes);
+    m_otherScopes->setResults(scopes, scopeIdToName);
+}
+
+void OverviewCategories::updateFavoriteScopes(const QList<unity::scopes::ScopeMetadata::SPtr>& scopes, const QMap<QString, QString>& scopeIdToName)
+{
+    m_favoriteScopes->setResults(scopes, scopeIdToName);
 }
 
 int OverviewCategories::rowCount(const QModelIndex& parent) const
@@ -130,7 +135,7 @@ OverviewCategories::data(const QModelIndex& index, int role) const
     }
 
     ScopesCategoryData* catData = m_surfaceCategories.at(index.row()).data();
-    OverviewResultsModel* results = index.row() == 0 ? m_favoriteScopes.data() : m_allScopes.data();
+    OverviewResultsModel* results = index.row() == 0 ? m_favoriteScopes.data() : m_otherScopes.data();
 
     switch (role) {
         case RoleCategoryId:
