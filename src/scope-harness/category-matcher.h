@@ -42,7 +42,7 @@ class Q_DECL_EXPORT CategoryMatcher
 public:
     enum class Mode
     {
-        all, starts_with, uri
+        all, starts_with, by_uri
     };
 
     CategoryMatcher(const std::string& id);

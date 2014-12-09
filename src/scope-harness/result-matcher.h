@@ -63,6 +63,8 @@ public:
 
     ResultMatcher& attributes(const unity::scopes::Variant& attributes);
 
+    ResultMatcher& summary(const unity::scopes::Variant& summary);
+
     ResultMatcher& background(const unity::scopes::Variant& background);
 
     ResultMatcher& property(const std::string& name, const unity::scopes::Variant& value);

@@ -60,7 +60,7 @@ struct CategoryListMatcher::Priv
         }
     }
 
-    void id(MatchResult& matchResult, const Category::List& categoryList)
+    void byId(MatchResult& matchResult, const Category::List& categoryList)
     {
         unordered_map<string, Category> categoriesById;
         for (const auto& category : categoryList)
@@ -81,6 +81,24 @@ struct CategoryListMatcher::Priv
             {
                 expectedCategory.match(matchResult, it->second);
             }
+        }
+    }
+
+    void startsWith(MatchResult& matchResult, const Category::List& categoryList)
+    {
+        if (categoryList.size() < m_categories.size())
+        {
+            matchResult.failure(
+                    "Category list contained " + to_string(categoryList.size())
+                            + " expected at least " + to_string(m_categories.size()));
+            return;
+        }
+
+        for (size_t row = 0; row < m_categories.size(); ++row)
+        {
+            const auto& expectedCategory = m_categories[row];
+            const auto& actualCategory = categoryList[row];
+            expectedCategory.match(matchResult, actualCategory);
         }
     }
 };
@@ -145,8 +163,11 @@ MatchResult CategoryListMatcher::match(const Category::List& categoryList) const
             case Mode::all:
                 p->all(matchResult, categoryList);
                 break;
-            case Mode::id:
-                p->id(matchResult, categoryList);
+            case Mode::by_id:
+                p->byId(matchResult, categoryList);
+                break;
+            case Mode::starts_with:
+                p->startsWith(matchResult, categoryList);
                 break;
         }
     }

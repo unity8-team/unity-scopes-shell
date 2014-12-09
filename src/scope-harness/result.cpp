@@ -16,6 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/result.h>
 #include <scope-harness/test-utils.h>
 
@@ -42,12 +43,11 @@ struct Result::Priv
     sc::Variant m_null;
 };
 
-Result::Result(ss::ResultsModelInterface* resultsModel,
-               const QModelIndex& index) :
+Result::Result(const internal::ResultArguments& arguments) :
         p(new Priv)
 {
-    p->m_resultsModel = resultsModel;
-    p->m_index = index;
+    p->m_resultsModel = arguments.resultsModel;
+    p->m_index = arguments.index;
 }
 
 Result::Result(const Result& other) :
@@ -115,6 +115,12 @@ sc::Variant Result::attributes() const noexcept
 {
     return ng::qVariantToScopeVariant(p->m_resultsModel->data(p->m_index,
                                        ss::ResultsModelInterface::Roles::RoleAttributes));
+}
+
+sc::Variant Result::summary() const noexcept
+{
+    return ng::qVariantToScopeVariant(p->m_resultsModel->data(p->m_index,
+                                       ss::ResultsModelInterface::Roles::RoleSummary));
 }
 
 sc::Variant Result::background() const noexcept

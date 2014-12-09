@@ -38,7 +38,7 @@ class Q_DECL_EXPORT CategoryListMatcher
 public:
     enum class Mode
     {
-        all, id
+        all, by_id, starts_with
     };
 
     CategoryListMatcher();

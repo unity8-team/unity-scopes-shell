@@ -25,21 +25,14 @@
 #include <deque>
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-class QModelIndex;
-QT_END_NAMESPACE
-
 namespace unity
 {
-namespace shell
-{
-namespace scopes
-{
-    class CategoriesInterface;
-}
-}
 namespace scopeharness
 {
+namespace internal
+{
+struct CategoryArguments;
+}
 
 class Result;
 
@@ -70,11 +63,12 @@ public:
 
     const Result::List& results() const;
 
+    const Result& result(const std::string& uri) const;
+
 protected:
     friend ResultsView;
 
-    Category(unity::shell::scopes::CategoriesInterface* categoriesModel,
-             const QModelIndex& index, const Result::List& results);
+    Category(const internal::CategoryArguments& arguments);
 
     struct Priv;
 

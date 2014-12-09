@@ -116,12 +116,25 @@ struct CategoryMatcher::Priv
         }
     }
 
-    void startsWith(MatchResult& matchResult, const Result::List&)
+    void startsWith(MatchResult& matchResult, const Result::List&resultList)
     {
-        matchResult.failure("Starts with not implemented");
+        if (resultList.size() < m_results.size())
+        {
+            matchResult.failure(
+                    "Result list contained " + to_string(resultList.size())
+                            + " expected at least " + to_string(m_results.size()));
+            return;
+        }
+
+        for (size_t row = 0; row < m_results.size(); ++row)
+        {
+            const auto& expectedResult = m_results[row];
+            const auto& actualResult = resultList[row];
+            expectedResult.match(matchResult, actualResult);
+        }
     }
 
-    void uri(MatchResult& matchResult, const Result::List& resultList)
+    void byUri(MatchResult& matchResult, const Result::List& resultList)
     {
         unordered_map<string, Result> resultsByUri;
         for (const auto& result : resultList)
@@ -285,8 +298,8 @@ void CategoryMatcher::match(MatchResult& matchResult, const Category& category) 
             case Mode::starts_with:
                 p->startsWith(matchResult, results);
                 break;
-            case Mode::uri:
-                p->uri(matchResult, results);
+            case Mode::by_uri:
+                p->byUri(matchResult, results);
                 break;
         }
     }

@@ -55,15 +55,6 @@ static void check_variant(MatchResult& matchResult, const Result& result,
 static void check_variant(MatchResult& matchResult, const Result& result,
     const string& name, const sc::Variant& expectedValue)
 {
-//    if (!result.contains(name))
-//    {
-//        matchResult.failure(
-//                "Result with URI '" + result.uri()
-//                        + "' does not contain expected property '" + name
-//                        + "'");
-//        return;
-//    }
-
     const auto& actualValue = result[name];
     check_variant(matchResult, result, name, actualValue, expectedValue);
 }
@@ -111,6 +102,8 @@ struct ResultMatcher::Priv
 
     optional<sc::Variant> m_attributes;
 
+    optional<sc::Variant> m_summary;
+
     optional<sc::Variant> m_background;
 
     deque<pair<string, sc::Variant>> m_properties;
@@ -138,6 +131,7 @@ ResultMatcher& ResultMatcher::operator=(const ResultMatcher& other)
     p->m_emblem = other.p->m_emblem;
     p->m_mascot = other.p->m_mascot;
     p->m_attributes = other.p->m_attributes;
+    p->m_summary = other.p->m_summary;
     p->m_background = other.p->m_background;
     p->m_properties = other.p->m_properties;
     return *this;
@@ -191,6 +185,12 @@ ResultMatcher& ResultMatcher::attributes(const sc::Variant& attributes)
     return *this;
 }
 
+ResultMatcher& ResultMatcher::summary(const sc::Variant& summary)
+{
+    p->m_summary = summary;
+    return *this;
+}
+
 ResultMatcher& ResultMatcher::background(const sc::Variant& background)
 {
     p->m_background = background;
@@ -241,6 +241,10 @@ void ResultMatcher::match(MatchResult& matchResult, const Result& result) const
     if (p->m_attributes)
     {
         check_variant(matchResult, result, "attributes", result.attributes(), p->m_attributes.get());
+    }
+    if (p->m_summary)
+    {
+        check_variant(matchResult, result, "summary", result.summary(), p->m_summary.get());
     }
     if (p->m_background)
     {

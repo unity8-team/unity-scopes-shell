@@ -17,6 +17,7 @@
  */
 
 #include <scope-harness/category.h>
+#include <scope-harness/internal/category-arguments.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
 
@@ -39,13 +40,12 @@ struct Category::Priv
     Result::List m_results;
 };
 
-Category::Category(ss::CategoriesInterface* categoriesModel,
-                   const QModelIndex& index, const Result::List& results) :
+Category::Category(const internal::CategoryArguments& arguments) :
         p(new Priv)
 {
-    p->m_categoriesModel = categoriesModel;
-    p->m_index = index;
-    p->m_results = results;
+    p->m_categoriesModel = arguments.categoriesModel;
+    p->m_index = arguments.index;
+    p->m_results = arguments.results;
 }
 
 Category::Category(const Category& other) :
@@ -107,6 +107,19 @@ sc::Variant Category::components() const
 const Result::List& Category::results() const
 {
     return p->m_results;
+}
+
+const Result& Category::result(const string& uri) const
+{
+    for (const auto& result : p->m_results)
+    {
+        if (result.uri() == uri)
+        {
+            return result;
+        }
+    }
+
+    throw domain_error("Result with URI '" + uri + "' could not be found");
 }
 
 }

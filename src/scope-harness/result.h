@@ -24,24 +24,17 @@
 
 #pragma once
 
-QT_BEGIN_NAMESPACE
-class QModelIndex;
-QT_END_NAMESPACE
-
 namespace unity
 {
-namespace shell
-{
-namespace scopes
-{
-    class ResultsModelInterface;
-}
-}
-
 namespace scopeharness
 {
+namespace internal
+{
+struct ResultArguments;
+}
 
 class ResultsView;
+class PreviewView;
 
 class Q_DECL_EXPORT Result
 {
@@ -74,14 +67,18 @@ public:
 
     unity::scopes::Variant attributes() const noexcept;
 
+    unity::scopes::Variant summary() const noexcept;
+
     unity::scopes::Variant background() const noexcept;
 
     unity::scopes::Variant const& value(std::string const& key) const;
 
+    std::shared_ptr<PreviewView> activate() const;
+
 protected:
     friend ResultsView;
 
-    Result(unity::shell::scopes::ResultsModelInterface* resultsModel, const QModelIndex& index);
+    Result(const internal::ResultArguments& arguments);
 
     struct Priv;
 

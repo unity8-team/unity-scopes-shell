@@ -21,6 +21,8 @@
 #include <Unity/scopes.h>
 #include <Unity/categories.h>
 
+#include <scope-harness/internal/category-arguments.h>
+#include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/results-view.h>
 #include <scope-harness/test-utils.h>
 
@@ -185,11 +187,11 @@ Category ResultsView::category(unsigned int row) const
         for (int i = 0; i < resultModel->rowCount(); ++i)
         {
             auto idx = resultModel->index(i);
-            results.emplace_back(Result(resultModel, idx));
+            results.emplace_back(Result(internal::ResultArguments{resultModel, idx}));
         }
     }
 
-    return Category(cats, categoryIndex, results);
+    return Category(internal::CategoryArguments{cats, categoryIndex, results});
 }
 
 Category ResultsView::category(const string& categoryId_) const
