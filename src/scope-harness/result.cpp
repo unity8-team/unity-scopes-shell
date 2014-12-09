@@ -17,11 +17,15 @@
  */
 
 #include <scope-harness/internal/result-arguments.h>
+#include <scope-harness/preview-view.h>
 #include <scope-harness/result.h>
 #include <scope-harness/test-utils.h>
 
 #include <Unity/resultsmodel.h>
+#include <Unity/scope.h>
 #include <Unity/utils.h>
+
+#include <QSignalSpy>
 
 using namespace std;
 
@@ -38,7 +42,11 @@ struct Result::Priv
 {
     ss::ResultsModelInterface* m_resultsModel;
 
+    ss::ScopeInterface* m_scope;
+
     QModelIndex m_index;
+
+    weak_ptr<PreviewView> m_previewView;
 
     sc::Variant m_null;
 };
@@ -47,7 +55,9 @@ Result::Result(const internal::ResultArguments& arguments) :
         p(new Priv)
 {
     p->m_resultsModel = arguments.resultsModel;
+    p->m_scope = arguments.scope;
     p->m_index = arguments.index;
+    p->m_previewView = arguments.previewView;
 }
 
 Result::Result(const Result& other) :
@@ -146,5 +156,59 @@ sc::Variant const& Result::value(string const& key) const
     return result->value(key);
 }
 
+AbstractView::SPtr Result::activate() const
+{
+    auto result = p->m_resultsModel->data(p->m_index,
+                                       ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
+    throwIfNot(bool(result), "Couldn't get result");
+
+    QSignalSpy spy(p->m_scope, SIGNAL(hideDash()));
+    p->m_scope->activate(QVariant::fromValue(result));
+    throwIfNot(spy.wait(), "Hide dash signal failed emit");
+
+    return AbstractView::SPtr(p->m_previewView);
+}
+
 }
 }
+
+/*
+    void testActivation()
+    {
+        QSignalSpy spy(resultsView->activeScope(), SIGNAL(hideDash()));
+        resultsView->activeScope()->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+    }
+
+    void testScopeActivationWithQuery()
+    {
+        QSignalSpy spy(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
+        resultsView->activeScope()->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+    }
+
+    void testScopeActivationWithQuery2()
+    {
+        QSignalSpy spy(resultsView->activeScope(), SIGNAL(metadataRefreshed()));
+        QSignalSpy spy2(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
+        QSignalSpy spy3(resultsView->activeScope(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)));
+        // this tries to activate non-existing scope
+        resultsView->activeScope()->activate(QVariant::fromValue(result));
+        QVERIFY(spy.wait());
+        QCOMPARE(spy2.count(), 0);
+        QCOMPARE(spy3.count(), 0);
+    }
+
+    void testScopeResultWithScopeUri()
+    {
+        QSignalSpy spy(resultsView->activeScope(), SIGNAL(searchQueryChanged()));
+        resultsView->activeScope()->activate(QVariant::fromValue(result));
+        // this is likely to be invoked synchronously
+        if (spy.count() == 0) {
+            QVERIFY(spy.wait());
+        }
+        QVERIFY(spy.count() > 0);
+        QCOMPARE(resultsView->activeScope()->searchQuery(), QString("next-scope-query"));
+    }
+
+ */

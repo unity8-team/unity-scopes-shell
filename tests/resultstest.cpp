@@ -37,6 +37,7 @@
 
 #include <scope-harness/category-matcher.h>
 #include <scope-harness/category-list-matcher.h>
+#include <scope-harness/preview-view.h>
 #include <scope-harness/result-matcher.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
@@ -832,15 +833,11 @@ private Q_SLOTS:
                 .match(resultsView->categories())
         );
 
-//        auto previewView = resultsView->category("cat1").result("test:uri").activate();
+        auto abstractView = resultsView->category("cat1");
+//        .result("test:uri").activate();
+//        QVERIFY(bool(abstractView));
+//        auto previewView = dynamic_pointer_cast<sh::PreviewView>(abstractView);
 //        QVERIFY(bool(previewView));
-
-//        unity::scopes::Result::SPtr result;
-//        QVERIFY(sh::getFirstResult(resultsView->raw_categories(), result));
-//
-//        QSignalSpy spy(resultsView->activeScope(), SIGNAL(hideDash()));
-//        resultsView->activeScope()->activate(QVariant::fromValue(result));
-//        QVERIFY(spy.wait());
     }
 
 //    void testScopeActivationWithQuery()

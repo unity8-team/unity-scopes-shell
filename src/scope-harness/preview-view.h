@@ -20,17 +20,21 @@
 
 #include <qglobal.h>
 
+#include <scope-harness/abstract-view.h>
+
 namespace unity
 {
 namespace scopeharness
 {
 
-class Q_DECL_EXPORT PreviewView
+class Q_DECL_EXPORT PreviewView: public AbstractView
 {
 public:
+    UNITY_DEFINES_PTRS(PreviewView);
+
     PreviewView();
-    virtual
-    ~PreviewView();
+
+    ~PreviewView() = default;
 };
 
 }

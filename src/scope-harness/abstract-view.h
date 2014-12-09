@@ -16,16 +16,24 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/preview-view.h>
+#pragma once
+
+#include <unity/util/DefinesPtrs.h>
 
 namespace unity
 {
 namespace scopeharness
 {
 
-PreviewView::PreviewView()
+class AbstractView
 {
-}
+public:
+    UNITY_DEFINES_PTRS(AbstractView);
+
+    AbstractView() = default;
+
+    virtual ~AbstractView() = default;
+};
 
 }
 }

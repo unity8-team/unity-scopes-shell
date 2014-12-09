@@ -23,6 +23,7 @@
 
 #include <scope-harness/internal/category-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
+#include <scope-harness/preview-view.h>
 #include <scope-harness/results-view.h>
 #include <scope-harness/test-utils.h>
 
@@ -167,52 +168,68 @@ Category::List ResultsView::categories() const
 
 Category ResultsView::category(unsigned int row) const
 {
+    qDebug() << "FOO !!!!!! 1";
+
     auto cats = raw_categories();
     auto categoryIndex = cats->index(row);
+    qDebug() << "FOO !!!!!! 2";
 
     QVariant variant = cats->data(categoryIndex, 999999);
     if (!variant.canConvert<sc::Category::SCPtr>())
     {
         throw std::range_error("Invalid category data at index " + to_string(row));
     }
+    qDebug() << "FOO !!!!!! 3";
     auto rawCategory = variant.value<sc::Category::SCPtr>();
+    qDebug() << "FOO !!!!!! 4";
 
     QVariant resultsVariant = cats->data(
             cats->index(row), ss::CategoriesInterface::Roles::RoleResults);
     ss::ResultsModelInterface* resultModel = resultsVariant.value<
             ss::ResultsModelInterface*>();
+    qDebug() << "FOO !!!!!! 5";
     Result::List results;
     if (resultModel)
     {
+        qDebug() << "FOO !!!!!! 6";
         for (int i = 0; i < resultModel->rowCount(); ++i)
         {
+            qDebug() << "FOO !!!!!! 7";
             auto idx = resultModel->index(i);
-            results.emplace_back(Result(internal::ResultArguments{resultModel, idx}));
+            results.emplace_back(Result(internal::ResultArguments{resultModel, p->m_active_scope, idx, PreviewView::SPtr()}));
         }
     }
+    qDebug() << "FOO !!!!!! 8";
 
     return Category(internal::CategoryArguments{cats, categoryIndex, results});
 }
 
 Category ResultsView::category(const string& categoryId_) const
 {
+    qDebug() << "HELLO !!!!!! 1";
+
     auto cats = raw_categories();
 
     QString categoryId = QString::fromStdString(categoryId_);
     int row = -1;
+    qDebug() << "HELLO !!!!!! 2";
 
     for (int i = 0; row < cats->rowCount(); ++row)
     {
+        qDebug() << "HELLO !!!!!! 3";
         QVariant variant = cats->data(cats->index(i),
                                       ss::CategoriesInterface::RoleCategoryId);
         if (variant.toString() == categoryId)
         {
+            qDebug() << "HELLO !!!!!! 4";
             row = i;
             break;
         }
     }
 
+    qDebug() << "HELLO !!!!!! 5";
     throwIf(row == -1, "Could not find category");
+    qDebug() << "HELLO !!!!!! 6";
     return category(row);
 }
 

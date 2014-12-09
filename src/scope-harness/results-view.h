@@ -20,8 +20,7 @@
 
 #include <unity/shell/scopes/ScopeInterface.h>
 
-#include <unity/util/DefinesPtrs.h>
-
+#include <scope-harness/abstract-view.h>
 #include <scope-harness/category.h>
 
 #include <memory>
@@ -48,7 +47,7 @@ class CategoriesInterface;
 namespace scopeharness
 {
 
-class Q_DECL_EXPORT ResultsView
+class Q_DECL_EXPORT ResultsView: public AbstractView
 {
 public:
     UNITY_DEFINES_PTRS(ResultsView);

@@ -16,6 +16,8 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <scope-harness/abstract-view.h>
+
 #include <unity/scopes/Variant.h>
 
 #include <qglobal.h>
@@ -73,7 +75,7 @@ public:
 
     unity::scopes::Variant const& value(std::string const& key) const;
 
-    std::shared_ptr<PreviewView> activate() const;
+    AbstractView::SPtr activate() const;
 
 protected:
     friend ResultsView;

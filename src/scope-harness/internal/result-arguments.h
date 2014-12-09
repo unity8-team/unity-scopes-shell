@@ -20,6 +20,8 @@
 
 #include <qglobal.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 class QModelIndex;
 QT_END_NAMESPACE
@@ -31,17 +33,23 @@ namespace shell
 namespace scopes
 {
     class ResultsModelInterface;
+    class ScopeInterface;
 }
 }
 namespace scopeharness
 {
+class PreviewView;
 namespace internal
 {
 struct ResultArguments
 {
     unity::shell::scopes::ResultsModelInterface* resultsModel;
 
+    unity::shell::scopes::ScopeInterface* scope;
+
     const QModelIndex& index;
+
+    std::shared_ptr<PreviewView> previewView;
 };
 }
 }
