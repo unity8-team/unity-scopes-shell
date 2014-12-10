@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.4+15.04.20141210-0ubuntu1) vivid; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Set UNITY_SCOPES_OA_UI_POLICY on entry to Scope::loginToAccount()
+    (LP: #1380914)
+
+  [ Xavi Garcia ]
+  * Added a signal in the SettingsModel and connect it to the
+    invalidateResults slot in Scope.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 10 Dec 2014 11:19:38 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141205-0ubuntu1) vivid; urgency=low
 
   [ Pawel Stolowski ]
