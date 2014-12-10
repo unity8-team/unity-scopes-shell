@@ -1243,6 +1243,10 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
+    // Set the UNITY_SCOPES_OA_UI_POLICY environment variable here so that OnlineAccountClient knows we're
+    // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
+    setenv("UNITY_SCOPES_OA_UI_POLICY", "1", 0);
+
     bool service_enabled = false;
     {
         // Check if at least one account has the specified service enabled
