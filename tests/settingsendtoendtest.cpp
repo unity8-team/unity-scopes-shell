@@ -111,6 +111,42 @@ private Q_SLOTS:
         verifySetting(settings, 3, "enabled", "Enabled", "boolean", QVariantMap({ {"defaultValue", true} }), true);
         verifySetting(settings, 4, "color", "Color", "string", QVariantMap({ {"defaultValue", QVariant()} }), QVariant());
     }
+
+    void setValue(SettingsModelInterface *settings, int index, const QVariant& value)
+    {
+        QVERIFY(settings);
+
+        QVERIFY(settings->setData(settings->index(index), value,
+                SettingsModelInterface::RoleValue));
+    }
+
+    void verifySettingsChangedSignal()
+    {
+        auto settings = m_scope->settings();
+        QVERIFY(settings);
+
+        // Wait for the settings model to initialize
+        if(settings->count() == 0)
+        {
+            QSignalSpy settingsCountSpy(settings, SIGNAL(countChanged()));
+            QVERIFY(settingsCountSpy.wait());
+        }
+
+        QSignalSpy settingChangedSpy(settings, SIGNAL(settingsChanged()));
+
+        // Before changing any value check that the results are not marked as dirty
+        // Also set the scope as inactive so we can check that it gets marked as dirty
+        m_scope->setActive(false);
+        QCOMPARE(m_scope->isActive(), false);
+        QCOMPARE(m_scope->resultsDirty(), false);
+
+        // change a value and wait for the signal
+        setValue(settings, 0, "Barcelona");
+        QVERIFY(settingChangedSpy.wait());
+
+        // Check that the results are dirty
+        QCOMPARE(m_scope->resultsDirty(), true);
+    }
 };
 
 QTEST_GUILESS_MAIN(SettingsEndToEndTest)

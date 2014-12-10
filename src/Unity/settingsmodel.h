@@ -76,6 +76,9 @@ public:
 
     QVariant value(const QString& id) const;
 
+Q_SIGNALS:
+    void settingsChanged();
+
 protected Q_SLOTS:
     void settings_timeout();
 
