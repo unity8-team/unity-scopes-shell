@@ -43,6 +43,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QLocale>
+#include <QtConcurrent>
 
 #include <libintl.h>
 
@@ -1251,7 +1252,22 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     {
         // Check if at least one account has the specified service enabled
         scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-        auto service_statuses = oa_client.get_service_statuses();
+        std::vector<scopes::OnlineAccountClient::ServiceStatus> service_statuses;
+
+        QFuture<void> future = QtConcurrent::run([&]{ service_statuses = oa_client.get_service_statuses(); });
+        QFutureWatcher<void> future_watcher;
+        future_watcher.setFuture(future);
+
+        // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
+        setSearchInProgress(true);
+
+        QEventLoop loop;
+        connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
+        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
+
+        // Unset SearchInProgress to stop the loading bar animation.
+        setSearchInProgress(false);
+
         for (auto const& status : service_statuses)
         {
             if (status.service_enabled)
