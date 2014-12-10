@@ -1242,6 +1242,8 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
+    setenv("UNITY_SCOPES_OA_UI_POLICY", "1", 1);
+
     bool service_enabled = false;
     {
         // Check if at least one account has the specified service enabled
@@ -1283,6 +1285,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         }
     }
 
+    unsetenv("UNITY_SCOPES_OA_UI_POLICY");
     return service_enabled;
 }
 
