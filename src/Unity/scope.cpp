@@ -1248,35 +1248,34 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
     setenv("UNITY_SCOPES_OA_UI_POLICY", "1", 0);
 
-    bool service_enabled = false;
+    QFuture<bool> service_enabled_future = QtConcurrent::run([&]
     {
         // Check if at least one account has the specified service enabled
         scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-        std::vector<scopes::OnlineAccountClient::ServiceStatus> service_statuses;
-
-        QFuture<void> future = QtConcurrent::run([&]{ service_statuses = oa_client.get_service_statuses(); });
-        QFutureWatcher<void> future_watcher;
-        future_watcher.setFuture(future);
-
-        // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
-        setSearchInProgress(true);
-
-        QEventLoop loop;
-        connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
-        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
-
-        // Unset SearchInProgress to stop the loading bar animation.
-        setSearchInProgress(false);
-
+        auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {
             if (status.service_enabled)
             {
-                service_enabled = true;
-                break;
+                return true;
             }
         }
-    }
+        return false;
+    });
+    QFutureWatcher<bool> future_watcher;
+    future_watcher.setFuture(service_enabled_future);
+
+    // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
+    setSearchInProgress(true);
+
+    QEventLoop loop;
+    connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
+    loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
+
+    // Unset SearchInProgress to stop the loading bar animation.
+    setSearchInProgress(false);
+
+    bool service_enabled = service_enabled_future.result();
 
     // Start the signon UI if no enabled services were found
     if (!service_enabled)
