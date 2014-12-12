@@ -418,14 +418,6 @@ void Scopes::processFavoriteScopes()
             }
         }
 
-        // make sure Apps are never un-favorited
-        if (!newFavorites.contains(CLICK_SCOPE_ID)) {
-            if (m_cachedMetadata.contains(CLICK_SCOPE_ID)) {
-                newFavorites.push_front(CLICK_SCOPE_ID);
-                favScopesLut[CLICK_SCOPE_ID] = 0;
-            }
-        }
-
         // this prevents further processing if we get called back when calling scope->setFavorite() below
         if (m_favoriteScopes == newFavorites)
             return;
