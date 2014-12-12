@@ -1,3 +1,20 @@
+unity-scopes-shell (0.5.4+15.04.20141212.2-0ubuntu1) vivid; urgency=low
+
+  [ Pawel Stolowski ]
+  * Don't conclude too early that current department id should be reset.
+    (LP: #1343242)
+  * Add 'breaks' rule for unity8 that doesn't support new Manage dash.
+    (LP: #1400296)
+
+  [ Marcus Tomlinson ]
+  * Animate the loading bar on the scope while OA retrieves a token.
+    (LP: #1401860)
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 12 Dec 2014 12:35:22 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141210-0ubuntu1) vivid; urgency=low
 
   [ Marcus Tomlinson ]
