@@ -46,6 +46,7 @@ using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
 #define PARTNER_ID_FILE "/custom/partner-id"
+#define CLICK_SCOPE_ID "clickscope"
 
 void ScopeListWorker::run()
 {
@@ -417,6 +418,14 @@ void Scopes::processFavoriteScopes()
             }
         }
 
+        // make sure Apps are never un-favorited
+        if (!newFavorites.contains(CLICK_SCOPE_ID)) {
+            if (m_cachedMetadata.contains(CLICK_SCOPE_ID)) {
+                newFavorites.push_front(CLICK_SCOPE_ID);
+                favScopesLut[CLICK_SCOPE_ID] = 0;
+            }
+        }
+
         // this prevents further processing if we get called back when calling scope->setFavorite() below
         if (m_favoriteScopes == newFavorites)
             return;
@@ -616,6 +625,11 @@ QStringList Scopes::getFavoriteIds() const
 
 void Scopes::setFavorite(QString const& scopeId, bool value)
 {
+    if (scopeId == CLICK_SCOPE_ID && !value)
+    {
+        qWarning() << "Cannot unfavorite" << scopeId;
+        return;
+    }
     if (m_dashSettings)
     {
         QStringList cannedQueries;
