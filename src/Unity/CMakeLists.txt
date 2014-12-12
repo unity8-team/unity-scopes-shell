@@ -61,7 +61,7 @@ target_link_libraries(Unity-qml
     ${ONLINE_ACCOUNTS_CLIENT_LDFLAGS}
     )
 
-qt5_use_modules(Unity-qml Qml Gui DBus)
+qt5_use_modules(Unity-qml Qml Gui DBus Concurrent)
 
 # export the qmldir qmltypes and plugin files
 export_qmlfiles(Unity Unity)
