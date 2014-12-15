@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.4+15.04.20141215-0ubuntu1) vivid; urgency=low
+
+  [ Pawel Stolowski ]
+  * Make sure Apps are not un-favorited. Unity8 will prohibit this as
+    well, this is for extra safety. (LP: #1400762)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 15 Dec 2014 07:39:11 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141212.2-0ubuntu1) vivid; urgency=low
 
   [ Pawel Stolowski ]
