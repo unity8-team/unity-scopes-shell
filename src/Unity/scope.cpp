@@ -103,9 +103,9 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_aggregatorTimer.setSingleShot(true);
-    QObject::connect(&m_aggregatorTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    QObject::connect(&m_aggregatorTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_clearTimer.setSingleShot(true);
-    QObject::connect(&m_clearTimer, &QTimer::timeout, this, &Scope::flushUpdates);
+    QObject::connect(&m_clearTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
@@ -148,7 +148,7 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     } else { // status in [FINISHED, ERROR]
         m_aggregatorTimer.stop();
 
-        flushUpdates();
+        flushUpdates(true);
 
         setSearchInProgress(false);
 
@@ -303,7 +303,7 @@ void Scope::typingFinished()
     Q_EMIT searchQueryChanged();
 }
 
-void Scope::flushUpdates()
+void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
         // TODO: here we could do resultset diffs
@@ -356,18 +356,26 @@ void Scope::flushUpdates()
 
     m_lastRootDepartment = m_rootDepartment;
 
-    bool containsDepartments = m_rootDepartment.get() != nullptr;
-    // design decision - no navigation when doing searches
-    containsDepartments &= m_searchQuery.isEmpty();
+    //
+    // only consider resetting current department id if we are in final flushUpdates
+    // or received departments already. We don't know if we should reset it
+    // until query finishes because departments may still arrive.
+    if (finalize || m_rootDepartment.get() != nullptr)
+    {
+        bool containsDepartments = m_rootDepartment.get() != nullptr;
+        // design decision - no navigation when doing searches
+        containsDepartments &= m_searchQuery.isEmpty();
+        
+        if (containsDepartments != m_hasNavigation) {
+            m_hasNavigation = containsDepartments;
+            Q_EMIT hasNavigationChanged();
+        }
 
-    if (containsDepartments != m_hasNavigation) {
-        m_hasNavigation = containsDepartments;
-        Q_EMIT hasNavigationChanged();
-    }
-
-    if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
-        m_currentNavigationId = "";
-        Q_EMIT currentNavigationIdChanged();
+        if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
+            qDebug() << "Resetting current nav id";
+            m_currentNavigationId = "";
+            Q_EMIT currentNavigationIdChanged();
+        }
     }
 
     // process the alt navigation (sort order filter)
@@ -389,26 +397,34 @@ void Scope::flushUpdates()
 
     m_lastSortOrderFilter = m_sortOrderFilter;
 
-    bool containsAltNav = m_sortOrderFilter.get() != nullptr;
-    // design decision - no navigation when doing searches
-    containsAltNav &= m_searchQuery.isEmpty();
+    //
+    // only consider resetting alt nav id if we are in final flushUpdates
+    // or received alt nav filter already. We don't know if we should reset it
+    // until query finishes because filter may still arrive.
+    if (finalize || m_sortOrderFilter.get() != nullptr)
+    {
+        bool containsAltNav = m_sortOrderFilter.get() != nullptr;
+        // design decision - no navigation when doing searches
+        containsAltNav &= m_searchQuery.isEmpty();
 
-    if (containsAltNav != m_hasAltNavigation) {
-        m_hasAltNavigation = containsAltNav;
-        Q_EMIT hasAltNavigationChanged();
-    }
+        if (containsAltNav != m_hasAltNavigation) {
+            m_hasAltNavigation = containsAltNav;
+            Q_EMIT hasAltNavigationChanged();
+        }
 
-    if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
-        m_currentAltNavigationId = "";
-        Q_EMIT currentAltNavigationIdChanged();
-    }
+        if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
+            qDebug() << "Resetting alt nav id";
+            m_currentAltNavigationId = "";
+            Q_EMIT currentAltNavigationIdChanged();
+        }
 
-    if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
-        m_currentAltNavigationId = currentAltNav;
-        Q_EMIT currentAltNavigationIdChanged();
+        if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
+            m_currentAltNavigationId = currentAltNav;
+            Q_EMIT currentAltNavigationIdChanged();
 
-        // update the alt navigation models
-        updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+            // update the alt navigation models
+            updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+        }
     }
 }
 
@@ -624,6 +640,7 @@ void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
+        qDebug() << "Setting current nav id:" <<  this->id() << id;
         m_currentNavigationId = id;
         Q_EMIT currentNavigationIdChanged();
     }
@@ -702,6 +719,7 @@ void Scope::dispatchSearch()
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
         try {
+            qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
             scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
