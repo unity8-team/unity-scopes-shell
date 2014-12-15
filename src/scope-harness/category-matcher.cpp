@@ -80,24 +80,6 @@ static void check_string(MatchResult& matchResult, const Category& category,
 
 struct CategoryMatcher::Priv
 {
-    string m_id;
-
-    Mode m_mode = Mode::all;
-
-    deque<ResultMatcher> m_results;
-
-    optional<unsigned int> m_hasAtLeast;
-
-    optional<string> m_title;
-
-    optional<string> m_icon;
-
-    optional<string> m_headerLink;
-
-    optional<sc::Variant> m_renderer;
-
-    optional<sc::Variant> m_components;
-
     void all(MatchResult& matchResult, const Result::List& resultList)
     {
         if (resultList.size() != m_results.size())
@@ -157,6 +139,24 @@ struct CategoryMatcher::Priv
             }
         }
     }
+
+    string m_id;
+
+    Mode m_mode = Mode::all;
+
+    deque<ResultMatcher> m_results;
+
+    optional<unsigned int> m_hasAtLeast;
+
+    optional<string> m_title;
+
+    optional<string> m_icon;
+
+    optional<string> m_headerLink;
+
+    optional<sc::Variant> m_renderer;
+
+    optional<sc::Variant> m_components;
 };
 
 CategoryMatcher::CategoryMatcher(const string& id) :

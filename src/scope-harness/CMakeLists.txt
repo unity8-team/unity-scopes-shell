@@ -10,6 +10,7 @@ include_directories(
     
 add_definitions(
     -DSCOPESLIB_SCOPEREGISTRY_BIN="${SCOPESLIB_SCOPEREGISTRY_BIN}"
+    -DDEB_HOST_MULTIARCH="${CMAKE_LIBRARY_ARCHITECTURE}"
     )
 
 add_library(

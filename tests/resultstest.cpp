@@ -817,11 +817,15 @@ private Q_SLOTS:
         );
     }
 
+    /**
+     * This test activates a result which is previewed normally
+     */
     void testScopeActivation()
     {
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("v");
+
 
         QVERIFY_MATCHRESULT(
             sh::CategoryListMatcher()
@@ -833,64 +837,106 @@ private Q_SLOTS:
                 .match(resultsView->categories())
         );
 
-        auto abstractView = resultsView->category("cat1");
-//        .result("test:uri").activate();
-//        QVERIFY(bool(abstractView));
-//        auto previewView = dynamic_pointer_cast<sh::PreviewView>(abstractView);
-//        QVERIFY(bool(previewView));
+        auto abstractView =
+                resultsView->category("cat1").result("test:uri").activate();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<sh::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
     }
 
-//    void testScopeActivationWithQuery()
-//    {
-//        auto resultsView = m_harness->resultsView();
-//        resultsView->setActiveScope("mock-scope");
-//        resultsView->setQuery("perform-query");
-//
-//        unity::scopes::Result::SPtr result;
-//        QVERIFY(sh::getFirstResult(resultsView->activeScope()->categories(), result));
-//
-//        QSignalSpy spy(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
-//        resultsView->activeScope()->activate(QVariant::fromValue(result));
-//        QVERIFY(spy.wait());
-//    }
-//
-//    void testScopeActivationWithQuery2()
-//    {
-//        auto resultsView = m_harness->resultsView();
-//        resultsView->setActiveScope("mock-scope");
-//        resultsView->setQuery("perform-query2");
-//
-//        unity::scopes::Result::SPtr result;
-//        QVERIFY(sh::getFirstResult(resultsView->activeScope()->categories(), result));
-//
-//        QSignalSpy spy(resultsView->activeScope(), SIGNAL(metadataRefreshed()));
-//        QSignalSpy spy2(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
-//        QSignalSpy spy3(resultsView->activeScope(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)));
-//        // this tries to activate non-existing scope
-//        resultsView->activeScope()->activate(QVariant::fromValue(result));
-//        QVERIFY(spy.wait());
-//        QCOMPARE(spy2.count(), 0);
-//        QCOMPARE(spy3.count(), 0);
-//    }
-//
-//    void testScopeResultWithScopeUri()
-//    {
-//        auto resultsView = m_harness->resultsView();
-//        resultsView->setActiveScope("mock-scope");
-//        resultsView->setQuery("scope-uri");
-//
-//        unity::scopes::Result::SPtr result;
-//        QVERIFY(sh::getFirstResult(resultsView->activeScope()->categories(), result));
-//
-//        QSignalSpy spy(resultsView->activeScope(), SIGNAL(searchQueryChanged()));
-//        resultsView->activeScope()->activate(QVariant::fromValue(result));
-//        // this is likely to be invoked synchronously
-//        if (spy.count() == 0) {
-//            QVERIFY(spy.wait());
-//        }
-//        QVERIFY(spy.count() > 0);
-//        QCOMPARE(resultsView->activeScope()->searchQuery(), QString("next-scope-query"));
-//    }
+    /**
+     * This test activates a result that points to mock-scope-ttl
+     */
+    void testScopeActivationWithQuery()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+        resultsView->setQuery("perform-query");
+
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::starts_with)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::starts_with)
+                    .result(sh::ResultMatcher("test:perform-query"))
+                )
+                .match(resultsView->categories())
+        );
+
+        auto abstractView =
+                resultsView->category("cat1").result("test:perform-query").activate();
+        QVERIFY(bool(abstractView));
+        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        QVERIFY(bool(nextView));
+
+        QCOMPARE(nextView->scopeId(), string("mock-scope-ttl"));
+    }
+
+    /**
+     * This test tries to activate a result that points to a non-existing scope
+     */
+    void testScopeActivationWithQuery2()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+        resultsView->setQuery("perform-query2");
+
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::starts_with)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::starts_with)
+                    .result(sh::ResultMatcher("test:perform-query"))
+                )
+                .match(resultsView->categories())
+        );
+
+        auto abstractView =
+                resultsView->category("cat1").result("test:perform-query").activate();
+        QVERIFY(bool(abstractView));
+        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        QVERIFY(bool(nextView));
+
+        // We shouldn't have gone anywhere
+        QCOMPARE(nextView->scopeId(), string("mock-scope"));
+    }
+
+    void testScopeResultWithScopeUri()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+        resultsView->setQuery("scope-uri");
+
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::starts_with)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::starts_with)
+                    .result(sh::ResultMatcher("scope://mock-scope?q=next-scope-query"))
+                )
+                .match(resultsView->categories())
+        );
+
+        auto abstractView =
+                resultsView->category("cat1").result("scope://mock-scope?q=next-scope-query").activate();
+        QVERIFY(bool(abstractView));
+        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        QVERIFY(bool(nextView));
+
+        QCOMPARE(resultsView->searchQuery(), string("next-scope-query"));
+        QVERIFY_MATCHRESULT(
+            sh::CategoryListMatcher()
+                .mode(sh::CategoryListMatcher::Mode::starts_with)
+                .category(sh::CategoryMatcher("cat1")
+                    .mode(sh::CategoryMatcher::Mode::starts_with)
+                    .result(sh::ResultMatcher("next-scope-query")
+                        .title("result for: \"next-scope-query\"")
+                        .art("next-scope-query-art")
+                    )
+                )
+                .match(resultsView->categories())
+        );
+    }
 
     void testInfoStatus()
     {

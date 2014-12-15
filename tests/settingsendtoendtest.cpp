@@ -38,13 +38,14 @@ class SettingsEndToEndTest : public QObject
     Q_OBJECT
 private:
     QScopedPointer<Scopes> m_scopes;
-    Scope* m_scope;
+    Scope::Ptr m_scope;
     Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
         m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -77,7 +78,7 @@ private Q_SLOTS:
     void cleanup()
     {
         m_scopes.reset();
-        m_scope = nullptr;
+        m_scope.reset();
     }
 
     void verifySetting(const SettingsModelInterface* settings, int index,

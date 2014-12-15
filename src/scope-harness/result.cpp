@@ -19,13 +19,16 @@
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/preview-view.h>
 #include <scope-harness/result.h>
+#include <scope-harness/results-view.h>
 #include <scope-harness/test-utils.h>
 
 #include <Unity/resultsmodel.h>
 #include <Unity/scope.h>
 #include <Unity/utils.h>
 
+#include <QObject>
 #include <QSignalSpy>
+#include <QUrl>
 
 using namespace std;
 
@@ -38,17 +41,83 @@ namespace unity
 namespace scopeharness
 {
 
-struct Result::Priv
+struct Result::Priv: public QObject
 {
-    ss::ResultsModelInterface* m_resultsModel;
+    Q_OBJECT
 
-    ss::ScopeInterface* m_scope;
+public:
+    enum ActivationResponse
+    {
+        failed,
+        show_dash,
+        hide_dash,
+        goto_uri,
+        preview_requested,
+        goto_scope,
+        open_scope
+    };
+
+    QSharedPointer<ss::ResultsModelInterface> m_resultsModel;
+
+    QSharedPointer<ss::ScopeInterface> m_scope;
 
     QModelIndex m_index;
+
+    weak_ptr<ResultsView> m_resultsView;
 
     weak_ptr<PreviewView> m_previewView;
 
     sc::Variant m_null;
+
+    void connectSignals()
+    {
+        connect(m_scope.data(), SIGNAL(activationFailed(QString const&)), SLOT(activationFailed(QString const&)));
+        connect(m_scope.data(), SIGNAL(showDash()), SLOT(showDash()));
+        connect(m_scope.data(), SIGNAL(hideDash()), SLOT(hideDash()));
+        connect(m_scope.data(), SIGNAL(gotoUri(QString const&)), SLOT(gotoUri(QString const&)));
+        connect(m_scope.data(), SIGNAL(previewRequested(QVariant const&)), SLOT(previewRequested(QVariant const&)));
+        connect(m_scope.data(), SIGNAL(gotoScope(QString const&)), SLOT(gotoScope(QString const&)));
+        connect(m_scope.data(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)), SLOT(openScope(unity::shell::scopes::ScopeInterface*)));
+    }
+
+public Q_SLOTS:
+    void activationFailed(QString const& scopeId)
+    {
+        Q_EMIT activated(ActivationResponse::failed, scopeId);
+    }
+
+    void showDash()
+    {
+        Q_EMIT activated(ActivationResponse::show_dash);
+    }
+
+    void hideDash()
+    {
+        Q_EMIT activated(ActivationResponse::hide_dash);
+    }
+
+    void gotoUri(QString const& uri)
+    {
+        Q_EMIT activated(ActivationResponse::goto_uri, uri);
+    }
+
+    void previewRequested(QVariant const& result)
+    {
+        Q_EMIT activated(ActivationResponse::preview_requested, result);
+    }
+
+    void gotoScope(QString const& scopeId)
+    {
+        Q_EMIT activated(ActivationResponse::goto_scope, scopeId);
+    }
+
+    void openScope(unity::shell::scopes::ScopeInterface* scope)
+    {
+        Q_EMIT activated(ActivationResponse::open_scope, QVariant::fromValue(scope));
+    }
+
+Q_SIGNALS:
+    void activated(int response, QVariant const& parameter = QVariant());
 };
 
 Result::Result(const internal::ResultArguments& arguments) :
@@ -57,7 +126,10 @@ Result::Result(const internal::ResultArguments& arguments) :
     p->m_resultsModel = arguments.resultsModel;
     p->m_scope = arguments.scope;
     p->m_index = arguments.index;
+    p->m_resultsView = arguments.resultsView;
     p->m_previewView = arguments.previewView;
+
+    p->connectSignals();
 }
 
 Result::Result(const Result& other) :
@@ -68,8 +140,17 @@ Result::Result(const Result& other) :
 
 Result& Result::operator=(const Result& other)
 {
+    // This will disconnect all the existing Qt signal connections
+    p = make_shared<Priv>();
+
     p->m_resultsModel = other.p->m_resultsModel;
+    p->m_scope = other.p->m_scope;
     p->m_index = other.p->m_index;
+    p->m_resultsView = other.p->m_resultsView;
+    p->m_previewView = other.p->m_previewView;
+
+    p->connectSignals();
+
     return *this;
 }
 
@@ -162,31 +243,80 @@ AbstractView::SPtr Result::activate() const
                                        ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
     throwIfNot(bool(result), "Couldn't get result");
 
-    QSignalSpy spy(p->m_scope, SIGNAL(hideDash()));
+    QSignalSpy spy(p.get(), SIGNAL(activated(int, const QVariant&)));
     p->m_scope->activate(QVariant::fromValue(result));
-    throwIfNot(spy.wait(), "Hide dash signal failed emit");
+    if (spy.empty())
+    {
+        throwIfNot(spy.wait(), "Scope activation signal failed to emit");
+    }
 
-    return AbstractView::SPtr(p->m_previewView);
+    QVariantList response = spy.front();
+    QVariant signal = response.at(0);
+    auto activationResponse = Priv::ActivationResponse(signal.toInt());
+    QVariant parameter = response.at(1);
+
+    AbstractView::SPtr view;
+    auto resultsView = p->m_resultsView.lock();
+    throwIfNot(bool(resultsView), "ResultsView not available");
+    auto previewView = p->m_previewView.lock();
+    throwIfNot(bool(previewView), "PreviewView not available");
+
+    switch (activationResponse)
+    {
+        case Priv::ActivationResponse::failed:
+        {
+            view = resultsView;
+            break;
+        }
+        case Priv::ActivationResponse::show_dash:
+        {
+            qDebug() << "show_dash";
+            break;
+        }
+        case Priv::ActivationResponse::hide_dash:
+        {
+            qDebug() << "hide_dash";
+            // TODO set scope inactive?
+            view = previewView;
+            break;
+        }
+        case Priv::ActivationResponse::goto_uri:
+        {
+            qDebug() << "goto_uri" << parameter;
+            QUrl url(parameter.toString());
+            if (url.scheme() == QLatin1String("scope"))
+            {
+                waitForSearchFinish(p->m_scope);
+            }
+            view = resultsView;
+            break;
+        }
+        case Priv::ActivationResponse::preview_requested:
+        {
+            qDebug() << "preview_requested" << parameter;
+            break;
+        }
+        case Priv::ActivationResponse::goto_scope:
+        {
+            qDebug() << "goto_scope" << parameter;
+            resultsView->setActiveScope(parameter.toString().toStdString());
+            view = resultsView;
+            break;
+        }
+        case Priv::ActivationResponse::open_scope:
+        {
+            qDebug() << "open_scope" << parameter;
+            break;
+        }
+    }
+
+    return view;
 }
 
 }
 }
 
 /*
-    void testActivation()
-    {
-        QSignalSpy spy(resultsView->activeScope(), SIGNAL(hideDash()));
-        resultsView->activeScope()->activate(QVariant::fromValue(result));
-        QVERIFY(spy.wait());
-    }
-
-    void testScopeActivationWithQuery()
-    {
-        QSignalSpy spy(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
-        resultsView->activeScope()->activate(QVariant::fromValue(result));
-        QVERIFY(spy.wait());
-    }
-
     void testScopeActivationWithQuery2()
     {
         QSignalSpy spy(resultsView->activeScope(), SIGNAL(metadataRefreshed()));
@@ -212,3 +342,5 @@ AbstractView::SPtr Result::activate() const
     }
 
  */
+
+#include "result.moc"

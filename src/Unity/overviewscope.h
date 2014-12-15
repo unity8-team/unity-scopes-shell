@@ -30,7 +30,7 @@ class Q_DECL_EXPORT OverviewScope : public scopes_ng::Scope
     Q_OBJECT
 
 public:
-    explicit OverviewScope(QObject *parent = 0);
+    explicit OverviewScope(scopes_ng::Scopes* parent = 0);
     virtual ~OverviewScope();
 
     /* getters */

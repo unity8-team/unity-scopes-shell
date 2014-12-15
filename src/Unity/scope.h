@@ -108,7 +108,9 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
     Q_OBJECT
 
 public:
-    explicit Scope(QObject *parent = 0);
+    typedef QSharedPointer<Scope> Ptr;
+
+    explicit Scope(scopes_ng::Scopes* parent = 0);
     virtual ~Scope();
 
     virtual bool event(QEvent* ev) override;
@@ -165,7 +167,7 @@ public:
     int queryId() const;
     bool initialQueryDone() const;
 
-    unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
+    Scope::Ptr findTempScope(QString const& id) const;
 
     bool loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name);
 
@@ -176,6 +178,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void resultsDirtyChanged();
     void favoriteChanged(bool);
+    void activationFailed(QString const& id);
 
 private Q_SLOTS:
     void typingFinished();
@@ -247,7 +250,7 @@ private:
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
-    QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
+    QMap<QString, Scope::Ptr> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;

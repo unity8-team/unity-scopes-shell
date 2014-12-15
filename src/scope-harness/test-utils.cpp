@@ -37,6 +37,7 @@
 
 namespace sc = unity::scopes;
 namespace ng = scopes_ng;
+namespace ss = unity::shell::scopes;
 
 namespace unity {
 namespace scopeharness {
@@ -81,10 +82,10 @@ bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::R
     return success;
 }
 
-void refreshSearch(ng::Scope* scope)
+void refreshSearch(ng::Scope::Ptr scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+    QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
     // refresh the search
     scope->refresh();
     QVERIFY(scope->searchInProgress() || spy.count() > 1);
@@ -95,10 +96,10 @@ void refreshSearch(ng::Scope* scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void performSearch(ng::Scope* scope, QString const& searchString)
+void performSearch(QSharedPointer<ss::ScopeInterface> scope, QString const& searchString)
 {
     QCOMPARE(scope->searchInProgress(), false);
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+    QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
     // perform a search
     scope->setSearchQuery(searchString);
     // search should not be happening yet
@@ -111,11 +112,11 @@ void performSearch(ng::Scope* scope, QString const& searchString)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void waitForResultsChange(ng::Scope* scope)
+void waitForResultsChange(QSharedPointer<ss::ScopeInterface> scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
     // wait for the search to finish
-    QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+    QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
     QVERIFY(spy.wait());
     if(spy.size() == 1) {
         QVERIFY(spy.wait());
@@ -123,7 +124,19 @@ void waitForResultsChange(ng::Scope* scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-bool previewForFirstResult(ng::Scope* scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
+void waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
+{
+    QCOMPARE(scope->searchInProgress(), true);
+    QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
+    QVERIFY(spy.wait());
+    if (scope->searchInProgress()) {
+        // wait for the search to finish
+        QVERIFY(spy.wait());
+    }
+    QCOMPARE(scope->searchInProgress(), false);
+}
+
+bool previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
 {
     performSearch(scope, searchString);
 

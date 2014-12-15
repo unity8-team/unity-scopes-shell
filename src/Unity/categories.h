@@ -43,6 +43,12 @@ class Q_DECL_EXPORT Categories : public unity::shell::scopes::CategoriesInterfac
 public:
     explicit Categories(QObject* parent = 0);
 
+    enum ExtraRoles
+    {
+        RoleResultsSPtr = 999998,
+        RoleCategorySPtr = 999999
+    };
+
     ~Categories();
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

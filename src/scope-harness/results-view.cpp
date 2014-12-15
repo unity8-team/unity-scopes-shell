@@ -46,13 +46,16 @@ struct ResultsView::Priv
 
     std::shared_ptr<ng::Scopes> m_scopes;
 
-    ng::Scope* m_active_scope = nullptr;
+    PreviewView::SPtr m_previewView;
+
+    ng::Scope::Ptr m_active_scope;
 };
 
-ResultsView::ResultsView(std::shared_ptr<ng::Scopes> scopes) :
+ResultsView::ResultsView(std::shared_ptr<ng::Scopes> scopes, PreviewView::SPtr previewView) :
         p(new Priv)
 {
     p->m_scopes = scopes;
+    p->m_previewView = previewView;
 }
 
 void ResultsView::setActiveScope(const std::string &id_)
@@ -62,23 +65,23 @@ void ResultsView::setActiveScope(const std::string &id_)
     // Deactivate the previous scopes first
     for (int row = 0; row < p->m_scopes->rowCount(); ++row)
     {
-        ng::Scope* scope = static_cast<ng::Scope*>(p->m_scopes->getScopeByRow(row));
+        ng::Scope::Ptr scope = p->m_scopes->getScopeByRow(row);
         if (scope->id() != id)
         {
             scope->setActive(false);
         }
     }
 
-    p->m_active_scope = nullptr;
+    p->m_active_scope.reset();
 
     // Activate the new scope
     for (int row = 0; row < p->m_scopes->rowCount(); ++row)
     {
-        ng::Scope* scope = static_cast<ng::Scope*>(p->m_scopes->getScopeByRow(row));
+        ng::Scope::Ptr scope = p->m_scopes->getScopeByRow(row);
         if (scope->id() == id)
         {
             p->m_active_scope = scope;
-            QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+            QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
 
             scope->setSearchQuery("");
             scope->setActive(true);
@@ -111,7 +114,7 @@ void ResultsView::setQuery(const std::string& searchString_)
 
     throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
 
-    QSignalSpy spy(p->m_active_scope, SIGNAL(searchInProgressChanged()));
+    QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
     // perform a search
     p->m_active_scope->setSearchQuery(searchString);
     // search should not be happening yet
@@ -131,7 +134,7 @@ void ResultsView::waitForResultsChange()
 
     throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
     // wait for the search to finish
-    QSignalSpy spy(p->m_active_scope, SIGNAL(searchInProgressChanged()));
+    QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
     throwIfNot(spy.wait(), "Search status didn't change");
     if(spy.size() == 1) {
         throwIfNot(spy.wait(), "Search status didn't change");
@@ -147,7 +150,7 @@ bool ResultsView::overrideCategoryJson(std::string const& categoryId, std::strin
             QString::fromStdString(categoryId), QString::fromStdString(json));
 }
 
-Category::List ResultsView::categories() const
+Category::List ResultsView::categories()
 {
     auto cats = raw_categories();
 
@@ -166,70 +169,57 @@ Category::List ResultsView::categories() const
     return result;
 }
 
-Category ResultsView::category(unsigned int row) const
+Category ResultsView::category(unsigned int row)
 {
-    qDebug() << "FOO !!!!!! 1";
-
     auto cats = raw_categories();
     auto categoryIndex = cats->index(row);
-    qDebug() << "FOO !!!!!! 2";
 
-    QVariant variant = cats->data(categoryIndex, 999999);
+    QVariant variant = cats->data(categoryIndex, ng::Categories::RoleCategorySPtr);
     if (!variant.canConvert<sc::Category::SCPtr>())
     {
         throw std::range_error("Invalid category data at index " + to_string(row));
     }
-    qDebug() << "FOO !!!!!! 3";
     auto rawCategory = variant.value<sc::Category::SCPtr>();
-    qDebug() << "FOO !!!!!! 4";
 
     QVariant resultsVariant = cats->data(
-            cats->index(row), ss::CategoriesInterface::Roles::RoleResults);
-    ss::ResultsModelInterface* resultModel = resultsVariant.value<
-            ss::ResultsModelInterface*>();
-    qDebug() << "FOO !!!!!! 5";
+            cats->index(row), ng::Categories::RoleResultsSPtr);
+    QSharedPointer<ss::ResultsModelInterface> resultModel = resultsVariant.value<
+            QSharedPointer<ss::ResultsModelInterface>>();
     Result::List results;
     if (resultModel)
     {
-        qDebug() << "FOO !!!!!! 6";
         for (int i = 0; i < resultModel->rowCount(); ++i)
         {
-            qDebug() << "FOO !!!!!! 7";
             auto idx = resultModel->index(i);
-            results.emplace_back(Result(internal::ResultArguments{resultModel, p->m_active_scope, idx, PreviewView::SPtr()}));
+            results.emplace_back(Result(internal::ResultArguments
+                { resultModel, p->m_active_scope, idx,
+                  dynamic_pointer_cast<ResultsView>(shared_from_this()),
+                  p->m_previewView }));
         }
     }
-    qDebug() << "FOO !!!!!! 8";
 
     return Category(internal::CategoryArguments{cats, categoryIndex, results});
 }
 
-Category ResultsView::category(const string& categoryId_) const
+Category ResultsView::category(const string& categoryId_)
 {
-    qDebug() << "HELLO !!!!!! 1";
-
     auto cats = raw_categories();
 
     QString categoryId = QString::fromStdString(categoryId_);
     int row = -1;
-    qDebug() << "HELLO !!!!!! 2";
 
-    for (int i = 0; row < cats->rowCount(); ++row)
+    for (int i = 0; i < cats->rowCount(); ++i)
     {
-        qDebug() << "HELLO !!!!!! 3";
         QVariant variant = cats->data(cats->index(i),
                                       ss::CategoriesInterface::RoleCategoryId);
         if (variant.toString() == categoryId)
         {
-            qDebug() << "HELLO !!!!!! 4";
             row = i;
             break;
         }
     }
 
-    qDebug() << "HELLO !!!!!! 5";
     throwIf(row == -1, "Could not find category");
-    qDebug() << "HELLO !!!!!! 6";
     return category(row);
 }
 
@@ -239,7 +229,7 @@ ss::CategoriesInterface* ResultsView::raw_categories() const
     return p->m_active_scope->categories();
 }
 
-ss::ScopeInterface* ResultsView::activeScope() const
+QSharedPointer<ss::ScopeInterface> ResultsView::activeScope() const
 {
     p->checkActiveScope();
     return p->m_active_scope;

@@ -33,7 +33,7 @@ namespace scopes_ng
 
 using namespace unity;
 
-OverviewScope::OverviewScope(QObject *parent) : scopes_ng::Scope(parent)
+OverviewScope::OverviewScope(scopes_ng::Scopes* parent) : scopes_ng::Scope(parent)
 {
     m_categories.reset(new OverviewCategories(this));
 

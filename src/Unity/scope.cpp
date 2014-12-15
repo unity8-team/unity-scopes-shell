@@ -73,8 +73,8 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
-Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
-    , m_query_id(0)
+Scope::Scope(scopes_ng::Scopes* parent) : //unity::shell::scopes::ScopeInterface(parent)
+      m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -93,7 +93,7 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
-    setScopesInstance(qobject_cast<scopes_ng::Scopes*>(parent));
+    setScopesInstance(parent);
 
     m_typingTimer.setSingleShot(true);
     if (qEnvironmentVariableIsSet("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE"))
@@ -260,15 +260,11 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
 
-    Scope* scope = nullptr;
-    if (scopeId == id()) {
-        scope = this;
-    } else {
-        // figure out if this scope is already favourited
-        scope = m_scopesInstance->getScopeById(scopeId);
-    }
+    Scope::Ptr scope;
+    // figure out if this scope is already favourited
+    scope = m_scopesInstance->getScopeById(scopeId);
 
-    if (scope != nullptr) {
+    if (scope) {
         scope->setCurrentNavigationId(departmentId);
         scope->setFilterState(query.filter_state());
         scope->setSearchQuery(searchString);
@@ -281,20 +277,20 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            scope = new scopes_ng::Scope(this);
+            scope.reset(new Scope(m_scopesInstance));
             scope->setScopeData(*meta_sptr);
-            scope->setScopesInstance(m_scopesInstance);
             scope->setCurrentNavigationId(departmentId);
             scope->setFilterState(query.filter_state());
             scope->setSearchQuery(searchString);
-            m_tempScopes.insert(scope);
-            Q_EMIT openScope(scope);
+            m_tempScopes.insert(scopeId, scope);
+            Q_EMIT openScope(scope.data());
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
             m_delayedActivation = std::make_shared<scopes::ActivationResponse>(query);
             m_scopesInstance->refreshScopeMetadata();
         } else {
-            qWarning("Unable to find scope \"%s\" after metadata refresh", query.scope_id().c_str());
+            qWarning("Unable to find scope \"%s\" after metadata refresh", qPrintable(scopeId));
+            Q_EMIT activationFailed(scopeId);
         }
     }
 }
@@ -432,14 +428,14 @@ void Scope::flushUpdates(bool finalize)
 }
 
 
-unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
+Scope::Ptr Scope::findTempScope(QString const& id) const
 {
-    for (auto s: m_tempScopes) {
-        if (s->id() == id) {
-            return s;
-        }
+    auto it = m_tempScopes.find(id);
+    if (it != m_tempScopes.end())
+    {
+        return *it;
     }
-    return nullptr;
+    return Scope::Ptr();
 }
 
 void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
@@ -1230,9 +1226,7 @@ void Scope::invalidateResults()
 
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    if (m_tempScopes.remove(scope)) {
-        delete scope;
-    }
+    m_tempScopes.remove(scope->id());
 }
 
 bool Scope::resultsDirty() const {
@@ -1252,6 +1246,7 @@ void Scope::activateUri(QString const& uri)
     /*
      * If it's a scope URI, perform the query, otherwise ask Qt to open it.
      */
+    Q_EMIT gotoUri(uri);
     QUrl url(uri);
     if (url.scheme() == QLatin1String("scope")) {
         qDebug() << "Got scope URI" << uri;

@@ -62,7 +62,7 @@ void PreExistingRegistry::start()
 
     // FIXME hard-coded path
     QProcess::startDetached(
-            "/usr/lib/x86_64-linux-gnu/libqtdbustest/watchdog",
+            "/usr/lib/" DEB_HOST_MULTIARCH "/libqtdbustest/watchdog",
             QStringList() << QString::number(QCoreApplication::applicationPid())
                     << QString::number(m_registryProcess->pid()));
 

@@ -20,7 +20,7 @@
 
 #include <unity/shell/scopes/ScopeInterface.h>
 
-#include <scope-harness/abstract-view.h>
+#include <scope-harness/preview-view.h>
 #include <scope-harness/category.h>
 
 #include <memory>
@@ -52,7 +52,7 @@ class Q_DECL_EXPORT ResultsView: public AbstractView
 public:
     UNITY_DEFINES_PTRS(ResultsView);
 
-    ResultsView(std::shared_ptr<scopes_ng::Scopes> scopes);
+    ResultsView(std::shared_ptr<scopes_ng::Scopes> scopes, PreviewView::SPtr previewView);
 
     ~ResultsView() = default;
 
@@ -84,18 +84,18 @@ public:
 
     int queryId() const;
 
-    Category::List categories() const;
+    Category::List categories();
 
-    Category category(unsigned int row) const;
+    Category category(unsigned int row);
 
-    Category category(const std::string& categoryId) const;
+    Category category(const std::string& categoryId);
 
     unity::shell::scopes::ScopeInterface::Status status() const;
 
     // TODO Remove / replace these
     unity::shell::scopes::CategoriesInterface* raw_categories() const;
 
-    unity::shell::scopes::ScopeInterface* activeScope() const;
+    QSharedPointer<unity::shell::scopes::ScopeInterface> activeScope() const;
 
 protected:
     struct Priv;

@@ -512,7 +512,7 @@ QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
     int row = index.row();
-    if (row >= m_categories.size())
+    if (row >= m_categories.size() || row < 0)
     {
         qWarning() << "Categories::data - invalid index" << row << "size"
                 << m_categories.size();
@@ -558,7 +558,19 @@ Categories::data(const QModelIndex& index, int role) const
         }
         case RoleCount:
             return catData->resultsModelCount();
-        case 999999:
+        case RoleResultsSPtr:
+        {
+            QSharedPointer<unity::shell::scopes::ResultsModelInterface> resultsModel = catData->resultsModel();
+            if (resultsModel)
+            {
+                return QVariant::fromValue(resultsModel);
+            }
+            else
+            {
+                return QVariant();
+            }
+        }
+        case RoleCategorySPtr:
         {
             if (catData->m_category)
             {

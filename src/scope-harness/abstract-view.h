@@ -20,12 +20,14 @@
 
 #include <unity/util/DefinesPtrs.h>
 
+#include <memory>
+
 namespace unity
 {
 namespace scopeharness
 {
 
-class AbstractView
+class AbstractView: public std::enable_shared_from_this<AbstractView>
 {
 public:
     UNITY_DEFINES_PTRS(AbstractView);

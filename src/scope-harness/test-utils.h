@@ -41,16 +41,19 @@ Q_DECL_EXPORT
 bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, unity::scopes::Result::SPtr& result);
 
 Q_DECL_EXPORT
-void refreshSearch(scopes_ng::Scope*);
+void refreshSearch(scopes_ng::Scope::Ptr);
 
 Q_DECL_EXPORT
-void performSearch(scopes_ng::Scope* scope, QString const& searchString);
+void performSearch(QSharedPointer<shell::scopes::ScopeInterface> scope, QString const& searchString);
 
 Q_DECL_EXPORT
-void waitForResultsChange(scopes_ng::Scope* scope);
+void waitForResultsChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
 
 Q_DECL_EXPORT
-bool previewForFirstResult(scopes_ng::Scope* scope, QString const& searchString, QScopedPointer<scopes_ng::PreviewStack>& preview_stack);
+void waitForSearchFinish(QSharedPointer<shell::scopes::ScopeInterface> scope);
+
+Q_DECL_EXPORT
+bool previewForFirstResult(scopes_ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<scopes_ng::PreviewStack>& preview_stack);
 
 Q_DECL_EXPORT
 void setFavouriteScopes(const QStringList& cannedQueries);

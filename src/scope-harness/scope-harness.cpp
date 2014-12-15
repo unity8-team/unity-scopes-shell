@@ -64,7 +64,8 @@ ScopeHarness::ScopeHarness(Registry::SPtr registry) :
 //    setFavouriteScopes(favs);
 
     p->m_scopes = make_shared<ng::Scopes>();
-    p->m_resultsView = make_shared<ResultsView>(p->m_scopes);
+    auto previewView = make_shared<PreviewView>();
+    p->m_resultsView = make_shared<ResultsView>(p->m_scopes, previewView);
 
     // no scopes on startup
     throwIf(p->m_scopes->rowCount() != 0 || p->m_scopes->loaded(),
@@ -79,8 +80,8 @@ ScopeHarness::ScopeHarness(Registry::SPtr registry) :
     for (int i = 0; i < p->m_scopes->rowCount(); ++i)
     {
         // get scope proxy
-        ng::Scope* scope = static_cast<ng::Scope*>(p->m_scopes->getScopeByRow(i));
-        QSignalSpy spy(scope, SIGNAL(searchInProgressChanged()));
+        ng::Scope::Ptr scope = p->m_scopes->getScopeByRow(i);
+        QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
 //        scope->setActive(true);
 //        if (!scope->searchInProgress())
 //        {

@@ -21,6 +21,7 @@
 #define NG_SCOPES_H
 
 #include <unity/shell/scopes/ScopesInterface.h>
+#include "scope.h"
 
 // Qt
 #include <QList>
@@ -57,8 +58,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
 
-    Scope* getScopeByRow(int row) const;
-    Scope* getScopeById(QString const& scopeId) const;
+    Scope::Ptr getScopeByRow(int row) const;
+    Scope::Ptr getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
     QStringList getFavoriteIds() const;
@@ -70,6 +71,7 @@ public:
     bool loaded() const override;
     int count() const override;
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
+    Scope::Ptr overviewScopeSPtr() const;
 
     QSharedPointer<LocationService> locationService() const;
     QString userAgentString() const;
@@ -101,12 +103,12 @@ private:
     static const int SCOPE_DELETE_DELAY;
     class Priv;
 
-    QList<Scope*> m_scopes;
+    QList<QSharedPointer<Scope>> m_scopes;
     bool m_noFavorites;
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
-    OverviewScope* m_overviewScope;
+    QSharedPointer<OverviewScope> m_overviewScope;
     QThread* m_listThread;
     QList<QPair<QString, QString>> m_versions;
     QString m_userAgent;

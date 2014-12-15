@@ -49,9 +49,9 @@ class DepartmentsTest : public QObject
     Q_OBJECT
 private:
     QScopedPointer<ng::Scopes> m_scopes;
-    ng::Scope* m_scope;
-    ng::Scope* m_scope_navs;
-    ng::Scope* m_scope_flipflop;
+    ng::Scope::Ptr m_scope;
+    ng::Scope::Ptr m_scope_navs;
+    ng::Scope::Ptr m_scope_flipflop;
     sh::Registry::UPtr m_registry;
 
 private Q_SLOTS:
@@ -59,6 +59,7 @@ private Q_SLOTS:
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
         m_registry.reset(new sh::PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -84,15 +85,15 @@ private Q_SLOTS:
         QVERIFY(m_scopes->rowCount() > 1);
 
         // get scope proxy
-        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments")));
+        m_scope = m_scopes->getScopeById("mock-scope-departments");
         QVERIFY(m_scope != nullptr);
         m_scope->setActive(true);
 
-        m_scope_navs = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-double-nav")));
+        m_scope_navs = m_scopes->getScopeById("mock-scope-double-nav");
         QVERIFY(m_scope_navs != nullptr);
         m_scope_navs->setActive(true);
 
-        m_scope_flipflop = qobject_cast<scopes_ng::Scope*>(m_scopes->getScope(QString("mock-scope-departments-flipflop")));
+        m_scope_flipflop = m_scopes->getScopeById("mock-scope-departments-flipflop");
         QVERIFY(m_scope_flipflop != nullptr);
         m_scope_flipflop->setActive(true);
 
@@ -104,7 +105,9 @@ private Q_SLOTS:
     void cleanup()
     {
         m_scopes.reset();
-        m_scope = nullptr;
+        m_scope.reset();
+        m_scope_navs.reset();
+        m_scope_flipflop.reset();
     }
 
     void testNoDepartments()
@@ -183,7 +186,7 @@ private Q_SLOTS:
         sh::performSearch(m_scope, QString(""));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
-        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        QSignalSpy spy(m_scope.data(), SIGNAL(searchInProgressChanged()));
         QScopedPointer<ss::NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
         m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
@@ -215,7 +218,7 @@ private Q_SLOTS:
         sh::performSearch(m_scope, QString("x"));
 
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
-        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        QSignalSpy spy(m_scope.data(), SIGNAL(searchInProgressChanged()));
         QScopedPointer<ss::NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
         m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
@@ -240,7 +243,7 @@ private Q_SLOTS:
         QCOMPARE(m_scope->currentNavigationId(), QString(""));
         QCOMPARE(m_scope->hasNavigation(), true);
 
-        QSignalSpy spy(m_scope, SIGNAL(searchInProgressChanged()));
+        QSignalSpy spy(m_scope.data(), SIGNAL(searchInProgressChanged()));
         navModel.reset(m_scope->getNavigation(QString("toys")));
         m_scope->setNavigationState(navModel->navigationId(), false);
         QVERIFY(spy.wait());
@@ -313,7 +316,7 @@ private Q_SLOTS:
         QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
 
         // perform a query for the other navigation
-        QSignalSpy spy(m_scope_navs, SIGNAL(searchInProgressChanged()));
+        QSignalSpy spy(m_scope_navs.data(), SIGNAL(searchInProgressChanged()));
         m_scope_navs->setNavigationState("top", true);
         QVERIFY(spy.wait());
 

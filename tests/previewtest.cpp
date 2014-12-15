@@ -44,12 +44,13 @@ class PreviewTest : public QObject
 private:
     Registry::UPtr m_registry;
     QScopedPointer<Scopes> m_scopes;
-    Scope* m_scope;
+    Scope::Ptr m_scope;
 
 private Q_SLOTS:
     void initTestCase()
     {
         m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -78,7 +79,7 @@ private Q_SLOTS:
 
         // get scope proxy
         m_scope = m_scopes->getScopeById("mock-scope");
-        QVERIFY(m_scope != nullptr);
+        QVERIFY(bool(m_scope));
         m_scope->setActive(true);
 
         QTRY_COMPARE(m_scope->searchInProgress(), false);
@@ -87,7 +88,7 @@ private Q_SLOTS:
     void cleanup()
     {
         m_scopes.reset();
-        m_scope = nullptr;
+        m_scope.reset();
     }
 
     void testScopePreview()
@@ -221,7 +222,7 @@ private Q_SLOTS:
         QTRY_COMPARE(preview->loaded(), true);
         QCOMPARE(preview->rowCount(), 1);
 
-        QSignalSpy spy(m_scope, SIGNAL(hideDash()));
+        QSignalSpy spy(m_scope.data(), SIGNAL(hideDash()));
         Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
         QCOMPARE(preview->processingAction(), true);
         QVERIFY(spy.wait());
