@@ -45,6 +45,7 @@ namespace scopes_ng
 using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
+#define CLICK_SCOPE_ID "clickscope"
 #define PARTNER_ID_FILE "/custom/partner-id"
 
 void ScopeListWorker::run()
@@ -608,6 +609,11 @@ QStringList Scopes::getFavoriteIds() const
 
 void Scopes::setFavorite(QString const& scopeId, bool value)
 {
+    if (scopeId == CLICK_SCOPE_ID && !value)
+    {
+        qWarning() << "Cannot unfavorite" << scopeId;
+        return;
+    }
     if (m_dashSettings)
     {
         QStringList cannedQueries;
