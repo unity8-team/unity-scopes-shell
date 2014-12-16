@@ -43,6 +43,8 @@ class Q_DECL_EXPORT Categories : public unity::shell::scopes::CategoriesInterfac
 public:
     explicit Categories(QObject* parent = 0);
 
+    ~Categories();
+
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 

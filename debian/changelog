@@ -1,3 +1,14 @@
+unity-scopes-shell (0.5.4+15.04.20141210~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Pete Woods ]
+  * Fix today scope crash (LP: #1394155)
+
+  [ Pawel Stolowski ]
+  * Read /custom/partner-id value (if present) and pass it with user-
+    agent hint. (LP: #1389273)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 10 Dec 2014 16:46:01 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141119~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Marcus Tomlinson ]

@@ -306,6 +306,14 @@ Categories::Categories(QObject* parent)
 {
 }
 
+Categories::~Categories()
+{
+    // Pete Woods: Do not remove these clear methods unless you are doing
+    // serious refactoring. Fixes: https://bugs.launchpad.net/ubuntu/+source/unity-scopes-shell/+bug/1394155
+    m_categories.clear();
+    m_categoryResults.clear();
+}
+
 int Categories::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

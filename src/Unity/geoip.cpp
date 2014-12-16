@@ -31,6 +31,12 @@ GeoIp::GeoIp(const QUrl& url) :
     connect(&m_networkAccessManager, &QNetworkAccessManager::finished, this, &GeoIp::response);
 }
 
+void GeoIp::whollyMoveThread(QThread *thread)
+{
+    moveToThread(thread);
+    m_networkAccessManager.moveToThread(thread);
+}
+
 void GeoIp::start()
 {
     if (!m_running)
