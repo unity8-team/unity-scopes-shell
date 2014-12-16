@@ -47,7 +47,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_filterId = treeNode->filterId();
     m_label = treeNode->label();
     m_allLabel = treeNode->allLabel();
-    m_loaded = !treeNode->isLeaf() && treeNode->childCount() > 0;
+    m_loaded = treeNode->isLeaf() || treeNode->childCount() > 0;
     m_isRoot = treeNode->isRoot();
     m_hidden = treeNode->hidden();
     m_isFilter = treeNode->isFilter();
