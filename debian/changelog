@@ -1,3 +1,13 @@
+unity-scopes-shell (0.5.4+15.04.20141216.1-0ubuntu1) vivid; urgency=low
+
+  [ Pawel Stolowski ]
+  * Report loaded = true for leaf department nodes.
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 16 Dec 2014 11:08:25 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141215-0ubuntu1) vivid; urgency=low
 
   [ Pawel Stolowski ]
