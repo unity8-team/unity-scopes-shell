@@ -66,7 +66,7 @@ public:
     const Result& result(const std::string& uri) const;
 
 protected:
-    friend ResultsView;
+    friend view::ResultsView;
 
     Category(const internal::CategoryArguments& arguments);
 

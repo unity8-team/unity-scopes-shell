@@ -18,27 +18,47 @@
 
 #pragma once
 
-#include <unity/util/DefinesPtrs.h>
+#include <QtGlobal>
 
-#include <qglobal.h>
+#include <deque>
+#include <memory>
+#include <string>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace matcher
+{
 
-class Q_DECL_EXPORT Registry
+
+class Q_DECL_EXPORT MatchResult
 {
 public:
-    UNITY_DEFINES_PTRS(Registry);
+    MatchResult();
 
-    virtual ~Registry() = default;
+    MatchResult(const MatchResult& other);
 
-    virtual void start() = 0;
+    MatchResult& operator=(const MatchResult& other);
+
+    MatchResult& operator=(MatchResult&& other);
+
+    ~MatchResult() = default;
+
+    void failure(const std::string& message);
+
+    bool success() const;
+
+    std::deque<std::string>& failures() const;
+
+    std::string concat_failures() const;
 
 protected:
-    Registry() = default;
+    struct Priv;
+
+    std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

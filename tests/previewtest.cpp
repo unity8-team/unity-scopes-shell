@@ -32,11 +32,12 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 
 using namespace scopes_ng;
 using namespace unity::scopeharness;
+using namespace unity::scopeharness::registry;
 
 class PreviewTest : public QObject
 {

@@ -17,9 +17,9 @@
  */
 
 #include <scope-harness/category.h>
-#include <scope-harness/category-matcher.h>
 #include <scope-harness/result.h>
-#include <scope-harness/result-matcher.h>
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
 
 #include <boost/optional.hpp>
 
@@ -33,6 +33,8 @@ namespace sc = unity::scopes;
 namespace unity
 {
 namespace scopeharness
+{
+namespace matcher
 {
 namespace
 {
@@ -317,5 +319,6 @@ string& CategoryMatcher::getId() const
     return p->m_id;
 }
 
+}
 }
 }

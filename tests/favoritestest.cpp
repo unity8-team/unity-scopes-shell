@@ -28,11 +28,12 @@
 #include <overviewresults.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
-#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 
 namespace ng = scopes_ng;
 namespace sh = unity::scopeharness;
+namespace shr = unity::scopeharness::registry;
 using namespace unity::shell::scopes;
 
 class FavoritesTest: public QObject
@@ -41,12 +42,12 @@ class FavoritesTest: public QObject
 private:
     QScopedPointer<ng::Scopes> m_scopes;
     ng::Scope* m_overviewScope;
-    sh::Registry::UPtr m_registry;
+    shr::Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new sh::PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new shr::PreExistingRegistry(TEST_RUNTIME_CONFIG));
         m_registry->start();
     }
 

@@ -18,42 +18,29 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include <qglobal.h>
-
 #include <unity/util/DefinesPtrs.h>
 
-#include <scope-harness/registry/registry.h>
-#include <scope-harness/view/results-view.h>
+#include <QtGlobal>
+
+#include <memory>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace view
+{
 
-class Q_DECL_EXPORT ScopeHarness
+class Q_DECL_EXPORT AbstractView: public std::enable_shared_from_this<AbstractView>
 {
 public:
-    UNITY_DEFINES_PTRS(ScopeHarness);
+    UNITY_DEFINES_PTRS(AbstractView);
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromPreExistingConfig(const std::string& directory);
+    AbstractView() = default;
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromSystem();
-
-    ~ScopeHarness() = default;
-
-    view::ResultsView::SPtr resultsView();
-
-protected:
-    ScopeHarness(registry::Registry::SPtr registry);
-
-    struct Priv;
-    std::shared_ptr<Priv> p;
+    virtual ~AbstractView() = default;
 };
 
+}
 }
 }

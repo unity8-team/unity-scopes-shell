@@ -23,8 +23,8 @@
 
 #include <scope-harness/internal/category-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
-#include <scope-harness/preview-view.h>
-#include <scope-harness/results-view.h>
+#include <scope-harness/view/preview-view.h>
+#include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
 
 using namespace std;
@@ -35,6 +35,8 @@ namespace ss = unity::shell::scopes;
 namespace unity
 {
 namespace scopeharness
+{
+namespace view
 {
 
 struct ResultsView::Priv
@@ -301,5 +303,6 @@ unity::shell::scopes::ScopeInterface::Status ResultsView::status() const
     return p->m_active_scope->status();
 }
 
+}
 }
 }

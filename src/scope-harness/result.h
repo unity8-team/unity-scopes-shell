@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/abstract-view.h>
+#include <scope-harness/view/abstract-view.h>
 
 #include <unity/scopes/Variant.h>
 
@@ -34,9 +34,11 @@ namespace internal
 {
 struct ResultArguments;
 }
-
+namespace view
+{
 class ResultsView;
 class PreviewView;
+}
 
 class Q_DECL_EXPORT Result
 {
@@ -75,10 +77,11 @@ public:
 
     unity::scopes::Variant const& value(std::string const& key) const;
 
-    AbstractView::SPtr activate() const;
+    view::AbstractView::SPtr activate() const;
 
 protected:
-    friend ResultsView;
+    friend view::ResultsView;
+    friend view::PreviewView;
 
     Result(const internal::ResultArguments& arguments);
 

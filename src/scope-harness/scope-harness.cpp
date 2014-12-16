@@ -18,7 +18,7 @@
 
 #include <Unity/scopes.h>
 
-#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
@@ -34,16 +34,16 @@ namespace scopeharness
 
 struct ScopeHarness::Priv
 {
-    Registry::SPtr m_registry;
+    registry::Registry::SPtr m_registry;
 
     shared_ptr<ng::Scopes> m_scopes;
 
-    ResultsView::SPtr m_resultsView;
+    view::ResultsView::SPtr m_resultsView;
 };
 
 ScopeHarness::UPtr ScopeHarness::newFromPreExistingConfig(const std::string& directory)
 {
-    Registry::SPtr registry = make_shared<PreExistingRegistry>(directory);
+    registry::Registry::SPtr registry = make_shared<registry::PreExistingRegistry>(directory);
     return ScopeHarness::UPtr(new ScopeHarness(registry));
 }
 
@@ -52,7 +52,7 @@ ScopeHarness::UPtr ScopeHarness::newFromSystem()
     throw domain_error("Not implemented");
 }
 
-ScopeHarness::ScopeHarness(Registry::SPtr registry) :
+ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         p(new Priv)
 {
     qputenv("UNITY_SCOPES_NO_FAVORITES", "1");
@@ -64,8 +64,8 @@ ScopeHarness::ScopeHarness(Registry::SPtr registry) :
 //    setFavouriteScopes(favs);
 
     p->m_scopes = make_shared<ng::Scopes>();
-    auto previewView = make_shared<PreviewView>();
-    p->m_resultsView = make_shared<ResultsView>(p->m_scopes, previewView);
+    auto previewView = make_shared<view::PreviewView>();
+    p->m_resultsView = make_shared<view::ResultsView>(p->m_scopes, previewView);
 
     // no scopes on startup
     throwIf(p->m_scopes->rowCount() != 0 || p->m_scopes->loaded(),
@@ -95,7 +95,7 @@ ScopeHarness::ScopeHarness(Registry::SPtr registry) :
     }
 }
 
-ResultsView::SPtr ScopeHarness::resultsView()
+view::ResultsView::SPtr ScopeHarness::resultsView()
 {
     return p->m_resultsView;
 }

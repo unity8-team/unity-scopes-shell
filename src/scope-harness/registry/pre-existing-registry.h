@@ -18,24 +18,39 @@
 
 #pragma once
 
-#include <unity/util/DefinesPtrs.h>
+#include <scope-harness/registry/registry.h>
 
-#include <memory>
+#include <string>
+
+#include <QProcess>
+#include <QTemporaryDir>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace registry
+{
 
-class AbstractView: public std::enable_shared_from_this<AbstractView>
+class Q_DECL_EXPORT PreExistingRegistry : public Registry
 {
 public:
-    UNITY_DEFINES_PTRS(AbstractView);
+    PreExistingRegistry(const std::string &runtimeConfig);
 
-    AbstractView() = default;
+    ~PreExistingRegistry();
 
-    virtual ~AbstractView() = default;
+    void start() override;
+
+private:
+    QString m_runtimeConfig;
+
+    QDir m_endpointDir;
+
+    QScopedPointer<QProcess> m_registryProcess;
+
+    QTemporaryDir m_tempDir;
 };
 
+}
 }
 }

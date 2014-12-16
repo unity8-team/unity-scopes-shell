@@ -16,11 +16,11 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/internal/result-arguments.h>
-#include <scope-harness/preview-view.h>
 #include <scope-harness/result.h>
-#include <scope-harness/results-view.h>
 #include <scope-harness/test-utils.h>
+#include <scope-harness/internal/result-arguments.h>
+#include <scope-harness/view/preview-view.h>
+#include <scope-harness/view/results-view.h>
 
 #include <Unity/resultsmodel.h>
 #include <Unity/scope.h>
@@ -63,9 +63,9 @@ public:
 
     QModelIndex m_index;
 
-    weak_ptr<ResultsView> m_resultsView;
+    weak_ptr<view::ResultsView> m_resultsView;
 
-    weak_ptr<PreviewView> m_previewView;
+    weak_ptr<view::PreviewView> m_previewView;
 
     sc::Variant m_null;
 
@@ -237,7 +237,7 @@ sc::Variant const& Result::value(string const& key) const
     return result->value(key);
 }
 
-AbstractView::SPtr Result::activate() const
+view::AbstractView::SPtr Result::activate() const
 {
     auto result = p->m_resultsModel->data(p->m_index,
                                        ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
@@ -255,7 +255,7 @@ AbstractView::SPtr Result::activate() const
     auto activationResponse = Priv::ActivationResponse(signal.toInt());
     QVariant parameter = response.at(1);
 
-    AbstractView::SPtr view;
+    view::AbstractView::SPtr view;
     auto resultsView = p->m_resultsView.lock();
     throwIfNot(bool(resultsView), "ResultsView not available");
     auto previewView = p->m_previewView.lock();
@@ -315,32 +315,5 @@ AbstractView::SPtr Result::activate() const
 
 }
 }
-
-/*
-    void testScopeActivationWithQuery2()
-    {
-        QSignalSpy spy(resultsView->activeScope(), SIGNAL(metadataRefreshed()));
-        QSignalSpy spy2(resultsView->activeScope(), SIGNAL(gotoScope(QString)));
-        QSignalSpy spy3(resultsView->activeScope(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)));
-        // this tries to activate non-existing scope
-        resultsView->activeScope()->activate(QVariant::fromValue(result));
-        QVERIFY(spy.wait());
-        QCOMPARE(spy2.count(), 0);
-        QCOMPARE(spy3.count(), 0);
-    }
-
-    void testScopeResultWithScopeUri()
-    {
-        QSignalSpy spy(resultsView->activeScope(), SIGNAL(searchQueryChanged()));
-        resultsView->activeScope()->activate(QVariant::fromValue(result));
-        // this is likely to be invoked synchronously
-        if (spy.count() == 0) {
-            QVERIFY(spy.wait());
-        }
-        QVERIFY(spy.count() > 0);
-        QCOMPARE(resultsView->activeScope()->searchQuery(), QString("next-scope-query"));
-    }
-
- */
 
 #include "result.moc"

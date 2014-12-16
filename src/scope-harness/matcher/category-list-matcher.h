@@ -23,11 +23,13 @@
 #include <memory>
 #include <string>
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 namespace unity
 {
 namespace scopeharness
+{
+namespace matcher
 {
 
 class CategoryMatcher;
@@ -69,5 +71,6 @@ protected:
     std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

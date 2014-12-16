@@ -13,48 +13,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Author: Pete Woods <pete.woods@canonical.com>
+ * Authors:
+ *  Pete Woods <pete.woods@canonical.com>
+ *  Michal Hruby <michal.hruby@canonical.com>
  */
 
 #pragma once
 
-#include <qglobal.h>
-
-#include <deque>
-#include <memory>
-#include <string>
+#include <QProcess>
+#include <QTemporaryFile>
+#include <QTemporaryDir>
+#include <QDebug>
+#include <QStringList>
+#include <QScopedPointer>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace registry
+{
 
-class Q_DECL_EXPORT MatchResult
+class RegistryTracker
 {
 public:
-    MatchResult();
+    RegistryTracker(QStringList const&, bool, bool);
 
-    MatchResult(const MatchResult& other);
+    ~RegistryTracker();
 
-    MatchResult& operator=(const MatchResult& other);
+    QProcess* registry() const;
 
-    MatchResult& operator=(MatchResult&& other);
+private:
+    void runRegistry();
 
-    ~MatchResult() = default;
-
-    void failure(const std::string& message);
-
-    bool success() const;
-
-    std::deque<std::string>& failures() const;
-
-    std::string concat_failures() const;
-
-protected:
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
+    QStringList m_scopes;
+    bool m_systemScopes;
+    bool m_serverScopes;
+    QProcess m_registry;
+    QTemporaryDir m_endpoints_dir;
+    QTemporaryFile m_runtime_config;
+    QTemporaryFile m_registry_config;
+    QTemporaryFile m_mw_config;
+    QScopedPointer<QTemporaryDir> m_scopeInstallDir;
 };
 
+}
 }
 }

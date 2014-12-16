@@ -18,24 +18,30 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <unity/util/DefinesPtrs.h>
 
-#include <scope-harness/abstract-view.h>
+#include <QtGlobal>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace registry
+{
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
+class Q_DECL_EXPORT Registry
 {
 public:
-    UNITY_DEFINES_PTRS(PreviewView);
+    UNITY_DEFINES_PTRS(Registry);
 
-    PreviewView();
+    virtual ~Registry() = default;
 
-    ~PreviewView() = default;
+    virtual void start() = 0;
+
+protected:
+    Registry() = default;
 };
 
+}
 }
 }

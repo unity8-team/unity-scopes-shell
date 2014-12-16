@@ -16,38 +16,19 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#pragma once
-
-#include <scope-harness/registry.h>
-
-#include <string>
-
-#include <QProcess>
-#include <QTemporaryDir>
+#include <scope-harness/view/preview-view.h>
 
 namespace unity
 {
 namespace scopeharness
 {
-
-class Q_DECL_EXPORT PreExistingRegistry : public Registry
+namespace view
 {
-public:
-    PreExistingRegistry(const std::string &runtimeConfig);
 
-    ~PreExistingRegistry();
+PreviewView::PreviewView()
+{
+}
 
-    void start() override;
-
-private:
-    QString m_runtimeConfig;
-
-    QDir m_endpointDir;
-
-    QScopedPointer<QProcess> m_registryProcess;
-
-    QTemporaryDir m_tempDir;
-};
-
+}
 }
 }

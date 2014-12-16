@@ -17,7 +17,7 @@
  */
 
 #include <scope-harness/result.h>
-#include <scope-harness/result-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
 
 #include <unity/scopes/Variant.h>
 
@@ -31,6 +31,8 @@ namespace sc = unity::scopes;
 namespace unity
 {
 namespace scopeharness
+{
+namespace matcher
 {
 namespace
 {
@@ -262,5 +264,6 @@ string ResultMatcher::getUri() const
     return p->m_uri;
 }
 
+}
 }
 }

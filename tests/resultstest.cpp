@@ -35,15 +35,17 @@
 #include <unity/scopes/Variant.h>
 #include <unity/scopes/VariantBuilder.h>
 
-#include <scope-harness/category-matcher.h>
-#include <scope-harness/category-list-matcher.h>
-#include <scope-harness/preview-view.h>
-#include <scope-harness/result-matcher.h>
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
+#include <scope-harness/view/preview-view.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
 using namespace std;
 namespace sh = unity::scopeharness;
+namespace shm = unity::scopeharness::matcher;
+namespace shv = unity::scopeharness::view;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
 
@@ -130,10 +132,10 @@ private Q_SLOTS:
         // ensure categories have > 0 rows
         // ensure results have some data
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
+            shm::CategoryListMatcher()
                 .hasAtLeast(1)
-                .mode(sh::CategoryListMatcher::Mode::by_id)
-                .category(sh::CategoryMatcher("cat1")
+                .mode(shm::CategoryListMatcher::Mode::by_id)
+                .category(shm::CategoryMatcher("cat1")
                     .title("Category 1")
                     .icon(string())
                     .headerLink(string())
@@ -219,7 +221,7 @@ private Q_SLOTS:
 
         // ensure categories has 1 row
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
+            shm::CategoryListMatcher()
                 .hasExactly(1)
                 .match(resultsView->categories())
         );
@@ -228,7 +230,7 @@ private Q_SLOTS:
 
         // shouldn't create more nor fewer categories
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
+            shm::CategoryListMatcher()
                 .hasExactly(1)
                 .match(resultsView->categories())
         );
@@ -241,13 +243,13 @@ private Q_SLOTS:
         resultsView->setQuery("");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
+            shm::CategoryListMatcher()
                 .hasAtLeast(1)
-                .mode(sh::CategoryListMatcher::Mode::by_id)
-                .category(sh::CategoryMatcher("cat1")
+                .mode(shm::CategoryListMatcher::Mode::by_id)
+                .category(shm::CategoryMatcher("cat1")
                     .hasAtLeast(1)
-                    .mode(sh::CategoryMatcher::Mode::by_uri)
-                    .result(sh::ResultMatcher("test:uri")
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
+                    .result(shm::ResultMatcher("test:uri")
                         .dndUri("test:dnd_uri")
                         .title("result for: \"\"")
                         .art("art")
@@ -270,10 +272,10 @@ private Q_SLOTS:
 
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(0))
                         )
@@ -288,10 +290,10 @@ private Q_SLOTS:
         resultsView->setQuery("m");
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(0))
                         )
@@ -310,10 +312,10 @@ private Q_SLOTS:
         resultsView->setQuery("met");
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(1))
                         )
@@ -333,10 +335,10 @@ private Q_SLOTS:
         resultsView->setQuery("m");
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(2))
                         )
@@ -356,10 +358,10 @@ private Q_SLOTS:
         resultsView->setQuery("iron");
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(0))
                         )
@@ -379,10 +381,10 @@ private Q_SLOTS:
         resultsView->setQuery("");
         {
             QVERIFY_MATCHRESULT(
-                sh::CategoryListMatcher()
-                    .category(sh::CategoryMatcher("cat1")
-                        .mode(sh::CategoryMatcher::Mode::by_uri)
-                        .result(sh::ResultMatcher("test:uri")
+                shm::CategoryListMatcher()
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::by_uri)
+                        .result(shm::ResultMatcher("test:uri")
                             .property("session-id", sc::Variant(resultsView->sessionId()))
                             .property("query-id", sc::Variant(0))
                         )
@@ -407,10 +409,10 @@ private Q_SLOTS:
 
         // various fields have been mapped
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::by_uri)
-                    .result(sh::ResultMatcher("test:uri")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"metadata\"")
                         .subtitle("subtitle")
                         .emblem("emblem")
@@ -506,10 +508,10 @@ private Q_SLOTS:
         resultsView->setQuery("music");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::by_uri)
-                    .result(sh::ResultMatcher("file:///tmp/foo.mp3")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
+                    .result(shm::ResultMatcher("file:///tmp/foo.mp3")
                         .title("result for: \"music\"")
                         .art("image://albumart/artist=Foo&album=FooAlbum")
                     )
@@ -527,9 +529,9 @@ private Q_SLOTS:
         auto categories = resultsView->categories();
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .result(sh::ResultMatcher("test:uri")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"metadata\"")
                         .emblem("emblem")
                         .art("art")
@@ -542,9 +544,9 @@ private Q_SLOTS:
         resultsView->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title"}})");
         // check that the model no longer has the components
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .result(sh::ResultMatcher("test:uri")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"metadata\"")
                         .emblem(string())
                         .art(string())
@@ -556,9 +558,9 @@ private Q_SLOTS:
         resultsView->overrideCategoryJson("cat1", R"({"schema-version": 1, "components": {"title": "title", "art": {"field": "art"}}})");
         // check that the model has the art
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .result(sh::ResultMatcher("test:uri")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"metadata\"")
                         .emblem(string())
                         .art("art")
@@ -612,13 +614,13 @@ private Q_SLOTS:
         builder.add_tuple({{"value", sc::Variant("21 reviews")}});
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::by_id)
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::by_id)
                 .hasAtLeast(1)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::by_uri)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
                     .hasAtLeast(1)
-                    .result(sh::ResultMatcher("test:uri")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"rating\"")
                         .attributes(builder.end())
                     )
@@ -640,13 +642,13 @@ private Q_SLOTS:
         builder.add_tuple({{"value", sc::Variant("28 stars")}});
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::by_id)
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::by_id)
                 .hasAtLeast(1)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::by_uri)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
                     .hasAtLeast(1)
-                    .result(sh::ResultMatcher("test:uri")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"attributes\"")
                         .attributes(builder.end())
                     )
@@ -686,10 +688,10 @@ private Q_SLOTS:
         };
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
                     .renderer(sc::Variant(renderer))
-                    .result(sh::ResultMatcher("test:uri")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"background\"")
                         .background(sc::Variant(background))
                     )
@@ -728,11 +730,11 @@ private Q_SLOTS:
         };
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
                     .renderer(sc::Variant(renderer))
                     .components(sc::Variant(components))
-                    .result(sh::ResultMatcher("test:uri")
+                    .result(shm::ResultMatcher("test:uri")
                         .title("result for: \"minimal\"")
                         .art(string())
                     )
@@ -775,17 +777,17 @@ private Q_SLOTS:
         resultsView->setQuery("two-categories");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1"))
-                .category(sh::CategoryMatcher("cat2"))
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1"))
+                .category(shm::CategoryMatcher("cat2"))
                 .match(resultsView->categories())
         );
 
         resultsView->setQuery("two-categories-reversed");
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat2"))
-                .category(sh::CategoryMatcher("cat1"))
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat2"))
+                .category(shm::CategoryMatcher("cat1"))
                 .match(resultsView->categories())
         );
     }
@@ -800,19 +802,19 @@ private Q_SLOTS:
         // FIXME: There are actually 3 categories in the CategoryModel at this point
         // It seems like categories aren't being cleared out (perhaps intentionally?)
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat1")
-                    .result(sh::ResultMatcher("test:uri"))
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("test:uri"))
                 )
-                .category(sh::CategoryMatcher("cat2"))
+                .category(shm::CategoryMatcher("cat2"))
                 .match(resultsView->categories())
         );
 
         resultsView->setQuery("two-categories-reversed");
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .category(sh::CategoryMatcher("cat2"))
-                .category(sh::CategoryMatcher("cat1"))
+            shm::CategoryListMatcher()
+                .category(shm::CategoryMatcher("cat2"))
+                .category(shm::CategoryMatcher("cat1"))
                 .match(resultsView->categories())
         );
     }
@@ -828,11 +830,11 @@ private Q_SLOTS:
 
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::starts_with)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::starts_with)
-                    .result(sh::ResultMatcher("test:uri"))
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:uri"))
                 )
                 .match(resultsView->categories())
         );
@@ -840,7 +842,7 @@ private Q_SLOTS:
         auto abstractView =
                 resultsView->category("cat1").result("test:uri").activate();
         QVERIFY(bool(abstractView));
-        auto previewView = dynamic_pointer_cast<sh::PreviewView>(abstractView);
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
     }
 
@@ -854,11 +856,11 @@ private Q_SLOTS:
         resultsView->setQuery("perform-query");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::starts_with)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::starts_with)
-                    .result(sh::ResultMatcher("test:perform-query"))
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:perform-query"))
                 )
                 .match(resultsView->categories())
         );
@@ -866,7 +868,7 @@ private Q_SLOTS:
         auto abstractView =
                 resultsView->category("cat1").result("test:perform-query").activate();
         QVERIFY(bool(abstractView));
-        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
 
         QCOMPARE(nextView->scopeId(), string("mock-scope-ttl"));
@@ -882,11 +884,11 @@ private Q_SLOTS:
         resultsView->setQuery("perform-query2");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::starts_with)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::starts_with)
-                    .result(sh::ResultMatcher("test:perform-query"))
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:perform-query"))
                 )
                 .match(resultsView->categories())
         );
@@ -894,7 +896,7 @@ private Q_SLOTS:
         auto abstractView =
                 resultsView->category("cat1").result("test:perform-query").activate();
         QVERIFY(bool(abstractView));
-        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
 
         // We shouldn't have gone anywhere
@@ -908,11 +910,11 @@ private Q_SLOTS:
         resultsView->setQuery("scope-uri");
 
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::starts_with)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::starts_with)
-                    .result(sh::ResultMatcher("scope://mock-scope?q=next-scope-query"))
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("scope://mock-scope?q=next-scope-query"))
                 )
                 .match(resultsView->categories())
         );
@@ -920,16 +922,16 @@ private Q_SLOTS:
         auto abstractView =
                 resultsView->category("cat1").result("scope://mock-scope?q=next-scope-query").activate();
         QVERIFY(bool(abstractView));
-        auto nextView = dynamic_pointer_cast<sh::ResultsView>(abstractView);
+        auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
 
         QCOMPARE(resultsView->searchQuery(), string("next-scope-query"));
         QVERIFY_MATCHRESULT(
-            sh::CategoryListMatcher()
-                .mode(sh::CategoryListMatcher::Mode::starts_with)
-                .category(sh::CategoryMatcher("cat1")
-                    .mode(sh::CategoryMatcher::Mode::starts_with)
-                    .result(sh::ResultMatcher("next-scope-query")
+            shm::CategoryListMatcher()
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("next-scope-query")
                         .title("result for: \"next-scope-query\"")
                         .art("next-scope-query-art")
                     )

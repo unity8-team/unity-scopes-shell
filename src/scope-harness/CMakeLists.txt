@@ -15,15 +15,15 @@ add_definitions(
 
 add_library(
     scope-harness SHARED
+    matcher/category-matcher.cpp
+    matcher/category-list-matcher.cpp
+    matcher/match-result.cpp
+    matcher/result-matcher.cpp
+    registry/pre-existing-registry.cpp
+    view/preview-view.cpp
+    view/results-view.cpp
     category.cpp
-    category-matcher.cpp
-    category-list-matcher.cpp
-    match-result.cpp
-    pre-existing-registry.cpp
-    preview-view.cpp
     result.cpp
-    result-matcher.cpp
-    results-view.cpp
     scope-harness.cpp
     test-utils.cpp
     )

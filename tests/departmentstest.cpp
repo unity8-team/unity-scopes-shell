@@ -36,11 +36,12 @@
 #include <previewwidgetmodel.h>
 #include <department.h>
 
-#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 
 namespace sc = unity::scopes;
 namespace sh = unity::scopeharness;
+namespace shr = unity::scopeharness::registry;
 namespace ss = unity::shell::scopes;
 namespace ng = scopes_ng;
 
@@ -52,13 +53,13 @@ private:
     ng::Scope::Ptr m_scope;
     ng::Scope::Ptr m_scope_navs;
     ng::Scope::Ptr m_scope_flipflop;
-    sh::Registry::UPtr m_registry;
+    shr::Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
-        m_registry.reset(new sh::PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry.reset(new shr::PreExistingRegistry(TEST_RUNTIME_CONFIG));
         m_registry->start();
     }
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 #include <QSharedPointer>
 
 #include <memory>
@@ -39,8 +39,11 @@ namespace scopes
 }
 namespace scopeharness
 {
+namespace view
+{
 class PreviewView;
 class ResultsView;
+}
 namespace internal
 {
 struct ResultArguments
@@ -51,9 +54,9 @@ struct ResultArguments
 
     const QModelIndex& index;
 
-    std::shared_ptr<ResultsView> resultsView;
+    std::shared_ptr<view::ResultsView> resultsView;
 
-    std::shared_ptr<PreviewView> previewView;
+    std::shared_ptr<view::PreviewView> previewView;
 };
 }
 }

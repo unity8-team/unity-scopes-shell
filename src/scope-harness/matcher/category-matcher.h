@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include <scope-harness/match-result.h>
+#include <scope-harness/matcher/match-result.h>
 
 #include <memory>
 #include <string>
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 namespace unity
 {
@@ -33,8 +33,10 @@ class Variant;
 }
 namespace scopeharness
 {
-
 class Category;
+
+namespace matcher
+{
 class ResultMatcher;
 
 class Q_DECL_EXPORT CategoryMatcher
@@ -85,5 +87,6 @@ protected:
     std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

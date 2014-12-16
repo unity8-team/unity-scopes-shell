@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/pre-existing-registry.h>
+#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 
 #include <QFile>
@@ -30,6 +30,9 @@ namespace unity
 {
 namespace scopeharness
 {
+namespace registry
+{
+
 
 PreExistingRegistry::PreExistingRegistry(const std::string &runtimeConfig) :
         m_runtimeConfig(QString::fromStdString(runtimeConfig))
@@ -86,5 +89,6 @@ PreExistingRegistry::~PreExistingRegistry()
     m_endpointDir.removeRecursively();
 }
 
+}
 }
 }

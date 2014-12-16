@@ -16,8 +16,8 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/category-matcher.h>
-#include <scope-harness/category-list-matcher.h>
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/category-list-matcher.h>
 
 #include <boost/optional.hpp>
 
@@ -30,6 +30,8 @@ using namespace boost;
 namespace unity
 {
 namespace scopeharness
+{
+namespace matcher
 {
 
 struct CategoryListMatcher::Priv
@@ -175,5 +177,6 @@ MatchResult CategoryListMatcher::match(const Category::List& categoryList) const
     return matchResult;
 }
 
+}
 }
 }

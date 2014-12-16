@@ -20,14 +20,12 @@
 
 #include <unity/shell/scopes/ScopeInterface.h>
 
-#include <scope-harness/preview-view.h>
+#include <scope-harness/view/preview-view.h>
 #include <scope-harness/category.h>
 
-#include <memory>
 #include <string>
 
 #include <QVariantMap>
-#include <qglobal.h>
 
 namespace scopes_ng
 {
@@ -45,6 +43,8 @@ class CategoriesInterface;
 }
 
 namespace scopeharness
+{
+namespace view
 {
 
 class Q_DECL_EXPORT ResultsView: public AbstractView
@@ -103,5 +103,6 @@ protected:
     std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include <deque>
 
