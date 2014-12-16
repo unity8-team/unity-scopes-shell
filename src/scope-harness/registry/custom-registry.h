@@ -20,12 +20,10 @@
 
 #pragma once
 
-#include <QProcess>
-#include <QTemporaryFile>
-#include <QTemporaryDir>
-#include <QDebug>
-#include <QStringList>
-#include <QScopedPointer>
+#include <scope-harness/registry/registry.h>
+
+#include <deque>
+#include <string>
 
 namespace unity
 {
@@ -34,27 +32,52 @@ namespace scopeharness
 namespace registry
 {
 
-class RegistryTracker
+class Q_DECL_EXPORT CustomRegistry: public Registry
 {
 public:
-    RegistryTracker(QStringList const&, bool, bool);
+    UNITY_DEFINES_PTRS(CustomRegistry);
 
-    ~RegistryTracker();
+    class Q_DECL_EXPORT Parameters
+    {
+    public:
+        Parameters(std::deque<std::string> const& scopes);
 
-    QProcess* registry() const;
+        Parameters(const Parameters& other);
 
-private:
-    void runRegistry();
+        Parameters(Parameters&& other);
 
-    QStringList m_scopes;
-    bool m_systemScopes;
-    bool m_serverScopes;
-    QProcess m_registry;
-    QTemporaryDir m_endpoints_dir;
-    QTemporaryFile m_runtime_config;
-    QTemporaryFile m_registry_config;
-    QTemporaryFile m_mw_config;
-    QScopedPointer<QTemporaryDir> m_scopeInstallDir;
+        Parameters& operator=(const Parameters& other);
+
+        Parameters& operator=(Parameters&& other);
+
+        ~Parameters() = default;
+
+        Parameters& includeSystemScopes();
+
+        Parameters& includeClickScopes();
+
+        Parameters& includeOemScopes();
+
+        Parameters& includeRemoteScopes();
+
+    protected:
+        struct Priv;
+
+        std::shared_ptr<Priv> p;
+
+        friend CustomRegistry;
+    };
+
+    CustomRegistry(const Parameters& parameters);
+
+    ~CustomRegistry();
+
+    void start() override;
+
+protected:
+    struct Priv;
+
+    std::shared_ptr<Priv> p;
 };
 
 }

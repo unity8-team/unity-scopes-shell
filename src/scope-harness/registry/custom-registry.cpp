@@ -19,8 +19,14 @@
  */
 
 #include <scope-harness/registry/custom-registry.h>
+#include <scope-harness/test-utils.h>
 
 #include <QDir>
+#include <QProcess>
+#include <QStringList>
+#include <QTemporaryDir>
+
+using namespace std;
 
 namespace unity
 {
@@ -28,131 +34,210 @@ namespace scopeharness
 {
 namespace registry
 {
-
-RegistryTracker::RegistryTracker(QStringList const& scopes, bool systemScopes, bool serverScopes):
-    m_scopes(scopes),
-    m_systemScopes(systemScopes),
-    m_serverScopes(serverScopes),
-    m_registry(nullptr),
-    m_endpoints_dir(QDir::temp().filePath("scope-dev-endpoints.XXXXXX"))
+namespace
 {
-    runRegistry();
+
+const static QString RUNTIME_CONFIG = R"(
+[Runtime]
+Registry.Identity = Registry
+Registry.ConfigFile = %1
+Default.Middleware = Zmq
+Zmq.ConfigFile = %2
+Smartscopes.Registry.Identity = %3
+)";
+
+const static QString REGISTRY_CONFIG = R"(
+[Registry]
+Middleware = Zmq
+Zmq.ConfigFile = %1
+Scoperunner.Path = %2
+Scope.InstallDir = %3
+Click.InstallDir = %4
+OEM.InstallDir = %5
+)";
+
+const static QString MW_CONFIG = R"(
+[Zmq]
+EndpointDir = %1
+)";
+
 }
 
-RegistryTracker::~RegistryTracker()
+struct CustomRegistry::Parameters::Priv
 {
-    if (m_registry.state() != QProcess::NotRunning) {
-        m_registry.terminate();
-        m_registry.waitForFinished(5000);
-        m_registry.kill();
-    }
+    deque<string> m_scopes;
+
+    bool m_includeSystemScopes = false;
+
+    bool m_includeClickScopes = false;
+
+    bool m_includeOemScopes = false;
+
+    bool m_includeRemoteScopes = false;
+};
+
+CustomRegistry::Parameters::Parameters(deque<string> const& scopes) :
+        p(new Priv)
+{
+    p->m_scopes = scopes;
 }
 
-#define RUNTIME_CONFIG \
-"[Runtime]\n" \
-"Registry.Identity = Registry\n" \
-"Registry.ConfigFile = %1\n" \
-"Default.Middleware = Zmq\n" \
-"Zmq.ConfigFile = %2\n" \
-"Smartscopes.Registry.Identity = %3\n"
-
-#define REGISTRY_CONFIG \
-"[Registry]\n" \
-"Middleware = Zmq\n" \
-"Zmq.ConfigFile = %1\n" \
-"Scope.InstallDir = %2\n" \
-"Scoperunner.Path = %3\n"
-
-#define REGISTRY_CONFIG_CLICK \
-"Click.InstallDir = %1\n"
-
-#define MW_CONFIG \
-"[Zmq]\n" \
-"EndpointDir = %1\n"
-
-void RegistryTracker::runRegistry()
+CustomRegistry::Parameters::Parameters(const Parameters& other) :
+        p(new Priv)
 {
-    QDir tmp(QDir::temp());
-    m_runtime_config.setFileTemplate(tmp.filePath("Runtime.XXXXXX.ini"));
-    m_registry_config.setFileTemplate(tmp.filePath("Registry.XXXXXX.ini"));
-    m_mw_config.setFileTemplate(tmp.filePath("Zmq.XXXXXX.ini"));
+    *this = other;
+}
 
-    if (!m_runtime_config.open() || !m_registry_config.open() || !m_mw_config.open() || !m_endpoints_dir.isValid()) {
-        qWarning("Unable to open temporary files!");
-        return;
-    }
+CustomRegistry::Parameters::Parameters(Parameters&& other)
+{
+    p = move(other.p);
+}
 
-    QString scopeInstallDir;
-    QString scopeRegistryBin;
-    QString scopeRunnerBin;
-    QString clickInstallDir;
+CustomRegistry::Parameters& CustomRegistry::Parameters::operator=(const Parameters& other)
+{
+    p->m_scopes = other.p->m_scopes;
+    p->m_includeSystemScopes = other.p->m_includeSystemScopes;
+    p->m_includeClickScopes = other.p->m_includeClickScopes;
+    p->m_includeOemScopes = other.p->m_includeOemScopes;
+    p->m_includeRemoteScopes = other.p->m_includeRemoteScopes;
+    return *this;
+}
+
+CustomRegistry::Parameters& CustomRegistry::Parameters::operator=(Parameters&& other)
+{
+    p = move(other.p);
+    return *this;
+}
+
+CustomRegistry::Parameters& CustomRegistry::Parameters::includeSystemScopes()
+{
+    p->m_includeSystemScopes = true;
+    return *this;
+}
+
+CustomRegistry::Parameters& CustomRegistry::Parameters::includeClickScopes()
+{
+    p->m_includeClickScopes = true;
+    return *this;
+}
+
+CustomRegistry::Parameters& CustomRegistry::Parameters::includeOemScopes()
+{
+    p->m_includeOemScopes = true;
+    return *this;
+}
+
+CustomRegistry::Parameters& CustomRegistry::Parameters::includeRemoteScopes()
+{
+    p->m_includeRemoteScopes = true;
+    return *this;
+}
+
+struct CustomRegistry::Priv
+{
+    Priv(const Parameters& parameters) :
+        m_parameters(parameters)
     {
-        QProcess pkg_config;
-        QByteArray output;
-        QStringList arguments;
-        arguments << "--variable=scopesdir";
-        arguments << "libunity-scopes";
-        pkg_config.start("pkg-config", arguments);
-        pkg_config.waitForFinished();
-        output = pkg_config.readAllStandardOutput();
-        scopeInstallDir = QDir(QString::fromLocal8Bit(output)).path().trimmed();
-
-        arguments[0] = "--variable=scoperegistry_bin";
-        pkg_config.start("pkg-config", arguments);
-        pkg_config.waitForFinished();
-        output = pkg_config.readAllStandardOutput();
-        scopeRegistryBin = QString::fromLocal8Bit(output).trimmed();
-
-        arguments[0] = "--variable=scoperunner_bin";
-        pkg_config.start("pkg-config", arguments);
-        pkg_config.waitForFinished();
-        output = pkg_config.readAllStandardOutput();
-        scopeRunnerBin = QString::fromLocal8Bit(output).trimmed();
     }
 
-    if (scopeInstallDir.isEmpty() || scopeRegistryBin.isEmpty() || scopeRunnerBin.isEmpty()) {
-        qWarning("Unable to find libunity-scopes package config file");
-        return;
+    Parameters m_parameters;
+
+    QProcess m_registry;
+
+    QTemporaryDir m_temp;
+};
+
+CustomRegistry::CustomRegistry(const Parameters& parameters):
+    p(new Priv(parameters))
+{
+    p->m_parameters = parameters;
+}
+
+CustomRegistry::~CustomRegistry()
+{
+    if (p->m_registry.state() != QProcess::NotRunning) {
+        p->m_registry.terminate();
+        p->m_registry.waitForFinished(5000);
+        p->m_registry.kill();
+    }
+}
+
+void CustomRegistry::start()
+{
+    QDir tmp(p->m_temp.path());
+
+    QFile runtimeConfig(tmp.filePath("Runtime.ini"));
+    QFile registryConfig(tmp.filePath("Registry.ini"));
+    QFile mwConfig(tmp.filePath("Zmq.ini"));
+
+    tmp.mkpath("endpoints");
+    QDir endpointsDir(tmp.filePath("endpoints"));
+
+    throwIf(!runtimeConfig.open(QIODevice::WriteOnly)
+            || !registryConfig.open(QIODevice::WriteOnly)
+            || !mwConfig.open(QIODevice::WriteOnly)
+            || !endpointsDir.exists(),
+            "Unable to open temporary files");
+
+    QFile scopeRegistryBin(SCOPESLIB_SCOPEREGISTRY_BIN);
+    QFile scopeRunnerBin(SCOPESLIB_SCOPERUNNER_BIN);
+
+    QDir scopeInstallDir(SCOPESLIB_SCOPESDIR);
+    if (!p->m_parameters.p->m_includeSystemScopes)
+    {
+        scopeInstallDir = tmp.filePath("scopes");
+        throwIfNot(tmp.mkpath("scopes"), string("Unable to create directory:") + scopeInstallDir.path().toStdString());
+    }
+
+    QDir clickInstallDir(QDir::home().filePath(".local/share/unity-scopes"));
+    if (!p->m_parameters.p->m_includeClickScopes)
+    {
+        clickInstallDir = tmp.filePath("click");
+        throwIfNot(tmp.mkpath("click"), string("Unable to create directory:") + clickInstallDir.path().toStdString());
+    }
+
+    QDir oemInstallDir("/custom/share/unity-scopes");
+    if (!p->m_parameters.p->m_includeOemScopes)
+    {
+        oemInstallDir = tmp.filePath("oem");
+        throwIfNot(tmp.mkpath("oem"), string("Unable to create directory:") + oemInstallDir.path().toStdString());
     }
 
     // FIXME: keep in sync with the SSRegistry config
-    QString runtime_ini = QString(RUNTIME_CONFIG).arg(m_registry_config.fileName()).arg(m_mw_config.fileName()).arg(m_serverScopes ? "SSRegistry" : "");
-    if (!m_systemScopes) {
-        m_scopeInstallDir.reset(new QTemporaryDir(tmp.filePath("scopes.XXXXXX")));
-        if (!m_scopeInstallDir->isValid()) {
-            qWarning("Unable to create temporary scopes directory!");
-        }
-        scopeInstallDir = m_scopeInstallDir->path();
-        clickInstallDir = "/unused";
-    }
-    QString registry_ini = QString(REGISTRY_CONFIG).arg(m_mw_config.fileName()).arg(scopeInstallDir).arg(scopeRunnerBin);
-    if (!clickInstallDir.isEmpty()) {
-        registry_ini.append(QString(REGISTRY_CONFIG).arg(clickInstallDir));
-    }
-    QString mw_ini = QString(MW_CONFIG).arg(m_endpoints_dir.path());
+    QString runtimeIni = RUNTIME_CONFIG
+            .arg(registryConfig.fileName())
+            .arg(mwConfig.fileName())
+            .arg(p->m_parameters.p->m_includeRemoteScopes ? "SSRegistry" : "");
 
-    if (!m_systemScopes) {
-        // Disable OEM and Click scopes when system scopes are disabled
-        registry_ini += "OEM.InstallDir = /unused\n";
-        registry_ini += "Click.InstallDir = /unused\n";
-    }
+    QString registryIni = REGISTRY_CONFIG
+            .arg(mwConfig.fileName())
+            .arg(scopeRunnerBin.fileName())
+            .arg(scopeInstallDir.path())
+            .arg(clickInstallDir.path())
+            .arg(oemInstallDir.path());
 
-    m_runtime_config.write(runtime_ini.toUtf8());
-    m_registry_config.write(registry_ini.toUtf8());
-    m_mw_config.write(mw_ini.toUtf8());
+    QString mwIni = MW_CONFIG
+            .arg(endpointsDir.path());
 
-    m_runtime_config.flush();
-    m_registry_config.flush();
-    m_mw_config.flush();
+    runtimeConfig.write(runtimeIni.toUtf8());
+    registryConfig.write(registryIni.toUtf8());
+    mwConfig.write(mwIni.toUtf8());
 
-    qputenv("UNITY_SCOPES_RUNTIME_PATH", m_runtime_config.fileName().toLocal8Bit());
+    runtimeConfig.close();
+    registryConfig.close();
+    mwConfig.close();
+
+    qputenv("UNITY_SCOPES_RUNTIME_PATH", runtimeConfig.fileName().toLocal8Bit());
 
     QStringList arguments;
-    arguments << m_runtime_config.fileName();
-    arguments << m_scopes;
+    arguments << runtimeConfig.fileName();
+    for (const auto& scope : p->m_parameters.p->m_scopes)
+    {
+        arguments << QString::fromStdString(scope);
+    }
 
-    m_registry.setProcessChannelMode(QProcess::ForwardedChannels);
-    m_registry.start(scopeRegistryBin, arguments);
+    p->m_registry.setProcessChannelMode(QProcess::ForwardedChannels);
+    p->m_registry.start(scopeRegistryBin.fileName(), arguments);
 }
 
 }

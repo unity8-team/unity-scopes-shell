@@ -19,9 +19,11 @@
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDir>
+#include <QProcess>
+#include <QTemporaryDir>
 #include <QThread>
 #include <QSettings>
 #include <QSignalSpy>
@@ -33,60 +35,71 @@ namespace scopeharness
 namespace registry
 {
 
+struct PreExistingRegistry::Priv
+{
+    QString m_runtimeConfig;
+
+    QDir m_endpointDir;
+
+    QScopedPointer<QProcess> m_registryProcess;
+
+    QTemporaryDir m_tempDir;
+};
 
 PreExistingRegistry::PreExistingRegistry(const std::string &runtimeConfig) :
-        m_runtimeConfig(QString::fromStdString(runtimeConfig))
+        p(new Priv)
 {
-    QSettings runtimeSettings(m_runtimeConfig, QSettings::IniFormat);
+    p->m_runtimeConfig = QString::fromStdString(runtimeConfig);
+    QSettings runtimeSettings(p->m_runtimeConfig, QSettings::IniFormat);
     runtimeSettings.setIniCodec("UTF-8");
 
     QString zmqConfig = runtimeSettings.value("Runtime/Zmq.ConfigFile").toString();
     QSettings zmqSettings(zmqConfig, QSettings::IniFormat);
     zmqSettings.setIniCodec("UTF-8");
 
-    m_endpointDir = zmqSettings.value("Zmq/EndpointDir").toString();
+    p->m_endpointDir = zmqSettings.value("Zmq/EndpointDir").toString();
 }
 
 void PreExistingRegistry::start()
 {
-    qputenv("UNITY_SCOPES_CONFIG_DIR", m_tempDir.path().toUtf8());
+    qputenv("UNITY_SCOPES_CONFIG_DIR", p->m_tempDir.path().toUtf8());
     qputenv("TEST_DESKTOP_FILES_DIR", "");
 
-    m_endpointDir.removeRecursively();
-    m_endpointDir.mkpath(".hidden");
+    p->m_endpointDir.removeRecursively();
+    p->m_endpointDir.mkpath(".hidden");
 
     // startup our private scope registry
     QString registryBin(SCOPESLIB_SCOPEREGISTRY_BIN);
 
-    m_registryProcess.reset(new QProcess());
-    m_registryProcess->setProcessChannelMode(QProcess::ForwardedChannels);
-    m_registryProcess->start(registryBin, QStringList() << m_runtimeConfig);
-    throwIfNot(m_registryProcess->waitForStarted(), "Scope registry failed to start");
+    p->m_registryProcess.reset(new QProcess());
+    p->m_registryProcess->setProcessChannelMode(QProcess::ForwardedChannels);
+    p->m_registryProcess->start(registryBin, QStringList() << p->m_runtimeConfig);
+    throwIfNot(p->m_registryProcess->waitForStarted(), "Scope registry failed to start");
 
     // FIXME hard-coded path
     QProcess::startDetached(
             "/usr/lib/" DEB_HOST_MULTIARCH "/libqtdbustest/watchdog",
             QStringList() << QString::number(QCoreApplication::applicationPid())
-                    << QString::number(m_registryProcess->pid()));
+                    << QString::number(p->m_registryProcess->pid()));
 
     qputenv("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE", "0");
     qputenv("UNITY_SCOPES_LIST_DELAY", "5");
     qputenv("UNITY_SCOPES_RESULTS_TTL_OVERRIDE", "250");
-    qputenv("UNITY_SCOPES_RUNTIME_PATH", m_runtimeConfig.toUtf8());
+    qputenv("UNITY_SCOPES_RUNTIME_PATH", p->m_runtimeConfig.toUtf8());
     qputenv("UNITY_SCOPES_NO_LOCATION", "1");
 }
 
 PreExistingRegistry::~PreExistingRegistry()
 {
-    if (m_registryProcess)
+    if (p->m_registryProcess)
     {
-        m_registryProcess->terminate();
-        if (!m_registryProcess->waitForFinished())
+        p->m_registryProcess->terminate();
+        if (!p->m_registryProcess->waitForFinished())
         {
-            m_registryProcess->kill();
+            p->m_registryProcess->kill();
         }
     }
-    m_endpointDir.removeRecursively();
+    p->m_endpointDir.removeRecursively();
 }
 
 }

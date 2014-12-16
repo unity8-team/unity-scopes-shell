@@ -16,11 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#pragma once
-
-#include <scope-harness/registry/registry.h>
-
-#include <string>
+#include <registry/system-registry.h>
 
 namespace unity
 {
@@ -29,20 +25,17 @@ namespace scopeharness
 namespace registry
 {
 
-class Q_DECL_EXPORT PreExistingRegistry : public Registry
+SystemRegistry::SystemRegistry()
 {
-public:
-    PreExistingRegistry(const std::string &runtimeConfig);
+}
 
-    ~PreExistingRegistry();
+SystemRegistry::~SystemRegistry()
+{
+}
 
-    void start() override;
-
-protected:
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
-};
+void SystemRegistry::start()
+{
+}
 
 }
 }

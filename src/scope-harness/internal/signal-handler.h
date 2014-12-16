@@ -18,46 +18,46 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include <qglobal.h>
-
-#include <unity/util/DefinesPtrs.h>
-
-#include <scope-harness/registry/custom-registry.h>
-#include <scope-harness/registry/registry.h>
-#include <scope-harness/view/results-view.h>
+#include <QObject>
+#include <QSocketNotifier>
 
 namespace unity
 {
 namespace scopeharness
 {
-
-class Q_DECL_EXPORT ScopeHarness
+namespace internal
 {
+
+class Q_DECL_EXPORT SignalHandler: public QObject
+{
+Q_OBJECT
+
 public:
-    UNITY_DEFINES_PTRS(ScopeHarness);
+	SignalHandler(QObject *parent = 0);
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromPreExistingConfig(const std::string& directory);
+	~SignalHandler() = default;
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromScopeList(const registry::CustomRegistry::Parameters& parameters);
+	static int setupUnixSignalHandlers();
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromSystem();
+protected Q_SLOTS:
+	void handleSigInt();
 
-    ~ScopeHarness() = default;
-
-    view::ResultsView::SPtr resultsView();
+	void handleSigTerm();
 
 protected:
-    ScopeHarness(registry::Registry::SPtr registry);
+	static void intSignalHandler(int unused);
 
-    struct Priv;
-    std::shared_ptr<Priv> p;
+	static void termSignalHandler(int unused);
+
+	static int sigintFd[2];
+
+	static int sigtermFd[2];
+
+	QSocketNotifier *m_socketNotifierInt;
+
+	QSocketNotifier *m_socketNotifierTerm;
 };
 
+}
 }
 }

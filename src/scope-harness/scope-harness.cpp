@@ -19,6 +19,7 @@
 #include <Unity/scopes.h>
 
 #include <scope-harness/registry/pre-existing-registry.h>
+#include <scope-harness/registry/system-registry.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
@@ -47,9 +48,16 @@ ScopeHarness::UPtr ScopeHarness::newFromPreExistingConfig(const std::string& dir
     return ScopeHarness::UPtr(new ScopeHarness(registry));
 }
 
+ScopeHarness::UPtr ScopeHarness::newFromScopeList(const registry::CustomRegistry::Parameters& parameters)
+{
+    registry::Registry::SPtr registry = make_shared<registry::CustomRegistry>(parameters);
+    return ScopeHarness::UPtr(new ScopeHarness(registry));
+}
+
 ScopeHarness::UPtr ScopeHarness::newFromSystem()
 {
-    throw domain_error("Not implemented");
+    registry::Registry::SPtr registry = make_shared<registry::SystemRegistry>();
+    return ScopeHarness::UPtr(new ScopeHarness(registry));
 }
 
 ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :

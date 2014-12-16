@@ -18,46 +18,27 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include <qglobal.h>
-
-#include <unity/util/DefinesPtrs.h>
-
-#include <scope-harness/registry/custom-registry.h>
 #include <scope-harness/registry/registry.h>
-#include <scope-harness/view/results-view.h>
 
 namespace unity
 {
 namespace scopeharness
 {
+namespace registry
+{
 
-class Q_DECL_EXPORT ScopeHarness
+class Q_DECL_EXPORT SystemRegistry: public Registry
 {
 public:
-    UNITY_DEFINES_PTRS(ScopeHarness);
+    UNITY_DEFINES_PTRS(SystemRegistry);
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromPreExistingConfig(const std::string& directory);
+    SystemRegistry();
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromScopeList(const registry::CustomRegistry::Parameters& parameters);
+    ~SystemRegistry();
 
-    Q_DECL_EXPORT
-    static ScopeHarness::UPtr newFromSystem();
-
-    ~ScopeHarness() = default;
-
-    view::ResultsView::SPtr resultsView();
-
-protected:
-    ScopeHarness(registry::Registry::SPtr registry);
-
-    struct Priv;
-    std::shared_ptr<Priv> p;
+    void start() override;
 };
 
+}
 }
 }
