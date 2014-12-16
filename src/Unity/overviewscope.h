@@ -44,6 +44,9 @@ public:
 
 private Q_SLOTS:
     void metadataChanged();
+
+private:
+    void processFavorites(const QStringList& favs, QList<unity::scopes::ScopeMetadata::SPtr>& favorites, QList<unity::scopes::ScopeMetadata::SPtr>& otherScopes, QMap<QString, QString>& scopeIdToName);
 };
 
 } // namespace scopes_ng

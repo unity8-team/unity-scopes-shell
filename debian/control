@@ -3,8 +3,8 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
-               libunity-api-dev (>= 7.88),
-               libunity-scopes-dev (>= 0.6.8~),
+               libunity-api-dev (>= 7.94~),
+               libunity-scopes-dev (>= 0.6.9~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
@@ -37,7 +37,8 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-0,
           unity-scopes-impl-1,
           unity-scopes-impl-4,
-Breaks: unity8-private (<< 7.84)
+Breaks: unity8-private (<< 7.84),
+        unity8 (<< 8.02)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell

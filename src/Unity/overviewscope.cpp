@@ -65,30 +65,13 @@ void OverviewScope::metadataChanged()
         return;
     }
 
-    QMap<QString, scopes::ScopeMetadata::SPtr> allMetadata = m_scopesInstance->getAllMetadata();
+    QMap<QString, QString> scopeIdToName;
     QList<scopes::ScopeMetadata::SPtr> favorites;
-    Q_FOREACH(QString id, m_scopesInstance->getFavoriteIds()) {
-        auto it = allMetadata.find(id);
-        if (it != allMetadata.end()) {
-            favorites.append(it.value());
-        }
-    }
-
-    QList<ScopeInfo> scopes;
-    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
-        if (metadata->invisible()) continue;
-        scopes.append(ScopeInfo(metadata));
-    }
-    qSort(scopes.begin(), scopes.end());
-
-    QList<scopes::ScopeMetadata::SPtr> allScopes;
-    Q_FOREACH(ScopeInfo const& info, scopes) {
-        allScopes << info.data;
-    }
-
-    // FIXME: filter invisible scopes?
-    categories->setAllScopes(allScopes);
-    categories->setFavoriteScopes(favorites);
+    QList<scopes::ScopeMetadata::SPtr> otherScopes;
+    processFavorites(m_scopesInstance->getFavoriteIds(), favorites, otherScopes, scopeIdToName);
+    
+    categories->setFavoriteScopes(favorites, scopeIdToName);
+    categories->setOtherScopes(otherScopes, scopeIdToName);
 
     // Metadata has changed, invalidate the search results
     invalidateResults();
@@ -109,25 +92,52 @@ scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& r
     }
 }
 
-void OverviewScope::updateFavorites(const QStringList& favorites)
+void OverviewScope::processFavorites(const QStringList& favs, QList<scopes::ScopeMetadata::SPtr>& favorites, QList<scopes::ScopeMetadata::SPtr>& otherScopes, QMap<QString, QString>& scopeIdToName)
 {
-    QList<scopes::ScopeMetadata::SPtr> favs;
     auto allMetadata = m_scopesInstance->getAllMetadata();
-    for (auto const id: favorites)
+
+    for (auto m: allMetadata)
+    {
+        scopeIdToName[QString::fromStdString(m->scope_id())] = QString::fromStdString(m->display_name());
+    }
+
+    for (auto const id: favs)
     {
         auto it = allMetadata.find(id);
         if (it != allMetadata.end()) {
-            favs.append(it.value());
+            favorites.append(it.value());
+            allMetadata.erase(it);
         }
     }
 
+    QList<ScopeInfo> scopes;
+    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
+        if (metadata->invisible())
+            continue;
+        scopes.append(ScopeInfo(metadata));
+    }
+    qSort(scopes.begin(), scopes.end());
+
+    Q_FOREACH(ScopeInfo const& info, scopes) {
+        otherScopes << info.data;
+    }
+}
+
+void OverviewScope::updateFavorites(const QStringList& favs)
+{
     OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
     if (!categories) {
         qWarning("Unable to cast m_categories to OverviewCategories");
         return;
     }
 
-    categories->updateFavoriteScopes(favs);
+    QMap<QString, QString> scopeIdToName;
+    QList<scopes::ScopeMetadata::SPtr> favorites;
+    QList<scopes::ScopeMetadata::SPtr> otherScopes;
+    processFavorites(favs, favorites, otherScopes, scopeIdToName);
+
+    categories->updateFavoriteScopes(favorites, scopeIdToName);
+    categories->updateOtherScopes(otherScopes, scopeIdToName);
 }
 
 void OverviewScope::dispatchSearch()

@@ -108,12 +108,15 @@ private Q_SLOTS:
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
         QCOMPARE(categories->data(categories->index(0), Categories::Roles::RoleCategoryId), QVariant(QString("favorites")));
-        QCOMPARE(categories->data(categories->index(1), Categories::Roles::RoleCategoryId), QVariant(QString("all")));
+        QCOMPARE(categories->data(categories->index(1), Categories::Roles::RoleCategoryId), QVariant(QString("other")));
 
         QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
         QVERIFY(results_var.canConvert<OverviewResultsModel*>());
         OverviewResultsModel* results = results_var.value<OverviewResultsModel*>();
-        QVERIFY(results->rowCount() > 0);
+        QVERIFY(results->rowCount() == 2);
+
+        QCOMPARE(results->data(results->index(0), OverviewResultsModel::Roles::RoleTitle), QVariant(QString("mock-departments.DisplayName")));
+        QCOMPARE(results->data(results->index(0), OverviewResultsModel::Roles::RoleSubtitle), QVariant(QString("mock-double-nav.DisplayName, mock.DisplayName")));
     }
 
     void testPreview()
