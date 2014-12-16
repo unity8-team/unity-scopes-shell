@@ -6,3 +6,4 @@ Icon = /mock-departments.Icon
 SearchHint = mock-departments.SearchHint
 HotKey = mock-departments.HotKey
 Author = mock-departments.Author
+ChildScopes = mock-scope-double-nav;mock-scope
