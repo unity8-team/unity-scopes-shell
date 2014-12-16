@@ -1,3 +1,16 @@
+unity-scopes-shell (0.5.4+15.04.20141216.1~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Pawel Stolowski ]
+  * Don't conclude too early that current department id should be reset
+    (cherry-picked trunk rev. 178) (LP: #1343242)
+  * Report loaded = true for leaf department nodes (cherry picked from
+    trunk).
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 16 Dec 2014 22:03:16 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141216~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Pawel Stolowski ]
