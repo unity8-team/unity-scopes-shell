@@ -1,3 +1,13 @@
+unity-scopes-shell (0.5.4+15.04.20141216~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Pawel Stolowski ]
+  * Support for Manage Dash as per latest designs (cherry-picked from
+    trunk rev. 173). (LP: #1400296)
+  * Make sure Apps are not un-favorited. Unity8 will prohibit this as
+    well, this is for extra safety.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 16 Dec 2014 16:16:54 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141210~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Pete Woods ]
