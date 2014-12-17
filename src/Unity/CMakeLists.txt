@@ -65,7 +65,6 @@ set_target_properties(
 # Work around cmake definciency for using Qt with OBJECT target
 object_qt5_use_modules(
     Unity-qml-object
-    Qml
     ${SCOPES_SHELL_QT_DEPENDENCIES}
 )
 

@@ -35,7 +35,6 @@
 #include <QDebug>
 #include <QGSettings>
 #include <QtGui/QDesktopServices>
-#include <QQmlEngine>
 #include <QEvent>
 #include <QMutex>
 #include <QMutexLocker>
