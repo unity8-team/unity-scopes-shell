@@ -20,8 +20,6 @@
 
 #include <scope-harness/result.h>
 
-#include <qglobal.h>
-
 #include <deque>
 #include <memory>
 

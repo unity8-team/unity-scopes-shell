@@ -20,7 +20,7 @@
 
 #include <unity/scopes/Variant.h>
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include <deque>
 

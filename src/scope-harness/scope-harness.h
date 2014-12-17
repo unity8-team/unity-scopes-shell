@@ -21,7 +21,7 @@
 #include <string>
 #include <memory>
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include <unity/util/DefinesPtrs.h>
 
