@@ -1,12 +1,14 @@
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
 pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1>=0.2 REQUIRED)
 
+set(TEST_DATA_DIR "${CMAKE_CURRENT_BINARY_DIR}/data/")
 set(TEST_RUNTIME_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini")
 
 add_subdirectory(data)
 
 add_definitions(
     -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
+    -DTEST_DATA_DIR="${TEST_DATA_DIR}"
     -DTEST_RUNTIME_CONFIG="${TEST_RUNTIME_CONFIG}"
     -DTEST_SETTINGS_UNICODE="${CMAKE_CURRENT_SOURCE_DIR}/data/settings-unicode.ini"
     )

@@ -21,6 +21,7 @@
 #include <scope-harness/registry/custom-registry.h>
 #include <scope-harness/test-utils.h>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QProcess>
 #include <QStringList>
@@ -142,7 +143,7 @@ struct CustomRegistry::Priv
 
     Parameters m_parameters;
 
-    QProcess m_registry;
+    QProcess m_registryProcess;
 
     QTemporaryDir m_temp;
 };
@@ -155,15 +156,18 @@ CustomRegistry::CustomRegistry(const Parameters& parameters):
 
 CustomRegistry::~CustomRegistry()
 {
-    if (p->m_registry.state() != QProcess::NotRunning) {
-        p->m_registry.terminate();
-        p->m_registry.waitForFinished(5000);
-        p->m_registry.kill();
+    if (p->m_registryProcess.state() != QProcess::NotRunning) {
+        p->m_registryProcess.terminate();
+        p->m_registryProcess.waitForFinished(5000);
+        p->m_registryProcess.kill();
     }
 }
 
 void CustomRegistry::start()
 {
+    qputenv("UNITY_SCOPES_CONFIG_DIR", p->m_temp.path().toUtf8());
+    qputenv("TEST_DESKTOP_FILES_DIR", "");
+
     QDir tmp(p->m_temp.path());
 
     QFile runtimeConfig(tmp.filePath("Runtime.ini"));
@@ -186,21 +190,21 @@ void CustomRegistry::start()
     if (!p->m_parameters.p->m_includeSystemScopes)
     {
         scopeInstallDir = tmp.filePath("scopes");
-        throwIfNot(tmp.mkpath("scopes"), string("Unable to create directory:") + scopeInstallDir.path().toStdString());
+        throwIfNot(tmp.mkpath("scopes"), string("Unable to create directory: ") + scopeInstallDir.path().toStdString());
     }
 
     QDir clickInstallDir(QDir::home().filePath(".local/share/unity-scopes"));
     if (!p->m_parameters.p->m_includeClickScopes)
     {
         clickInstallDir = tmp.filePath("click");
-        throwIfNot(tmp.mkpath("click"), string("Unable to create directory:") + clickInstallDir.path().toStdString());
+        throwIfNot(tmp.mkpath("click"), string("Unable to create directory: ") + clickInstallDir.path().toStdString());
     }
 
     QDir oemInstallDir("/custom/share/unity-scopes");
     if (!p->m_parameters.p->m_includeOemScopes)
     {
         oemInstallDir = tmp.filePath("oem");
-        throwIfNot(tmp.mkpath("oem"), string("Unable to create directory:") + oemInstallDir.path().toStdString());
+        throwIfNot(tmp.mkpath("oem"), string("Unable to create directory: ") + oemInstallDir.path().toStdString());
     }
 
     // FIXME: keep in sync with the SSRegistry config
@@ -236,8 +240,20 @@ void CustomRegistry::start()
         arguments << QString::fromStdString(scope);
     }
 
-    p->m_registry.setProcessChannelMode(QProcess::ForwardedChannels);
-    p->m_registry.start(scopeRegistryBin.fileName(), arguments);
+    p->m_registryProcess.setProcessChannelMode(QProcess::ForwardedChannels);
+    p->m_registryProcess.start(scopeRegistryBin.fileName(), arguments);
+    throwIfNot(p->m_registryProcess.waitForStarted(), "Scope registry failed to start");
+
+    // FIXME hard-coded path
+    QProcess::startDetached(
+            "/usr/lib/" DEB_HOST_MULTIARCH "/libqtdbustest/watchdog",
+            QStringList() << QString::number(QCoreApplication::applicationPid())
+                    << QString::number(p->m_registryProcess.pid()));
+
+    qputenv("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE", "0");
+    qputenv("UNITY_SCOPES_LIST_DELAY", "5");
+    qputenv("UNITY_SCOPES_RESULTS_TTL_OVERRIDE", "250");
+    qputenv("UNITY_SCOPES_NO_LOCATION", "1");
 }
 
 }
