@@ -1,12 +1,7 @@
 # export_qmlplugin macro
 include(Plugins)
 
-# Dependencies
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=5)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.9)
-pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
-pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
+include(QtWithObjectTarget)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -40,7 +35,6 @@ set(QMLPLUGIN_SRC
     settingsmodel.cpp
     ubuntulocationservice.cpp
     utils.cpp
-    plugin.cpp
     iconutils.cpp
     # We need these headers here so moc runs and we get the moc-stuff
     # compiled in, otherwise we miss some symbols
@@ -55,17 +49,44 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
 )
 
-add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
+# Object code library 
 
-target_link_libraries(Unity-qml
-    ${SCOPESLIB_LDFLAGS}
-    ${GSETTINGSQT_LDFLAGS}
-    ${U1DB_LDFLAGS}
-    ${UBUNTU_LOCATION_SERVICE_LDFLAGS}
-    ${ONLINE_ACCOUNTS_CLIENT_LDFLAGS}
-    )
+add_library(
+    Unity-qml-object OBJECT
+    ${QMLPLUGIN_SRC}
+)
 
-qt5_use_modules(Unity-qml Qml Gui DBus Concurrent)
+set_target_properties(
+    Unity-qml-object
+    PROPERTIES
+        COMPILE_FLAGS -fPIC
+)
+
+# Work around cmake definciency for using Qt with OBJECT target
+object_qt5_use_modules(
+    Unity-qml-object
+    Qml
+    ${SCOPES_SHELL_QT_DEPENDENCIES}
+)
+
+# Shared library for plugin
+
+add_library(
+  Unity-qml SHARED
+  $<TARGET_OBJECTS:Unity-qml-object>
+  plugin.cpp
+)
+
+target_link_libraries(
+    Unity-qml
+    ${SCOPES_SHELL_DEPENDENCIES}
+)
+
+qt5_use_modules(
+    Unity-qml
+    Qml
+    ${SCOPES_SHELL_QT_DEPENDENCIES}
+)
 
 # export the qmldir qmltypes and plugin files
 export_qmlfiles(Unity Unity)

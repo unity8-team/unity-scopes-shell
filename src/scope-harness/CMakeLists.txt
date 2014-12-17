@@ -18,6 +18,7 @@ add_definitions(
 
 add_library(
     scope-harness SHARED
+    $<TARGET_OBJECTS:Unity-qml-object>
     internal/signal-handler.cpp
     matcher/category-matcher.cpp
     matcher/category-list-matcher.cpp
@@ -36,14 +37,13 @@ add_library(
 
 target_link_libraries(
     scope-harness
-    Unity-qml
-    ${GSETTINGSQT_LDFLAGS}
+    ${SCOPES_SHELL_DEPENDENCIES}
     )
 
 qt5_use_modules(
     scope-harness
-    Network
     Test
+    ${SCOPES_SHELL_QT_DEPENDENCIES}
     )
 
 add_executable(
