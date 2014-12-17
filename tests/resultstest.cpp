@@ -108,13 +108,13 @@ private Q_SLOTS:
     void initTestCase()
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
-        m_harness = sh::ScopeHarness::newFromPreExistingConfig(TEST_RUNTIME_CONFIG);
-//        m_harness = sh::ScopeHarness::newFromScopeList(
-//            shr::CustomRegistry::Parameters({
-//                TEST_DATA_DIR "mock-scope/mock-scope.ini",
-//                TEST_DATA_DIR "mock-scope/mock-scope-ttl.ini"
-//            })
-//        );
+        m_harness = sh::ScopeHarness::newFromScopeList(
+            shr::CustomRegistry::Parameters({
+                TEST_DATA_DIR "mock-scope/mock-scope.ini",
+                TEST_DATA_DIR "mock-scope-info/mock-scope-info.ini",
+                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini"
+            })
+        );
     }
 
     void cleanupTestCase()
