@@ -152,11 +152,11 @@ bool ResultsView::overrideCategoryJson(std::string const& categoryId, std::strin
             QString::fromStdString(categoryId), QString::fromStdString(json));
 }
 
-Category::List ResultsView::categories()
+results::Category::List ResultsView::categories()
 {
     auto cats = raw_categories();
 
-    Category::List result;
+    results::Category::List result;
     for (int i = 0; i < cats->rowCount(); ++i)
     {
         try
@@ -171,7 +171,7 @@ Category::List ResultsView::categories()
     return result;
 }
 
-Category ResultsView::category(unsigned int row)
+results::Category ResultsView::category(unsigned int row)
 {
     auto cats = raw_categories();
     auto categoryIndex = cats->index(row);
@@ -187,23 +187,23 @@ Category ResultsView::category(unsigned int row)
             cats->index(row), ng::Categories::RoleResultsSPtr);
     QSharedPointer<ss::ResultsModelInterface> resultModel = resultsVariant.value<
             QSharedPointer<ss::ResultsModelInterface>>();
-    Result::List results;
+    results::Result::List results;
     if (resultModel)
     {
         for (int i = 0; i < resultModel->rowCount(); ++i)
         {
             auto idx = resultModel->index(i);
-            results.emplace_back(Result(internal::ResultArguments
+            results.emplace_back(results::Result(internal::ResultArguments
                 { resultModel, p->m_active_scope, idx,
                   dynamic_pointer_cast<ResultsView>(shared_from_this()),
                   p->m_previewView }));
         }
     }
 
-    return Category(internal::CategoryArguments{cats, categoryIndex, results});
+    return results::Category(internal::CategoryArguments{cats, categoryIndex, results});
 }
 
-Category ResultsView::category(const string& categoryId_)
+results::Category ResultsView::category(const string& categoryId_)
 {
     auto cats = raw_categories();
 

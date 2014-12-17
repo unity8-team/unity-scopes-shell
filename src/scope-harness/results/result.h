@@ -39,6 +39,8 @@ namespace view
 class ResultsView;
 class PreviewView;
 }
+namespace results
+{
 
 class Q_DECL_EXPORT Result
 {
@@ -90,5 +92,6 @@ protected:
     std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

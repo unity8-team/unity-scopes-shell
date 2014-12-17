@@ -28,8 +28,10 @@ class Variant;
 }
 namespace scopeharness
 {
+namespace results
+{
 class Result;
-
+}
 namespace matcher
 {
 
@@ -66,9 +68,9 @@ public:
 
     ResultMatcher& property(const std::string& name, const unity::scopes::Variant& value);
 
-    MatchResult match(const Result& result) const;
+    MatchResult match(const results::Result& result) const;
 
-    void match(MatchResult& matchResult, const Result& result) const;
+    void match(MatchResult& matchResult, const results::Result& result) const;
 
     std::string getUri() const;
 

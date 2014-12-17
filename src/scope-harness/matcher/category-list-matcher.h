@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <scope-harness/category.h>
+#include <scope-harness/results/category.h>
 
 #include <memory>
 #include <string>
@@ -57,7 +57,7 @@ public:
 
     CategoryListMatcher& hasExactly(unsigned int amount);
 
-    MatchResult match(const Category::List& resultList) const;
+    MatchResult match(const results::Category::List& resultList) const;
 
 protected:
     CategoryListMatcher(const CategoryListMatcher& other) = delete;

@@ -37,7 +37,10 @@ namespace scopes
 }
 namespace scopeharness
 {
+namespace results
+{
 class Result;
+}
 namespace internal
 {
 struct CategoryArguments
@@ -46,7 +49,7 @@ struct CategoryArguments
 
     const QModelIndex& index;
 
-    std::deque<Result> results;
+    std::deque<results::Result> results;
 };
 }
 }
