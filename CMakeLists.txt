@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-# Default install location. Must be set here, before setting the project.
-if (NOT DEFINED CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "" FORCE)
-endif()
-
 project(unity-scopes-shell C CXX)
 
 if(${PROJECT_BINARY_DIR} STREQUAL ${PROJECT_SOURCE_DIR})

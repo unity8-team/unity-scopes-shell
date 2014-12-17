@@ -45,6 +45,7 @@
 using namespace std;
 namespace sh = unity::scopeharness;
 namespace shm = unity::scopeharness::matcher;
+namespace shr = unity::scopeharness::registry;
 namespace shv = unity::scopeharness::view;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
@@ -108,6 +109,12 @@ private Q_SLOTS:
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
         m_harness = sh::ScopeHarness::newFromPreExistingConfig(TEST_RUNTIME_CONFIG);
+//        m_harness = sh::ScopeHarness::newFromScopeList(
+//            shr::CustomRegistry::Parameters({
+//                TEST_DATA_DIR "mock-scope/mock-scope.ini",
+//                TEST_DATA_DIR "mock-scope/mock-scope-ttl.ini"
+//            })
+//        );
     }
 
     void cleanupTestCase()
@@ -491,7 +498,7 @@ private Q_SLOTS:
                 QString("query text" + QString::number(++resultCount)));
 //        QVERIFY(!m_scope_ttl->resultsDirty());
     }
-//
+
 //    void testInactiveTtlScope()
 //    {
 //        m_scope_ttl->setActive(false);
@@ -500,7 +507,7 @@ private Q_SLOTS:
 //        // Model should go dirty
 //        QTRY_VERIFY(m_scope_ttl->resultsDirty());
 //    }
-//
+
     void testAlbumArtResult()
     {
         auto resultsView = m_harness->resultsView();
