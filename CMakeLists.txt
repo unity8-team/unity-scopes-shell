@@ -32,8 +32,8 @@ if(cmake_build_type_lower MATCHES coverage)
 endif()
 
 # Make sure we have all the needed symbols
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
+#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
+#set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
 
 # Static C++ checks
 add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
