@@ -34,6 +34,7 @@
 
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/preview-column-matcher.h>
 #include <scope-harness/matcher/preview-matcher.h>
 #include <scope-harness/matcher/preview-widget-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
@@ -117,23 +118,26 @@ private Q_SLOTS:
         };
 
         QVERIFY_MATCHRESULT(
-            shm::PreviewMatcher()
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
                 .widget(
                     shm::PreviewWidgetMatcher("hdr")
-                        .type("header")
-                        .data(sc::Variant(widget1))
+                    .type("header")
+                    .data(sc::Variant(widget1))
                 )
                 .widget(
                     shm::PreviewWidgetMatcher("img")
-                        .type("image")
-                        .data(sc::Variant(widget2))
+                    .type("image")
+                    .data(sc::Variant(widget2))
                 )
-                .match(previewView->widgetsInFirstColumn())
+            )
+            .match(previewView->widgets())
         );
     }
 
-//    void testExpandablePreviewWidget()
-//    {
+    void testExpandablePreviewWidget()
+    {
 //        QScopedPointer<PreviewStack> preview_stack;
 //        QVERIFY(previewForFirstResult(m_scope, QString("expandable-widget"), preview_stack));
 //        unity::scopes::Result::SPtr result;
@@ -184,36 +188,73 @@ private Q_SLOTS:
 //        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
 //        QVERIFY(props.contains("source"));
 //        QCOMPARE(props[QString("source")].toString(), QString("foo.png"));
-//    }
-//
-//    void testPreviewLayouts()
-//    {
-//        QScopedPointer<PreviewStack> preview_stack;
-//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-//
-//        QCOMPARE(preview_stack->rowCount(), 1);
-//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-//        auto preview = preview_stack->getPreviewModel(0);
-//        QTRY_COMPARE(preview->loaded(), true);
-//        QCOMPARE(preview->rowCount(), 1);
-//        auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-//        QCOMPARE(col_model1->rowCount(), 4);
-//
-//        // switch the layout
-//        preview_stack->setWidgetColumnCount(2);
-//        QCOMPARE(preview->rowCount(), 2);
-//        QCOMPARE(col_model1->rowCount(), 1);
-//        auto col_model2 = preview->data(preview->index(1), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-//        QCOMPARE(col_model2->rowCount(), 3);
-//
-//        // switch back
-//        preview_stack->setWidgetColumnCount(1);
-//        QCOMPARE(preview->rowCount(), 1);
-//        QCOMPARE(col_model1->rowCount(), 4);
-//    }
-//
-//    void testPreviewAction()
-//    {
+    }
+
+    void testPreviewLayouts()
+    {
+        m_resultsView->setQuery("layout");
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:layout"))
+                )
+                .match(m_resultsView->categories())
+        );
+
+        auto abstractView = m_resultsView->category(0).result(0).activate();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        previewView->setColumnCount(2);
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+            )
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        previewView->setColumnCount(1);
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+    }
+
+    void testPreviewAction()
+    {
 //        QScopedPointer<PreviewStack> preview_stack;
 //        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
 //
@@ -228,10 +269,10 @@ private Q_SLOTS:
 //        QCOMPARE(preview->processingAction(), true);
 //        QVERIFY(spy.wait());
 //        QCOMPARE(preview->processingAction(), false);
-//    }
-//
-//    void testPreviewReplacingPreview()
-//    {
+    }
+
+    void testPreviewReplacingPreview()
+    {
 //        QScopedPointer<PreviewStack> preview_stack;
 //        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
 //
@@ -257,7 +298,7 @@ private Q_SLOTS:
 //        // refresh widget model
 //        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
 //        QCOMPARE(preview_widgets->rowCount(), 5);
-//    }
+    }
 
 };
 

@@ -64,6 +64,7 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         p(new Priv)
 {
     qputenv("UNITY_SCOPES_NO_FAVORITES", "1");
+    qputenv("UNITY_SCOPES_NO_OPEN_URL", "1");
 
     p->m_registry = registry;
     p->m_registry->start();

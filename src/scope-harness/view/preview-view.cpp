@@ -81,7 +81,12 @@ struct PreviewView::Priv
     void setPreviewModel(shared_ptr<ss::PreviewStackInterface> previewStack)
     {
         m_previewStack = previewStack;
-        auto previewModel = previewStack->getPreviewModel(0);
+        updateModels();
+    }
+
+    void updateModels()
+    {
+        auto previewModel = m_previewStack->getPreviewModel(0);
         m_previewModels = iteratePreviewModel(previewModel);
     }
 
@@ -111,6 +116,7 @@ void PreviewView::setColumnCount(unsigned int count)
 
     p->m_previewStack->setWidgetColumnCount(count);
     // TODO Wait?
+    p->updateModels();
 }
 
 unsigned int PreviewView::columnCount() const

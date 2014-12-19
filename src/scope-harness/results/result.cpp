@@ -43,6 +43,10 @@ namespace scopeharness
 {
 namespace results
 {
+namespace
+{
+const static QStringList EXTERNAL_URI {"http", "https", "file"};
+}
 
 struct Result::Priv: public QObject
 {
@@ -287,9 +291,8 @@ view::AbstractView::SPtr Result::activate() const
             // TODO set scope inactive?
             auto result = p->m_resultsModel->data(
                     p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
-            // TODO null check
-            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result));
-//            QTestEventLoop::instance().enterLoop(1);
+            shared_ptr<ss::PreviewStackInterface> preview(
+                    p->m_scope->preview(result));
             previewView->preview(preview);
             view = previewView;
             break;
@@ -298,11 +301,25 @@ view::AbstractView::SPtr Result::activate() const
         {
             qDebug() << "goto_uri" << parameter;
             QUrl url(parameter.toString());
-            if (url.scheme() == QLatin1String("scope"))
+            if (EXTERNAL_URI.contains(url.scheme(), Qt::CaseInsensitive))
+            {
+                view = resultsView;
+            }
+            else if (url.scheme() == "scope")
             {
                 waitForSearchFinish(p->m_scope);
+                view = resultsView;
             }
-            view = resultsView;
+            else
+            {
+                auto result = p->m_resultsModel->data(
+                        p->m_index,
+                        ss::ResultsModelInterface::Roles::RoleResult);
+                shared_ptr<ss::PreviewStackInterface> preview(
+                        p->m_scope->preview(result));
+                previewView->preview(preview);
+                view = previewView;
+            }
             break;
         }
         case Priv::ActivationResponse::preview_requested:
