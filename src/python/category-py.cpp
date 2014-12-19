@@ -17,21 +17,27 @@
  */
 
 #include <boost/python.hpp>
+#include <scope-harness/results/category.h>
 
 using namespace boost::python;
+namespace shr = unity::scopeharness::results;
 
-void export_variant();
-void export_registry();
-void export_view();
-void export_scopeharness();
-
-BOOST_PYTHON_MODULE(harnesspy)
+static object getRenderer(shr::Category*)
 {
-    // enable custom docstring, disable auto-generated docstring including c++ signatures
-    docstring_options local_docstring_options(true, true, false);
+    //TODO
+    return object();
+}
 
-    export_variant();
-    export_registry();
-    export_scopeharness();
-    export_view();
+void export_category()
+{
+    class_<shr::Category>("Category", no_init)
+        .def("id", &shr::Category::id)
+        .def("title", &shr::Category::title)
+        .def("icon", &shr::Category::icon)
+        .def("header_link", &shr::Category::headerLink)
+        .def("renderer", &getRenderer)
+        // TODO results etc
+        ;
+
+
 }

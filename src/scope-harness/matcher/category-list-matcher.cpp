@@ -44,7 +44,7 @@ struct CategoryListMatcher::Priv
 
     optional<unsigned int> m_hasExactly;
 
-    void all(MatchResult& matchResult, const Category::List& categoryList)
+    void all(MatchResult& matchResult, const results::Category::List& categoryList)
     {
         if (categoryList.size() != m_categories.size())
         {
@@ -62,9 +62,9 @@ struct CategoryListMatcher::Priv
         }
     }
 
-    void byId(MatchResult& matchResult, const Category::List& categoryList)
+    void byId(MatchResult& matchResult, const results::Category::List& categoryList)
     {
-        unordered_map<string, Category> categoriesById;
+        unordered_map<string, results::Category> categoriesById;
         for (const auto& category : categoryList)
         {
             categoriesById.insert({category.id(), category});
@@ -86,7 +86,7 @@ struct CategoryListMatcher::Priv
         }
     }
 
-    void startsWith(MatchResult& matchResult, const Category::List& categoryList)
+    void startsWith(MatchResult& matchResult, const results::Category::List& categoryList)
     {
         if (categoryList.size() < m_categories.size())
         {
@@ -140,7 +140,7 @@ CategoryListMatcher& CategoryListMatcher::hasExactly(unsigned int amount)
     return *this;
 }
 
-MatchResult CategoryListMatcher::match(const Category::List& categoryList) const
+MatchResult CategoryListMatcher::match(const results::Category::List& categoryList) const
 {
     MatchResult matchResult;
 

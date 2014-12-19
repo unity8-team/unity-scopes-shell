@@ -32,10 +32,10 @@ add_library(
     registry/custom-registry.cpp
     registry/pre-existing-registry.cpp
     registry/system-registry.cpp
+    results/category.cpp
+    results/result.cpp
     view/preview-view.cpp
     view/results-view.cpp
-    category.cpp
-    result.cpp
     scope-harness.cpp
     test-utils.cpp
 )

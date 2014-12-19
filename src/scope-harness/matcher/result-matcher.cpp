@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/result.h>
+#include <scope-harness/results/result.h>
 #include <scope-harness/matcher/result-matcher.h>
 
 #include <unity/scopes/Variant.h>
@@ -36,7 +36,7 @@ namespace matcher
 {
 namespace
 {
-static void check_variant(MatchResult& matchResult, const Result& result,
+static void check_variant(MatchResult& matchResult, const results::Result& result,
     const string& name, const sc::Variant& actualValue, const sc::Variant& expectedValue)
 {
     if (!(actualValue == expectedValue))
@@ -54,7 +54,7 @@ static void check_variant(MatchResult& matchResult, const Result& result,
     }
 }
 
-static void check_variant(MatchResult& matchResult, const Result& result,
+static void check_variant(MatchResult& matchResult, const results::Result& result,
     const string& name, const sc::Variant& expectedValue)
 {
     const auto& actualValue = result[name];
@@ -62,7 +62,7 @@ static void check_variant(MatchResult& matchResult, const Result& result,
 }
 
 
-static void check_string(MatchResult& matchResult, const Result& result,
+static void check_string(MatchResult& matchResult, const results::Result& result,
              const string& name, const string& actualValue,
              const string& expectedValue)
 {
@@ -205,14 +205,14 @@ ResultMatcher& ResultMatcher::property(const string& name, const sc::Variant& va
     return *this;
 }
 
-MatchResult ResultMatcher::match(const Result& result) const
+MatchResult ResultMatcher::match(const results::Result& result) const
 {
     MatchResult matchResult;
     match(matchResult, result);
     return matchResult;
 }
 
-void ResultMatcher::match(MatchResult& matchResult, const Result& result) const
+void ResultMatcher::match(MatchResult& matchResult, const results::Result& result) const
 {
     check_string(matchResult, result, "uri", result.uri(), p->m_uri);
     if (p->m_dndUri)

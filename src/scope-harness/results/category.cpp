@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/category.h>
+#include <scope-harness/results/category.h>
 #include <scope-harness/internal/category-arguments.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
@@ -31,6 +31,8 @@ namespace ss = unity::shell::scopes;
 namespace unity
 {
 namespace scopeharness
+{
+namespace results
 {
 
 struct Category::Priv
@@ -122,5 +124,6 @@ const Result& Category::result(const string& uri) const
     throw domain_error("Result with URI '" + uri + "' could not be found");
 }
 
+}
 }
 }

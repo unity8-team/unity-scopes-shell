@@ -16,10 +16,10 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/category.h>
-#include <scope-harness/result.h>
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
+#include <scope-harness/results/category.h>
+#include <scope-harness/results/result.h>
 
 #include <boost/optional.hpp>
 
@@ -38,7 +38,7 @@ namespace matcher
 {
 namespace
 {
-static void check_variant(MatchResult& matchResult, const Category& category,
+static void check_variant(MatchResult& matchResult, const results::Category& category,
     const string& name, const sc::Variant& actualValue, const sc::Variant& expectedValue)
 {
     if (!(actualValue == expectedValue))
@@ -56,7 +56,7 @@ static void check_variant(MatchResult& matchResult, const Category& category,
     }
 }
 
-static void check_string(MatchResult& matchResult, const Category& category,
+static void check_string(MatchResult& matchResult, const results::Category& category,
              const string& name, const string& actualValue,
              const string& expectedValue)
 {
@@ -82,7 +82,7 @@ static void check_string(MatchResult& matchResult, const Category& category,
 
 struct CategoryMatcher::Priv
 {
-    void all(MatchResult& matchResult, const Result::List& resultList)
+    void all(MatchResult& matchResult, const results::Result::List& resultList)
     {
         if (resultList.size() != m_results.size())
         {
@@ -100,7 +100,7 @@ struct CategoryMatcher::Priv
         }
     }
 
-    void startsWith(MatchResult& matchResult, const Result::List&resultList)
+    void startsWith(MatchResult& matchResult, const results::Result::List&resultList)
     {
         if (resultList.size() < m_results.size())
         {
@@ -118,9 +118,9 @@ struct CategoryMatcher::Priv
         }
     }
 
-    void byUri(MatchResult& matchResult, const Result::List& resultList)
+    void byUri(MatchResult& matchResult, const results::Result::List& resultList)
     {
-        unordered_map<string, Result> resultsByUri;
+        unordered_map<string, results::Result> resultsByUri;
         for (const auto& result : resultList)
         {
             resultsByUri.insert(make_pair(result.uri(), result));
@@ -247,7 +247,7 @@ CategoryMatcher& CategoryMatcher::result(ResultMatcher&& resultMatcher)
     return *this;
 }
 
-void CategoryMatcher::match(MatchResult& matchResult, const Category& category) const
+void CategoryMatcher::match(MatchResult& matchResult, const results::Category& category) const
 {
     auto results = category.results();
 
@@ -307,7 +307,7 @@ void CategoryMatcher::match(MatchResult& matchResult, const Category& category) 
     }
 }
 
-MatchResult CategoryMatcher::match(const Category& category) const
+MatchResult CategoryMatcher::match(const results::Category& category) const
 {
     MatchResult matchResult;
     match(matchResult, category);

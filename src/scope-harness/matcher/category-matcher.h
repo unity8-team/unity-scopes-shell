@@ -33,8 +33,10 @@ class Variant;
 }
 namespace scopeharness
 {
+namespace results
+{
 class Category;
-
+}
 namespace matcher
 {
 class ResultMatcher;
@@ -77,9 +79,9 @@ public:
 
     std::string& getId() const;
 
-    MatchResult match(const Category& category) const;
+    MatchResult match(const results::Category& category) const;
 
-    void match(MatchResult& matchResult, const Category& category) const;
+    void match(MatchResult& matchResult, const results::Category& category) const;
 
 protected:
     struct Priv;

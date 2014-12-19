@@ -21,7 +21,7 @@
 #include <unity/shell/scopes/ScopeInterface.h>
 
 #include <scope-harness/view/preview-view.h>
-#include <scope-harness/category.h>
+#include <scope-harness/results/category.h>
 
 #include <string>
 
@@ -84,11 +84,11 @@ public:
 
     int queryId() const;
 
-    Category::List categories();
+    results::Category::List categories();
 
-    Category category(unsigned int row);
+    results::Category category(unsigned int row);
 
-    Category category(const std::string& categoryId);
+    results::Category category(const std::string& categoryId);
 
     unity::shell::scopes::ScopeInterface::Status status() const;
 

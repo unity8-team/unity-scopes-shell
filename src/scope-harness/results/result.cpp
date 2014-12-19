@@ -16,9 +16,9 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/result.h>
 #include <scope-harness/test-utils.h>
 #include <scope-harness/internal/result-arguments.h>
+#include <scope-harness/results/result.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
 
@@ -39,6 +39,8 @@ namespace ss = unity::shell::scopes;
 namespace unity
 {
 namespace scopeharness
+{
+namespace results
 {
 
 struct Result::Priv: public QObject
@@ -313,6 +315,7 @@ view::AbstractView::SPtr Result::activate() const
     return view;
 }
 
+}
 }
 }
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <scope-harness/result.h>
+#include <scope-harness/results/result.h>
 
 #include <deque>
 #include <memory>
@@ -31,7 +31,8 @@ namespace internal
 {
 struct CategoryArguments;
 }
-
+namespace results
+{
 class Result;
 
 class Q_DECL_EXPORT Category
@@ -73,5 +74,6 @@ protected:
     std::shared_ptr<Priv> p;
 };
 
+}
 }
 }

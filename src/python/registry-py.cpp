@@ -54,7 +54,6 @@ static void enableScopes(shr::CustomRegistry::Parameters* p, bool system, bool c
 
 void export_registry()
 {
-
     class_<shr::CustomRegistry::Parameters>("Parameters", no_init)
         .def("__init__", make_constructor(&makeParameters))
         .def("include_system_scopes", &shr::CustomRegistry::Parameters::includeSystemScopes, return_value_policy<reference_existing_object>())
