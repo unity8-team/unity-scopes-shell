@@ -108,11 +108,11 @@ private Q_SLOTS:
         {
             {"attribute-1", sc::Variant("foo")},
             {"subtitle", sc::Variant("test:uri")},
-            {"title", sc::Variant("result for: \"z\"")}
+            {"title", sc::Variant("result for: \"x\"")}
         };
         sc::VariantMap widget2
         {
-            {"source", sc::Variant("arty")},
+            {"source", sc::Variant("art")},
             {"zoomable", sc::Variant(false)}
         };
 
