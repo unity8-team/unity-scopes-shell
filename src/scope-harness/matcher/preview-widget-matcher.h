@@ -18,51 +18,49 @@
 
 #pragma once
 
-#include <scope-harness/view/abstract-view.h>
-#include <scope-harness/preview/preview-widget.h>
+#include <scope-harness/matcher/match-result.h>
 
 namespace unity
 {
-namespace shell
-{
 namespace scopes
 {
-class PreviewStackInterface;
-}
+class Variant;
 }
 namespace scopeharness
 {
-namespace results
+namespace preview
 {
-class Result;
+class PreviewWidget;
 }
-namespace view
+namespace matcher
 {
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
+class Q_DECL_EXPORT PreviewWidgetMatcher final
 {
 public:
-    UNITY_DEFINES_PTRS(PreviewView);
+    PreviewWidgetMatcher(const std::string& id);
 
-    PreviewView();
+    PreviewWidgetMatcher(const PreviewWidgetMatcher& other);
 
-    ~PreviewView() = default;
+    PreviewWidgetMatcher(PreviewWidgetMatcher&& other);
 
-    void setColumnCount(unsigned int count);
+    PreviewWidgetMatcher& operator=(const PreviewWidgetMatcher& other);
 
-    unsigned int columnCount() const;
+    PreviewWidgetMatcher& operator=(PreviewWidgetMatcher&& other);
 
-    std::vector<preview::PreviewWidget::List> widgets();
+    ~PreviewWidgetMatcher();
 
-    preview::PreviewWidget::List widgetsInColumn(unsigned int column);
+    PreviewWidgetMatcher& type(const std::string& type);
 
-    preview::PreviewWidget::List widgetsInFirstColumn();
+    PreviewWidgetMatcher& data(const unity::scopes::Variant& data);
+
+    PreviewWidgetMatcher& data(unity::scopes::Variant&& data);
+
+    MatchResult match(const preview::PreviewWidget& previewWidget) const;
+
+    void match(MatchResult& matchResult, const preview::PreviewWidget& previewWidget) const;
 
 protected:
-    friend results::Result;
-
-    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
-
     struct Priv;
 
     std::shared_ptr<Priv> p;

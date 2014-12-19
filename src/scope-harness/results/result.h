@@ -47,6 +47,8 @@ class Q_DECL_EXPORT Result
 public:
     typedef std::deque<Result> List;
 
+    Result(Result&& other);
+
     Result(const Result& other);
 
     Result& operator=(const Result& other);

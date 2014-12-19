@@ -173,6 +173,11 @@ CategoryMatcher::CategoryMatcher(const CategoryMatcher& other) :
     *this = other;
 }
 
+CategoryMatcher::CategoryMatcher(CategoryMatcher&& other)
+{
+    *this = move(other);
+}
+
 CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
 {
     p->m_id = other.p->m_id;

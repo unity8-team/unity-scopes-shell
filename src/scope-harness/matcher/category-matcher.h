@@ -20,9 +20,6 @@
 
 #include <scope-harness/matcher/match-result.h>
 
-#include <memory>
-#include <string>
-
 #include <QtGlobal>
 
 namespace unity
@@ -52,6 +49,8 @@ public:
     CategoryMatcher(const std::string& id);
 
     CategoryMatcher(const CategoryMatcher& other);
+
+    CategoryMatcher(CategoryMatcher&& other);
 
     CategoryMatcher& operator=(const CategoryMatcher& other);
 

@@ -23,6 +23,7 @@
 #include <scope-harness/view/results-view.h>
 
 #include <Unity/resultsmodel.h>
+#include <Unity/previewstack.h>
 #include <Unity/scope.h>
 #include <Unity/utils.h>
 
@@ -132,6 +133,11 @@ Result::Result(const internal::ResultArguments& arguments) :
     p->m_previewView = arguments.previewView;
 
     p->connectSignals();
+}
+
+Result::Result(Result&& other)
+{
+    *this = move(other);
 }
 
 Result::Result(const Result& other) :
@@ -279,6 +285,12 @@ view::AbstractView::SPtr Result::activate() const
         {
             qDebug() << "hide_dash";
             // TODO set scope inactive?
+            auto result = p->m_resultsModel->data(
+                    p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
+            // TODO null check
+            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result));
+//            QTestEventLoop::instance().enterLoop(1);
+            previewView->preview(preview);
             view = previewView;
             break;
         }

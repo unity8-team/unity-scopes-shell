@@ -18,50 +18,52 @@
 
 #pragma once
 
-#include <scope-harness/view/abstract-view.h>
-#include <scope-harness/preview/preview-widget.h>
+#include <unity/scopes/Variant.h>
+
+#include <vector>
+
+#include <QtGlobal>
 
 namespace unity
 {
-namespace shell
-{
-namespace scopes
-{
-class PreviewStackInterface;
-}
-}
 namespace scopeharness
 {
-namespace results
+namespace internal
 {
-class Result;
+class PreviewWidgetArguments;
 }
 namespace view
 {
+class PreviewView;
+}
+namespace preview
+{
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
+class Q_DECL_EXPORT PreviewWidget final
 {
 public:
-    UNITY_DEFINES_PTRS(PreviewView);
+    typedef std::vector<PreviewWidget> List;
 
-    PreviewView();
+    PreviewWidget(const PreviewWidget& other);
 
-    ~PreviewView() = default;
+    PreviewWidget(PreviewWidget&& other);
 
-    void setColumnCount(unsigned int count);
+    PreviewWidget& operator=(const PreviewWidget& other);
 
-    unsigned int columnCount() const;
+    PreviewWidget& operator=(PreviewWidget&& other);
 
-    std::vector<preview::PreviewWidget::List> widgets();
+    ~PreviewWidget();
 
-    preview::PreviewWidget::List widgetsInColumn(unsigned int column);
+    std::string id() const;
 
-    preview::PreviewWidget::List widgetsInFirstColumn();
+    std::string type() const;
+
+    unity::scopes::Variant data() const;
 
 protected:
-    friend results::Result;
+    friend view::PreviewView;
 
-    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
+    PreviewWidget(const internal::PreviewWidgetArguments& arguments);
 
     struct Priv;
 

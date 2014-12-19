@@ -62,6 +62,8 @@ public:
 protected:
     CategoryListMatcher(const CategoryListMatcher& other) = delete;
 
+    CategoryListMatcher(CategoryListMatcher&& other) = delete;
+
     CategoryListMatcher& operator=(const CategoryListMatcher& other) = delete;
 
     CategoryListMatcher& operator=(CategoryListMatcher&& other) = delete;

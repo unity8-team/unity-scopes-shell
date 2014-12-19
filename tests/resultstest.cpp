@@ -50,12 +50,6 @@ namespace shv = unity::scopeharness::view;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
 
-#define QVERIFY_MATCHRESULT(statement) \
-do {\
-    auto result = (statement);\
-    QVERIFY2(result.success(), result.concat_failures().c_str());\
-} while (0)
-
 class CountObject : public QObject
 {
     Q_OBJECT

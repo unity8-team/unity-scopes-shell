@@ -40,6 +40,8 @@ class Q_DECL_EXPORT Category
 public:
     typedef std::deque<Category> List;
 
+    Category(Category&& other);
+
     Category(const Category& other);
 
     Category& operator=(const Category& other);
@@ -63,6 +65,8 @@ public:
     const Result::List& results() const;
 
     const Result& result(const std::string& uri) const;
+
+    const Result& result(unsigned int index) const;
 
 protected:
     friend view::ResultsView;

@@ -41,6 +41,11 @@ MatchResult::MatchResult() :
 {
 }
 
+MatchResult::MatchResult(MatchResult&& other)
+{
+    *this = move(other);
+}
+
 MatchResult::MatchResult(const MatchResult& other) :
         p(new Priv)
 {

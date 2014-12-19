@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <scope-harness/view/abstract-view.h>
-#include <scope-harness/preview/preview-widget.h>
+#include <QtGlobal>
+#include <QAbstractItemModel>
 
 namespace unity
 {
@@ -27,47 +27,19 @@ namespace shell
 {
 namespace scopes
 {
-class PreviewStackInterface;
+    class PreviewWidgetModelInterface;
 }
 }
 namespace scopeharness
 {
-namespace results
+namespace internal
 {
-class Result;
-}
-namespace view
+struct PreviewWidgetArguments
 {
+    unity::shell::scopes::PreviewWidgetModelInterface* previewWidgetModel;
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
-{
-public:
-    UNITY_DEFINES_PTRS(PreviewView);
-
-    PreviewView();
-
-    ~PreviewView() = default;
-
-    void setColumnCount(unsigned int count);
-
-    unsigned int columnCount() const;
-
-    std::vector<preview::PreviewWidget::List> widgets();
-
-    preview::PreviewWidget::List widgetsInColumn(unsigned int column);
-
-    preview::PreviewWidget::List widgetsInFirstColumn();
-
-protected:
-    friend results::Result;
-
-    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
-
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
+    QModelIndex index;
 };
-
 }
 }
 }

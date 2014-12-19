@@ -31,11 +31,12 @@ namespace scopeharness
 namespace matcher
 {
 
-
 class Q_DECL_EXPORT MatchResult
 {
 public:
     MatchResult();
+
+    MatchResult(MatchResult&& other);
 
     MatchResult(const MatchResult& other);
 

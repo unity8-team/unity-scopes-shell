@@ -32,233 +32,232 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#include <scope-harness/registry/pre-existing-registry.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/preview-matcher.h>
+#include <scope-harness/matcher/preview-widget-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
+#include <scope-harness/results/category.h>
+#include <scope-harness/results/result.h>
+#include <scope-harness/scope-harness.h>
 
-using namespace scopes_ng;
-using namespace unity::scopeharness;
-using namespace unity::scopeharness::registry;
+using namespace std;
+namespace sh = unity::scopeharness;
+namespace shm = unity::scopeharness::matcher;
+namespace shr = unity::scopeharness::registry;
+namespace shv = unity::scopeharness::view;
+namespace sc = unity::scopes;
+namespace ss = unity::shell::scopes;
 
 class PreviewTest : public QObject
 {
     Q_OBJECT
 private:
-    Registry::UPtr m_registry;
-    QScopedPointer<Scopes> m_scopes;
-    Scope::Ptr m_scope;
+    sh::ScopeHarness::UPtr m_harness;
+
+    shv::ResultsView::SPtr m_resultsView;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
-        m_registry->start();
+        m_harness = sh::ScopeHarness::newFromScopeList(
+            shr::CustomRegistry::Parameters({
+                TEST_DATA_DIR "mock-scope/mock-scope.ini"
+            })
+        );
     }
 
     void cleanupTestCase()
     {
-        m_registry.reset();
+        m_harness.reset();
     }
 
     void init()
     {
-        const QStringList favs {"scope://mock-scope-departments", "scope://mock-scope-double-nav", "scope://mock-scope"};
-        setFavouriteScopes(favs);
-
-        m_scopes.reset(new Scopes(nullptr));
-        // no scopes on startup
-        QCOMPARE(m_scopes->rowCount(), 0);
-        QCOMPARE(m_scopes->loaded(), false);
-        QSignalSpy spy(m_scopes.data(), SIGNAL(loadedChanged()));
-        // wait till the registry spawns
-        QVERIFY(spy.wait());
-        QCOMPARE(m_scopes->loaded(), true);
-        // should have at least one scope now
-        QVERIFY(m_scopes->rowCount() > 1);
-
-        QVariant scope_var = m_scopes->data(m_scopes->index(0), Scopes::Roles::RoleScope);
-        QVERIFY(scope_var.canConvert<Scope*>());
-
-        // get scope proxy
-        m_scope = m_scopes->getScopeById("mock-scope");
-        QVERIFY(bool(m_scope));
-        m_scope->setActive(true);
-
-        QTRY_COMPARE(m_scope->searchInProgress(), false);
+        m_resultsView = m_harness->resultsView();
+        m_resultsView->setActiveScope("mock-scope");
     }
 
     void cleanup()
     {
-        m_scopes.reset();
-        m_scope.reset();
+        m_resultsView.reset();
     }
 
     void testScopePreview()
     {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("x"), preview_stack));
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope->categories(), result));
+        m_resultsView->setQuery("x");
 
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview_model = preview_stack->getPreviewModel(0);
-        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
-        QCOMPARE(preview_model->widgetColumnCount(), 1);
-        QTRY_COMPARE(preview_model->loaded(), true);
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:uri"))
+                )
+                .match(m_resultsView->categories())
+        );
 
-        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QVERIFY(!preview_widgets->roleNames().isEmpty());
-        QCOMPARE(preview_widgets->rowCount(), 2);
-        QVariantMap props;
-        QModelIndex idx;
+        auto abstractView = m_resultsView->category(0).result(0).activate();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
 
-        idx = preview_widgets->index(0);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("hdr"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("header"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QCOMPARE(props[QString("title")].toString(), QString::fromStdString(result->title()));
-        QCOMPARE(props[QString("subtitle")].toString(), QString::fromStdString(result->uri()));
-        QCOMPARE(props[QString("attribute-1")].toString(), QString("foo"));
-        QCOMPARE(props[QString("session-id")].toString(), m_scope->sessionId());
-
-        idx = preview_widgets->index(1);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QVERIFY(props.contains("source"));
-        QCOMPARE(props[QString("source")].toString(), QString::fromStdString(result->art()));
-        QVERIFY(props.contains("zoomable"));
-        QCOMPARE(props[QString("zoomable")].toBool(), false);
-    }
-
-    void testExpandablePreviewWidget()
-    {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("expandable-widget"), preview_stack));
-        unity::scopes::Result::SPtr result;
-        QVERIFY(getFirstResult(m_scope->categories(), result));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview_model = preview_stack->getPreviewModel(0);
-        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
-        QCOMPARE(preview_model->widgetColumnCount(), 1);
-        QTRY_COMPARE(preview_model->loaded(), true);
-
-        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QVERIFY(!preview_widgets->roleNames().isEmpty());
-        QCOMPARE(preview_widgets->rowCount(), 2);
-        QVariantMap props;
-        QModelIndex idx;
-
-        idx = preview_widgets->index(0);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("exp"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("expandable"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QCOMPARE(props[QString("title")].toString(), QString("Expandable widget"));
-        auto widgets = props[QString("widgets")];
-        QVERIFY(widgets.canConvert<PreviewWidgetModel*>());
-
-        // test the model of widgets in expandable widget
+        sc::VariantMap widget1
         {
-            auto widgets_model = widgets.value<PreviewWidgetModel*>();
-            idx = widgets_model->index(0);
-            QCOMPARE(widgets_model->rowCount(), 2);
-            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("txt"));
-            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleType).toString(), QString("text"));
-            props = widgets_model->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-            QCOMPARE(props[QString("title")].toString(), QString("Subwidget"));
-            QCOMPARE(props[QString("text")].toString(), QString("Lorum ipsum"));
-            idx = widgets_model->index(1);
-            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
-            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
-            props = widgets_model->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-            QCOMPARE(props[QString("source")].toString(), QString("bar.png"));
-        }
+            {"attribute-1", sc::Variant("foo")},
+            {"subtitle", sc::Variant("test:uri")},
+            {"title", sc::Variant("result for: \"z\"")}
+        };
+        sc::VariantMap widget2
+        {
+            {"source", sc::Variant("arty")},
+            {"zoomable", sc::Variant(false)}
+        };
 
-        idx = preview_widgets->index(1);
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
-        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
-        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
-        QVERIFY(props.contains("source"));
-        QCOMPARE(props[QString("source")].toString(), QString("foo.png"));
+        QVERIFY_MATCHRESULT(
+            shm::PreviewMatcher()
+                .widget(
+                    shm::PreviewWidgetMatcher("hdr")
+                        .type("header")
+                        .data(sc::Variant(widget1))
+                )
+                .widget(
+                    shm::PreviewWidgetMatcher("img")
+                        .type("image")
+                        .data(sc::Variant(widget2))
+                )
+                .match(previewView->widgetsInFirstColumn())
+        );
     }
 
-    void testPreviewLayouts()
-    {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->getPreviewModel(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-        auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(col_model1->rowCount(), 4);
-
-        // switch the layout
-        preview_stack->setWidgetColumnCount(2);
-        QCOMPARE(preview->rowCount(), 2);
-        QCOMPARE(col_model1->rowCount(), 1);
-        auto col_model2 = preview->data(preview->index(1), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(col_model2->rowCount(), 3);
-
-        // switch back
-        preview_stack->setWidgetColumnCount(1);
-        QCOMPARE(preview->rowCount(), 1);
-        QCOMPARE(col_model1->rowCount(), 4);
-    }
-
-    void testPreviewAction()
-    {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->getPreviewModel(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-
-        QSignalSpy spy(m_scope.data(), SIGNAL(hideDash()));
-        Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
-        QCOMPARE(preview->processingAction(), true);
-        QVERIFY(spy.wait());
-        QCOMPARE(preview->processingAction(), false);
-    }
-
-    void testPreviewReplacingPreview()
-    {
-        QScopedPointer<PreviewStack> preview_stack;
-        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview = preview_stack->getPreviewModel(0);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->rowCount(), 1);
-        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(preview_widgets->rowCount(), 4);
-
-        QSignalSpy spy(preview, SIGNAL(loadedChanged()));
-        QVariantMap hints;
-        hints["session-id"] = QString("qoo");
-        Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
-        QCOMPARE(preview->processingAction(), true);
-        // wait for loaded to become false
-        QVERIFY(spy.wait());
-        QCOMPARE(preview->loaded(), false);
-        // a bit of gray area, preview was just marked as "about-to-be-replaced", so it kinda is processing the action?
-        QCOMPARE(preview->processingAction(), true);
-        QTRY_COMPARE(preview->loaded(), true);
-        QCOMPARE(preview->processingAction(), false);
-        // refresh widget model
-        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QCOMPARE(preview_widgets->rowCount(), 5);
-    }
+//    void testExpandablePreviewWidget()
+//    {
+//        QScopedPointer<PreviewStack> preview_stack;
+//        QVERIFY(previewForFirstResult(m_scope, QString("expandable-widget"), preview_stack));
+//        unity::scopes::Result::SPtr result;
+//        QVERIFY(getFirstResult(m_scope->categories(), result));
+//
+//        QCOMPARE(preview_stack->rowCount(), 1);
+//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+//        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
+//        auto preview_model = preview_stack->getPreviewModel(0);
+//        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
+//        QCOMPARE(preview_model->widgetColumnCount(), 1);
+//        QTRY_COMPARE(preview_model->loaded(), true);
+//
+//        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+//        QVERIFY(!preview_widgets->roleNames().isEmpty());
+//        QCOMPARE(preview_widgets->rowCount(), 2);
+//        QVariantMap props;
+//        QModelIndex idx;
+//
+//        idx = preview_widgets->index(0);
+//        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("exp"));
+//        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("expandable"));
+//        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
+//        QCOMPARE(props[QString("title")].toString(), QString("Expandable widget"));
+//        auto widgets = props[QString("widgets")];
+//        QVERIFY(widgets.canConvert<PreviewWidgetModel*>());
+//
+//        // test the model of widgets in expandable widget
+//        {
+//            auto widgets_model = widgets.value<PreviewWidgetModel*>();
+//            idx = widgets_model->index(0);
+//            QCOMPARE(widgets_model->rowCount(), 2);
+//            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("txt"));
+//            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleType).toString(), QString("text"));
+//            props = widgets_model->data(idx, PreviewWidgetModel::RoleProperties).toMap();
+//            QCOMPARE(props[QString("title")].toString(), QString("Subwidget"));
+//            QCOMPARE(props[QString("text")].toString(), QString("Lorum ipsum"));
+//            idx = widgets_model->index(1);
+//            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
+//            QCOMPARE(widgets_model->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
+//            props = widgets_model->data(idx, PreviewWidgetModel::RoleProperties).toMap();
+//            QCOMPARE(props[QString("source")].toString(), QString("bar.png"));
+//        }
+//
+//        idx = preview_widgets->index(1);
+//        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleWidgetId).toString(), QString("img"));
+//        QCOMPARE(preview_widgets->data(idx, PreviewWidgetModel::RoleType).toString(), QString("image"));
+//        props = preview_widgets->data(idx, PreviewWidgetModel::RoleProperties).toMap();
+//        QVERIFY(props.contains("source"));
+//        QCOMPARE(props[QString("source")].toString(), QString("foo.png"));
+//    }
+//
+//    void testPreviewLayouts()
+//    {
+//        QScopedPointer<PreviewStack> preview_stack;
+//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
+//
+//        QCOMPARE(preview_stack->rowCount(), 1);
+//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+//        auto preview = preview_stack->getPreviewModel(0);
+//        QTRY_COMPARE(preview->loaded(), true);
+//        QCOMPARE(preview->rowCount(), 1);
+//        auto col_model1 = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+//        QCOMPARE(col_model1->rowCount(), 4);
+//
+//        // switch the layout
+//        preview_stack->setWidgetColumnCount(2);
+//        QCOMPARE(preview->rowCount(), 2);
+//        QCOMPARE(col_model1->rowCount(), 1);
+//        auto col_model2 = preview->data(preview->index(1), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+//        QCOMPARE(col_model2->rowCount(), 3);
+//
+//        // switch back
+//        preview_stack->setWidgetColumnCount(1);
+//        QCOMPARE(preview->rowCount(), 1);
+//        QCOMPARE(col_model1->rowCount(), 4);
+//    }
+//
+//    void testPreviewAction()
+//    {
+//        QScopedPointer<PreviewStack> preview_stack;
+//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
+//
+//        QCOMPARE(preview_stack->rowCount(), 1);
+//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+//        auto preview = preview_stack->getPreviewModel(0);
+//        QTRY_COMPARE(preview->loaded(), true);
+//        QCOMPARE(preview->rowCount(), 1);
+//
+//        QSignalSpy spy(m_scope.data(), SIGNAL(hideDash()));
+//        Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
+//        QCOMPARE(preview->processingAction(), true);
+//        QVERIFY(spy.wait());
+//        QCOMPARE(preview->processingAction(), false);
+//    }
+//
+//    void testPreviewReplacingPreview()
+//    {
+//        QScopedPointer<PreviewStack> preview_stack;
+//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
+//
+//        QCOMPARE(preview_stack->rowCount(), 1);
+//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
+//        auto preview = preview_stack->getPreviewModel(0);
+//        QTRY_COMPARE(preview->loaded(), true);
+//        QCOMPARE(preview->rowCount(), 1);
+//        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+//
+//        QSignalSpy spy(preview, SIGNAL(loadedChanged()));
+//        QVariantMap hints;
+//        hints["session-id"] = QString("qoo");
+//        Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
+//        QCOMPARE(preview->processingAction(), true);
+//        // wait for loaded to become false
+//        QVERIFY(spy.wait());
+//        QCOMPARE(preview->loaded(), false);
+//        // a bit of gray area, preview was just marked as "about-to-be-replaced", so it kinda is processing the action?
+//        QCOMPARE(preview->processingAction(), true);
+//        QTRY_COMPARE(preview->loaded(), true);
+//        QCOMPARE(preview->processingAction(), false);
+//        // refresh widget model
+//        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
+//        QCOMPARE(preview_widgets->rowCount(), 5);
+//    }
 
 };
 
