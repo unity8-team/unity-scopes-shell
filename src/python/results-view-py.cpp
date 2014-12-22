@@ -18,15 +18,61 @@
 
 #include <boost/python.hpp>
 #include <scope-harness/view/results-view.h>
+#include <scope-harness/results/category.h>
+#include <unity/shell/scopes/ScopeInterface.h>
 
 using namespace boost::python;
+namespace shv = unity::scopeharness::view;
+namespace shr = unity::scopeharness::results;
+
+static PyObject* getCustomizations(shv::ResultsView* view)
+{
+    dict pydict;
+    // TODO: customizations() returns QVariantMap, should be fixed first?
+/*    for (auto el: view->customizations())
+    {
+        pydict[el.first] = el.second;
+    }*/
+    return incref(pydict.ptr());
+}
+
+static PyObject* getCategories(shv::ResultsView* view)
+{
+    list pylist;
+    for (auto const cat: view->categories())
+    {
+        pylist.append(cat);
+    }
+    return incref(pylist.ptr());
+}
 
 void export_view()
 {
-    namespace shv = unity::scopeharness::view;
+    shr::Category (shv::ResultsView::*category_by_row)(unsigned int) = &shv::ResultsView::category;
+    shr::Category (shv::ResultsView::*category_by_id)(const std::string&) = &shv::ResultsView::category;
+
+    enum_<unity::shell::scopes::ScopeInterface::Status>("SearchStatus")
+        .value("OKAY", unity::shell::scopes::ScopeInterface::Status::Okay)
+        .value("NO_INTERNET", unity::shell::scopes::ScopeInterface::Status::NoInternet)
+        .value("NO_LOCATION_DATA", unity::shell::scopes::ScopeInterface::Status::NoLocationData)
+        .value("UNKNOWN", unity::shell::scopes::ScopeInterface::Status::Unknown)
+        ;
 
     class_<shv::ResultsView>("ResultsView", no_init)
-        .def("scope_id", &shv::ResultsView::scopeId)
-        .def("display_name", &shv::ResultsView::displayName)
+        .add_property("scope_id", &shv::ResultsView::scopeId)
+        .add_property("display_name", &shv::ResultsView::displayName)
+        .add_property("icon_hint", &shv::ResultsView::iconHint)
+        .add_property("description", &shv::ResultsView::description)
+        .add_property("search_hint", &shv::ResultsView::searchHint)
+        .add_property("shortcut", &shv::ResultsView::searchQuery)
+        .add_property("customizations", &getCustomizations)
+        .add_property("session_id", &shv::ResultsView::sessionId)
+        .add_property("query_id", &shv::ResultsView::queryId)
+        .add_property("categories", &getCategories)
+        .add_property("search_query", &shv::ResultsView::searchQuery, &shv::ResultsView::setQuery)
+        .def("wait_for_results_change", &shv::ResultsView::waitForResultsChange)
+        .def("override_category_json", &shv::ResultsView::overrideCategoryJson)
+        .def("category", category_by_row)
+        .def("category", category_by_id)
     ;
 }
