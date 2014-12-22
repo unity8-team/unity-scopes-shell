@@ -10,6 +10,6 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic -Wall -Wextra")
 
-add_library(harnesspy SHARED category-py.cpp results-view-py.cpp scope-harness-py.cpp registry-py.cpp variant-py.cpp main.cpp)
+add_library(harnesspy SHARED category-py.cpp results-view-py.cpp result-py.cpp scope-harness-py.cpp registry-py.cpp variant-py.cpp main.cpp)
 target_link_libraries(harnesspy scope-harness ${Boost_LIBRARIES} ${PythonLibs_LIBRARIES})
 set_target_properties(harnesspy PROPERTIES PREFIX "" )

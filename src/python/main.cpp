@@ -23,6 +23,8 @@ using namespace boost::python;
 void export_variant();
 void export_registry();
 void export_view();
+void export_category();
+void export_result();
 void export_scopeharness();
 
 BOOST_PYTHON_MODULE(harnesspy)
@@ -34,4 +36,6 @@ BOOST_PYTHON_MODULE(harnesspy)
     export_registry();
     export_scopeharness();
     export_view();
+    export_category();
+    export_result();
 }

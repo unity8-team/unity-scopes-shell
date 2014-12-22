@@ -17,31 +17,25 @@
  */
 
 #include <boost/python.hpp>
-#include <scope-harness/results/category.h>
+#include <scope-harness/results/result.h>
 
 using namespace boost::python;
 namespace shr = unity::scopeharness::results;
 
-static PyObject* getResultsList(const shr::Category& cat)
+void export_result()
 {
-    list pylist;
-    for (auto const res: cat.results())
-    {
-        pylist.append(res);
-    }
-    return incref(pylist.ptr());
-}
-
-void export_category()
-{
-    class_<shr::Category>("Category", no_init)
-        .add_property("id", &shr::Category::id)
-        .add_property("title", &shr::Category::title)
-        .add_property("icon", &shr::Category::icon)
-        .add_property("header_link", &shr::Category::headerLink)
-        .add_property("renderer", &shr::Category::renderer)
-        .add_property("components", &shr::Category::components)
-        .add_property("results", &getResultsList)
-        .def("result", &shr::Category::result, return_value_policy<return_by_value>())
+    class_<shr::Result>("Result", no_init)
+        .add_property("uri", &shr::Result::uri)
+        .add_property("title", &shr::Result::title)
+        .add_property("art", &shr::Result::art)
+        .add_property("dnd_uri", &shr::Result::dnd_uri)
+        .add_property("subtitle", &shr::Result::subtitle)
+        .add_property("emblem", &shr::Result::emblem)
+        .add_property("mascot", &shr::Result::mascot)
+        .add_property("attributes", &shr::Result::attributes)
+        .add_property("summary", &shr::Result::summary)
+        .add_property("background", &shr::Result::background)
+        .def("__getitem__", &shr::Result::value, return_value_policy<reference_existing_object>())
+        .def("activate", &shr::Result::activate)
         ;
 }
