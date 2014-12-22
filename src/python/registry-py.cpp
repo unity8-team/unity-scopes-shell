@@ -17,6 +17,7 @@
  */
 
 #include <boost/python.hpp>
+#include <boost/python/stl_iterator.hpp>
 #include <scope-harness/registry/custom-registry.h>
 #include <vector>
 #include <memory>
@@ -25,10 +26,10 @@ using namespace boost::python;
 
 namespace shr = unity::scopeharness::registry;
 
-static std::shared_ptr<shr::CustomRegistry::Parameters> makeParameters(const object&)
+static std::shared_ptr<shr::CustomRegistry::Parameters> makeParameters(const object& obj)
 {
-    // TODO create dqueue
-    return std::make_shared<shr::CustomRegistry::Parameters>(std::deque<std::string>());
+    stl_input_iterator<std::string> begin(obj), end;
+    return std::make_shared<shr::CustomRegistry::Parameters>(std::deque<std::string>(begin, end));
 }
 
 static void enableScopes(shr::CustomRegistry::Parameters* p, bool system, bool click, bool
