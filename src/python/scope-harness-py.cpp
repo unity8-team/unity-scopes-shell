@@ -26,6 +26,7 @@ void export_scopeharness()
     namespace sh = unity::scopeharness;
 
     class_<sh::ScopeHarness>("ScopeHarness", no_init)
+        .add_property("results_view", &sh::ScopeHarness::resultsView)
         .def("new_from_pre_existing_config", &sh::ScopeHarness::newFromPreExistingConfig).staticmethod("new_from_pre_existing_config")
         .def("new_from_scope_list", &sh::ScopeHarness::newFromScopeList).staticmethod("new_from_scope_list")
         .def("new_from_system", &sh::ScopeHarness::newFromSystem).staticmethod("new_from_system")
