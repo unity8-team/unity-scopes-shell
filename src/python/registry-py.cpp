@@ -30,10 +30,6 @@ static std::shared_ptr<shr::CustomRegistry::Parameters> makeParameters(const obj
 {
     stl_input_iterator<std::string> begin(obj), end;
     std::deque<std::string> prm(begin, end);
-    for (auto p: prm)
-    {
-        std::cerr << "Param:" << p << "\n";
-    }
     return std::make_shared<shr::CustomRegistry::Parameters>(prm);
 }
 
