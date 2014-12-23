@@ -29,7 +29,12 @@ namespace shr = unity::scopeharness::registry;
 static std::shared_ptr<shr::CustomRegistry::Parameters> makeParameters(const object& obj)
 {
     stl_input_iterator<std::string> begin(obj), end;
-    return std::make_shared<shr::CustomRegistry::Parameters>(std::deque<std::string>(begin, end));
+    std::deque<std::string> prm(begin, end);
+    for (auto p: prm)
+    {
+        std::cerr << "Param:" << p << "\n";
+    }
+    return std::make_shared<shr::CustomRegistry::Parameters>(prm);
 }
 
 static void enableScopes(shr::CustomRegistry::Parameters* p, bool system, bool click, bool
@@ -67,7 +72,7 @@ void export_registry()
                 "Enable particular types of scopes via named arguments")
         ;
 
-    class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
+/*    class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
         .def("start", &shr::CustomRegistry::start)
-    ;
+    ;*/
 }

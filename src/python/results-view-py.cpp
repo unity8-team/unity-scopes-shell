@@ -48,6 +48,8 @@ static PyObject* getCategories(shv::ResultsView* view)
 
 void export_view()
 {
+    boost::python::register_ptr_to_python<std::shared_ptr<shv::ResultsView>>();
+
     shr::Category (shv::ResultsView::*category_by_row)(unsigned int) = &shv::ResultsView::category;
     shr::Category (shv::ResultsView::*category_by_id)(const std::string&) = &shv::ResultsView::category;
 
