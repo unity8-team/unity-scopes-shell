@@ -28,47 +28,6 @@
 using namespace boost::python;
 namespace sh = unity::scopeharness;
 
-static void run_qt()
-{
-    /*std::thread t([]() {
-            int argc = 0;
-            char **argv;
-            QCoreApplication app(argc, argv);
-            std::cerr << "starting QCoreApplication\n";
-            app.exec();
-            });
-    t.detach();
-    std::this_thread::sleep_for(std::chrono::seconds(1));*/
-}
-
-class ScopeHarnessWrapper;
-
-class Worker: public QObject
-{
-    Q_OBJECT
-    public:
-        Worker(const sh::registry::CustomRegistry::Parameters& parameters):
-            parameters_(parameters)
-        {
-        }
-
-        sh::ScopeHarness::UPtr get()
-        {
-            auto ft = promise.get_future();
-            return ft.get();
-        }
-
-    public Q_SLOTS:
-        void process()
-        {
-            promise.set_value(sh::ScopeHarness::newFromScopeList(parameters_));
-        }
-
-    private:
-        const sh::registry::CustomRegistry::Parameters& parameters_;
-        std::promise<sh::ScopeHarness::UPtr> promise;
-};
-
 class ScopeHarnessWrapper
 {
     public:
@@ -85,37 +44,51 @@ class ScopeHarnessWrapper
 
         static ScopeHarnessWrapper::SPtr newFromScopeList(const sh::registry::CustomRegistry::Parameters& parameters)
         {
-            std::thread t([]() {
-                int argc = 0;
-                char **argv = {nullptr};
-                QCoreApplication app(argc, argv);
-                app.exec();
-            });
-            t.detach();
-
-            QThread *fakeThread = new QThread();
-            Worker *worker = new Worker(parameters);
-            worker->moveToThread(fakeThread);
-            QObject::connect(fakeThread, SIGNAL(started()), worker, SLOT(process()));
-            fakeThread->start();
-            sh::ScopeHarness::SPtr ptr = worker->get();
+            run_qt();
+            sh::ScopeHarness::SPtr ptr = sh::ScopeHarness::newFromScopeList(parameters);
             return ScopeHarnessWrapper::UPtr(new ScopeHarnessWrapper(ptr));
         }
+
+        static ScopeHarnessWrapper::SPtr newFromPreExistingConfig(const std::string& directory)
+        {
+            run_qt();
+            sh::ScopeHarness::SPtr ptr = sh::ScopeHarness::newFromPreExistingConfig(directory);
+            return ScopeHarnessWrapper::UPtr(new ScopeHarnessWrapper(ptr));
+        }
+
+        static ScopeHarnessWrapper::SPtr newFromSystem()
+        {
+            run_qt();
+            sh::ScopeHarness::SPtr ptr = sh::ScopeHarness::newFromSystem();
+            return ScopeHarnessWrapper::UPtr(new ScopeHarnessWrapper(ptr));
+        }
+
         ~ScopeHarnessWrapper() = default;
 
     private:
+        static void run_qt()
+        {
+            static QCoreApplication *coreApp = nullptr;
+            int argc = 0;
+            char **argv;
+            if (!QCoreApplication::instance())
+            {
+                std::cerr << "Creating QCoreApplication\n";
+                coreApp = new QCoreApplication(argc, argv);
+            }
+        }
+
         sh::ScopeHarness::SPtr scope_harness_;
 };
 
 void export_scopeharness()
 {
-    def("run_qt", &run_qt);
     boost::python::register_ptr_to_python<std::shared_ptr<ScopeHarnessWrapper>>();
     class_<ScopeHarnessWrapper>("ScopeHarness", no_init)
         .add_property("results_view", &ScopeHarnessWrapper::resultsView)
-        //.def("new_from_pre_existing_config", &sh::ScopeHarness::newFromPreExistingConfig).staticmethod("new_from_pre_existing_config")
+        .def("new_from_pre_existing_config", &ScopeHarnessWrapper::newFromPreExistingConfig).staticmethod("new_from_pre_existing_config")
         .def("new_from_scope_list", &ScopeHarnessWrapper::newFromScopeList).staticmethod("new_from_scope_list")
-        //.def("new_from_system", &sh::ScopeHarness::newFromSystem).staticmethod("new_from_system")
+        .def("new_from_system", &ScopeHarnessWrapper::newFromSystem).staticmethod("new_from_system")
     ;
 }
 

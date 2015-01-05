@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import harnesspy
 #print(harnesspy.variant_demo())
-harnesspy.run_qt()
 
 TEST_DATA_DIR='/home/vivid/python-harness/tests/data/'
 
