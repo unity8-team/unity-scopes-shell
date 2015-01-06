@@ -255,8 +255,17 @@ private Q_SLOTS:
 
     void testPreviewAction()
     {
-//        QScopedPointer<PreviewStack> preview_stack;
-//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
+        m_resultsView->setQuery("layout");
+
+        auto abstractView = m_resultsView->category(0).result(0).activate();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        previewView->widgetsInFirstColumn().at("actions").trigger("hide", sc::Variant());
+
+//        QScopedPointer<scopes_ng::PreviewStack> preview_stack;
+//        QVERIFY(sh::previewForFirstResult(m_scope, QString("layout"), preview_stack));
 //
 //        QCOMPARE(preview_stack->rowCount(), 1);
 //        QCOMPARE(preview_stack->widgetColumnCount(), 1);

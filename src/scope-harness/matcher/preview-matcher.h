@@ -19,7 +19,7 @@
 #pragma once
 
 #include <scope-harness/matcher/match-result.h>
-#include <scope-harness/preview/preview-widget.h>
+#include <scope-harness/preview/preview-widget-list.h>
 
 namespace unity
 {
@@ -48,9 +48,9 @@ public:
 
     PreviewMatcher& widget(PreviewWidgetMatcher&& previewWidgetMatcher);
 
-    MatchResult match(const preview::PreviewWidget::List& previewWidgetList) const;
+    MatchResult match(const preview::PreviewWidgetList& previewWidgetList) const;
 
-    void match(MatchResult& matchResult, const preview::PreviewWidget::List& previewWidgetList) const;
+    void match(MatchResult& matchResult, const preview::PreviewWidgetList& previewWidgetList) const;
 
 protected:
     struct Priv;

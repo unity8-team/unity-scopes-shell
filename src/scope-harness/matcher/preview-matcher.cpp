@@ -77,14 +77,14 @@ PreviewMatcher& PreviewMatcher::widget(PreviewWidgetMatcher&& previewWidgetMatch
     return *this;
 }
 
-MatchResult PreviewMatcher::match(const preview::PreviewWidget::List& previewWidgetList) const
+MatchResult PreviewMatcher::match(const preview::PreviewWidgetList& previewWidgetList) const
 {
     MatchResult matchResult;
     match(matchResult, previewWidgetList);
     return matchResult;
 }
 
-void PreviewMatcher::match(MatchResult& matchResult, const preview::PreviewWidget::List& previewWidgetList) const
+void PreviewMatcher::match(MatchResult& matchResult, const preview::PreviewWidgetList& previewWidgetList) const
 {
     if (p->m_matchers.size() != previewWidgetList.size())
     {

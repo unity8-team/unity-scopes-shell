@@ -19,12 +19,16 @@
 #include <scope-harness/internal/preview-widget-arguments.h>
 #include <scope-harness/preview/preview-widget.h>
 
+#include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
 
 #include <Unity/utils.h>
 
+#include <QDebug>
+
 using namespace std;
 namespace ng = scopes_ng;
+namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
 
 namespace unity
@@ -85,12 +89,19 @@ std::string PreviewWidget::type() const
             p->m_arguments.index, ss::PreviewWidgetModelInterface::RoleType).toString().toStdString();
 }
 
-unity::scopes::Variant PreviewWidget::data() const
+sc::Variant PreviewWidget::data() const
 {
     return ng::qVariantToScopeVariant(
             p->m_arguments.previewWidgetModel->data(
                     p->m_arguments.index,
                     ss::PreviewWidgetModelInterface::RoleProperties));
+}
+
+void PreviewWidget::trigger(const string& name, const sc::Variant& v)
+{
+    Q_EMIT p->m_arguments.previewModel->triggered(
+            QString::fromStdString(id()), QString::fromStdString(name),
+            ng::scopeVariantToQVariant(v).toMap());
 }
 
 }

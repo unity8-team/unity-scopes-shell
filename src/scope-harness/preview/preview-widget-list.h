@@ -18,50 +18,50 @@
 
 #pragma once
 
-#include <scope-harness/view/abstract-view.h>
-#include <scope-harness/preview/preview-widget-list.h>
+#include <scope-harness/preview/preview-widget.h>
 
 namespace unity
 {
-namespace shell
-{
-namespace scopes
-{
-class PreviewStackInterface;
-}
-}
 namespace scopeharness
 {
-namespace results
+namespace internal
 {
-class Result;
+struct PreviewWidgetListArguments;
 }
 namespace view
 {
+class PreviewView;
+}
+namespace preview
+{
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
+class Q_DECL_EXPORT PreviewWidgetList
 {
 public:
-    UNITY_DEFINES_PTRS(PreviewView);
+    PreviewWidgetList(const PreviewWidgetList& other);
 
-    PreviewView();
+    PreviewWidgetList(PreviewWidgetList&& other);
 
-    ~PreviewView() = default;
+    PreviewWidgetList& operator=(const PreviewWidgetList& other);
 
-    void setColumnCount(unsigned int count);
+    PreviewWidgetList& operator=(PreviewWidgetList&& other);
 
-    unsigned int columnCount() const;
+    ~PreviewWidgetList();
 
-    std::vector<preview::PreviewWidgetList> widgets();
+    PreviewWidget at(std::size_t index) const;
 
-    preview::PreviewWidgetList widgetsInColumn(unsigned int column);
+    PreviewWidget at(const std::string& id) const;
 
-    preview::PreviewWidgetList widgetsInFirstColumn();
+    PreviewWidget operator[](std::size_t index) const;
+
+    PreviewWidget operator[](const std::string& id) const;
+
+    std::size_t size() const;
 
 protected:
-    friend results::Result;
+    friend view::PreviewView;
 
-    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
+    PreviewWidgetList(const internal::PreviewWidgetListArguments& arguments);
 
     struct Priv;
 

@@ -42,8 +42,6 @@ namespace preview
 class Q_DECL_EXPORT PreviewWidget final
 {
 public:
-    typedef std::vector<PreviewWidget> List;
-
     PreviewWidget(const PreviewWidget& other);
 
     PreviewWidget(PreviewWidget&& other);
@@ -59,6 +57,8 @@ public:
     std::string type() const;
 
     unity::scopes::Variant data() const;
+
+    void trigger(const std::string& name, const unity::scopes::Variant& v);
 
 protected:
     friend view::PreviewView;

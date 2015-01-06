@@ -79,14 +79,14 @@ PreviewColumnMatcher& PreviewColumnMatcher::column(PreviewMatcher&& previewMatch
     return *this;
 }
 
-MatchResult PreviewColumnMatcher::match(const vector<preview::PreviewWidget::List>& preview) const
+MatchResult PreviewColumnMatcher::match(const vector<preview::PreviewWidgetList>& preview) const
 {
     MatchResult matchResult;
     match(matchResult, preview);
     return matchResult;
 }
 
-void PreviewColumnMatcher::match(MatchResult& matchResult, const vector<preview::PreviewWidget::List>& preview) const
+void PreviewColumnMatcher::match(MatchResult& matchResult, const vector<preview::PreviewWidgetList>& preview) const
 {
     if (p->m_matchers.size() != preview.size())
     {
