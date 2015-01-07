@@ -21,6 +21,8 @@
 #include <QtGlobal>
 #include <QAbstractItemModel>
 
+#include <memory>
+
 namespace unity
 {
 namespace shell
@@ -33,6 +35,11 @@ namespace scopes
 }
 namespace scopeharness
 {
+namespace view
+{
+class PreviewView;
+class ResultsView;
+}
 namespace internal
 {
 struct PreviewWidgetArguments
@@ -42,6 +49,10 @@ struct PreviewWidgetArguments
     QModelIndex index;
 
     unity::shell::scopes::PreviewModelInterface* previewModel;
+
+    std::shared_ptr<view::ResultsView> resultsView;
+
+    std::shared_ptr<view::PreviewView> previewView;
 };
 }
 }

@@ -18,6 +18,9 @@
 
 #include <scope-harness/internal/preview-widget-arguments.h>
 #include <scope-harness/preview/preview-widget.h>
+#include <scope-harness/view/abstract-view.h>
+#include <scope-harness/view/preview-view.h>
+#include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
@@ -25,6 +28,7 @@
 #include <Unity/utils.h>
 
 #include <QDebug>
+#include <QSignalSpy>
 
 using namespace std;
 namespace ng = scopes_ng;
@@ -40,13 +44,25 @@ namespace preview
 
 struct PreviewWidget::Priv
 {
-    internal::PreviewWidgetArguments m_arguments;
+    unity::shell::scopes::PreviewWidgetModelInterface* m_previewWidgetModel;
+
+    QModelIndex m_index;
+
+    unity::shell::scopes::PreviewModelInterface* m_previewModel;
+
+    weak_ptr<view::ResultsView> m_resultsView;
+
+    weak_ptr<view::PreviewView> m_previewView;
 };
 
 PreviewWidget::PreviewWidget(const internal::PreviewWidgetArguments& arguments) :
         p(new Priv)
 {
-    p->m_arguments = arguments;
+    p->m_previewWidgetModel = arguments.previewWidgetModel;
+    p->m_previewModel = arguments.previewModel;
+    p->m_index = arguments.index;
+    p->m_resultsView = arguments.resultsView;
+    p->m_previewView = arguments.previewView;
 }
 
 
@@ -63,7 +79,11 @@ PreviewWidget::PreviewWidget(PreviewWidget&& other)
 
 PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
 {
-    p->m_arguments = other.p->m_arguments;
+    p->m_previewWidgetModel = other.p->m_previewWidgetModel;
+    p->m_previewModel = other.p->m_previewModel;
+    p->m_index = other.p->m_index;
+    p->m_resultsView = other.p->m_resultsView;
+    p->m_previewView = other.p->m_previewView;
     return *this;
 }
 
@@ -79,29 +99,36 @@ PreviewWidget::~PreviewWidget()
 
 std::string PreviewWidget::id() const
 {
-    return p->m_arguments.previewWidgetModel->data(
-            p->m_arguments.index, ss::PreviewWidgetModelInterface::RoleWidgetId).toString().toStdString();
+    return p->m_previewWidgetModel->data(
+            p->m_index, ss::PreviewWidgetModelInterface::RoleWidgetId).toString().toStdString();
 }
 
 std::string PreviewWidget::type() const
 {
-    return p->m_arguments.previewWidgetModel->data(
-            p->m_arguments.index, ss::PreviewWidgetModelInterface::RoleType).toString().toStdString();
+    return p->m_previewWidgetModel->data(
+            p->m_index, ss::PreviewWidgetModelInterface::RoleType).toString().toStdString();
 }
 
 sc::Variant PreviewWidget::data() const
 {
     return ng::qVariantToScopeVariant(
-            p->m_arguments.previewWidgetModel->data(
-                    p->m_arguments.index,
+            p->m_previewWidgetModel->data(
+                    p->m_index,
                     ss::PreviewWidgetModelInterface::RoleProperties));
 }
 
-void PreviewWidget::trigger(const string& name, const sc::Variant& v)
+view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Variant& v)
 {
-    Q_EMIT p->m_arguments.previewModel->triggered(
+    Q_EMIT p->m_previewModel->triggered(
             QString::fromStdString(id()), QString::fromStdString(name),
             ng::scopeVariantToQVariant(v).toMap());
+
+    throwIfNot(p->m_previewModel->processingAction(), "Should be processing action");
+    QSignalSpy spy(p->m_previewModel, SIGNAL(processingActionChanged()));
+    throwIfNot(spy.wait(), "Processing action property didn't change");
+    throwIf(p->m_previewModel->processingAction(), "Should have finished processing action");
+
+    return p->m_previewView.lock();
 }
 
 }

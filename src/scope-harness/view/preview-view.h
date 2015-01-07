@@ -32,12 +32,15 @@ class PreviewStackInterface;
 }
 namespace scopeharness
 {
+class ScopeHarness;
+
 namespace results
 {
 class Result;
 }
 namespace view
 {
+class ResultsView;
 
 class Q_DECL_EXPORT PreviewView: public AbstractView
 {
@@ -60,8 +63,11 @@ public:
 
 protected:
     friend results::Result;
+    friend ScopeHarness;
 
     void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
+
+    void setResultsView(std::shared_ptr<ResultsView> resultsView);
 
     struct Priv;
 

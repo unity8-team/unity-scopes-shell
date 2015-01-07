@@ -262,22 +262,10 @@ private Q_SLOTS:
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
 
-        previewView->widgetsInFirstColumn().at("actions").trigger("hide", sc::Variant());
-
-//        QScopedPointer<scopes_ng::PreviewStack> preview_stack;
-//        QVERIFY(sh::previewForFirstResult(m_scope, QString("layout"), preview_stack));
-//
-//        QCOMPARE(preview_stack->rowCount(), 1);
-//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-//        auto preview = preview_stack->getPreviewModel(0);
-//        QTRY_COMPARE(preview->loaded(), true);
-//        QCOMPARE(preview->rowCount(), 1);
-//
-//        QSignalSpy spy(m_scope.data(), SIGNAL(hideDash()));
-//        Q_EMIT preview->triggered(QString("actions"), QString("hide"), QVariantMap());
-//        QCOMPARE(preview->processingAction(), true);
-//        QVERIFY(spy.wait());
-//        QCOMPARE(preview->processingAction(), false);
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("hide", sc::Variant());
+        QCOMPARE(abstractView, sameView);
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
     }
 
     void testPreviewReplacingPreview()

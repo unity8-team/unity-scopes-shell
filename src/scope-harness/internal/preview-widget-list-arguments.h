@@ -21,27 +21,17 @@
 #include <QtGlobal>
 #include <QAbstractItemModel>
 
+#include <scope-harness/preview/preview-widget.h>
+
 namespace unity
 {
-namespace shell
-{
-namespace scopes
-{
-    class PreviewWidgetModelInterface;
-    class PreviewModelInterface;
-}
-}
 namespace scopeharness
 {
 namespace internal
 {
-struct PreviewWidgetArguments
+struct PreviewWidgetListArguments
 {
-    unity::shell::scopes::PreviewWidgetModelInterface* previewWidgetModel;
-
-    QModelIndex index;
-
-    unity::shell::scopes::PreviewModelInterface* previewModel;
+    std::vector<preview::PreviewWidget> previewWidgets;
 };
 }
 }

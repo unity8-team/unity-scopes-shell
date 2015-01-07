@@ -19,6 +19,7 @@
 #include <scope-harness/internal/preview-widget-arguments.h>
 #include <scope-harness/internal/preview-widget-list-arguments.h>
 #include <scope-harness/view/preview-view.h>
+#include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
@@ -42,7 +43,7 @@ namespace view
 struct PreviewView::Priv
 {
     preview::PreviewWidgetList iterateWidgetModel(ss::PreviewWidgetModelInterface* previewWidgetModel,
-                                                    ss::PreviewModelInterface* previewModel)
+                                                    ss::PreviewModelInterface* previewModel, PreviewView::SPtr previewView)
     {
         vector<preview::PreviewWidget> previewWidgets;
 
@@ -51,13 +52,13 @@ struct PreviewView::Priv
         {
             previewWidgets.emplace_back(
                     preview::PreviewWidget(internal::PreviewWidgetArguments
-                    { previewWidgetModel, previewWidgetModel->index(row), previewModel}));
+                    { previewWidgetModel, previewWidgetModel->index(row), previewModel, m_resultsView.lock(), previewView}));
         }
 
         return preview::PreviewWidgetList(internal::PreviewWidgetListArguments{previewWidgets});
     }
 
-    vector<preview::PreviewWidgetList> iteratePreviewModel(ss::PreviewModelInterface* previewModel)
+    vector<preview::PreviewWidgetList> iteratePreviewModel(ss::PreviewModelInterface* previewModel, PreviewView::SPtr previewView)
     {
         if (!previewModel->loaded())
         {
@@ -74,22 +75,22 @@ struct PreviewView::Priv
                     previewModel->index(row),
                     ss::PreviewModelInterface::RoleColumnModel);
 
-            previewModels.emplace_back(iterateWidgetModel(var.value<ss::PreviewWidgetModelInterface*>(), previewModel));
+            previewModels.emplace_back(iterateWidgetModel(var.value<ss::PreviewWidgetModelInterface*>(), previewModel, previewView));
         }
 
         return previewModels;
     }
 
-    void setPreviewModel(shared_ptr<ss::PreviewStackInterface> previewStack)
+    void setPreviewModel(shared_ptr<ss::PreviewStackInterface> previewStack, PreviewView::SPtr previewView)
     {
         m_previewStack = previewStack;
-        updateModels();
+        updateModels(previewView);
     }
 
-    void updateModels()
+    void updateModels(PreviewView::SPtr previewView)
     {
         auto previewModel = m_previewStack->getPreviewModel(0);
-        m_previewModels = iteratePreviewModel(previewModel);
+        m_previewModels = iteratePreviewModel(previewModel, previewView);
     }
 
     void checkPreviewStack()
@@ -100,6 +101,8 @@ struct PreviewView::Priv
     shared_ptr<ss::PreviewStackInterface> m_previewStack;
 
     vector<preview::PreviewWidgetList> m_previewModels;
+
+    weak_ptr<ResultsView> m_resultsView;
 };
 
 PreviewView::PreviewView() :
@@ -107,9 +110,15 @@ PreviewView::PreviewView() :
 {
 }
 
+void PreviewView::setResultsView(ResultsView::SPtr resultsView)
+{
+    p->m_resultsView = resultsView;
+}
+
 void PreviewView::preview(shared_ptr<ss::PreviewStackInterface> previewStack)
 {
-    p->setPreviewModel(previewStack);
+    p->setPreviewModel(previewStack,
+                       dynamic_pointer_cast<PreviewView>(shared_from_this()));
 }
 
 void PreviewView::setColumnCount(unsigned int count)
@@ -118,7 +127,7 @@ void PreviewView::setColumnCount(unsigned int count)
 
     p->m_previewStack->setWidgetColumnCount(count);
     // TODO Wait?
-    p->updateModels();
+    p->updateModels(dynamic_pointer_cast<PreviewView>(shared_from_this()));
 }
 
 unsigned int PreviewView::columnCount() const
