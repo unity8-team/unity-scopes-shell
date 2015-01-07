@@ -20,6 +20,7 @@
 
 #include <Unity/scopes.h>
 #include <Unity/categories.h>
+#include <Unity/utils.h>
 
 #include <scope-harness/internal/category-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
@@ -284,10 +285,10 @@ std::string ResultsView::searchQuery() const
     return p->m_active_scope->searchQuery().toStdString();
 }
 
-QVariantMap ResultsView::customizations() const
+sc::Variant ResultsView::customizations() const
 {
     p->checkActiveScope();
-    return p->m_active_scope->customizations();
+    return ng::qVariantToScopeVariant(p->m_active_scope->customizations());
 }
 
 std::string ResultsView::sessionId() const

@@ -84,7 +84,7 @@ public:
 
     std::string searchQuery() const;
 
-    QVariantMap customizations() const;
+    unity::scopes::Variant customizations() const;
 
     std::string sessionId() const;
 

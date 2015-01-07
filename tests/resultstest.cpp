@@ -178,14 +178,14 @@ private Q_SLOTS:
         QVERIFY(resultsView->shortcut() =="mock.HotKey");
         QVERIFY(resultsView->searchQuery() == "");
 
-        QVariantMap customizations(resultsView->customizations());
-        QVERIFY(customizations.size() > 0);
-        QCOMPARE(static_cast<QMetaType::Type>(customizations["page-header"].type()), QMetaType::QVariantMap);
-        QVariantMap headerCustomizations(customizations["page-header"].toMap());
-        QCOMPARE(headerCustomizations["logo"], QVariant("http://assets.ubuntu.com/sites/ubuntu/1110/u/img/logos/logo-ubuntu-orange.svg"));
-        QCOMPARE(headerCustomizations["foreground-color"], QVariant("white"));
-        QCOMPARE(headerCustomizations["background"], QVariant("color://black"));
-        QCOMPARE(customizations["shape-images"], QVariant(false));
+        sc::VariantMap customizations(resultsView->customizations().get_dict());
+        QVERIFY(!customizations.empty());
+        QCOMPARE(customizations["page-header"].which(), sc::Variant::Type::Dict);
+        sc::VariantMap headerCustomizations(customizations["page-header"].get_dict());
+        QCOMPARE(headerCustomizations["logo"], sc::Variant("http://assets.ubuntu.com/sites/ubuntu/1110/u/img/logos/logo-ubuntu-orange.svg"));
+        QCOMPARE(headerCustomizations["foreground-color"], sc::Variant("white"));
+        QCOMPARE(headerCustomizations["background"], sc::Variant("color://black"));
+        QCOMPARE(customizations["shape-images"], sc::Variant(false));
 
         resultsView->setActiveScope("mock-scope-ttl");
 
