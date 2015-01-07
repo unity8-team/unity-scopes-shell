@@ -127,6 +127,11 @@ void PreviewView::setColumnCount(unsigned int count)
 
     p->m_previewStack->setWidgetColumnCount(count);
     // TODO Wait?
+    refresh();
+}
+
+void PreviewView::refresh()
+{
     p->updateModels(dynamic_pointer_cast<PreviewView>(shared_from_this()));
 }
 

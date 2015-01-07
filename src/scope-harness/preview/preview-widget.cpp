@@ -128,6 +128,9 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
     throwIfNot(spy.wait(), "Processing action property didn't change");
     throwIf(p->m_previewModel->processingAction(), "Should have finished processing action");
 
+    view::PreviewView::SPtr previewView = p->m_previewView.lock();
+    previewView->refresh();
+
     return p->m_previewView.lock();
 }
 

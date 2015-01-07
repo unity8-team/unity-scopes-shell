@@ -262,6 +262,18 @@ private Q_SLOTS:
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
 
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
         auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("hide", sc::Variant());
         QCOMPARE(abstractView, sameView);
         auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
@@ -270,31 +282,42 @@ private Q_SLOTS:
 
     void testPreviewReplacingPreview()
     {
-//        QScopedPointer<PreviewStack> preview_stack;
-//        QVERIFY(previewForFirstResult(m_scope, QString("layout"), preview_stack));
-//
-//        QCOMPARE(preview_stack->rowCount(), 1);
-//        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-//        auto preview = preview_stack->getPreviewModel(0);
-//        QTRY_COMPARE(preview->loaded(), true);
-//        QCOMPARE(preview->rowCount(), 1);
-//        auto preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-//
-//        QSignalSpy spy(preview, SIGNAL(loadedChanged()));
-//        QVariantMap hints;
-//        hints["session-id"] = QString("qoo");
-//        Q_EMIT preview->triggered(QString("actions"), QString("download"), hints);
-//        QCOMPARE(preview->processingAction(), true);
-//        // wait for loaded to become false
-//        QVERIFY(spy.wait());
-//        QCOMPARE(preview->loaded(), false);
-//        // a bit of gray area, preview was just marked as "about-to-be-replaced", so it kinda is processing the action?
-//        QCOMPARE(preview->processingAction(), true);
-//        QTRY_COMPARE(preview->loaded(), true);
-//        QCOMPARE(preview->processingAction(), false);
-//        // refresh widget model
-//        preview_widgets = preview->data(preview->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-//        QCOMPARE(preview_widgets->rowCount(), 5);
+        m_resultsView->setQuery("layout");
+
+        auto abstractView = m_resultsView->category(0).result(0).activate();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+        );
     }
 
 };

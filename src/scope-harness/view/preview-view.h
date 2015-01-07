@@ -64,10 +64,13 @@ public:
 protected:
     friend results::Result;
     friend ScopeHarness;
+    friend preview::PreviewWidget;
 
     void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
 
     void setResultsView(std::shared_ptr<ResultsView> resultsView);
+
+    void refresh();
 
     struct Priv;
 
