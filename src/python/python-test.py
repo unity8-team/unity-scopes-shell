@@ -20,3 +20,9 @@ for c in view.categories:
 
 for r in view.categories[0].results:
     print(r.uri)
+
+print("TEST...")
+
+matchres = harnesspy.CategoryListMatcher().has_at_least(1).match(view.categories)
+print(matchres.success)
+print(matchres.concat_failures)

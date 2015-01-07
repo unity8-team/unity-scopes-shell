@@ -91,5 +91,3 @@ void export_scopeharness()
         .def("new_from_system", &ScopeHarnessWrapper::newFromSystem).staticmethod("new_from_system")
     ;
 }
-
-#include "scope-harness-py.moc"

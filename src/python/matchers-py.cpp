@@ -18,6 +18,7 @@
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <unity/scopes/Variant.h>
 #include <scope-harness/results/category.h>
 #include <scope-harness/matcher/match-result.h>
 #include <scope-harness/matcher/category-matcher.h>
@@ -56,6 +57,17 @@ static shm::MatchResult getMatchResultByResultList(shm::CategoryListMatcher* cat
     return catListMatcher->match(cats);
 }
 
+static shm::ResultMatcher& resultMatcherProperty(shm::ResultMatcher* rm, dict kwargs)
+{
+    stl_input_iterator<object> begin(kwargs.iteritems()), end;
+    for (auto it = begin; it != end; ++it)
+    {
+        // TODO: should handle any basic data type, not just variant, not sure if variant conversion will take care of that
+        rm->property(extract<std::string>((*it)[0]), extract<unity::scopes::Variant>((*it)[1]));
+    }
+    return *rm;
+}
+
 void export_matchers()
 {
     enum_<shm::CategoryListMatcher::Mode>("CategoryListMatcherMode")
@@ -81,18 +93,19 @@ void export_matchers()
         shm::MatchResult (shm::ResultMatcher::*matchresult_by_result)(const shr::Result&) const = &shm::ResultMatcher::match;
         void (shm::ResultMatcher::*match_by_match_result_and_result)(shm::MatchResult&, const shr::Result&) const = &shm::ResultMatcher::match;
 
-        class_<shm::ResultMatcher, boost::noncopyable>("ResultMatcher", init<const std::string&>())
+        class_<shm::ResultMatcher, boost::noncopyable>("ResultMatcher", init<const std::string>())
             .add_property("uri", &shm::ResultMatcher::getUri)
-            .def("dnd_uri", &shm::ResultMatcher::dndUri, return_value_policy<reference_existing_object>())
-            .def("title", &shm::ResultMatcher::title, return_value_policy<reference_existing_object>())
-            .def("art", &shm::ResultMatcher::art, return_value_policy<reference_existing_object>())
-            .def("subtitle", &shm::ResultMatcher::subtitle, return_value_policy<reference_existing_object>())
-            .def("emblem", &shm::ResultMatcher::emblem, return_value_policy<reference_existing_object>())
-            .def("mascot", &shm::ResultMatcher::mascot, return_value_policy<reference_existing_object>())
-            .def("attributes", &shm::ResultMatcher::attributes, return_value_policy<reference_existing_object>())
-            .def("summary", &shm::ResultMatcher::summary, return_value_policy<reference_existing_object>())
-            .def("background", &shm::ResultMatcher::background, return_value_policy<reference_existing_object>())
-            .def("property", &shm::ResultMatcher::property, return_value_policy<reference_existing_object>())
+            .def("dnd_uri", &shm::ResultMatcher::dndUri, return_internal_reference<1>())
+            .def("title", &shm::ResultMatcher::title, return_internal_reference<1>())
+            .def("art", &shm::ResultMatcher::art, return_internal_reference<1>())
+            .def("subtitle", &shm::ResultMatcher::subtitle, return_internal_reference<1>())
+            .def("emblem", &shm::ResultMatcher::emblem, return_internal_reference<1>())
+            .def("mascot", &shm::ResultMatcher::mascot, return_internal_reference<1>())
+            .def("attributes", &shm::ResultMatcher::attributes, return_internal_reference<1>())
+            .def("summary", &shm::ResultMatcher::summary, return_internal_reference<1>())
+            .def("background", &shm::ResultMatcher::background, return_internal_reference<1>())
+            // wrapper for ResultMatcher::property() which takes kwargs to set multiple properties at a time
+            .def("property", &resultMatcherProperty, return_internal_reference<1>())
             .def("match", matchresult_by_result, return_value_policy<return_by_value>())
             .def("match", match_by_match_result_and_result)
             ;
@@ -105,14 +118,14 @@ void export_matchers()
 
         class_<shm::CategoryMatcher, boost::noncopyable>("CategoryMatcher", init<const std::string&>())
             .add_property("id", &getIdWrapper, &setIdWrapper)
-            .def("mode", &shm::CategoryMatcher::mode, return_value_policy<reference_existing_object>())
-            .def("title", &shm::CategoryMatcher::title, return_value_policy<reference_existing_object>())
-            .def("icon", &shm::CategoryMatcher::icon, return_value_policy<reference_existing_object>())
-            .def("header_link", &shm::CategoryMatcher::headerLink, return_value_policy<reference_existing_object>())
-            .def("has_at_least", &shm::CategoryMatcher::hasAtLeast, return_value_policy<reference_existing_object>())
-            .def("renderer", &shm::CategoryMatcher::renderer, return_value_policy<reference_existing_object>())
-            .def("components", &shm::CategoryMatcher::components, return_value_policy<reference_existing_object>())
-            .def("result", by_result_matcher, return_value_policy<reference_existing_object>())
+            .def("mode", &shm::CategoryMatcher::mode, return_internal_reference<1>())
+            .def("title", &shm::CategoryMatcher::title, return_internal_reference<1>())
+            .def("icon", &shm::CategoryMatcher::icon, return_internal_reference<1>())
+            .def("header_link", &shm::CategoryMatcher::headerLink, return_internal_reference<1>())
+            .def("has_at_least", &shm::CategoryMatcher::hasAtLeast, return_internal_reference<1>())
+            .def("renderer", &shm::CategoryMatcher::renderer, return_internal_reference<1>())
+            .def("components", &shm::CategoryMatcher::components, return_internal_reference<1>())
+            .def("result", by_result_matcher, return_internal_reference<1>())
             .def("match", match_result_by_category, return_value_policy<return_by_value>())
             .def("match", match_by_match_result_and_category)
             ;
@@ -122,11 +135,11 @@ void export_matchers()
         shm::CategoryListMatcher& (shm::CategoryListMatcher::*category_match)(const shm::CategoryMatcher&) = &shm::CategoryListMatcher::category;
 
         class_<shm::CategoryListMatcher, boost::noncopyable>("CategoryListMatcher", init<>())
-            .def("mode", &shm::CategoryListMatcher::mode, return_value_policy<reference_existing_object>())
-            .def("category", category_match, return_value_policy<reference_existing_object>())
-            .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, return_value_policy<reference_existing_object>())
-            .def("has_exactly", &shm::CategoryListMatcher::hasExactly, return_value_policy<reference_existing_object>())
-            .def("match", getMatchResultByResultList)
+            .def("mode", &shm::CategoryListMatcher::mode, return_internal_reference<1>())
+            .def("category", category_match, return_internal_reference<1>())
+            .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, return_internal_reference<1>())
+            .def("has_exactly", &shm::CategoryListMatcher::hasExactly, return_internal_reference<1>())
+            .def("match", getMatchResultByResultList, return_value_policy<return_by_value>())
             ;
     }
 }

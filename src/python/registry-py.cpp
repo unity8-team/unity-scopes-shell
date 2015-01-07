@@ -58,17 +58,17 @@ void export_registry()
 {
     class_<shr::CustomRegistry::Parameters>("Parameters", no_init)
         .def("__init__", make_constructor(&makeParameters))
-        .def("include_system_scopes", &shr::CustomRegistry::Parameters::includeSystemScopes, return_value_policy<reference_existing_object>())
-        .def("include_click_scopes", &shr::CustomRegistry::Parameters::includeClickScopes, return_value_policy<reference_existing_object>())
-        .def("include_oem_scopes", &shr::CustomRegistry::Parameters::includeOemScopes, return_value_policy<reference_existing_object>())
-        .def("include_remote_scopes", &shr::CustomRegistry::Parameters::includeRemoteScopes, return_value_policy<reference_existing_object>())
+        .def("include_system_scopes", &shr::CustomRegistry::Parameters::includeSystemScopes, return_internal_reference<1>())
+        .def("include_click_scopes", &shr::CustomRegistry::Parameters::includeClickScopes, return_internal_reference<1>())
+        .def("include_oem_scopes", &shr::CustomRegistry::Parameters::includeOemScopes, return_internal_reference<1>())
+        .def("include_remote_scopes", &shr::CustomRegistry::Parameters::includeRemoteScopes, return_internal_reference<1>())
 
         // convienience python method that takes named arguments
         .def("enable_scopes", &enableScopes, (arg("system_scopes") = false, arg("click_scopes") = false, arg("remote_scopes") = false),
                 "Enable particular types of scopes via named arguments")
         ;
 
-/*    class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
+    class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
         .def("start", &shr::CustomRegistry::start)
-    ;*/
+    ;
 }
