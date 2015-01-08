@@ -27,8 +27,7 @@ match2 = CategoryListMatcher() \
             .has_at_least(1) \
             .mode(CategoryMatcherMode.BY_URI) \
             .result(ResultMatcher("test:uri") \
-#.title('result for: "minimal"') \
-.property({'title': 'result for: "minimal"', 'foo':'bar'}) \
+.property({'title': 'result for: "minimal"'}) \
 #.property({'title':Variant('result for: "minimal"')}) \
 #                .art("") \
                 )) \
