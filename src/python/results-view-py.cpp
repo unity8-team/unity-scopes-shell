@@ -25,17 +25,8 @@ using namespace boost::python;
 namespace shv = unity::scopeharness::view;
 namespace shr = unity::scopeharness::results;
 
-static PyObject* getCustomizations(shv::ResultsView* view)
-{
-    dict pydict;
-    // TODO: customizations() returns QVariantMap, should be fixed first?
-/*    for (auto el: view->customizations())
-    {
-        pydict[el.first] = el.second;
-    }*/
-    return incref(pydict.ptr());
-}
-
+// wrapper function to create python list
+// from list returned by ResultsView::categories
 static PyObject* getCategories(shv::ResultsView* view)
 {
     list pylist;
@@ -67,7 +58,7 @@ void export_view()
         .add_property("description", &shv::ResultsView::description)
         .add_property("search_hint", &shv::ResultsView::searchHint)
         .add_property("shortcut", &shv::ResultsView::searchQuery)
-        .add_property("customizations", &getCustomizations)
+        .add_property("customizations", &shv::ResultsView::customizations)
         .add_property("session_id", &shv::ResultsView::sessionId)
         .add_property("query_id", &shv::ResultsView::queryId)
         .add_property("categories", &getCategories)

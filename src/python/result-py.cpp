@@ -35,7 +35,7 @@ void export_result()
         .add_property("attributes", &shr::Result::attributes)
         .add_property("summary", &shr::Result::summary)
         .add_property("background", &shr::Result::background)
-        .def("__getitem__", &shr::Result::value, return_value_policy<reference_existing_object>())
+        .def("__getitem__", &shr::Result::value, return_internal_reference<1>())
         .def("activate", &shr::Result::activate)
         ;
 }
