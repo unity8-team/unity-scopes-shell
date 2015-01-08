@@ -53,14 +53,16 @@ public:
 
     CategoryListMatcher& category(CategoryMatcher&& categoryMatcher);
 
-    CategoryListMatcher& hasAtLeast(unsigned int minimum);
+    CategoryListMatcher& hasAtLeast(std::size_t minimum);
 
-    CategoryListMatcher& hasExactly(unsigned int amount);
+    CategoryListMatcher& hasExactly(std::size_t amount);
 
     MatchResult match(const results::Category::List& resultList) const;
 
 protected:
     CategoryListMatcher(const CategoryListMatcher& other) = delete;
+
+    CategoryListMatcher(CategoryListMatcher&& other) = delete;
 
     CategoryListMatcher& operator=(const CategoryListMatcher& other) = delete;
 

@@ -19,12 +19,9 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QAbstractItemModel>
 
-#include <deque>
-
-QT_BEGIN_NAMESPACE
-class QModelIndex;
-QT_END_NAMESPACE
+#include <vector>
 
 namespace unity
 {
@@ -47,9 +44,9 @@ struct CategoryArguments
 {
     unity::shell::scopes::CategoriesInterface* categoriesModel;
 
-    const QModelIndex& index;
+    QModelIndex index;
 
-    std::deque<results::Result> results;
+    std::vector<results::Result> results;
 };
 }
 }

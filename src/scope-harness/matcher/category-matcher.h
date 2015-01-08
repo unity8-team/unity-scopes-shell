@@ -20,9 +20,6 @@
 
 #include <scope-harness/matcher/match-result.h>
 
-#include <memory>
-#include <string>
-
 #include <QtGlobal>
 
 namespace unity
@@ -53,6 +50,8 @@ public:
 
     CategoryMatcher(const CategoryMatcher& other);
 
+    CategoryMatcher(CategoryMatcher&& other);
+
     CategoryMatcher& operator=(const CategoryMatcher& other);
 
     CategoryMatcher& operator=(CategoryMatcher&& other);
@@ -67,7 +66,7 @@ public:
 
     CategoryMatcher& headerLink(const std::string& headerLink);
 
-    CategoryMatcher& hasAtLeast(unsigned int minimum);
+    CategoryMatcher& hasAtLeast(std::size_t minimum);
 
     CategoryMatcher& renderer(const unity::scopes::Variant& renderer);
 

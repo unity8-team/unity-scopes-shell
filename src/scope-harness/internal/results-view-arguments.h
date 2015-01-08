@@ -20,46 +20,22 @@
 
 #include <QtGlobal>
 
-#include <vector>
 #include <memory>
-#include <string>
 
+namespace scopes_ng
+{
+class Scopes;
+}
 namespace unity
 {
 namespace scopeharness
 {
-namespace matcher
+namespace internal
 {
-
-class Q_DECL_EXPORT MatchResult
+struct ResultsViewArguments
 {
-public:
-    MatchResult();
-
-    MatchResult(MatchResult&& other);
-
-    MatchResult(const MatchResult& other);
-
-    MatchResult& operator=(const MatchResult& other);
-
-    MatchResult& operator=(MatchResult&& other);
-
-    ~MatchResult() = default;
-
-    void failure(const std::string& message);
-
-    bool success() const;
-
-    std::vector<std::string>& failures() const;
-
-    std::string concat_failures() const;
-
-protected:
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<scopes_ng::Scopes> scopes;
 };
-
 }
 }
 }

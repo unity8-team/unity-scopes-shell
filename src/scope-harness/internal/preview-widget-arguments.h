@@ -19,47 +19,41 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QAbstractItemModel>
 
-#include <vector>
 #include <memory>
-#include <string>
 
 namespace unity
 {
+namespace shell
+{
+namespace scopes
+{
+    class PreviewWidgetModelInterface;
+    class PreviewModelInterface;
+}
+}
 namespace scopeharness
 {
-namespace matcher
+namespace view
 {
-
-class Q_DECL_EXPORT MatchResult
+class PreviewView;
+class ResultsView;
+}
+namespace internal
 {
-public:
-    MatchResult();
+struct PreviewWidgetArguments
+{
+    unity::shell::scopes::PreviewWidgetModelInterface* previewWidgetModel;
 
-    MatchResult(MatchResult&& other);
+    QModelIndex index;
 
-    MatchResult(const MatchResult& other);
+    unity::shell::scopes::PreviewModelInterface* previewModel;
 
-    MatchResult& operator=(const MatchResult& other);
+    std::shared_ptr<view::ResultsView> resultsView;
 
-    MatchResult& operator=(MatchResult&& other);
-
-    ~MatchResult() = default;
-
-    void failure(const std::string& message);
-
-    bool success() const;
-
-    std::vector<std::string>& failures() const;
-
-    std::string concat_failures() const;
-
-protected:
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<view::PreviewView> previewView;
 };
-
 }
 }
 }

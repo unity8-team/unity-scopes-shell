@@ -22,8 +22,6 @@
 
 #include <QtGlobal>
 
-#include <memory>
-
 namespace unity
 {
 namespace scopeharness

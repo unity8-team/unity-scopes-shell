@@ -19,13 +19,10 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QAbstractItemModel>
 #include <QSharedPointer>
 
 #include <memory>
-
-QT_BEGIN_NAMESPACE
-class QModelIndex;
-QT_END_NAMESPACE
 
 namespace unity
 {
@@ -52,7 +49,7 @@ struct ResultArguments
 
     QSharedPointer<unity::shell::scopes::ScopeInterface> scope;
 
-    const QModelIndex& index;
+    QModelIndex index;
 
     std::shared_ptr<view::ResultsView> resultsView;
 

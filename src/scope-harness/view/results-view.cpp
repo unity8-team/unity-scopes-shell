@@ -20,9 +20,11 @@
 
 #include <Unity/scopes.h>
 #include <Unity/categories.h>
+#include <Unity/utils.h>
 
 #include <scope-harness/internal/category-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
+#include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
@@ -48,15 +50,19 @@ struct ResultsView::Priv
 
     std::shared_ptr<ng::Scopes> m_scopes;
 
-    PreviewView::SPtr m_previewView;
+    weak_ptr<PreviewView> m_previewView;
 
     ng::Scope::Ptr m_active_scope;
 };
 
-ResultsView::ResultsView(std::shared_ptr<ng::Scopes> scopes, PreviewView::SPtr previewView) :
+ResultsView::ResultsView(const internal::ResultsViewArguments& arguments) :
         p(new Priv)
 {
-    p->m_scopes = scopes;
+    p->m_scopes = arguments.scopes;
+}
+
+void ResultsView::setPreviewView(PreviewView::SPtr previewView)
+{
     p->m_previewView = previewView;
 }
 
@@ -171,7 +177,7 @@ results::Category::List ResultsView::categories()
     return result;
 }
 
-results::Category ResultsView::category(unsigned int row)
+results::Category ResultsView::category(size_t row)
 {
     auto cats = raw_categories();
     auto categoryIndex = cats->index(row);
@@ -196,7 +202,7 @@ results::Category ResultsView::category(unsigned int row)
             results.emplace_back(results::Result(internal::ResultArguments
                 { resultModel, p->m_active_scope, idx,
                   dynamic_pointer_cast<ResultsView>(shared_from_this()),
-                  p->m_previewView }));
+                  p->m_previewView.lock() }));
         }
     }
 
@@ -279,10 +285,10 @@ std::string ResultsView::searchQuery() const
     return p->m_active_scope->searchQuery().toStdString();
 }
 
-QVariantMap ResultsView::customizations() const
+sc::Variant ResultsView::customizations() const
 {
     p->checkActiveScope();
-    return p->m_active_scope->customizations();
+    return ng::qVariantToScopeVariant(p->m_active_scope->customizations());
 }
 
 std::string ResultsView::sessionId() const

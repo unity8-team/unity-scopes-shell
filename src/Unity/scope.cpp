@@ -1247,12 +1247,16 @@ void Scope::activateUri(QString const& uri)
      */
     Q_EMIT gotoUri(uri);
     QUrl url(uri);
-    if (url.scheme() == QLatin1String("scope")) {
-        qDebug() << "Got scope URI" << uri;
+    if (url.scheme() == QLatin1String("scope"))
+    {
         performQuery(uri);
-    } else {
-        qDebug() << "Trying to open" << uri;
-        QDesktopServices::openUrl(url);
+    }
+    else
+    {
+        if (qEnvironmentVariableIsEmpty("UNITY_SCOPES_NO_OPEN_URL"))
+        {
+            QDesktopServices::openUrl(url);
+        }
     }
 }
 

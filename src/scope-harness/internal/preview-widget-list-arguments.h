@@ -19,47 +19,20 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QAbstractItemModel>
 
-#include <vector>
-#include <memory>
-#include <string>
+#include <scope-harness/preview/preview-widget.h>
 
 namespace unity
 {
 namespace scopeharness
 {
-namespace matcher
+namespace internal
 {
-
-class Q_DECL_EXPORT MatchResult
+struct PreviewWidgetListArguments
 {
-public:
-    MatchResult();
-
-    MatchResult(MatchResult&& other);
-
-    MatchResult(const MatchResult& other);
-
-    MatchResult& operator=(const MatchResult& other);
-
-    MatchResult& operator=(MatchResult&& other);
-
-    ~MatchResult() = default;
-
-    void failure(const std::string& message);
-
-    bool success() const;
-
-    std::vector<std::string>& failures() const;
-
-    std::string concat_failures() const;
-
-protected:
-    struct Priv;
-
-    std::shared_ptr<Priv> p;
+    std::vector<preview::PreviewWidget> previewWidgets;
 };
-
 }
 }
 }

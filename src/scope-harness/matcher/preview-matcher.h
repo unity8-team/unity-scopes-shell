@@ -18,11 +18,8 @@
 
 #pragma once
 
-#include <QtGlobal>
-
-#include <vector>
-#include <memory>
-#include <string>
+#include <scope-harness/matcher/match-result.h>
+#include <scope-harness/preview/preview-widget-list.h>
 
 namespace unity
 {
@@ -30,29 +27,30 @@ namespace scopeharness
 {
 namespace matcher
 {
+class PreviewWidgetMatcher;
 
-class Q_DECL_EXPORT MatchResult
+class Q_DECL_EXPORT PreviewMatcher final
 {
 public:
-    MatchResult();
+    PreviewMatcher();
 
-    MatchResult(MatchResult&& other);
+    ~PreviewMatcher();
 
-    MatchResult(const MatchResult& other);
+    PreviewMatcher(const PreviewMatcher& other);
 
-    MatchResult& operator=(const MatchResult& other);
+    PreviewMatcher(PreviewMatcher&& other);
 
-    MatchResult& operator=(MatchResult&& other);
+    PreviewMatcher& operator=(const PreviewMatcher& other);
 
-    ~MatchResult() = default;
+    PreviewMatcher& operator=(PreviewMatcher&& other);
 
-    void failure(const std::string& message);
+    PreviewMatcher& widget(const PreviewWidgetMatcher& previewWidgetMatcher);
 
-    bool success() const;
+    PreviewMatcher& widget(PreviewWidgetMatcher&& previewWidgetMatcher);
 
-    std::vector<std::string>& failures() const;
+    MatchResult match(const preview::PreviewWidgetList& previewWidgetList) const;
 
-    std::string concat_failures() const;
+    void match(MatchResult& matchResult, const preview::PreviewWidgetList& previewWidgetList) const;
 
 protected:
     struct Priv;

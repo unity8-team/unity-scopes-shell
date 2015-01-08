@@ -35,7 +35,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    deque<string> scopes;
+    vector<string> scopes;
     for (int i = 1; i < argc; ++i)
     {
         scopes.emplace_back(argv[i]);

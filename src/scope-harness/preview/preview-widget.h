@@ -18,43 +18,54 @@
 
 #pragma once
 
-#include <QtGlobal>
+#include <unity/scopes/Variant.h>
 
 #include <vector>
-#include <memory>
-#include <string>
+
+#include <QtGlobal>
 
 namespace unity
 {
 namespace scopeharness
 {
-namespace matcher
+namespace internal
+{
+class PreviewWidgetArguments;
+}
+namespace view
+{
+class AbstractView;
+class PreviewView;
+}
+namespace preview
 {
 
-class Q_DECL_EXPORT MatchResult
+class Q_DECL_EXPORT PreviewWidget final
 {
 public:
-    MatchResult();
+    PreviewWidget(const PreviewWidget& other);
 
-    MatchResult(MatchResult&& other);
+    PreviewWidget(PreviewWidget&& other);
 
-    MatchResult(const MatchResult& other);
+    PreviewWidget& operator=(const PreviewWidget& other);
 
-    MatchResult& operator=(const MatchResult& other);
+    PreviewWidget& operator=(PreviewWidget&& other);
 
-    MatchResult& operator=(MatchResult&& other);
+    ~PreviewWidget();
 
-    ~MatchResult() = default;
+    std::string id() const;
 
-    void failure(const std::string& message);
+    std::string type() const;
 
-    bool success() const;
+    unity::scopes::Variant data() const;
 
-    std::vector<std::string>& failures() const;
-
-    std::string concat_failures() const;
+    std::shared_ptr<view::AbstractView> trigger(const std::string& name, const unity::scopes::Variant& v);
 
 protected:
+    friend view::PreviewView;
+
+    PreviewWidget(const internal::PreviewWidgetArguments& arguments);
+
     struct Priv;
 
     std::shared_ptr<Priv> p;

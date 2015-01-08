@@ -146,9 +146,9 @@ struct CategoryMatcher::Priv
 
     Mode m_mode = Mode::all;
 
-    deque<ResultMatcher> m_results;
+    vector<ResultMatcher> m_results;
 
-    optional<unsigned int> m_hasAtLeast;
+    optional<size_t> m_hasAtLeast;
 
     optional<string> m_title;
 
@@ -171,6 +171,11 @@ CategoryMatcher::CategoryMatcher(const CategoryMatcher& other) :
         p(new Priv)
 {
     *this = other;
+}
+
+CategoryMatcher::CategoryMatcher(CategoryMatcher&& other)
+{
+    *this = move(other);
 }
 
 CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
@@ -217,7 +222,7 @@ CategoryMatcher& CategoryMatcher::headerLink(const string& headerLink)
     return *this;
 }
 
-CategoryMatcher& CategoryMatcher::hasAtLeast(unsigned int minimum)
+CategoryMatcher& CategoryMatcher::hasAtLeast(size_t minimum)
 {
     p->m_hasAtLeast = minimum;
     return *this;

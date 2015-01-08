@@ -18,11 +18,8 @@
 
 #pragma once
 
-#include <QtGlobal>
-
-#include <vector>
-#include <memory>
-#include <string>
+#include <scope-harness/matcher/match-result.h>
+#include <scope-harness/preview/preview-widget-list.h>
 
 namespace unity
 {
@@ -31,28 +28,30 @@ namespace scopeharness
 namespace matcher
 {
 
-class Q_DECL_EXPORT MatchResult
+class PreviewMatcher;
+
+class Q_DECL_EXPORT PreviewColumnMatcher final
 {
 public:
-    MatchResult();
+    PreviewColumnMatcher();
 
-    MatchResult(MatchResult&& other);
+    PreviewColumnMatcher(const PreviewColumnMatcher& other);
 
-    MatchResult(const MatchResult& other);
+    PreviewColumnMatcher(PreviewColumnMatcher&& other);
 
-    MatchResult& operator=(const MatchResult& other);
+    ~PreviewColumnMatcher();
 
-    MatchResult& operator=(MatchResult&& other);
+    PreviewColumnMatcher& operator=(const PreviewColumnMatcher& other);
 
-    ~MatchResult() = default;
+    PreviewColumnMatcher& operator=(PreviewColumnMatcher&& other);
 
-    void failure(const std::string& message);
+    PreviewColumnMatcher& column(const PreviewMatcher& previewMatcher);
 
-    bool success() const;
+    PreviewColumnMatcher& column(PreviewMatcher&& previewMatcher);
 
-    std::vector<std::string>& failures() const;
+    MatchResult match(const std::vector<preview::PreviewWidgetList>& preview) const;
 
-    std::string concat_failures() const;
+    void match(MatchResult& matchResult, const std::vector<preview::PreviewWidgetList>& preview) const;
 
 protected:
     struct Priv;

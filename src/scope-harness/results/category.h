@@ -20,7 +20,7 @@
 
 #include <scope-harness/results/result.h>
 
-#include <deque>
+#include <vector>
 #include <memory>
 
 namespace unity
@@ -38,7 +38,9 @@ class Result;
 class Q_DECL_EXPORT Category
 {
 public:
-    typedef std::deque<Category> List;
+    typedef std::vector<Category> List;
+
+    Category(Category&& other);
 
     Category(const Category& other);
 
@@ -60,9 +62,11 @@ public:
 
     unity::scopes::Variant components() const;
 
-    const Result::List& results() const;
+    Result::List results() const;
 
-    const Result& result(const std::string& uri) const;
+    Result result(const std::string& uri) const;
+
+    Result result(std::size_t index) const;
 
 protected:
     friend view::ResultsView;

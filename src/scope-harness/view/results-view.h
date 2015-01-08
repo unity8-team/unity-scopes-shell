@@ -41,18 +41,24 @@ namespace scopes
 class CategoriesInterface;
 }
 }
-
 namespace scopeharness
 {
+class ScopeHarness;
+
+namespace internal
+{
+struct ResultsViewArguments;
+}
 namespace view
 {
+class PreviewView;
 
 class Q_DECL_EXPORT ResultsView: public AbstractView
 {
 public:
     UNITY_DEFINES_PTRS(ResultsView);
 
-    ResultsView(std::shared_ptr<scopes_ng::Scopes> scopes, PreviewView::SPtr previewView);
+    ResultsView(const internal::ResultsViewArguments& arguments);
 
     ~ResultsView() = default;
 
@@ -78,7 +84,7 @@ public:
 
     std::string searchQuery() const;
 
-    QVariantMap customizations() const;
+    unity::scopes::Variant customizations() const;
 
     std::string sessionId() const;
 
@@ -86,7 +92,7 @@ public:
 
     results::Category::List categories();
 
-    results::Category category(unsigned int row);
+    results::Category category(std::size_t row);
 
     results::Category category(const std::string& categoryId);
 
@@ -98,6 +104,10 @@ public:
     QSharedPointer<unity::shell::scopes::ScopeInterface> activeScope() const;
 
 protected:
+    friend ScopeHarness;
+
+    void setPreviewView(std::shared_ptr<PreviewView> previewView);
+
     struct Priv;
 
     std::shared_ptr<Priv> p;

@@ -18,41 +18,47 @@
 
 #pragma once
 
-#include <QtGlobal>
-
-#include <vector>
-#include <memory>
-#include <string>
+#include <scope-harness/matcher/match-result.h>
 
 namespace unity
 {
+namespace scopes
+{
+class Variant;
+}
 namespace scopeharness
 {
+namespace preview
+{
+class PreviewWidget;
+}
 namespace matcher
 {
 
-class Q_DECL_EXPORT MatchResult
+class Q_DECL_EXPORT PreviewWidgetMatcher final
 {
 public:
-    MatchResult();
+    PreviewWidgetMatcher(const std::string& id);
 
-    MatchResult(MatchResult&& other);
+    PreviewWidgetMatcher(const PreviewWidgetMatcher& other);
 
-    MatchResult(const MatchResult& other);
+    PreviewWidgetMatcher(PreviewWidgetMatcher&& other);
 
-    MatchResult& operator=(const MatchResult& other);
+    PreviewWidgetMatcher& operator=(const PreviewWidgetMatcher& other);
 
-    MatchResult& operator=(MatchResult&& other);
+    PreviewWidgetMatcher& operator=(PreviewWidgetMatcher&& other);
 
-    ~MatchResult() = default;
+    ~PreviewWidgetMatcher();
 
-    void failure(const std::string& message);
+    PreviewWidgetMatcher& type(const std::string& type);
 
-    bool success() const;
+    PreviewWidgetMatcher& data(const unity::scopes::Variant& data);
 
-    std::vector<std::string>& failures() const;
+    PreviewWidgetMatcher& data(unity::scopes::Variant&& data);
 
-    std::string concat_failures() const;
+    MatchResult match(const preview::PreviewWidget& previewWidget) const;
+
+    void match(MatchResult& matchResult, const preview::PreviewWidget& previewWidget) const;
 
 protected:
     struct Priv;

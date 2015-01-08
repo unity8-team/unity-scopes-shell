@@ -28,7 +28,12 @@ add_library(
     matcher/category-matcher.cpp
     matcher/category-list-matcher.cpp
     matcher/match-result.cpp
+    matcher/preview-matcher.cpp
+    matcher/preview-column-matcher.cpp
+    matcher/preview-widget-matcher.cpp
     matcher/result-matcher.cpp
+    preview/preview-widget.cpp
+    preview/preview-widget-list.cpp
     registry/custom-registry.cpp
     registry/pre-existing-registry.cpp
     registry/system-registry.cpp
@@ -56,7 +61,6 @@ set_target_properties(
     PROPERTIES
     VERSION ${API_VERSION}.0.0
     SOVERSION ${ABI_VERSION}
-    PUBLIC_HEADER "${SCOPE_HARNESS_PUBLIC_HEADERS}"
 )
 
 install(

@@ -29,6 +29,12 @@
 #include <scope-harness/registry/registry.h>
 #include <scope-harness/view/results-view.h>
 
+#define QVERIFY_MATCHRESULT(statement) \
+do {\
+    auto result = (statement);\
+    QVERIFY2(result.success(), result.concat_failures().c_str());\
+} while (0)
+
 namespace unity
 {
 namespace scopeharness

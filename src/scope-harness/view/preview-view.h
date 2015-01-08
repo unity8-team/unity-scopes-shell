@@ -19,13 +19,28 @@
 #pragma once
 
 #include <scope-harness/view/abstract-view.h>
+#include <scope-harness/preview/preview-widget-list.h>
 
 namespace unity
 {
+namespace shell
+{
+namespace scopes
+{
+class PreviewStackInterface;
+}
+}
 namespace scopeharness
 {
+class ScopeHarness;
+
+namespace results
+{
+class Result;
+}
 namespace view
 {
+class ResultsView;
 
 class Q_DECL_EXPORT PreviewView: public AbstractView
 {
@@ -35,6 +50,31 @@ public:
     PreviewView();
 
     ~PreviewView() = default;
+
+    void setColumnCount(unsigned int count);
+
+    unsigned int columnCount() const;
+
+    std::vector<preview::PreviewWidgetList> widgets();
+
+    preview::PreviewWidgetList widgetsInColumn(std::size_t column);
+
+    preview::PreviewWidgetList widgetsInFirstColumn();
+
+protected:
+    friend results::Result;
+    friend ScopeHarness;
+    friend preview::PreviewWidget;
+
+    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
+
+    void setResultsView(std::shared_ptr<ResultsView> resultsView);
+
+    void refresh();
+
+    struct Priv;
+
+    std::shared_ptr<Priv> p;
 };
 
 }

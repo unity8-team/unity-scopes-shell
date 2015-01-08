@@ -18,6 +18,7 @@
 
 #include <scope-harness/results/category.h>
 #include <scope-harness/internal/category-arguments.h>
+#include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
 
@@ -48,6 +49,12 @@ Category::Category(const internal::CategoryArguments& arguments) :
     p->m_categoriesModel = arguments.categoriesModel;
     p->m_index = arguments.index;
     p->m_results = arguments.results;
+}
+
+Category::Category(Category&& other) :
+        p(new Priv)
+{
+    *this = move(other);
 }
 
 Category::Category(const Category& other) :
@@ -106,12 +113,12 @@ sc::Variant Category::components() const
                                        ss::CategoriesInterface::Roles::RoleComponents));
 }
 
-const Result::List& Category::results() const
+Result::List Category::results() const
 {
     return p->m_results;
 }
 
-const Result& Category::result(const string& uri) const
+Result Category::result(const string& uri) const
 {
     for (const auto& result : p->m_results)
     {
@@ -122,6 +129,13 @@ const Result& Category::result(const string& uri) const
     }
 
     throw domain_error("Result with URI '" + uri + "' could not be found");
+}
+
+Result Category::result(size_t index) const
+{
+    throwIf(index >= p->m_results.size(), "Invalid index " + to_string(index) + " in result lookup");
+
+    return p->m_results.at(index);
 }
 
 }

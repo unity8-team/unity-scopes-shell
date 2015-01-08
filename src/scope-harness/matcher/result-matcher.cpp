@@ -19,6 +19,7 @@
 #include <scope-harness/results/result.h>
 #include <scope-harness/matcher/result-matcher.h>
 
+#include <unity/UnityExceptions.h>
 #include <unity/scopes/Variant.h>
 
 #include <boost/optional.hpp>
@@ -57,8 +58,17 @@ static void check_variant(MatchResult& matchResult, const results::Result& resul
 static void check_variant(MatchResult& matchResult, const results::Result& result,
     const string& name, const sc::Variant& expectedValue)
 {
-    const auto& actualValue = result[name];
-    check_variant(matchResult, result, name, actualValue, expectedValue);
+    try
+    {
+        const auto& actualValue = result[name];
+        check_variant(matchResult, result, name, actualValue, expectedValue);
+    }
+    catch (unity::InvalidArgumentException& e)
+    {
+        matchResult.failure(
+                "Result with URI '" + result.uri()
+                        + "' missing expected property '" + name + "'");
+    }
 }
 
 
@@ -108,7 +118,7 @@ struct ResultMatcher::Priv
 
     optional<sc::Variant> m_background;
 
-    deque<pair<string, sc::Variant>> m_properties;
+    vector<pair<string, sc::Variant>> m_properties;
 };
 
 ResultMatcher::ResultMatcher(const string& uri) :

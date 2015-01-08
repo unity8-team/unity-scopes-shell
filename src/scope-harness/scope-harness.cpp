@@ -18,6 +18,7 @@
 
 #include <Unity/scopes.h>
 
+#include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/registry/system-registry.h>
 #include <scope-harness/scope-harness.h>
@@ -40,6 +41,8 @@ struct ScopeHarness::Priv
     shared_ptr<ng::Scopes> m_scopes;
 
     view::ResultsView::SPtr m_resultsView;
+
+    view::PreviewView::SPtr m_previewView;
 };
 
 ScopeHarness::UPtr ScopeHarness::newFromPreExistingConfig(const std::string& directory)
@@ -64,16 +67,18 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         p(new Priv)
 {
     qputenv("UNITY_SCOPES_NO_FAVORITES", "1");
+    qputenv("UNITY_SCOPES_NO_OPEN_URL", "1");
 
     p->m_registry = registry;
     p->m_registry->start();
 
-//    const QStringList favs {"scope://mock-scope", "scope://mock-scope-ttl", "scope://mock-scope-info"};
-//    setFavouriteScopes(favs);
-
     p->m_scopes = make_shared<ng::Scopes>();
-    auto previewView = make_shared<view::PreviewView>();
-    p->m_resultsView = make_shared<view::ResultsView>(p->m_scopes, previewView);
+
+    p->m_previewView = make_shared<view::PreviewView>();
+    p->m_resultsView = make_shared<view::ResultsView>(internal::ResultsViewArguments{p->m_scopes});
+
+    p->m_resultsView->setPreviewView(p->m_previewView);
+    p->m_previewView->setResultsView(p->m_resultsView);
 
     // no scopes on startup
     throwIf(p->m_scopes->rowCount() != 0 || p->m_scopes->loaded(),
@@ -90,16 +95,10 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         // get scope proxy
         ng::Scope::Ptr scope = p->m_scopes->getScopeByRow(i);
         QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
-//        scope->setActive(true);
-//        if (!scope->searchInProgress())
-//        {
-//            throwIfNot(spy.wait(), "Search progress didn't change 1");
-//        }
         if (scope->searchInProgress())
         {
             throwIfNot(spy.wait(), "Search progress didn't change");
         }
-//        scope->setActive(false);
     }
 }
 

@@ -18,43 +18,51 @@
 
 #pragma once
 
-#include <QtGlobal>
-
-#include <vector>
-#include <memory>
-#include <string>
+#include <scope-harness/preview/preview-widget.h>
 
 namespace unity
 {
 namespace scopeharness
 {
-namespace matcher
+namespace internal
+{
+struct PreviewWidgetListArguments;
+}
+namespace view
+{
+class PreviewView;
+}
+namespace preview
 {
 
-class Q_DECL_EXPORT MatchResult
+class Q_DECL_EXPORT PreviewWidgetList
 {
 public:
-    MatchResult();
+    PreviewWidgetList(const PreviewWidgetList& other);
 
-    MatchResult(MatchResult&& other);
+    PreviewWidgetList(PreviewWidgetList&& other);
 
-    MatchResult(const MatchResult& other);
+    PreviewWidgetList& operator=(const PreviewWidgetList& other);
 
-    MatchResult& operator=(const MatchResult& other);
+    PreviewWidgetList& operator=(PreviewWidgetList&& other);
 
-    MatchResult& operator=(MatchResult&& other);
+    ~PreviewWidgetList();
 
-    ~MatchResult() = default;
+    PreviewWidget at(std::size_t index) const;
 
-    void failure(const std::string& message);
+    PreviewWidget at(const std::string& id) const;
 
-    bool success() const;
+    PreviewWidget operator[](std::size_t index) const;
 
-    std::vector<std::string>& failures() const;
+    PreviewWidget operator[](const std::string& id) const;
 
-    std::string concat_failures() const;
+    std::size_t size() const;
 
 protected:
+    friend view::PreviewView;
+
+    PreviewWidgetList(const internal::PreviewWidgetListArguments& arguments);
+
     struct Priv;
 
     std::shared_ptr<Priv> p;
