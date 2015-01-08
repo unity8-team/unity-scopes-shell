@@ -33,7 +33,7 @@ struct MatchResult::Priv
 {
     bool m_success = true;
 
-    deque<string> m_failures;
+    vector<string> m_failures;
 };
 
 MatchResult::MatchResult() :
@@ -76,7 +76,7 @@ bool MatchResult::success() const
     return p->m_success;
 }
 
-deque<string>& MatchResult::failures() const
+vector<string>& MatchResult::failures() const
 {
     return p->m_failures;
 }

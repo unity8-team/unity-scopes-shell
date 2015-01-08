@@ -22,7 +22,7 @@
 
 #include <scope-harness/registry/registry.h>
 
-#include <deque>
+#include <vector>
 #include <string>
 
 namespace unity
@@ -40,7 +40,7 @@ public:
     class Q_DECL_EXPORT Parameters
     {
     public:
-        Parameters(std::deque<std::string> const& scopes);
+        Parameters(std::vector<std::string> const& scopes);
 
         Parameters(const Parameters& other);
 

@@ -20,7 +20,7 @@
 
 #include <scope-harness/results/result.h>
 
-#include <deque>
+#include <vector>
 #include <memory>
 
 namespace unity
@@ -38,7 +38,7 @@ class Result;
 class Q_DECL_EXPORT Category
 {
 public:
-    typedef std::deque<Category> List;
+    typedef std::vector<Category> List;
 
     Category(Category&& other);
 

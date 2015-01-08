@@ -66,7 +66,7 @@ EndpointDir = %1
 
 struct CustomRegistry::Parameters::Priv
 {
-    deque<string> m_scopes;
+    vector<string> m_scopes;
 
     bool m_includeSystemScopes = false;
 
@@ -77,7 +77,7 @@ struct CustomRegistry::Parameters::Priv
     bool m_includeRemoteScopes = false;
 };
 
-CustomRegistry::Parameters::Parameters(deque<string> const& scopes) :
+CustomRegistry::Parameters::Parameters(vector<string> const& scopes) :
         p(new Priv)
 {
     p->m_scopes = scopes;

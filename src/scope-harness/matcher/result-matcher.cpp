@@ -108,7 +108,7 @@ struct ResultMatcher::Priv
 
     optional<sc::Variant> m_background;
 
-    deque<pair<string, sc::Variant>> m_properties;
+    vector<pair<string, sc::Variant>> m_properties;
 };
 
 ResultMatcher::ResultMatcher(const string& uri) :

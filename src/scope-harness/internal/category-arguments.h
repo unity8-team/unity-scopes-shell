@@ -21,7 +21,7 @@
 #include <QtGlobal>
 #include <QAbstractItemModel>
 
-#include <deque>
+#include <vector>
 
 namespace unity
 {
@@ -46,7 +46,7 @@ struct CategoryArguments
 
     QModelIndex index;
 
-    std::deque<results::Result> results;
+    std::vector<results::Result> results;
 };
 }
 }

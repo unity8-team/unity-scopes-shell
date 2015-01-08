@@ -146,7 +146,7 @@ struct CategoryMatcher::Priv
 
     Mode m_mode = Mode::all;
 
-    deque<ResultMatcher> m_results;
+    vector<ResultMatcher> m_results;
 
     optional<unsigned int> m_hasAtLeast;
 

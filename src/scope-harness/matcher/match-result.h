@@ -20,7 +20,7 @@
 
 #include <QtGlobal>
 
-#include <deque>
+#include <vector>
 #include <memory>
 #include <string>
 
@@ -50,7 +50,7 @@ public:
 
     bool success() const;
 
-    std::deque<std::string>& failures() const;
+    std::vector<std::string>& failures() const;
 
     std::string concat_failures() const;
 

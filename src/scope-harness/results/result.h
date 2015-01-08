@@ -22,7 +22,7 @@
 
 #include <QtGlobal>
 
-#include <deque>
+#include <vector>
 
 #pragma once
 
@@ -45,7 +45,7 @@ namespace results
 class Q_DECL_EXPORT Result
 {
 public:
-    typedef std::deque<Result> List;
+    typedef std::vector<Result> List;
 
     Result(Result&& other);
 

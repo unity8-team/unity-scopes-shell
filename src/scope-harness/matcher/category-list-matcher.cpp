@@ -21,7 +21,7 @@
 
 #include <boost/optional.hpp>
 
-#include <deque>
+#include <vector>
 #include <unordered_map>
 
 using namespace std;
@@ -38,7 +38,7 @@ struct CategoryListMatcher::Priv
 {
     Mode m_mode = Mode::all;
 
-    deque<CategoryMatcher> m_categories;
+    vector<CategoryMatcher> m_categories;
 
     optional<unsigned int> m_hasAtLeast;
 
