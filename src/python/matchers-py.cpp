@@ -57,7 +57,7 @@ static shm::MatchResult getMatchResultByResultList(shm::CategoryListMatcher* cat
     return catListMatcher->match(cats);
 }
 
-static shm::ResultMatcher& resultMatcherProperty(shm::ResultMatcher* rm, dict kwargs)
+static shm::ResultMatcher& resultMatcherProperties(shm::ResultMatcher* rm, dict kwargs)
 {
     // iterate over kwargs dict, every pair is a ResultMatcher property
     stl_input_iterator<object> begin(kwargs.items()), end;
@@ -104,8 +104,9 @@ void export_matchers()
             .def("attributes", &shm::ResultMatcher::attributes, return_internal_reference<1>())
             .def("summary", &shm::ResultMatcher::summary, return_internal_reference<1>())
             .def("background", &shm::ResultMatcher::background, return_internal_reference<1>())
+            .def("property", &shm::ResultMatcher::property, return_internal_reference<1>())
             // wrapper for ResultMatcher::property() which takes kwargs to set multiple properties at a time
-            .def("property", &resultMatcherProperty, return_internal_reference<1>())
+            .def("properties", &resultMatcherProperties, return_internal_reference<1>())
             .def("match", matchresult_by_result, return_value_policy<return_by_value>())
             .def("match", match_by_match_result_and_result)
             ;

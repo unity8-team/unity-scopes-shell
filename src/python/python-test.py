@@ -27,10 +27,9 @@ match2 = CategoryListMatcher() \
             .has_at_least(1) \
             .mode(CategoryMatcherMode.BY_URI) \
             .result(ResultMatcher("test:uri") \
-.property({'title': 'result for: "minimal"'}) \
-#.property({'title':Variant('result for: "minimal"')}) \
-#                .art("") \
-                )) \
+            .properties({'title': 'result for: "minimal"'}) \
+            .art("") \
+            )) \
     .match(view.categories)
 print(match2.success)
 print(match2.concat_failures)
