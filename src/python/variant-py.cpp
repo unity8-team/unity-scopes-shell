@@ -24,7 +24,7 @@
 using namespace boost::python;
 namespace us = unity::scopes;
 
-struct variant_to_python_obj
+struct VariantToPythonObj
 {
     static PyObject* convert(const unity::scopes::Variant& v)
     {
@@ -66,7 +66,7 @@ struct variant_to_python_obj
     }
 };
 
-struct variant_from_python_obj
+struct VariantFromPythonObj
 {
     static void* convertible(PyObject *obj)
     {
@@ -164,19 +164,13 @@ us::Variant variant_demo()
 void export_variant()
 {
     // register Variant -> python object converter
-    boost::python::to_python_converter<unity::scopes::Variant, variant_to_python_obj>();
+    boost::python::to_python_converter<unity::scopes::Variant, VariantToPythonObj>();
 
     // register python object -> Variant converter
     boost::python::converter::registry::push_back(
-        &variant_from_python_obj::convertible,
-        &variant_from_python_obj::construct,
+        &VariantFromPythonObj::convertible,
+        &VariantFromPythonObj::construct,
         boost::python::type_id<us::Variant>());
-
-    /*
-    class_<us::Variant>("Variant", init<const std::string&>())
-        .add_property("get_string", &us::Variant::get_string)
-        ;
-    */
 
     def("variant_demo", variant_demo);
 }
