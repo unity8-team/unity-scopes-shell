@@ -203,7 +203,7 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
         for (int i = 0; i < numColumns; i++) {
             std::vector<std::string> widgetArr(layout.column(i));
             QStringList widgets;
-            for (size_t int j = 0; j < widgetArr.size(); j++) {
+            for (std::size_t j = 0; j < widgetArr.size(); j++) {
                 widgets.append(QString::fromStdString(widgetArr[j]));
             }
             widgetsPerColumn.append(widgets);
