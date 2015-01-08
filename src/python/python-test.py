@@ -1,27 +1,37 @@
 #!/usr/bin/env python3
-import harnesspy
+from harnesspy import *
 
 TEST_DATA_DIR='/home/vivid/python-harness/tests/data/'
 
-harness = harnesspy.ScopeHarness.new_from_scope_list(harnesspy.Parameters([
+harness = ScopeHarness.new_from_scope_list(Parameters([
             TEST_DATA_DIR + "mock-scope/mock-scope.ini",
             TEST_DATA_DIR + "mock-scope-info/mock-scope-info.ini",
             TEST_DATA_DIR + "mock-scope-ttl/mock-scope-ttl.ini"
             ]))
 view = harness.results_view
-view.set_active_scope("mock-scope-ttl")
-view.search_query = "foo"
-view.wait_for_results_change()
-print(len(view.categories))
-for c in view.categories:
-    print(c.id)
-    print(c.title)
+view.set_active_scope("mock-scope")
+view.search_query = "minimal"
+#view.wait_for_results_change()
 
-for r in view.categories[0].results:
-    print(r.uri)
+print("TEST 1...")
 
-print("TEST...")
-
-matchres = harnesspy.CategoryListMatcher().has_at_least(1).match(view.categories)
+matchres = CategoryListMatcher().has_at_least(1).match(view.categories)
 print(matchres.success)
 print(matchres.concat_failures)
+
+print("TEST 2...")
+match2 = CategoryListMatcher() \
+    .has_at_least(1) \
+    .mode(CategoryListMatcherMode.BY_ID) \
+    .category(CategoryMatcher("cat1") \
+            .has_at_least(1) \
+            .mode(CategoryMatcherMode.BY_URI) \
+            .result(ResultMatcher("test:uri") \
+#.title('result for: "minimal"') \
+.property({'title': 'result for: "minimal"', 'foo':'bar'}) \
+#.property({'title':Variant('result for: "minimal"')}) \
+#                .art("") \
+                )) \
+    .match(view.categories)
+print(match2.success)
+print(match2.concat_failures)

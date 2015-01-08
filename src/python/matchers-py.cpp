@@ -59,10 +59,10 @@ static shm::MatchResult getMatchResultByResultList(shm::CategoryListMatcher* cat
 
 static shm::ResultMatcher& resultMatcherProperty(shm::ResultMatcher* rm, dict kwargs)
 {
-    stl_input_iterator<object> begin(kwargs.iteritems()), end;
+    // iterate over kwargs dict, every pair is a ResultMatcher property
+    stl_input_iterator<object> begin(kwargs.items()), end;
     for (auto it = begin; it != end; ++it)
     {
-        // TODO: should handle any basic data type, not just variant, not sure if variant conversion will take care of that
         rm->property(extract<std::string>((*it)[0]), extract<unity::scopes::Variant>((*it)[1]));
     }
     return *rm;
