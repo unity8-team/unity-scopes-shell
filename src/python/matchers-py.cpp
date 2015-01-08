@@ -51,9 +51,9 @@ static PyObject* getFailuresWrapper(shm::MatchResult* matchRes)
 
 static shm::MatchResult getMatchResultByResultList(shm::CategoryListMatcher* catListMatcher, const object& obj)
 {
-    // convert python list to category list (deque type)
+    // convert python list to category list (vector type)
     stl_input_iterator<shr::Category> begin(obj), end;
-    std::deque<shr::Category> cats(begin, end);
+    std::vector<shr::Category> cats(begin, end);
     return catListMatcher->match(cats);
 }
 

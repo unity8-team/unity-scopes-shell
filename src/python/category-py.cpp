@@ -34,6 +34,9 @@ static PyObject* getResultsList(const shr::Category& cat)
 
 void export_category()
 {
+    shr::Result (shr::Category::*result_by_uri)(const std::string&) const = &shr::Category::result;
+    shr::Result (shr::Category::*result_by_index)(std::size_t) const = &shr::Category::result;
+
     class_<shr::Category>("Category", no_init)
         .add_property("id", &shr::Category::id)
         .add_property("title", &shr::Category::title)
@@ -42,6 +45,7 @@ void export_category()
         .add_property("renderer", &shr::Category::renderer)
         .add_property("components", &shr::Category::components)
         .add_property("results", &getResultsList)
-        .def("result", &shr::Category::result, return_value_policy<return_by_value>())
+        .def("result", result_by_uri, return_value_policy<return_by_value>())
+        .def("result", result_by_index, return_value_policy<return_by_value>())
         ;
 }
