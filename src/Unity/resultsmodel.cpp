@@ -143,7 +143,7 @@ ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
 
         QVariantList attributes;
         scopes::VariantArray arr(v.get_array());
-        for (unsigned i = 0; i < arr.size(); i++) {
+        for (size_t i = 0; i < arr.size(); i++) {
             if (arr[i].which() != scopes::Variant::Type::Dict) {
                 continue;
             }

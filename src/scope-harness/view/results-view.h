@@ -92,7 +92,7 @@ public:
 
     results::Category::List categories();
 
-    results::Category category(unsigned int row);
+    results::Category category(std::size_t row);
 
     results::Category category(const std::string& categoryId);
 

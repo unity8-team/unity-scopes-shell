@@ -62,11 +62,11 @@ public:
 
     unity::scopes::Variant components() const;
 
-    const Result::List& results() const;
+    Result::List results() const;
 
-    const Result& result(const std::string& uri) const;
+    Result result(const std::string& uri) const;
 
-    const Result& result(unsigned int index) const;
+    Result result(std::size_t index) const;
 
 protected:
     friend view::ResultsView;

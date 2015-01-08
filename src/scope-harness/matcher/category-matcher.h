@@ -66,7 +66,7 @@ public:
 
     CategoryMatcher& headerLink(const std::string& headerLink);
 
-    CategoryMatcher& hasAtLeast(unsigned int minimum);
+    CategoryMatcher& hasAtLeast(std::size_t minimum);
 
     CategoryMatcher& renderer(const unity::scopes::Variant& renderer);
 

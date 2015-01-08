@@ -177,7 +177,7 @@ results::Category::List ResultsView::categories()
     return result;
 }
 
-results::Category ResultsView::category(unsigned int row)
+results::Category ResultsView::category(size_t row)
 {
     auto cats = raw_categories();
     auto categoryIndex = cats->index(row);

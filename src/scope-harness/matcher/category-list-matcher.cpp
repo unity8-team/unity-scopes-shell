@@ -40,9 +40,9 @@ struct CategoryListMatcher::Priv
 
     vector<CategoryMatcher> m_categories;
 
-    optional<unsigned int> m_hasAtLeast;
+    optional<size_t> m_hasAtLeast;
 
-    optional<unsigned int> m_hasExactly;
+    optional<size_t> m_hasExactly;
 
     void all(MatchResult& matchResult, const results::Category::List& categoryList)
     {
@@ -128,13 +128,13 @@ CategoryListMatcher& CategoryListMatcher::category(const CategoryMatcher& catego
     return *this;
 }
 
-CategoryListMatcher& CategoryListMatcher::hasAtLeast(unsigned int minimum)
+CategoryListMatcher& CategoryListMatcher::hasAtLeast(size_t minimum)
 {
     p->m_hasAtLeast = minimum;
     return *this;
 }
 
-CategoryListMatcher& CategoryListMatcher::hasExactly(unsigned int amount)
+CategoryListMatcher& CategoryListMatcher::hasExactly(size_t amount)
 {
     p->m_hasExactly = amount;
     return *this;

@@ -148,7 +148,7 @@ struct CategoryMatcher::Priv
 
     vector<ResultMatcher> m_results;
 
-    optional<unsigned int> m_hasAtLeast;
+    optional<size_t> m_hasAtLeast;
 
     optional<string> m_title;
 
@@ -222,7 +222,7 @@ CategoryMatcher& CategoryMatcher::headerLink(const string& headerLink)
     return *this;
 }
 
-CategoryMatcher& CategoryMatcher::hasAtLeast(unsigned int minimum)
+CategoryMatcher& CategoryMatcher::hasAtLeast(size_t minimum)
 {
     p->m_hasAtLeast = minimum;
     return *this;

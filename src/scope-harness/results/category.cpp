@@ -113,12 +113,12 @@ sc::Variant Category::components() const
                                        ss::CategoriesInterface::Roles::RoleComponents));
 }
 
-const Result::List& Category::results() const
+Result::List Category::results() const
 {
     return p->m_results;
 }
 
-const Result& Category::result(const string& uri) const
+Result Category::result(const string& uri) const
 {
     for (const auto& result : p->m_results)
     {
@@ -131,7 +131,7 @@ const Result& Category::result(const string& uri) const
     throw domain_error("Result with URI '" + uri + "' could not be found");
 }
 
-const Result& Category::result(unsigned int index) const
+Result Category::result(size_t index) const
 {
     throwIf(index >= p->m_results.size(), "Invalid index " + to_string(index) + " in result lookup");
 

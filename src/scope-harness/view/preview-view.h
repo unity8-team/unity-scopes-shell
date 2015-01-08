@@ -57,7 +57,7 @@ public:
 
     std::vector<preview::PreviewWidgetList> widgets();
 
-    preview::PreviewWidgetList widgetsInColumn(unsigned int column);
+    preview::PreviewWidgetList widgetsInColumn(std::size_t column);
 
     preview::PreviewWidgetList widgetsInFirstColumn();
 

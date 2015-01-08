@@ -149,7 +149,7 @@ vector<preview::PreviewWidgetList> PreviewView::widgets()
     return p->m_previewModels;
 }
 
-preview::PreviewWidgetList PreviewView::widgetsInColumn(unsigned int column)
+preview::PreviewWidgetList PreviewView::widgetsInColumn(size_t column)
 {
     p->checkPreviewStack();
 
