@@ -15,8 +15,7 @@ class SimpleResultsTest (ScopeHarnessTestCase):
             ]))
         cls.view = cls.harness.results_view
         cls.view.set_active_scope("mock-scope")
-        cls.view.search_query = "minimal"
-        #cls.view.wait_for_results_change()
+        cls.view.search_query = ""
 
     def test_1(self):
         match = CategoryListMatcher().has_at_least(1).match(self.view.categories)
@@ -30,8 +29,8 @@ class SimpleResultsTest (ScopeHarnessTestCase):
                     .has_at_least(1) \
                     .mode(CategoryMatcherMode.BY_URI) \
                     .result(ResultMatcher("test:uri") \
-                    .properties({'title': 'result for: "minimal"'}) \
-                    .art("") \
+                    .properties({'title': 'result for: ""', 'art':'art'}) \
+                    .dnd_uri("test:dnd_uri") \
                     )) \
             .match(self.view.categories)
         self.assertMatchResult(match)
