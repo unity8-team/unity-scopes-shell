@@ -38,6 +38,8 @@ add_library(
     registry/pre-existing-registry.cpp
     registry/system-registry.cpp
     results/category.cpp
+    results/child-department.cpp
+    results/department.cpp
     results/result.cpp
     view/preview-view.cpp
     view/results-view.cpp

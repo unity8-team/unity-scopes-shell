@@ -23,6 +23,7 @@
 #include <Unity/utils.h>
 
 #include <scope-harness/internal/category-arguments.h>
+#include <scope-harness/internal/department-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
@@ -48,7 +49,7 @@ struct ResultsView::Priv
         throwIfNot(m_active_scope, "There is no active scope");
     }
 
-    std::shared_ptr<ng::Scopes> m_scopes;
+    shared_ptr<ng::Scopes> m_scopes;
 
     weak_ptr<PreviewView> m_previewView;
 
@@ -66,7 +67,7 @@ void ResultsView::setPreviewView(PreviewView::SPtr previewView)
     p->m_previewView = previewView;
 }
 
-void ResultsView::setActiveScope(const std::string &id_)
+void ResultsView::setActiveScope(const string &id_)
 {
     QString id = QString::fromStdString(id_);
 
@@ -108,7 +109,19 @@ void ResultsView::setActiveScope(const std::string &id_)
     }
 }
 
-void ResultsView::setQuery(const std::string& searchString_)
+string ResultsView::activeScope() const
+{
+    string result;
+
+    if (p->m_active_scope)
+    {
+        result = p->m_active_scope->id().toStdString();
+    }
+
+    return result;
+}
+
+void ResultsView::setQuery(const string& searchString_)
 {
     p->checkActiveScope();
 
@@ -150,7 +163,45 @@ void ResultsView::waitForResultsChange()
     throwIf(p->m_active_scope->searchInProgress(), "");
 }
 
-bool ResultsView::overrideCategoryJson(std::string const& categoryId, std::string const& json)
+bool ResultsView::hasNavigation() const
+{
+    p->checkActiveScope();
+
+    return p->m_active_scope->hasNavigation();
+}
+
+bool ResultsView::hasAltNavigation() const
+{
+    p->checkActiveScope();
+
+    return p->m_active_scope->hasAltNavigation();
+}
+
+string ResultsView::navigationId() const
+{
+    p->checkActiveScope();
+
+    return p->m_active_scope->currentNavigationId().toStdString();
+}
+
+void ResultsView::setNavigationId(const string& id)
+{
+    p->checkActiveScope();
+
+    p->m_active_scope->setNavigationState(QString::fromStdString(id), false);
+}
+
+results::Department ResultsView::navigationModel(const string& id)
+{
+    p->checkActiveScope();
+
+    QSharedPointer<ss::NavigationInterface> navigationModel(
+            p->m_active_scope->getNavigation(QString::fromStdString(id)));
+
+    return results::Department(internal::DepartmentArguments{navigationModel});
+}
+
+bool ResultsView::overrideCategoryJson(string const& categoryId, string const& json)
 {
     p->checkActiveScope();
 
@@ -185,7 +236,7 @@ results::Category ResultsView::category(size_t row)
     QVariant variant = cats->data(categoryIndex, ng::Categories::RoleCategorySPtr);
     if (!variant.canConvert<sc::Category::SCPtr>())
     {
-        throw std::range_error("Invalid category data at index " + to_string(row));
+        throw range_error("Invalid category data at index " + to_string(row));
     }
     auto rawCategory = variant.value<sc::Category::SCPtr>();
 
@@ -237,49 +288,43 @@ ss::CategoriesInterface* ResultsView::raw_categories() const
     return p->m_active_scope->categories();
 }
 
-QSharedPointer<ss::ScopeInterface> ResultsView::activeScope() const
-{
-    p->checkActiveScope();
-    return p->m_active_scope;
-}
-
-std::string ResultsView::scopeId() const
+string ResultsView::scopeId() const
 {
     p->checkActiveScope();
     return p->m_active_scope->id().toStdString();
 }
 
-std::string ResultsView::displayName() const
+string ResultsView::displayName() const
 {
     p->checkActiveScope();
     return p->m_active_scope->name().toStdString();
 }
 
-std::string ResultsView::iconHint() const
+string ResultsView::iconHint() const
 {
     p->checkActiveScope();
     return p->m_active_scope->iconHint().toStdString();
 }
 
-std::string ResultsView::description() const
+string ResultsView::description() const
 {
     p->checkActiveScope();
     return p->m_active_scope->description().toStdString();
 }
 
-std::string ResultsView::searchHint() const
+string ResultsView::searchHint() const
 {
     p->checkActiveScope();
     return p->m_active_scope->searchHint().toStdString();
 }
 
-std::string ResultsView::shortcut() const
+string ResultsView::shortcut() const
 {
     p->checkActiveScope();
     return p->m_active_scope->shortcut().toStdString();
 }
 
-std::string ResultsView::searchQuery() const
+string ResultsView::query() const
 {
     p->checkActiveScope();
     return p->m_active_scope->searchQuery().toStdString();
@@ -291,7 +336,7 @@ sc::Variant ResultsView::customizations() const
     return ng::qVariantToScopeVariant(p->m_active_scope->customizations());
 }
 
-std::string ResultsView::sessionId() const
+string ResultsView::sessionId() const
 {
     p->checkActiveScope();
     return p->m_active_scope->sessionId().toStdString();
