@@ -23,3 +23,5 @@ add_library(_pyscope_harness SHARED
         main.cpp)
 target_link_libraries(_pyscope_harness scope-harness ${Boost_LIBRARIES} ${PythonLibs_LIBRARIES})
 set_target_properties(_pyscope_harness PROPERTIES PREFIX "" )
+
+add_subdirectory(testing)
