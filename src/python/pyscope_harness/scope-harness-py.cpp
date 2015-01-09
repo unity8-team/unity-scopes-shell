@@ -68,14 +68,10 @@ class ScopeHarnessWrapper
     private:
         static void run_qt()
         {
-            static QCoreApplication *coreApp = nullptr;
             int argc = 0;
             char **argv = {nullptr}; // FIXME: pass argv from python
-            if (!QCoreApplication::instance())
-            {
-                std::cerr << "Creating QCoreApplication\n";
-                coreApp = new QCoreApplication(argc, argv); //FIXME: would be nice to clean it up on exit
-            }
+            static std::unique_ptr<QCoreApplication> coreApp(QCoreApplication::instance() ? nullptr
+                    : new QCoreApplication(argc, argv));
         }
 
         sh::ScopeHarness::SPtr scope_harness_;
