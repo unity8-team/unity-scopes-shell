@@ -28,7 +28,7 @@ void export_result();
 void export_scopeharness();
 void export_matchers();
 
-BOOST_PYTHON_MODULE(harnesspy)
+BOOST_PYTHON_MODULE(_pyscope_harness)
 {
     // enable custom docstring, disable auto-generated docstring including c++ signatures
     docstring_options local_docstring_options(true, true, false);

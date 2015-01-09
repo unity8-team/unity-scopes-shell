@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from harnesspy import *
+from pyscope_harness import *
 
 TEST_DATA_DIR='/home/vivid/python-harness/tests/data/'
 
