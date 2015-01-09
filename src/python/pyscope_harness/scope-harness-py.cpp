@@ -70,11 +70,11 @@ class ScopeHarnessWrapper
         {
             static QCoreApplication *coreApp = nullptr;
             int argc = 0;
-            char **argv;
+            char **argv = {nullptr}; // FIXME: pass argv from python
             if (!QCoreApplication::instance())
             {
                 std::cerr << "Creating QCoreApplication\n";
-                coreApp = new QCoreApplication(argc, argv);
+                coreApp = new QCoreApplication(argc, argv); //FIXME: would be nice to clean it up on exit
             }
         }
 
