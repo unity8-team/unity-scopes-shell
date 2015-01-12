@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QTest>
+#include <QTestEventLoop>
 //#include <QJsonValue>
 //#include <QJsonObject>
 //#include <QThread>
@@ -27,15 +28,9 @@
 //#include <QVariantList>
 //#include <QDBusConnection>
 
-//#include <scopes.h>
-//#include <scope.h>
-//#include <categories.h>
-//#include <resultsmodel.h>
-//#include <previewmodel.h>
-//#include <previewstack.h>
-//#include <previewwidgetmodel.h>
-//#include <department.h>
-
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 
@@ -43,6 +38,7 @@ using namespace std;
 
 namespace sc = unity::scopes;
 namespace sh = unity::scopeharness;
+namespace shm = unity::scopeharness::matcher;
 namespace shr = unity::scopeharness::registry;
 namespace shv = unity::scopeharness::view;
 namespace ss = unity::shell::scopes;
@@ -92,17 +88,17 @@ private Q_SLOTS:
 
         QVERIFY(m_resultsView->hasNavigation());
         QVERIFY(!m_resultsView->hasAltNavigation());
-        QVERIFY(m_resultsView->navigationId().empty());
+        QVERIFY(m_resultsView->departmentId().empty());
 
-        auto departments = m_resultsView->navigationModel(m_resultsView->navigationId());
+        auto departments = m_resultsView->browseDepartment();
+        QCOMPARE(m_resultsView->departmentId(), string());
 
         QCOMPARE(departments.label(), string("All departments"));
-        QCOMPARE(departments.allLabel(), string(""));
+        QCOMPARE(departments.allLabel(), string());
         QCOMPARE(departments.parentId(), string());
         QCOMPARE(departments.parentLabel(), string());
-//        QCOMPARE(departmentModel->loaded(), true);
-        QCOMPARE(departments.isRoot(), true);
-        QCOMPARE(departments.isHidden(), false);
+        QVERIFY(departments.isRoot());
+        QVERIFY(!departments.isHidden());
 
         QCOMPARE(departments.size(), 5ul);
 
@@ -125,64 +121,76 @@ private Q_SLOTS:
 
     void testChildDepartmentModel()
     {
-//        sh::performSearch(m_scope, QString(""));
-//
-//        QCOMPARE(m_scope->currentNavigationId(), QString(""));
-//        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(QString("toys")));
-//        QVERIFY(departmentModel != nullptr);
-//
-//        QSignalSpy spy(departmentModel.data(), SIGNAL(loadedChanged()));
-//
-//        QCOMPARE(departmentModel->navigationId(), QString("toys"));
-//        QCOMPARE(departmentModel->label(), QString("Toys, Children & Baby"));
-//        QCOMPARE(departmentModel->allLabel(), QString(""));
-//        QCOMPARE(departmentModel->parentNavigationId(), QString(""));
-//        QCOMPARE(departmentModel->parentLabel(), QString("All departments"));
-//        QCOMPARE(departmentModel->loaded(), false);
-//        QCOMPARE(departmentModel->isRoot(), false);
-//
-//        QCOMPARE(departmentModel->rowCount(), 0);
-//
-//        m_scope->setNavigationState(departmentModel->navigationId(), false);
-//        QVERIFY(spy.wait());
-//
-//        QCOMPARE(departmentModel->rowCount(), 2);
-//        QCOMPARE(departmentModel->loaded(), true);
-//        QCOMPARE(departmentModel->isRoot(), false);
+        m_resultsView->setActiveScope("mock-scope-departments");
+        m_resultsView->setQuery("");
+
+        auto departments = m_resultsView->browseDepartment("toys");
+        QCOMPARE(m_resultsView->departmentId(), string("toys"));
+
+        QCOMPARE(departments.id(), string("toys"));
+        QCOMPARE(departments.label(), string("Toys, Children & Baby"));
+        QCOMPARE(departments.allLabel(), string());
+        QCOMPARE(departments.parentId(), string());
+        QCOMPARE(departments.parentLabel(), string("All departments"));
+        QVERIFY(!departments.isRoot());
+
+        QCOMPARE(departments.size(), 2ul);
     }
 
     void testLeafActivationUpdatesModel()
     {
-//        sh::performSearch(m_scope, QString(""));
-//
-//        QCOMPARE(m_scope->currentNavigationId(), QString(""));
-//        QSignalSpy spy(m_scope.data(), SIGNAL(searchInProgressChanged()));
-//        QScopedPointer<ss::NavigationInterface> navModel(m_scope->getNavigation(QString("books")));
-//        m_scope->setNavigationState(navModel->navigationId(), false);
-//        QVERIFY(spy.wait());
-//        QCOMPARE(m_scope->searchInProgress(), false);
-//        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope->getNavigation(QString("books")));
-//        QCOMPARE(departmentModel->isRoot(), false);
-//
-//        navModel.reset(m_scope->getNavigation(QString("books-audio")));
-//        // this is a leaf department, so activating it should update the parent model
-//        m_scope->setNavigationState(navModel->navigationId(), false);
-//        QVERIFY(spy.wait());
-//        QCOMPARE(m_scope->searchInProgress(), false);
-//        QCOMPARE(departmentModel->isRoot(), false);
-//
-//        bool foundAudiobooks = false;
-//        for (int i = 0; i < departmentModel->rowCount(); i++) {
-//            QModelIndex idx(departmentModel->index(i));
-//            QVariant data = departmentModel->data(idx, ng::Department::Roles::RoleNavigationId);
-//            if (data.toString() == QString("books-audio")) {
-//                QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive).toBool(), true);
-//                foundAudiobooks = true;
-//            }
-//        }
-//        QCOMPARE(foundAudiobooks, true);
+        m_resultsView->setActiveScope("mock-scope-departments");
+        m_resultsView->setQuery("");
+
+        auto books = m_resultsView->browseDepartment("books");
+        QCOMPARE(m_resultsView->departmentId(), string("books"));
+        QVERIFY(!books.isRoot());
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:uri")
+                        .title("result for: \"\", department \"books\"")
+                    )
+                )
+                .match(m_resultsView->categories())
+        );
+
+        auto booksAudio = m_resultsView->browseDepartment("books-audio");
+        QVERIFY(!booksAudio.isRoot());
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:uri")
+                        .title("result for: \"\", department \"books-audio\"")
+                    )
+                )
+                .match(m_resultsView->categories())
+        );
+
+        // TODO convert to use matcher
+        bool foundAudiobooks = false;
+        for (const auto& dept : books.children())
+        {
+            if (dept.id() == "books-audio")
+            {
+                foundAudiobooks = true;
+                break;
+            }
+        }
+        QVERIFY(foundAudiobooks);
     }
 
+    // This test has always been broken
     void testGoingBack()
     {
 //        sh::performSearch(m_scope, QString("x"));
@@ -205,72 +213,62 @@ private Q_SLOTS:
 
     void testIncompleteTreeOnLeaf()
     {
-//        sh::performSearch(m_scope, QString(""));
-//
-//        QScopedPointer<ss::NavigationInterface> navModel;
-//        QScopedPointer<ss::NavigationInterface> departmentModel;
-//
-//        QCOMPARE(m_scope->currentNavigationId(), QString(""));
-//        QCOMPARE(m_scope->hasNavigation(), true);
-//
-//        QSignalSpy spy(m_scope.data(), SIGNAL(searchInProgressChanged()));
-//        navModel.reset(m_scope->getNavigation(QString("toys")));
-//        m_scope->setNavigationState(navModel->navigationId(), false);
-//        QVERIFY(spy.wait());
-//        QCOMPARE(m_scope->searchInProgress(), false);
-//
-//        departmentModel.reset(m_scope->getNavigation(QString("toys")));
-//        QCOMPARE(departmentModel->isRoot(), false);
-//        QCOMPARE(departmentModel->rowCount(), 2);
-//
-//        navModel.reset(m_scope->getNavigation(QString("toys-games")));
-//        m_scope->setNavigationState(navModel->navigationId(), false);
-//        QVERIFY(spy.wait());
-//        QCOMPARE(m_scope->searchInProgress(), false);
-//
-//        // after getting the parent department model, it should still have
-//        // all the leaves, even though the leaf served just itself
-//        departmentModel.reset(m_scope->getNavigation(QString("toys")));
-//        QCOMPARE(departmentModel->isRoot(), false);
-//        QCOMPARE(departmentModel->rowCount(), 2);
+        m_resultsView->setActiveScope("mock-scope-departments");
+        m_resultsView->setQuery("");
+
+        auto toys = m_resultsView->browseDepartment("toys");
+        QCOMPARE(m_resultsView->departmentId(), string("toys"));
+        QCOMPARE(toys.size(), 2ul);
+
+        auto toysGames = m_resultsView->browseDepartment("toys-games");
+        QCOMPARE(m_resultsView->departmentId(), string("toys-games"));
+        QCOMPARE(toysGames.size(), 0ul);
+
+        // after getting the parent department model, it should still have
+        // all the leaves, even though the leaf served just itself
+        auto toys2 = m_resultsView->browseDepartment("toys");
+        QCOMPARE(m_resultsView->departmentId(), string("toys"));
+        QCOMPARE(toys2.size(), 2ul);
     }
 
     void testDoubleNavigation()
     {
-//        QCOMPARE(m_scope_navs->hasNavigation(), true);
-//        QCOMPARE(m_scope_navs->hasAltNavigation(), true);
-//        QCOMPARE(m_scope_navs->currentNavigationId(), QString(""));
-//        QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
-//        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope_navs->getNavigation(m_scope_navs->currentNavigationId()));
-//        QVERIFY(departmentModel != nullptr);
-//
-//        QVERIFY(!m_scope_navs->currentAltNavigationId().isEmpty());
-//        QScopedPointer<ss::NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
-//        QVERIFY(sortOrderModel != nullptr);
-//
-//        QCOMPARE(sortOrderModel->navigationId(), QString(""));
-//        QCOMPARE(sortOrderModel->label(), QString("Sort Order"));
-//        QCOMPARE(sortOrderModel->allLabel(), QString(""));
-//        QCOMPARE(sortOrderModel->parentNavigationId(), QString());
-//        QCOMPARE(sortOrderModel->parentLabel(), QString());
-//        QCOMPARE(sortOrderModel->loaded(), true);
-//        QCOMPARE(sortOrderModel->isRoot(), true);
-//        QCOMPARE(sortOrderModel->hidden(), true);
-//
-//        QCOMPARE(sortOrderModel->rowCount(), 3);
-//        QModelIndex idx;
-//
-//        idx = sortOrderModel->index(0);
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("featured")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Featured")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(false));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(true));
-//
-//        idx = sortOrderModel->index(2);
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("best")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Best sellers")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(false));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
+        m_resultsView->setActiveScope("mock-scope-double-nav");
+        m_resultsView->setQuery("");
+        auto root = m_resultsView->browseDepartment();
+
+        QVERIFY(m_resultsView->hasNavigation());
+        QVERIFY(m_resultsView->hasAltNavigation());
+        QVERIFY(m_resultsView->departmentId().empty());
+        QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
+
+        auto altRoot = m_resultsView->browseAltDepartment();
+
+        QCOMPARE(altRoot.id(), string());
+        QCOMPARE(altRoot.label(), string("Sort Order"));
+        QCOMPARE(altRoot.allLabel(), string());
+        QCOMPARE(altRoot.parentId(), string());
+        QCOMPARE(altRoot.parentLabel(), string());
+        QVERIFY(altRoot.isRoot());
+        QVERIFY(altRoot.isHidden());
+
+        QCOMPARE(altRoot.size(), 3ul);
+
+        {
+            auto department = altRoot.child(0);
+            QCOMPARE(department.id(), string("featured"));
+            QCOMPARE(department.label(), string("Featured"));
+            QCOMPARE(department.hasChildren(), false);
+            QCOMPARE(department.isActive(), true);
+        }
+
+        {
+            auto department = altRoot.child(2);
+            QCOMPARE(department.id(), string("best"));
+            QCOMPARE(department.label(), string("Best sellers"));
+            QCOMPARE(department.hasChildren(), false);
+            QCOMPARE(department.isActive(), false);
+        }
     }
 
     void testDoubleNavChangeActive()

@@ -49,6 +49,55 @@ struct ResultsView::Priv
         throwIfNot(m_active_scope, "There is no active scope");
     }
 
+    results::Department browseDepartment(const string& id, bool altNavigation)
+    {
+        checkActiveScope();
+
+        QSharedPointer<ss::NavigationInterface> navigationModel;
+        if (altNavigation)
+        {
+            navigationModel.reset(m_active_scope->getAltNavigation(QString::fromStdString(id)));
+        }
+        else
+        {
+            navigationModel.reset(m_active_scope->getNavigation(QString::fromStdString(id)));
+        }
+        throwIfNot(bool(navigationModel), "Unknown department: '" + id + "'");
+
+        QSignalSpy spy(navigationModel.data(), SIGNAL(loadedChanged()));
+
+        bool shouldUpdate = false;
+
+        if (altNavigation)
+        {
+            if (m_active_scope->currentAltNavigationId().toStdString() != id)
+            {
+                shouldUpdate = true;
+            }
+        }
+        else
+        {
+            if (m_active_scope->currentNavigationId().toStdString() != id)
+            {
+                shouldUpdate = true;
+            }
+        }
+
+        if (shouldUpdate)
+        {
+            m_active_scope->setNavigationState(QString::fromStdString(id),
+                                               altNavigation);
+            waitForSearchFinish(m_active_scope);
+        }
+
+        if (!navigationModel->loaded())
+        {
+            throwIfNot(spy.wait(), "Department model failed to load");
+        }
+
+        return results::Department(internal::DepartmentArguments{navigationModel});
+    }
+
     shared_ptr<ng::Scopes> m_scopes;
 
     weak_ptr<PreviewView> m_previewView;
@@ -177,28 +226,28 @@ bool ResultsView::hasAltNavigation() const
     return p->m_active_scope->hasAltNavigation();
 }
 
-string ResultsView::navigationId() const
+string ResultsView::departmentId() const
 {
     p->checkActiveScope();
 
     return p->m_active_scope->currentNavigationId().toStdString();
 }
 
-void ResultsView::setNavigationId(const string& id)
+string ResultsView::altDepartmentId() const
 {
     p->checkActiveScope();
 
-    p->m_active_scope->setNavigationState(QString::fromStdString(id), false);
+    return p->m_active_scope->currentAltNavigationId().toStdString();
 }
 
-results::Department ResultsView::navigationModel(const string& id)
+results::Department ResultsView::browseDepartment(const string& id)
 {
-    p->checkActiveScope();
+    return p->browseDepartment(id, false);
+}
 
-    QSharedPointer<ss::NavigationInterface> navigationModel(
-            p->m_active_scope->getNavigation(QString::fromStdString(id)));
-
-    return results::Department(internal::DepartmentArguments{navigationModel});
+results::Department ResultsView::browseAltDepartment(const string& id)
+{
+    return p->browseDepartment(id, true);
 }
 
 bool ResultsView::overrideCategoryJson(string const& categoryId, string const& json)
