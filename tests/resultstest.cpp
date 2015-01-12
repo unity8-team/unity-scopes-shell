@@ -176,7 +176,7 @@ private Q_SLOTS:
         QVERIFY(resultsView->description() == "mock.Description");
         QVERIFY(resultsView->searchHint() == "mock.SearchHint");
         QVERIFY(resultsView->shortcut() =="mock.HotKey");
-        QVERIFY(resultsView->searchQuery() == "");
+        QVERIFY(resultsView->query() == "");
 
         sc::VariantMap customizations(resultsView->customizations().get_dict());
         QVERIFY(!customizations.empty());
@@ -195,7 +195,7 @@ private Q_SLOTS:
         QVERIFY(resultsView->description() == "mock-ttl.Description");
         QVERIFY(resultsView->searchHint() == "");
         QVERIFY(resultsView->shortcut() == "");
-        QVERIFY(resultsView->searchQuery() == "");
+        QVERIFY(resultsView->query() == "");
     }
 
     void testCategoryQuery()
@@ -926,7 +926,7 @@ private Q_SLOTS:
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
 
-        QCOMPARE(resultsView->searchQuery(), string("next-scope-query"));
+        QCOMPARE(resultsView->query(), string("next-scope-query"));
         QVERIFY_MATCHRESULT(
             shm::CategoryListMatcher()
                 .mode(shm::CategoryListMatcher::Mode::starts_with)

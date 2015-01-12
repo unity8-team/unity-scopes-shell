@@ -22,6 +22,7 @@
 
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/results/category.h>
+#include <scope-harness/results/department.h>
 
 #include <string>
 
@@ -64,7 +65,11 @@ public:
 
     void setQuery(const std::string& searchString);
 
+    std::string query() const;
+
     void setActiveScope(const std::string& id);
+
+    std::string activeScope() const;
 
     void waitForResultsChange();
 
@@ -82,8 +87,6 @@ public:
 
     std::string shortcut() const;
 
-    std::string searchQuery() const;
-
     unity::scopes::Variant customizations() const;
 
     std::string sessionId() const;
@@ -98,10 +101,20 @@ public:
 
     unity::shell::scopes::ScopeInterface::Status status() const;
 
+    // Navigation
+
+    bool hasNavigation() const;
+
+    bool hasAltNavigation() const;
+
+    std::string navigationId() const;
+
+    void setNavigationId(const std::string& id);
+
+    results::Department navigationModel(const std::string& id);
+
     // TODO Remove / replace these
     unity::shell::scopes::CategoriesInterface* raw_categories() const;
-
-    QSharedPointer<unity::shell::scopes::ScopeInterface> activeScope() const;
 
 protected:
     friend ScopeHarness;
