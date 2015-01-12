@@ -242,20 +242,20 @@ private Q_SLOTS:
         QVERIFY(m_resultsView->departmentId().empty());
         QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
 
-        auto altRoot = m_resultsView->browseAltDepartment();
+        auto sortOrder = m_resultsView->browseAltDepartment();
 
-        QCOMPARE(altRoot.id(), string());
-        QCOMPARE(altRoot.label(), string("Sort Order"));
-        QCOMPARE(altRoot.allLabel(), string());
-        QCOMPARE(altRoot.parentId(), string());
-        QCOMPARE(altRoot.parentLabel(), string());
-        QVERIFY(altRoot.isRoot());
-        QVERIFY(altRoot.isHidden());
+        QCOMPARE(sortOrder.id(), string());
+        QCOMPARE(sortOrder.label(), string("Sort Order"));
+        QCOMPARE(sortOrder.allLabel(), string());
+        QCOMPARE(sortOrder.parentId(), string());
+        QCOMPARE(sortOrder.parentLabel(), string());
+        QVERIFY(sortOrder.isRoot());
+        QVERIFY(sortOrder.isHidden());
 
-        QCOMPARE(altRoot.size(), 3ul);
+        QCOMPARE(sortOrder.size(), 3ul);
 
         {
-            auto department = altRoot.child(0);
+            auto department = sortOrder.child(0);
             QCOMPARE(department.id(), string("featured"));
             QCOMPARE(department.label(), string("Featured"));
             QCOMPARE(department.hasChildren(), false);
@@ -263,7 +263,7 @@ private Q_SLOTS:
         }
 
         {
-            auto department = altRoot.child(2);
+            auto department = sortOrder.child(2);
             QCOMPARE(department.id(), string("best"));
             QCOMPARE(department.label(), string("Best sellers"));
             QCOMPARE(department.hasChildren(), false);
@@ -273,24 +273,26 @@ private Q_SLOTS:
 
     void testDoubleNavChangeActive()
     {
-//        QCOMPARE(m_scope_navs->currentAltNavigationId(), QString("featured"));
-//        QScopedPointer<ss::NavigationInterface> sortOrderModel(m_scope_navs->getAltNavigation(""));
-//        QVERIFY(sortOrderModel != nullptr);
-//        QCOMPARE(sortOrderModel->loaded(), true);
-//        QCOMPARE(sortOrderModel->rowCount(), 3);
-//
-//        QModelIndex idx(sortOrderModel->index(1));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("top")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
-//
-//        // perform a query for the other navigation
-//        QSignalSpy spy(m_scope_navs.data(), SIGNAL(searchInProgressChanged()));
-//        m_scope_navs->setNavigationState("top", true);
-//        QVERIFY(spy.wait());
-//
-//        // the model should be updated
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("top")));
-//        QCOMPARE(sortOrderModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(true));
+        m_resultsView->setActiveScope("mock-scope-double-nav");
+        m_resultsView->setQuery("");
+        auto root = m_resultsView->browseDepartment();
+
+        QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
+
+        auto sortOrder = m_resultsView->browseAltDepartment();
+        QCOMPARE(sortOrder.id(), string());
+        QCOMPARE(sortOrder.label(), string("Sort Order"));
+        QCOMPARE(sortOrder.size(), 3ul);
+
+        {
+            auto department = sortOrder.child(1);
+            QCOMPARE(department.id(), string("top"));
+            QCOMPARE(department.isActive(), false);
+        }
+
+        auto top = m_resultsView->browseAltDepartment("top");
+        QCOMPARE(top.id(), string("top"));
+        QCOMPARE(top.size(), 0ul);
     }
 
     void testDepartmentDissapear()
