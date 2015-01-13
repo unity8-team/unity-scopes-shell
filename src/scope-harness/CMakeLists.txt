@@ -27,6 +27,8 @@ add_library(
     internal/signal-handler.cpp
     matcher/category-matcher.cpp
     matcher/category-list-matcher.cpp
+    matcher/child-department-matcher.cpp
+    matcher/department-matcher.cpp
     matcher/match-result.cpp
     matcher/preview-matcher.cpp
     matcher/preview-column-matcher.cpp

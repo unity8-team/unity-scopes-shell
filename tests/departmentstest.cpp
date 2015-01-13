@@ -22,6 +22,7 @@
 
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/department-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
@@ -85,30 +86,30 @@ private Q_SLOTS:
         auto departments = m_resultsView->browseDepartment();
         QCOMPARE(m_resultsView->departmentId(), string());
 
-        QCOMPARE(departments.label(), string("All departments"));
-        QCOMPARE(departments.allLabel(), string());
-        QCOMPARE(departments.parentId(), string());
-        QCOMPARE(departments.parentLabel(), string());
-        QVERIFY(departments.isRoot());
-        QVERIFY(!departments.isHidden());
-
-        QCOMPARE(departments.size(), 5ul);
-
-        {
-            auto department = departments.child(0);
-            QCOMPARE(department.id(), string("books"));
-            QCOMPARE(department.label(), string("Books"));
-            QCOMPARE(department.hasChildren(), true);
-            QCOMPARE(department.isActive(), false);
-        }
-
-        {
-            auto department = departments.child(4);
-            QCOMPARE(department.id(), string("toys"));
-            QCOMPARE(department.label(), string("Toys, Children & Baby"));
-            QCOMPARE(department.hasChildren(), true);
-            QCOMPARE(department.isActive(), false);
-        }
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .hasExactly(5)
+                .label("All departments")
+                .allLabel(string())
+                .parentId(string())
+                .parentLabel(string())
+                .isRoot(true)
+                .isHidden(false)
+                .child(shm::ChildDepartmentMatcher("books")
+                    .label("Books")
+                    .hasChildren(true)
+                    .isActive(false)
+                )
+                .child(shm::ChildDepartmentMatcher("movies"))
+                .child(shm::ChildDepartmentMatcher("electronics"))
+                .child(shm::ChildDepartmentMatcher("home"))
+                .child(shm::ChildDepartmentMatcher("toys")
+                    .label("Toys, Children & Baby")
+                    .hasChildren(true)
+                    .isActive(false)
+                )
+                .match(departments)
+        );
     }
 
     void testChildDepartmentModel()
@@ -119,14 +120,17 @@ private Q_SLOTS:
         auto departments = m_resultsView->browseDepartment("toys");
         QCOMPARE(m_resultsView->departmentId(), string("toys"));
 
-        QCOMPARE(departments.id(), string("toys"));
-        QCOMPARE(departments.label(), string("Toys, Children & Baby"));
-        QCOMPARE(departments.allLabel(), string());
-        QCOMPARE(departments.parentId(), string());
-        QCOMPARE(departments.parentLabel(), string("All departments"));
-        QVERIFY(!departments.isRoot());
-
-        QCOMPARE(departments.size(), 2ul);
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id("toys")
+                .label("Toys, Children & Baby")
+                .allLabel(string())
+                .parentId(string())
+                .parentLabel(string("All departments"))
+                .isRoot(false)
+                .hasExactly(2)
+                .match(departments)
+        );
     }
 
     void testLeafActivationUpdatesModel()
@@ -169,17 +173,12 @@ private Q_SLOTS:
                 .match(m_resultsView->categories())
         );
 
-        // TODO convert to use matcher
-        bool foundAudiobooks = false;
-        for (const auto& dept : books.children())
-        {
-            if (dept.id() == "books-audio")
-            {
-                foundAudiobooks = true;
-                break;
-            }
-        }
-        QVERIFY(foundAudiobooks);
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .mode(shm::DepartmentMatcher::Mode::by_id)
+                .child(shm::ChildDepartmentMatcher("books-audio"))
+                .match(books)
+        );
     }
 
     // This test has always been broken
@@ -236,31 +235,29 @@ private Q_SLOTS:
 
         auto sortOrder = m_resultsView->browseAltDepartment();
 
-        QCOMPARE(sortOrder.id(), string());
-        QCOMPARE(sortOrder.label(), string("Sort Order"));
-        QCOMPARE(sortOrder.allLabel(), string());
-        QCOMPARE(sortOrder.parentId(), string());
-        QCOMPARE(sortOrder.parentLabel(), string());
-        QVERIFY(sortOrder.isRoot());
-        QVERIFY(sortOrder.isHidden());
-
-        QCOMPARE(sortOrder.size(), 3ul);
-
-        {
-            auto department = sortOrder.child(0);
-            QCOMPARE(department.id(), string("featured"));
-            QCOMPARE(department.label(), string("Featured"));
-            QCOMPARE(department.hasChildren(), false);
-            QCOMPARE(department.isActive(), true);
-        }
-
-        {
-            auto department = sortOrder.child(2);
-            QCOMPARE(department.id(), string("best"));
-            QCOMPARE(department.label(), string("Best sellers"));
-            QCOMPARE(department.hasChildren(), false);
-            QCOMPARE(department.isActive(), false);
-        }
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id(string())
+                .label("Sort Order")
+                .allLabel(string())
+                .parentId(string())
+                .parentLabel(string())
+                .isRoot(true)
+                .isHidden(true)
+                .hasExactly(3)
+                .child(shm::ChildDepartmentMatcher("featured")
+                    .label("Featured")
+                    .hasChildren(false)
+                    .isActive(true)
+                )
+                .child(shm::ChildDepartmentMatcher("top"))
+                .child(shm::ChildDepartmentMatcher("best")
+                    .label("Best sellers")
+                    .hasChildren(false)
+                    .isActive(false)
+                )
+                .match(sortOrder)
+        );
     }
 
     void testDoubleNavChangeActive()
@@ -272,19 +269,26 @@ private Q_SLOTS:
         QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
 
         auto sortOrder = m_resultsView->browseAltDepartment();
-        QCOMPARE(sortOrder.id(), string());
-        QCOMPARE(sortOrder.label(), string("Sort Order"));
-        QCOMPARE(sortOrder.size(), 3ul);
 
-        {
-            auto department = sortOrder.child(1);
-            QCOMPARE(department.id(), string("top"));
-            QCOMPARE(department.isActive(), false);
-        }
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id(string())
+                .label("Sort Order")
+                .hasExactly(3)
+                .child(shm::ChildDepartmentMatcher("featured"))
+                .child(shm::ChildDepartmentMatcher("top")
+                    .isActive(false)
+                )
+                .child(shm::ChildDepartmentMatcher("best"))
+                .match(sortOrder)
+        );
 
-        auto top = m_resultsView->browseAltDepartment("top");
-        QCOMPARE(top.id(), string("top"));
-        QCOMPARE(top.size(), 0ul);
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id(string("top"))
+                .hasExactly(0)
+                .match(m_resultsView->browseAltDepartment("top"))
+        );
     }
 
     void testDepartmentDissapear()
