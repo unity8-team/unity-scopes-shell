@@ -19,14 +19,6 @@
 
 #include <QObject>
 #include <QTest>
-#include <QTestEventLoop>
-//#include <QJsonValue>
-//#include <QJsonObject>
-//#include <QThread>
-//#include <QScopedPointer>
-//#include <QSignalSpy>
-//#include <QVariantList>
-//#include <QDBusConnection>
 
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/category-list-matcher.h>
@@ -297,42 +289,47 @@ private Q_SLOTS:
 
     void testDepartmentDissapear()
     {
-//        QCOMPARE(m_scope_flipflop->hasNavigation(), true);
-//        QCOMPARE(m_scope_flipflop->hasAltNavigation(), false);
-//        QCOMPARE(m_scope_flipflop->currentNavigationId(), QString(""));
-//
-//        QScopedPointer<ss::NavigationInterface> departmentModel(m_scope_flipflop->getNavigation(m_scope_flipflop->currentNavigationId()));
-//        QVERIFY(departmentModel != nullptr);
-//
-//        QVERIFY(departmentModel->navigationId().isEmpty());
-//        QCOMPARE(departmentModel->label(), QString("All departments"));
-//        QCOMPARE(departmentModel->allLabel(), QString(""));
-//        QCOMPARE(departmentModel->parentNavigationId(), QString());
-//        QCOMPARE(departmentModel->parentLabel(), QString());
-//        QCOMPARE(departmentModel->loaded(), true);
-//        QCOMPARE(departmentModel->isRoot(), true);
-//        QCOMPARE(departmentModel->hidden(), false);
-//
-//        QCOMPARE(departmentModel->rowCount(), 5);
-//
-//        sh::refreshSearch(m_scope_flipflop);
-//
-//        // one department removed
-//        QCOMPARE(departmentModel->rowCount(), 4);
-//
-//        QModelIndex idx;
-//
-//        idx = departmentModel->index(0);
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("books")));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Books")));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
-//
-//        idx = departmentModel->index(3);
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleNavigationId), QVariant(QString("toys")));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleLabel), QVariant(QString("Toys, Children & Baby")));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleHasChildren), QVariant(true));
-//        QCOMPARE(departmentModel->data(idx, ng::Department::Roles::RoleIsActive), QVariant(false));
+        m_resultsView->setActiveScope("mock-scope-departments-flipflop");
+        m_resultsView->setQuery("");
+        auto root = m_resultsView->browseDepartment();
+
+        QVERIFY(m_resultsView->hasNavigation());
+        QVERIFY(!m_resultsView->hasAltNavigation());
+        QVERIFY(m_resultsView->departmentId().empty());
+
+
+        QCOMPARE(root.id(), string());
+        QCOMPARE(root.label(), string("All departments"));
+        QCOMPARE(root.allLabel(), string());
+        QCOMPARE(root.parentId(), string());
+        QCOMPARE(root.parentLabel(), string());
+        QVERIFY(root.isRoot());
+        QVERIFY(!root.isHidden());
+
+        QCOMPARE(root.size(), 5ul);
+
+        m_resultsView->forceRefresh();
+
+        root = m_resultsView->browseDepartment();
+
+        // one department removed
+        QCOMPARE(root.size(), 4ul);
+
+        {
+            auto department = root.child(0);
+            QCOMPARE(department.id(), string("books"));
+            QCOMPARE(department.label(), string("Books"));
+            QCOMPARE(department.hasChildren(), true);
+            QCOMPARE(department.isActive(), false);
+        }
+
+        {
+            auto department = root.child(3);
+            QCOMPARE(department.id(), string("toys"));
+            QCOMPARE(department.label(), string("Toys, Children & Baby"));
+            QCOMPARE(department.hasChildren(), true);
+            QCOMPARE(department.isActive(), false);
+        }
     }
 
 };

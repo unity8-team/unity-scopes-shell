@@ -63,6 +63,7 @@ public:
 
     ~ResultsView() = default;
 
+
     void setQuery(const std::string& searchString);
 
     std::string query() const;
@@ -92,6 +93,8 @@ public:
     std::string sessionId() const;
 
     int queryId() const;
+
+    void forceRefresh();
 
     results::Category::List categories();
 

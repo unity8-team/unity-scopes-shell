@@ -198,6 +198,25 @@ void ResultsView::setQuery(const string& searchString_)
     throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
 }
 
+void ResultsView::forceRefresh()
+{
+    p->checkActiveScope();
+
+    throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
+
+    QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
+    // perform a search
+    p->m_active_scope->refresh();
+    // search should not be happening yet
+    throwIfNot(p->m_active_scope->searchInProgress() || spy.count() > 1, "Refresh failed to start");
+    if (p->m_active_scope->searchInProgress())
+    {
+        // wait for the search to finish
+        throwIfNot(spy.wait(), "Search spy received no events");
+    }
+    throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
+}
+
 void ResultsView::waitForResultsChange()
 {
     p->checkActiveScope();
