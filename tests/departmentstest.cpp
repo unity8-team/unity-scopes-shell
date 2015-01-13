@@ -264,11 +264,9 @@ private Q_SLOTS:
     {
         m_resultsView->setActiveScope("mock-scope-double-nav");
         m_resultsView->setQuery("");
-        auto root = m_resultsView->browseDepartment();
+        m_resultsView->browseDepartment();
 
         QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
-
-        auto sortOrder = m_resultsView->browseAltDepartment();
 
         QVERIFY_MATCHRESULT(
             shm::DepartmentMatcher()
@@ -280,7 +278,7 @@ private Q_SLOTS:
                     .isActive(false)
                 )
                 .child(shm::ChildDepartmentMatcher("best"))
-                .match(sortOrder)
+                .match(m_resultsView->browseAltDepartment())
         );
 
         QVERIFY_MATCHRESULT(
@@ -301,39 +299,48 @@ private Q_SLOTS:
         QVERIFY(!m_resultsView->hasAltNavigation());
         QVERIFY(m_resultsView->departmentId().empty());
 
-
-        QCOMPARE(root.id(), string());
-        QCOMPARE(root.label(), string("All departments"));
-        QCOMPARE(root.allLabel(), string());
-        QCOMPARE(root.parentId(), string());
-        QCOMPARE(root.parentLabel(), string());
-        QVERIFY(root.isRoot());
-        QVERIFY(!root.isHidden());
-
-        QCOMPARE(root.size(), 5ul);
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id(string())
+                .label("All departments")
+                .allLabel(string())
+                .parentId(string())
+                .parentLabel(string())
+                .isRoot(true)
+                .isHidden(false)
+                .hasExactly(5)
+                .match(root)
+        );
 
         m_resultsView->forceRefresh();
 
         root = m_resultsView->browseDepartment();
 
         // one department removed
-        QCOMPARE(root.size(), 4ul);
-
-        {
-            auto department = root.child(0);
-            QCOMPARE(department.id(), string("books"));
-            QCOMPARE(department.label(), string("Books"));
-            QCOMPARE(department.hasChildren(), true);
-            QCOMPARE(department.isActive(), false);
-        }
-
-        {
-            auto department = root.child(3);
-            QCOMPARE(department.id(), string("toys"));
-            QCOMPARE(department.label(), string("Toys, Children & Baby"));
-            QCOMPARE(department.hasChildren(), true);
-            QCOMPARE(department.isActive(), false);
-        }
+        QVERIFY_MATCHRESULT(
+            shm::DepartmentMatcher()
+                .id(string())
+                .label("All departments")
+                .allLabel(string())
+                .parentId(string())
+                .parentLabel(string())
+                .isRoot(true)
+                .isHidden(false)
+                .hasExactly(4)
+                .child(shm::ChildDepartmentMatcher("books")
+                    .label("Books")
+                    .hasChildren(true)
+                    .isActive(false)
+                )
+                .child(shm::ChildDepartmentMatcher("movies"))
+                .child(shm::ChildDepartmentMatcher("home"))
+                .child(shm::ChildDepartmentMatcher("toys")
+                    .label("Toys, Children & Baby")
+                    .hasChildren(true)
+                    .isActive(false)
+                )
+                .match(root)
+        );
     }
 
 };
