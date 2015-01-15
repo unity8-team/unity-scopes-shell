@@ -18,65 +18,42 @@
 
 #include <boost/python.hpp>
 #include <scope-harness/preview/preview-widget-list.h>
-#include <unity/UnityExceptions.h>
 #include <stdexcept>
-#include <iostream>
 
 using namespace boost::python;
 namespace shp = unity::scopeharness::preview;
 
-static shp::PreviewWidget previewWidgetListGetWrapper(shp::PreviewWidgetList* wlist, const object& index)
+static shp::PreviewWidget previewWidgetListGetByInt(shp::PreviewWidgetList* wlist, long index)
 {
-    if (PyLong_Check(index.ptr()))
+    if (index < 0)
     {
-        std::cerr << "getitem: int\n";
-        long intidx = extract<long>(index);
-        if (intidx < 0)
-        {
-            intidx = static_cast<long>(wlist->size()) + intidx;
-        }
-        if (intidx < 0 || intidx >= static_cast<long>(wlist->size()))
-        {
-            throw std::out_of_range("PreviewWidgetList index out of range");
-        }
-        else
-        {
-            return wlist->at(intidx);
-        }
+        index = static_cast<long>(wlist->size()) + index;
     }
-    else if (PyUnicode_Check(index.ptr()))
+    if (index < 0 || index >= static_cast<long>(wlist->size()))
     {
-        std::cerr << "getitem: string\n";
-        std::string stridx = extract<std::string>(index);
-        try
-        {
-            return wlist->at(stridx);
-        }
-        catch (const std::domain_error&)
-        {
-            throw std::out_of_range("PreviewWidgetList widget key '" + stridx + "' doesn't exist");
-        }
+        throw std::out_of_range("PreviewWidgetList index out of range");
     }
-    else if (PySlice_Check(index.ptr()))
-    {
-        std::cerr << "getitem: slice\n";
-        // TODO
-        return wlist->at(0);
-    }
-
-    throw unity::InvalidArgumentException("PreviewWidgetList unsupported index type");
+    return wlist->at(index);
 }
 
-static PyObject* previewWidgetListMissingKey(shp::PreviewWidgetList* wlist, PyObject *index)
+static shp::PreviewWidget previewWidgetListGetByString(shp::PreviewWidgetList* wlist, const std::string& key)
 {
-    return nullptr;
+    try
+    {
+        return wlist->at(key);
+    }
+    catch (const std::domain_error&)
+    {
+        throw std::out_of_range("PreviewWidgetList widget key '" + key + "' doesn't exist");
+    }
 }
 
 void export_preview_widget_list()
 {
     class_<shp::PreviewWidgetList>("PreviewWidgetList", no_init)
         .def("__len__", &shp::PreviewWidgetList::size)
-        .def("__getitem__", previewWidgetListGetWrapper)
-        .def("__missing__", previewWidgetListMissingKey)
+        .def("__getitem__", previewWidgetListGetByInt)
+        .def("__getitem__", previewWidgetListGetByString)
+        // it would be nice to support slice, but that's not possible unless PreviewWidgetList provides ctors
         ;
 }
