@@ -20,6 +20,7 @@
 
 using namespace boost::python;
 
+void export_exceptions();
 void export_variant();
 void export_registry();
 void export_abstract_view();
@@ -37,6 +38,7 @@ BOOST_PYTHON_MODULE(_pyscope_harness)
     // enable custom docstring, disable auto-generated docstring including c++ signatures
     docstring_options local_docstring_options(true, true, false);
 
+    export_exceptions();
     export_variant();
     export_registry();
     export_scopeharness();
