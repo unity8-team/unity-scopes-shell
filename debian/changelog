@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.4+15.04.20150115~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+  [ Marcus Tomlinson ]
+  * Set UNITY_SCOPES_OA_UI_POLICY on entry to Scope::loginToAccount().
+    Animate the loading bar on the scope while OA retrieves a token.
+    (LP: #1380914, #1401860)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 15 Jan 2015 15:32:13 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141216.1~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Pawel Stolowski ]
