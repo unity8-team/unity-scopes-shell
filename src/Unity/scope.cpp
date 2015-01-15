@@ -43,6 +43,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QLocale>
+#include <QtConcurrent>
 
 #include <libintl.h>
 
@@ -1260,7 +1261,11 @@ void Scope::activateUri(QString const& uri)
 
 bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
 {
-    bool service_enabled = false;
+    // Set the UNITY_SCOPES_OA_UI_POLICY environment variable here so that OnlineAccountClient knows we're
+    // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
+    setenv("UNITY_SCOPES_OA_UI_POLICY", "1", 0);
+
+    QFuture<bool> service_enabled_future = QtConcurrent::run([&]
     {
         // Check if at least one account has the specified service enabled
         scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
@@ -1269,11 +1274,25 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
         {
             if (status.service_enabled)
             {
-                service_enabled = true;
-                break;
+                return true;
             }
         }
-    }
+        return false;
+    });
+    QFutureWatcher<bool> future_watcher;
+    future_watcher.setFuture(service_enabled_future);
+
+    // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
+    setSearchInProgress(true);
+
+    QEventLoop loop;
+    connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
+    loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
+
+    // Unset SearchInProgress to stop the loading bar animation.
+    setSearchInProgress(false);
+
+    bool service_enabled = service_enabled_future.result();
 
     // Start the signon UI if no enabled services were found
     if (!service_enabled)
