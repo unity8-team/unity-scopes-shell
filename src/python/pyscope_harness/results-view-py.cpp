@@ -37,7 +37,7 @@ static PyObject* getCategories(shv::ResultsView* view)
     return incref(pylist.ptr());
 }
 
-void export_view()
+void export_results_view()
 {
     boost::python::register_ptr_to_python<std::shared_ptr<shv::ResultsView>>();
 
@@ -51,7 +51,7 @@ void export_view()
         .value("UNKNOWN", unity::shell::scopes::ScopeInterface::Status::Unknown)
         ;
 
-    class_<shv::ResultsView>("ResultsView", no_init)
+    class_<shv::ResultsView, bases<shv::AbstractView>>("ResultsView", no_init)
         .add_property("scope_id", &shv::ResultsView::scopeId)
         .add_property("display_name", &shv::ResultsView::displayName)
         .add_property("icon_hint", &shv::ResultsView::iconHint)

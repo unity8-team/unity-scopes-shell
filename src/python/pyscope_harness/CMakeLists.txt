@@ -15,6 +15,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic -Wall -Wextra")
 add_library(_pyscope_harness SHARED
         category-py.cpp
         matchers-py.cpp
+        preview-widget-py.cpp
+        preview-widget-list-py.cpp
+        abstract-view-py.cpp
+        preview-view-py.cpp
         results-view-py.cpp
         result-py.cpp
         scope-harness-py.cpp

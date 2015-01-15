@@ -22,7 +22,11 @@ using namespace boost::python;
 
 void export_variant();
 void export_registry();
-void export_view();
+void export_abstract_view();
+void export_results_view();
+void export_preview_widget();
+void export_preview_widget_list();
+void export_preview_view();
 void export_category();
 void export_result();
 void export_scopeharness();
@@ -36,7 +40,11 @@ BOOST_PYTHON_MODULE(_pyscope_harness)
     export_variant();
     export_registry();
     export_scopeharness();
-    export_view();
+    export_preview_widget();
+    export_preview_widget_list();
+    export_abstract_view();
+    export_preview_view();
+    export_results_view();
     export_category();
     export_result();
     export_matchers();
