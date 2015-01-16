@@ -20,6 +20,7 @@ add_library(_pyscope_harness SHARED
         preview-widget-list-py.cpp
         abstract-view-py.cpp
         preview-view-py.cpp
+        preview-matchers-py.cpp
         results-view-py.cpp
         result-py.cpp
         scope-harness-py.cpp
