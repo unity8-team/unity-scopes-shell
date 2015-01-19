@@ -14,7 +14,7 @@ class SimpleResultsTest (ScopeHarnessTestCase):
             TEST_DATA_DIR + "mock-scope-ttl/mock-scope-ttl.ini"
             ]))
         cls.view = cls.harness.results_view
-        cls.view.set_active_scope("mock-scope")
+        cls.view.active_scope = "mock-scope"
         cls.view.search_query = ""
 
     def test_1(self):

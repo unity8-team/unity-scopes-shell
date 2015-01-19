@@ -54,6 +54,7 @@ void export_preview_widget_list()
         .def("__len__", &shp::PreviewWidgetList::size)
         .def("__getitem__", previewWidgetListGetByInt)
         .def("__getitem__", previewWidgetListGetByString)
-        // it would be nice to support slice, but that's not possible unless PreviewWidgetList provides ctors
+        // it would be nice to support slice, but that's not possible unless PreviewWidgetList
+        // provides ctors and ideally iterators
         ;
 }
