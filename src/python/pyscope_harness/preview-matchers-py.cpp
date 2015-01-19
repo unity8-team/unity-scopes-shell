@@ -17,6 +17,7 @@
  */
 
 #include <boost/python.hpp>
+#include <boost/python/stl_iterator.hpp>
 #include <scope-harness/matcher/preview-matcher.h>
 #include <scope-harness/matcher/preview-widget-matcher.h>
 #include <scope-harness/matcher/preview-column-matcher.h>
@@ -27,12 +28,18 @@ namespace shp = unity::scopeharness::preview;
 
 static shm::MatchResult getMatchResultByPreviewWidgetsLists(shm::PreviewColumnMatcher* colMatcher, const object& obj)
 {
-    //TODO
+    // convert python list to vector of widget lists
+    stl_input_iterator<shp::PreviewWidgetList> begin(obj), end;
+    std::vector<shp::PreviewWidgetList> wlists(begin, end);
+    return colMatcher->match(wlists);
 }
 
-static void matchByMatchResultAndPreviewWidgetsLists(shm::PreviewColumnMatcher* colMatcher, shm::MatchResult* mr, const object& obj)
+static void matchByMatchResultAndPreviewWidgetsLists(shm::PreviewColumnMatcher* colMatcher, shm::MatchResult& mr, const object& obj)
 {
-    //TODO
+    // convert python list to vector of widget lists
+    stl_input_iterator<shp::PreviewWidgetList> begin(obj), end;
+    std::vector<shp::PreviewWidgetList> wlists(begin, end);
+    return colMatcher->match(mr, wlists);
 }
 
 void export_preview_matchers()
@@ -64,8 +71,6 @@ void export_preview_matchers()
 
     {
         shm::PreviewColumnMatcher& (shm::PreviewColumnMatcher::*column_by_previewmatcher)(const shm::PreviewMatcher&) = &shm::PreviewColumnMatcher::column;
-//        shm::MatchResult (shm::PreviewMatcher::*match_by_matchresult_and_widgets)(const shp::PreviewWidgetList&) const = &shm::PreviewMatcher::match;
-  //      void (shm::PreviewMatcher::*matchresult_by_widgets)(shm::MatchResult&, const shp::PreviewWidgetList&) const = &shm::PreviewMatcher::match;
 
         class_<shm::PreviewColumnMatcher>("PreviewColumnMatcher", init<>())
             .def("column", column_by_previewmatcher, return_internal_reference<1>())
