@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.4+15.04.20150120~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Pete Woods ]
+  * Remove distance-based filtering and refresh GeoIP data every minute
+    (LP: #1411201)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Jan 2015 09:15:35 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150115~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Ubuntu daily release ]
