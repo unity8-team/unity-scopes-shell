@@ -30,8 +30,18 @@ static object getChildrenDepartments(shr::Department *dep)
     {
         pylist.append(child);
     }
-    return pylist; //TODO test if works
+    return pylist;
 }
+
+static shr::ChildDepartment getChildDepartmentByIndex(shr::Department *dep, int index)
+{
+    return dep->child(index); // can throw out_of_range
+}
+
+/*static bool compareChildDepartments(const shr::ChildDepartment& self, const shr::ChildDepartment& other)
+{
+    return self == other;
+}*/
 
 void export_department()
 {
@@ -40,6 +50,7 @@ void export_department()
         .add_property("label", &shr::ChildDepartment::label)
         .add_property("has_children", &shr::ChildDepartment::hasChildren)
         .add_property("is_active", &shr::ChildDepartment::isActive)
+        //.def("__eq__", compareChildDepartments)
     ;
 
     class_<shr::Department>("Department", no_init)
@@ -52,8 +63,8 @@ void export_department()
         .add_property("is_hidden", &shr::Department::isHidden)
         .add_property("size", &shr::Department::size)
         .add_property("children", getChildrenDepartments)
-        .def("child", &shr::Department::child)
+        .def("child", &shr::Department::child, return_value_policy<return_by_value>())
         .def("__len__", &shr::Department::size) // respond to python's len(department)
-        // TODO: getitem
+        .def("__getitem__", getChildDepartmentByIndex) // support for [] operator
     ;
 }

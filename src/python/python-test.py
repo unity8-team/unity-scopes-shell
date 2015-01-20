@@ -5,7 +5,7 @@ import unittest
 
 TEST_DATA_DIR='/home/vivid/python-harness/tests/data/'
 
-class SimpleResultsTest (ScopeHarnessTestCase):
+class ResultsTest (ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
@@ -16,10 +16,6 @@ class SimpleResultsTest (ScopeHarnessTestCase):
         cls.view = cls.harness.results_view
         cls.view.active_scope = "mock-scope"
         cls.view.search_query = ""
-
-    def test_1(self):
-        match = CategoryListMatcher().has_at_least(1).match(self.view.categories)
-        self.assertMatchResult(match)
 
     def test_basic_result(self):
         match = CategoryListMatcher() \
@@ -34,6 +30,17 @@ class SimpleResultsTest (ScopeHarnessTestCase):
                     )) \
             .match(self.view.categories)
         self.assertMatchResult(match)
+
+class PreviewTest (ScopeHarnessTestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.harness = ScopeHarness.new_from_scope_list(Parameters([
+            TEST_DATA_DIR + "mock-scope/mock-scope.ini",
+            ]))
+        cls.view = cls.harness.results_view
+        cls.view.active_scope = "mock-scope"
+        cls.view.search_query = ""
+
 
     def test_preview_layouts(self):
         self.view.search_query = "layout"
@@ -120,6 +127,57 @@ class SimpleResultsTest (ScopeHarnessTestCase):
                         .widget(PreviewWidgetMatcher("extra")) \
                        ).match(pview2.widgets)
         self.assertMatchResult(match2)
+
+class DepartmentsTest (ScopeHarnessTestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.harness = ScopeHarness.new_from_scope_list(Parameters([
+                    TEST_DATA_DIR + "mock-scope-departments/mock-scope-departments.ini",
+                    TEST_DATA_DIR + "mock-scope-double-nav/mock-scope-double-nav.ini",
+                    TEST_DATA_DIR + "mock-scope-departments-flipflop/mock-scope-departments-flipflop.ini"
+            ]))
+        cls.view = cls.harness.results_view
+
+    def test_no_departments(self):
+        self.view.active_scope = 'mock-scope-departments'
+        self.view.search_query = 'foo'
+
+        self.assertFalse(self.view.has_navigation)
+        self.assertFalse(self.view.has_alt_navigation)
+
+    def test_root_department(self):
+        self.view.active_scope = 'mock-scope-departments'
+        self.view.search_query = ''
+
+        self.assertTrue(self.view.has_navigation)
+        self.assertFalse(self.view.has_alt_navigation)
+        self.assertEqual(self.view.navigation_id, '')
+
+        departments = self.view.navigation_model('')
+        self.assertEqual(departments.label, 'All departments')
+        self.assertEqual(departments.all_label, '')
+        self.assertEqual(departments.parent_id, '')
+        self.assertTrue(departments.is_root)
+        self.assertEqual(len(departments), 5)
+
+        dep = departments[0]
+        self.assertEqual(dep.id, 'books')
+        self.assertEqual(dep.label, 'Books')
+        self.assertTrue(dep.has_children)
+        self.assertFalse(dep.is_active)
+
+        # excercise different methods for getting children
+        #dep2 = departments.child(0)
+        #dep3 = departments.children[0]
+        #self.assertEqual(dep, dep2)
+        #self.assertEqual(dep2, dep3)
+
+        dep = departments[4]
+        self.assertEqual(dep.id, 'toys')
+        self.assertEqual(dep.label, 'Toys, Children & Baby')
+        self.assertTrue(dep.has_children)
+        self.assertFalse(dep.is_active)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -22,14 +22,14 @@
 using namespace boost::python;
 namespace shr = unity::scopeharness::results;
 
-static PyObject* getResultsList(const shr::Category& cat)
+static object getResultsList(const shr::Category& cat)
 {
     list pylist;
     for (auto const res: cat.results())
     {
         pylist.append(res);
     }
-    return incref(pylist.ptr());
+    return pylist;
 }
 
 void export_category()
