@@ -79,5 +79,47 @@ class SimpleResultsTest (ScopeHarnessTestCase):
                         ).match(pview.widgets)
         self.assertMatchResult(match4)
 
+    def test_preview_action(self):
+        self.view.search_query = "layout"
+        pview = self.view.category(0).result(0).activate()
+        self.assertIsInstance(pview, PreviewView)
+        match = PreviewColumnMatcher() \
+                 .column(PreviewMatcher() \
+                         .widget(PreviewWidgetMatcher("img")) \
+                         .widget(PreviewWidgetMatcher("hdr")) \
+                         .widget(PreviewWidgetMatcher("desc")) \
+                         .widget(PreviewWidgetMatcher("actions")) \
+                        ).match(pview.widgets)
+        self.assertMatchResult(match)
+
+        next_view = pview.widgets_in_first_column["actions"].trigger("hide", None)
+        self.assertEqual(pview, next_view)
+
+    def test_preview_replacing_preview(self):
+        self.view.search_query = "layout"
+        pview = self.view.category(0).result(0).activate()
+        self.assertIsInstance(pview, PreviewView)
+        match = PreviewColumnMatcher() \
+                .column(PreviewMatcher() \
+                        .widget(PreviewWidgetMatcher("img")) \
+                        .widget(PreviewWidgetMatcher("hdr")) \
+                        .widget(PreviewWidgetMatcher("desc")) \
+                        .widget(PreviewWidgetMatcher("actions")) \
+                       ).match(pview.widgets)
+        self.assertMatchResult(match)
+
+        hints = {"session-id": "goo"};
+        pview2 = pview.widgets_in_first_column["actions"].trigger("download", hints)
+
+        match2 = PreviewColumnMatcher() \
+                .column(PreviewMatcher() \
+                        .widget(PreviewWidgetMatcher("img")) \
+                        .widget(PreviewWidgetMatcher("hdr")) \
+                        .widget(PreviewWidgetMatcher("desc")) \
+                        .widget(PreviewWidgetMatcher("actions")) \
+                        .widget(PreviewWidgetMatcher("extra")) \
+                       ).match(pview2.widgets)
+        self.assertMatchResult(match2)
+
 if __name__ == '__main__':
     unittest.main()

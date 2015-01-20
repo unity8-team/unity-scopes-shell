@@ -22,10 +22,16 @@
 using namespace boost::python;
 namespace shv = unity::scopeharness::view;
 
+static bool compareViews(shv::AbstractView *self, shv::AbstractView *other)
+{
+    return self == other; // pointer comparision
+}
+
 void export_abstract_view()
 {
     boost::python::register_ptr_to_python<std::shared_ptr<shv::AbstractView>>();
 
     class_<shv::AbstractView, boost::noncopyable>("AbstractView", no_init)
+        .def("__eq__", compareViews)
         ;
 }
