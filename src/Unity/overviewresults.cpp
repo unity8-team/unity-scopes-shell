@@ -143,14 +143,19 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
 
 void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName)
 {
-    auto const children = scopeMetadata->child_scope_ids();
+    if (!scopeMetadata->is_aggregator())
+    {
+        return;
+    }
+
+    auto const children = scopeMetadata->proxy()->child_scopes_ordered();
     if (children.size())
     {
         // iterate over child scope ids, join their display names and insert into m_childScopes for current scope
         QStringList childNames;
-        for (auto const& id: children)
+        for (auto const& child : children)
         {
-            auto it = scopeIdToName.find(QString::fromStdString(id));
+            auto it = scopeIdToName.find(QString::fromStdString(child.id));
             if (it != scopeIdToName.end())
             {
                 childNames << *it;
