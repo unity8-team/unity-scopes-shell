@@ -24,6 +24,8 @@ namespace shv = unity::scopeharness::view;
 
 void export_abstract_view()
 {
+    boost::python::register_ptr_to_python<std::shared_ptr<shv::AbstractView>>();
+
     class_<shv::AbstractView, boost::noncopyable>("AbstractView", no_init)
         ;
 }

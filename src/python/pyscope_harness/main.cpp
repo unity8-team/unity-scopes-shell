@@ -32,6 +32,7 @@ void export_category();
 void export_result();
 void export_scopeharness();
 void export_matchers();
+void export_preview_matchers();
 void export_department();
 
 BOOST_PYTHON_MODULE(_pyscope_harness)
@@ -52,4 +53,5 @@ BOOST_PYTHON_MODULE(_pyscope_harness)
     export_category();
     export_result();
     export_matchers();
+    export_preview_matchers();
 }

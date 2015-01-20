@@ -21,7 +21,7 @@ class SimpleResultsTest (ScopeHarnessTestCase):
         match = CategoryListMatcher().has_at_least(1).match(self.view.categories)
         self.assertMatchResult(match)
 
-    def test_2(self):
+    def test_basic_result(self):
         match = CategoryListMatcher() \
             .has_at_least(1) \
             .mode(CategoryListMatcherMode.BY_ID) \
@@ -34,6 +34,50 @@ class SimpleResultsTest (ScopeHarnessTestCase):
                     )) \
             .match(self.view.categories)
         self.assertMatchResult(match)
+
+    def test_preview_layouts(self):
+        self.view.search_query = "layout"
+        match = CategoryListMatcher() \
+                .has_at_least(1) \
+                .mode(CategoryListMatcherMode.STARTS_WITH) \
+                .category(CategoryMatcher("cat1") \
+                        .has_at_least(1)
+                        .mode(CategoryMatcherMode.STARTS_WITH) \
+                        .result(ResultMatcher("test:layout")) \
+                        ).match(self.view.categories)
+        self.assertMatchResult(match)
+
+        pview = self.view.category(0).result(0).activate()
+        self.assertIsInstance(pview, PreviewView)
+
+        match2 = PreviewColumnMatcher().column( \
+                PreviewMatcher() \
+                    .widget(PreviewWidgetMatcher("img")) \
+                    .widget(PreviewWidgetMatcher("hdr")) \
+                    .widget(PreviewWidgetMatcher("desc")) \
+                    .widget(PreviewWidgetMatcher("actions")) \
+                ).match(pview.widgets)
+
+        pview.column_count = 2
+        match3 = PreviewColumnMatcher() \
+                 .column(PreviewMatcher() \
+                         .widget(PreviewWidgetMatcher("img"))) \
+                 .column(PreviewMatcher() \
+                         .widget(PreviewWidgetMatcher("hdr")) \
+                         .widget(PreviewWidgetMatcher("desc")) \
+                         .widget(PreviewWidgetMatcher("actions")) \
+                        ).match(pview.widgets)
+        self.assertMatchResult(match3)
+
+        pview.column_count = 1
+        match4 = PreviewColumnMatcher() \
+                 .column(PreviewMatcher() \
+                         .widget(PreviewWidgetMatcher("img")) \
+                         .widget(PreviewWidgetMatcher("hdr")) \
+                         .widget(PreviewWidgetMatcher("desc")) \
+                         .widget(PreviewWidgetMatcher("actions")) \
+                        ).match(pview.widgets)
+        self.assertMatchResult(match4)
 
 if __name__ == '__main__':
     unittest.main()
