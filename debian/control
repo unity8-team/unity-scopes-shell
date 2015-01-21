@@ -3,6 +3,8 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
+               dh-python,
+               libboost-python-dev,
                libunity-api-dev (>= 7.94),
                libunity-scopes-dev (>= 0.6.9~),
                libgsettings-qt-dev (>= 0.1),
@@ -10,6 +12,7 @@ Build-Depends: cmake,
                libqtdbusmock1-dev (>= 0.2),
                libubuntu-location-service-dev (>= 2.0.1),
                pkg-config,
+               python3-all-dev,
                python-tornado,
                qt5-default,
                qtdeclarative5-dev,
@@ -25,6 +28,7 @@ Homepage: https://launchpad.net/unity-scopes-shell
 # upstream branch
 Vcs-Bzr: lp:unity-scopes-shell
 Vcs-Browser: https://code.launchpad.net/unity-scopes-shell
+X-Python3-Version: >= 3.4
 
 Package: unity-plugin-scopes
 Architecture: any
@@ -63,3 +67,12 @@ Depends: ${misc:Depends},
 Description: Test harness for Unity scopes
  Drive Unity scopes with a simple synchronous API. Make assertions
  about results. Development files.
+
+Package: python3-pyscope-harness
+Architecture: any
+Depends: ${python3:Depends},
+         ${shlibs:Depends},
+         ${misc:Depends}
+Description: Python bindings for Unity scopes test harness
+ Drive Unity scopes with a simple synchronous API. Make assertions
+ about results. Python bindings.

@@ -32,3 +32,8 @@ target_link_libraries(_pyscope_harness scope-harness ${Boost_LIBRARIES} ${Python
 set_target_properties(_pyscope_harness PROPERTIES PREFIX "" )
 
 add_subdirectory(testing)
+
+set(pyscope_harnessdir "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages/pyscope_harness")
+
+install(FILES __init__.py DESTINATION ${pyscope_harnessdir})
+install(TARGETS _pyscope_harness LIBRARY DESTINATION ${pyscope_harnessdir})
