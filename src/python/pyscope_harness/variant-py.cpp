@@ -147,20 +147,7 @@ struct VariantFromPythonObj
         data->convertible = storage;
     }
 };
-
-us::Variant variant_demo()
-{
-    us::VariantMap vm2;
-    vm2["a"] = us::Variant(true);
-    us::VariantMap vm;
-    vm["foo"] = "bar";
-    vm["array"] = us::VariantArray({us::Variant(1), us::Variant(2), us::Variant("j")});
-    vm["x"] = us::Variant::null();
-    vm["y"] = us::Variant(10.3f);
-    vm["inner"] = us::Variant(vm2);
-    return us::Variant(vm);
-}
-
+ 
 void export_variant()
 {
     // register Variant -> python object converter
@@ -171,6 +158,4 @@ void export_variant()
         &VariantFromPythonObj::convertible,
         &VariantFromPythonObj::construct,
         boost::python::type_id<us::Variant>());
-
-    def("variant_demo", variant_demo);
 }
