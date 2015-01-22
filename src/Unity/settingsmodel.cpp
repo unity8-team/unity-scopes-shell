@@ -128,6 +128,31 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 break;
         }
     }
+    else if (row - m_data.size() < m_child_scopes_data.size())
+    {
+        auto data = m_child_scopes_data[row - m_data.size()];
+
+        switch (role)
+        {
+            case Roles::RoleSettingId:
+                result = data->id;
+                break;
+            case Roles::RoleDisplayName:
+                result = data->displayName;
+                break;
+            case Roles::RoleType:
+                result = data->type;
+                break;
+            case Roles::RoleProperties:
+                result = data->properties;
+                break;
+            case Roles::RoleValue:
+                result = data->defaultValue;
+                break;
+            default:
+                break;
+        }
+    }
 
     return result;
 }
@@ -138,12 +163,17 @@ QVariant SettingsModel::value(const QString& id) const
 
     QVariant result;
 
-    QSharedPointer<Data> data = m_data_by_id[id];
-    if (data)
+    if (m_child_scopes_data_by_id.contains(id))
     {
+        result = m_child_scopes_data_by_id[id]->defaultValue;
+    }
+    else if (m_data_by_id.contains(id))
+    {
+        QSharedPointer<Data> data = m_data_by_id[id];
         result = m_settings->value(data->id, data->defaultValue);
         result.convert(data->variantType);
     }
+
     return result;
 }
 
@@ -164,6 +194,9 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     {
         QString id = child_scope.id.c_str();
         QString displayName = scopes_metadata[id]->display_name().c_str();
+        QVariant defaultValue = child_scope.enabled;
+        QVariantMap properties;
+        properties["defaultValue"] = defaultValue;
 
         QSharedPointer<QTimer> timer(new QTimer());
         timer->setProperty("setting_id", id);
@@ -175,7 +208,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         m_child_scopes_timers[id] = timer;
 
         QSharedPointer<Data> setting(
-                new Data(id, displayName, "boolean", QVariantMap(), QVariant(),
+                new Data(id, displayName, "boolean", properties, defaultValue,
                         QVariant::Bool));
 
         m_child_scopes_data << setting;
@@ -207,6 +240,24 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
                 break;
         }
     }
+    else if (row - m_data.size() < m_child_scopes_data.size())
+    {
+        auto data = m_child_scopes_data[row];
+
+        switch (role)
+        {
+            case Roles::RoleValue:
+            {
+                QSharedPointer<QTimer> timer = m_child_scopes_timers[data->id];
+                timer->setProperty("value", value);
+                timer->start();
+
+                return true;
+            }
+            default:
+                break;
+        }
+    }
 
     return false;
 }
@@ -218,7 +269,7 @@ int SettingsModel::rowCount(const QModelIndex&) const
 
 int SettingsModel::count() const
 {
-    return m_data.size();
+    return m_data.size() + m_child_scopes_data.size();
 }
 
 void SettingsModel::settings_timeout()
@@ -232,7 +283,14 @@ void SettingsModel::settings_timeout()
     QString setting_id = timer->property("setting_id").toString();
     QVariant value = timer->property("value");
 
-    m_settings->setValue(setting_id, value);
+    if (m_child_scopes_data_by_id.contains(setting_id))
+    {
+
+    }
+    else if (m_data_by_id.contains(setting_id))
+    {
+        m_settings->setValue(setting_id, value);
+    }
 
     Q_EMIT settingsChanged();
 }
