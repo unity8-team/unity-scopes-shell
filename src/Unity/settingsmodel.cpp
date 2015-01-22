@@ -200,7 +200,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     }
     catch (std::exception const& e)
     {
-        ///!
+        qWarning("SettingsModel::update_child_scopes: Exception caught from m_scopeProxy->child_scopes_ordered(): %s", e.what());
         return;
     }
 
@@ -211,7 +211,8 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
-        QString displayName = "Display results from " + QString(scopes_metadata[id]->display_name().c_str()); ///!
+        ///! this string needs to be localizable
+        QString displayName = "Display results from " + QString(scopes_metadata[id]->display_name().c_str());
 
         QSharedPointer<QTimer> timer(new QTimer());
         timer->setProperty("setting_id", id);
@@ -312,7 +313,7 @@ void SettingsModel::settings_timeout()
             }
             catch (std::exception const& e)
             {
-                ///!
+                qWarning("SettingsModel::settings_timeout: Exception caught from m_scopeProxy->set_child_scopes_ordered(): %s", e.what());
                 return;
             }
         }

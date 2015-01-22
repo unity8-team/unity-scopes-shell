@@ -155,7 +155,7 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     }
     catch (std::exception const& e)
     {
-        ///! output message
+        qWarning("OverviewResultsModel::updateChildScopes: Exception caught from proxy()->child_scopes_ordered(): %s", e.what());
         return;
     }
 
