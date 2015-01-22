@@ -185,10 +185,20 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
+    auto scope_proxy = scopes_metadata[m_scopeId]->proxy();
+    try
+    {
+        scope_proxy->set_child_scopes_ordered(m_child_scopes);
+        m_child_scopes = scope_proxy->child_scopes_ordered();
+    }
+    catch (std::exception const& e)
+    {
+        return;
+    }
+
     m_child_scopes_data.clear();
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
-    m_child_scopes = scopes_metadata[m_scopeId]->proxy()->child_scopes_ordered();
 
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
@@ -242,13 +252,14 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
     }
     else if (row - m_data.size() < m_child_scopes_data.size())
     {
-        auto data = m_child_scopes_data[row];
+        auto data = m_child_scopes_data[row - m_data.size()];
 
         switch (role)
         {
             case Roles::RoleValue:
             {
                 QSharedPointer<QTimer> timer = m_child_scopes_timers[data->id];
+                timer->setProperty("index", row - m_data.size());
                 timer->setProperty("value", value);
                 timer->start();
 
@@ -285,7 +296,9 @@ void SettingsModel::settings_timeout()
 
     if (m_child_scopes_data_by_id.contains(setting_id))
     {
-
+        int setting_index = timer->property("index").toInt();
+        std::list<sc::ChildScope>::iterator it = std::next(m_child_scopes.begin(), setting_index);
+        it->enabled = value.toBool();
     }
     else if (m_data_by_id.contains(setting_id))
     {

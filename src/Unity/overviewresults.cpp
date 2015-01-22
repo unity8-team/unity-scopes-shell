@@ -148,7 +148,16 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
         return;
     }
 
-    auto const children = scopeMetadata->proxy()->child_scopes_ordered();
+    unity::scopes::ChildScopeList children;
+    try
+    {
+        children = scopeMetadata->proxy()->child_scopes_ordered();
+    }
+    catch (std::exception const& e)
+    {
+        return;
+    }
+
     if (children.size())
     {
         // iterate over child scope ids, join their display names and insert into m_childScopes for current scope
