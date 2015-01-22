@@ -851,6 +851,7 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
+    m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
     return m_settingsModel.data();
 }
 

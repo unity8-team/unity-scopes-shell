@@ -31,7 +31,7 @@ namespace sc = unity::scopes;
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
         int settingsTimeout)
-        : SettingsModelInterface(parent), m_settingsTimeout(settingsTimeout)
+        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout)
 {
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
@@ -145,6 +145,42 @@ QVariant SettingsModel::value(const QString& id) const
         result.convert(data->variantType);
     }
     return result;
+}
+
+void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
+{
+    if (!scopes_metadata.contains(m_scopeId) ||
+        !scopes_metadata[m_scopeId]->is_aggregator())
+    {
+        return;
+    }
+
+    m_child_scopes_data.clear();
+    m_child_scopes_data_by_id.clear();
+    m_child_scopes_timers.clear();
+    m_child_scopes = scopes_metadata[m_scopeId]->proxy()->child_scopes_ordered();
+
+    for (sc::ChildScope const& child_scope : m_child_scopes)
+    {
+        QString id = child_scope.id.c_str();
+        QString displayName = scopes_metadata[id]->display_name().c_str();
+
+        QSharedPointer<QTimer> timer(new QTimer());
+        timer->setProperty("setting_id", id);
+        timer->setSingleShot(true);
+        timer->setInterval(m_settingsTimeout);
+        timer->setTimerType(Qt::VeryCoarseTimer);
+        connect(timer.data(), SIGNAL(timeout()), this,
+                SLOT(settings_timeout()));
+        m_child_scopes_timers[id] = timer;
+
+        QSharedPointer<Data> setting(
+                new Data(id, displayName, "boolean", QVariantMap(), QVariant(),
+                        QVariant::Bool));
+
+        m_child_scopes_data << setting;
+        m_child_scopes_data_by_id[id] = setting;
+    }
 }
 
 bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,

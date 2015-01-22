@@ -21,6 +21,8 @@
 #define NG_PREVIEW_SETTTINGSMODEL_H_
 
 #include <unity/SymbolExport.h>
+#include <unity/scopes/ChildScope.h>
+#include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
 #include <QAbstractListModel>
@@ -76,6 +78,8 @@ public:
 
     QVariant value(const QString& id) const;
 
+    void update_child_scopes(QMap<QString, unity::scopes::ScopeMetadata::SPtr> const& scopes_metadata);
+
 Q_SIGNALS:
     void settingsChanged();
 
@@ -83,15 +87,18 @@ protected Q_SLOTS:
     void settings_timeout();
 
 protected:
+    const QString m_scopeId;
     int m_settingsTimeout;
 
     QList<QSharedPointer<Data>> m_data;
-
     QMap<QString, QSharedPointer<Data>> m_data_by_id;
-
     QScopedPointer<QSettings> m_settings;
-
     QMap<QString, QSharedPointer<QTimer>> m_timers;
+
+    QList<QSharedPointer<Data>> m_child_scopes_data;
+    QMap<QString, QSharedPointer<Data>> m_child_scopes_data_by_id;
+    unity::scopes::ChildScopeList m_child_scopes;
+    QMap<QString, QSharedPointer<QTimer>> m_child_scopes_timers;
 };
 
 }
