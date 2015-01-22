@@ -39,14 +39,14 @@ static void setIdWrapper(shm::CategoryMatcher *m, const std::string& id)
     m->getId() = id; //FIXME: is this the intended way of setting it?
 }
 
-static PyObject* getFailuresWrapper(shm::MatchResult* matchRes)
+static object getFailuresWrapper(shm::MatchResult* matchRes)
 {
     list pylist;
     for (auto const flr: matchRes->failures())
     {
         pylist.append(flr);
     }
-    return incref(pylist.ptr());
+    return pylist;
 }
 
 static shm::MatchResult getMatchResultByResultList(shm::CategoryListMatcher* catListMatcher, const object& obj)

@@ -80,10 +80,19 @@ class ScopeHarnessWrapper
 void export_scopeharness()
 {
     boost::python::register_ptr_to_python<std::shared_ptr<ScopeHarnessWrapper>>();
-    class_<ScopeHarnessWrapper>("ScopeHarness", no_init)
+    class_<ScopeHarnessWrapper>("ScopeHarness",
+                                "This is the main class for scope harness testing. An instance of it needs to be created "
+                                "using one of the static class methods (new_from_*) before any tests can be performed. "
+                                "The instance of ResultsView provided by results_view property is the entry point for "
+                                "invoking actual queries.",
+                                no_init)
         .add_property("results_view", &ScopeHarnessWrapper::resultsView)
-        .def("new_from_pre_existing_config", &ScopeHarnessWrapper::newFromPreExistingConfig).staticmethod("new_from_pre_existing_config")
-        .def("new_from_scope_list", &ScopeHarnessWrapper::newFromScopeList).staticmethod("new_from_scope_list")
-        .def("new_from_system", &ScopeHarnessWrapper::newFromSystem).staticmethod("new_from_system")
+        .def("new_from_pre_existing_config", &ScopeHarnessWrapper::newFromPreExistingConfig,
+             "Creates ScopeHarness instance from scope runtime configuration files in given directory").staticmethod("new_from_pre_existing_config")
+        .def("new_from_scope_list", &ScopeHarnessWrapper::newFromScopeList,
+             "Creates ScopeHarness instance from a configuration provided by an"
+             " instance of CustomRegistry passed to this factory method").staticmethod("new_from_scope_list")
+        .def("new_from_system", &ScopeHarnessWrapper::newFromSystem,
+             "Creates ScopeHarness instance using default configuration from the system").staticmethod("new_from_system")
     ;
 }

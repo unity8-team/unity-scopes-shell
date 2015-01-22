@@ -50,7 +50,14 @@ static shp::PreviewWidget previewWidgetListGetByString(shp::PreviewWidgetList* w
 
 void export_preview_widget_list()
 {
-    class_<shp::PreviewWidgetList>("PreviewWidgetList", no_init)
+    class_<shp::PreviewWidgetList>("PreviewWidgetList",
+                                   "A simple container for preview widgets returned by a scope. "
+                                   "The number of widgets can be determined with python's len() function "
+                                   "and individual widgets can be accessed using [] operator. "
+                                   "The [] indexing operator supports numeric index values as well as "
+                                   "string keys for accessing widgets based on their identifiers. "
+                                   "Slices are not supported.",
+                                   no_init)
         .def("__len__", &shp::PreviewWidgetList::size)
         .def("__getitem__", previewWidgetListGetByInt)
         .def("__getitem__", previewWidgetListGetByString)

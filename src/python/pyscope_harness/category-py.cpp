@@ -37,7 +37,8 @@ void export_category()
     shr::Result (shr::Category::*result_by_uri)(const std::string&) const = &shr::Category::result;
     shr::Result (shr::Category::*result_by_index)(std::size_t) const = &shr::Category::result;
 
-    class_<shr::Category>("Category", no_init)
+    class_<shr::Category>("Category", "Represents a read-only view of a category returned by scope",
+                          no_init)
         .add_property("id", &shr::Category::id)
         .add_property("title", &shr::Category::title)
         .add_property("icon", &shr::Category::icon)

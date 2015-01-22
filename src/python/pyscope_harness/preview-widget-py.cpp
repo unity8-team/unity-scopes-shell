@@ -24,7 +24,12 @@ namespace shp = unity::scopeharness::preview;
 
 void export_preview_widget()
 {
-    class_<shp::PreviewWidget>("PreviewWidget", no_init)
+    class_<shp::PreviewWidget>("PreviewWidget",
+                               "This class represents a single widget of a preview, such as an image or header. "
+                               "The 'data' property is a regular python dictionary "
+                               "that corresponds to Scopes API VariantMap and contains actual key-values that constitute the "
+                               "widget. See the documentation of Unity Scopes API for more information about supported values.",
+                               no_init)
         .add_property("id", &shp::PreviewWidget::id)
         .add_property("type", &shp::PreviewWidget::type)
         .add_property("data", &shp::PreviewWidget::data)

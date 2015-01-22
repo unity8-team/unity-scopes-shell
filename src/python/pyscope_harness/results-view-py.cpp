@@ -27,14 +27,14 @@ namespace shr = unity::scopeharness::results;
 
 // wrapper function to create python list
 // from list returned by ResultsView::categories
-static PyObject* getCategories(shv::ResultsView* view)
+static object getCategories(shv::ResultsView* view)
 {
     list pylist;
     for (auto const cat: view->categories())
     {
         pylist.append(cat);
     }
-    return incref(pylist.ptr());
+    return pylist;
 }
 
 void export_results_view()
@@ -51,7 +51,12 @@ void export_results_view()
         .value("UNKNOWN", unity::shell::scopes::ScopeInterface::Status::Unknown)
         ;
 
-    class_<shv::ResultsView, bases<shv::AbstractView>>("ResultsView", no_init)
+    class_<shv::ResultsView, bases<shv::AbstractView>>("ResultsView",
+                                                       "This is the main class for driving search and inspecting search results. "
+                                                       "Set search_query property to invoke search, then inspect categories property "
+                                                       "to access returned categories and their results. Use navigation_model method to "
+                                                       "inspect deparments returned by this search request.",
+                                                       no_init)
         .add_property("scope_id", &shv::ResultsView::scopeId)
         .add_property("display_name", &shv::ResultsView::displayName)
         .add_property("icon_hint", &shv::ResultsView::iconHint)
@@ -67,10 +72,10 @@ void export_results_view()
         .add_property("navigation_id", &shv::ResultsView::navigationId, &shv::ResultsView::setNavigationId)
         .add_property("has_navigation", &shv::ResultsView::hasNavigation)
         .add_property("has_alt_navigation", &shv::ResultsView::hasAltNavigation)
-        .def("navigation_model", &shv::ResultsView::navigationModel)
-        .def("wait_for_results_change", &shv::ResultsView::waitForResultsChange)
-        .def("override_category_json", &shv::ResultsView::overrideCategoryJson)
-        .def("category", category_by_row)
-        .def("category", category_by_id)
+        .def("navigation_model", &shv::ResultsView::navigationModel, "Get Department instance by department id")
+        //.def("wait_for_results_change", &shv::ResultsView::waitForResultsChange) FIXME: this probably shouldn't be exposed
+        //.def("override_category_json", &shv::ResultsView::overrideCategoryJson) FIXME: this probably shouldn't be exposed
+        .def("category", category_by_row, "Get Category instance by row index")
+        .def("category", category_by_id, "Get Category instance by id")
     ;
 }

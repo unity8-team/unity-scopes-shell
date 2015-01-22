@@ -45,7 +45,9 @@ static shr::ChildDepartment getChildDepartmentByIndex(shr::Department *dep, int 
 
 void export_department()
 {
-    class_<shr::ChildDepartment>("ChildDepartment", no_init)
+    class_<shr::ChildDepartment>("ChildDepartment",
+                                 "Represents a read-only view of a child department.",
+                                 no_init)
         .add_property("id", &shr::ChildDepartment::id)
         .add_property("label", &shr::ChildDepartment::label)
         .add_property("has_children", &shr::ChildDepartment::hasChildren)
@@ -53,7 +55,13 @@ void export_department()
         //.def("__eq__", compareChildDepartments)
     ;
 
-    class_<shr::Department>("Department", no_init)
+    class_<shr::Department>("Department",
+                            "Represents a read-only view of a department returned by a scope. "
+                            "Use id, label, all_label properties to inspect it, and children property or "
+                            "child method to inspect child departments (instances of ChildDepartment). "
+                            " This class supports __getitem__ call, which acts as a shortcut for child(index) method, "
+                            "and responds to __len__ call, so python's len(department) may be used instead of department.size",
+                            no_init)
         .add_property("id", &shr::Department::id)
         .add_property("label", &shr::Department::label)
         .add_property("all_label", &shr::Department::allLabel)
@@ -63,7 +71,7 @@ void export_department()
         .add_property("is_hidden", &shr::Department::isHidden)
         .add_property("size", &shr::Department::size)
         .add_property("children", getChildrenDepartments)
-        .def("child", &shr::Department::child, return_value_policy<return_by_value>())
+        .def("child", &shr::Department::child, return_value_policy<return_by_value>(), "Get child department by its index (a number)")
         .def("__len__", &shr::Department::size) // respond to python's len(department)
         .def("__getitem__", getChildDepartmentByIndex) // support for [] operator
     ;

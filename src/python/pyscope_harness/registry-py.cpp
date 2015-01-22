@@ -56,16 +56,23 @@ static void enableScopes(shr::CustomRegistry::Parameters* p, bool system, bool c
 
 void export_registry()
 {
-    class_<shr::CustomRegistry::Parameters>("Parameters", no_init)
+    class_<shr::CustomRegistry::Parameters>("Parameters", "Parameters for instantiating a CustomRegistry instace", no_init)
         .def("__init__", make_constructor(&makeParameters))
-        .def("include_system_scopes", &shr::CustomRegistry::Parameters::includeSystemScopes, return_internal_reference<1>())
-        .def("include_click_scopes", &shr::CustomRegistry::Parameters::includeClickScopes, return_internal_reference<1>())
-        .def("include_oem_scopes", &shr::CustomRegistry::Parameters::includeOemScopes, return_internal_reference<1>())
-        .def("include_remote_scopes", &shr::CustomRegistry::Parameters::includeRemoteScopes, return_internal_reference<1>())
+        .def("include_system_scopes", &shr::CustomRegistry::Parameters::includeSystemScopes, return_internal_reference<1>(),
+             "Enable system scopes")
+        .def("include_click_scopes", &shr::CustomRegistry::Parameters::includeClickScopes, return_internal_reference<1>(),
+             "Enable click scopes")
+        .def("include_oem_scopes", &shr::CustomRegistry::Parameters::includeOemScopes, return_internal_reference<1>(),
+             "Enable OEM scopes")
+        .def("include_remote_scopes", &shr::CustomRegistry::Parameters::includeRemoteScopes, return_internal_reference<1>(),
+             "Enable remote scopes from Ubuntu servers")
 
         // convienience python method that takes named arguments
-        .def("enable_scopes", &enableScopes, (arg("system_scopes") = false, arg("click_scopes") = false, arg("remote_scopes") = false),
-                "Enable particular types of scopes via named arguments")
+        .def("enable_scopes", &enableScopes, (arg("system_scopes") = false,
+                                              arg("click_scopes") = false,
+                                              arg("oem_scopes") = false,
+                                              arg("remote_scopes") = false),
+             "Enable particular types of scopes via named arguments")
         ;
 
     class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())

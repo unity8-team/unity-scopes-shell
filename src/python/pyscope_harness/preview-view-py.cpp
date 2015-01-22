@@ -24,22 +24,26 @@ namespace shv = unity::scopeharness::view;
 
 // wrapper function to create python list of lists from a vector of lists
 // returned by PreviewView::widgets()
-static PyObject* previewViewWidgetsWrapper(shv::PreviewView* view)
+static object previewViewWidgetsWrapper(shv::PreviewView* view)
 {
     list pylist;
     for (auto const wlist: view->widgets())
     {
         pylist.append(wlist);
     }
-    return incref(pylist.ptr());
+    return pylist;
 }
 
 void export_preview_view()
 {
-    class_<shv::PreviewView, bases<shv::AbstractView>>("PreviewView", no_init)
+    class_<shv::PreviewView, bases<shv::AbstractView>>("PreviewView",
+                                                       "This is a view on a preview returned by activation of search Result. "
+                                                       "Set column_count property to the desired number of columns, then "
+                                                       "inspect widgets in every column using widgets_in_column(index) method.",
+                                                       no_init)
         .add_property("column_count", &shv::PreviewView::columnCount, &shv::PreviewView::setColumnCount)
         .add_property("widgets", previewViewWidgetsWrapper)
-        .def("widgets_in_column", &shv::PreviewView::widgetsInColumn)
+        .def("widgets_in_column", &shv::PreviewView::widgetsInColumn, "Get list of PreviewWidget objects in given column (integer index)")
         .add_property("widgets_in_first_column", &shv::PreviewView::widgetsInFirstColumn)
         ;
 }
