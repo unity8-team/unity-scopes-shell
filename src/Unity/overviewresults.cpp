@@ -155,6 +155,7 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     }
     catch (std::exception const& e)
     {
+        ///! output message
         return;
     }
 

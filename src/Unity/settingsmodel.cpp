@@ -147,8 +147,11 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 result = data->properties;
                 break;
             case Roles::RoleValue:
-                result = data->defaultValue;
+            {
+                auto it = std::next(m_child_scopes.begin(), row - m_data.size());
+                result = it->enabled;
                 break;
+            }
             default:
                 break;
         }
@@ -161,20 +164,25 @@ QVariant SettingsModel::value(const QString& id) const
 {
     m_settings->sync();
 
-    QVariant result;
-
     if (m_child_scopes_data_by_id.contains(id))
     {
-        result = m_child_scopes_data_by_id[id]->defaultValue;
+        for (auto const& child_scope : m_child_scopes)
+        {
+            if (child_scope.id == id.toStdString())
+            {
+                return child_scope.enabled;
+            }
+        }
     }
     else if (m_data_by_id.contains(id))
     {
         QSharedPointer<Data> data = m_data_by_id[id];
-        result = m_settings->value(data->id, data->defaultValue);
+        auto result = m_settings->value(data->id, data->defaultValue);
         result.convert(data->variantType);
+        return result;
     }
 
-    return result;
+    return QVariant();
 }
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
@@ -185,14 +193,14 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
-    auto scope_proxy = scopes_metadata[m_scopeId]->proxy();
+    m_scopeProxy = scopes_metadata[m_scopeId]->proxy();
     try
     {
-        scope_proxy->set_child_scopes_ordered(m_child_scopes);
-        m_child_scopes = scope_proxy->child_scopes_ordered();
+        m_child_scopes = m_scopeProxy->child_scopes_ordered();
     }
     catch (std::exception const& e)
     {
+        ///!
         return;
     }
 
@@ -203,10 +211,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
-        QString displayName = scopes_metadata[id]->display_name().c_str();
-        QVariant defaultValue = child_scope.enabled;
-        QVariantMap properties;
-        properties["defaultValue"] = defaultValue;
+        QString displayName = "Display results from " + QString(scopes_metadata[id]->display_name().c_str()); ///!
 
         QSharedPointer<QTimer> timer(new QTimer());
         timer->setProperty("setting_id", id);
@@ -218,8 +223,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         m_child_scopes_timers[id] = timer;
 
         QSharedPointer<Data> setting(
-                new Data(id, displayName, "boolean", properties, defaultValue,
-                        QVariant::Bool));
+                new Data(id, displayName, "boolean", QVariantMap(), QVariant(), QVariant::Bool));
 
         m_child_scopes_data << setting;
         m_child_scopes_data_by_id[id] = setting;
@@ -297,8 +301,21 @@ void SettingsModel::settings_timeout()
     if (m_child_scopes_data_by_id.contains(setting_id))
     {
         int setting_index = timer->property("index").toInt();
-        std::list<sc::ChildScope>::iterator it = std::next(m_child_scopes.begin(), setting_index);
+        auto it = std::next(m_child_scopes.begin(), setting_index);
         it->enabled = value.toBool();
+
+        if (m_scopeProxy)
+        {
+            try
+            {
+                m_scopeProxy->set_child_scopes_ordered(m_child_scopes);
+            }
+            catch (std::exception const& e)
+            {
+                ///!
+                return;
+            }
+        }
     }
     else if (m_data_by_id.contains(setting_id))
     {

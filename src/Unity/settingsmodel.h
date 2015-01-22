@@ -22,6 +22,7 @@
 
 #include <unity/SymbolExport.h>
 #include <unity/scopes/ChildScope.h>
+#include <unity/scopes/Scope.h>
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
@@ -87,7 +88,8 @@ protected Q_SLOTS:
     void settings_timeout();
 
 protected:
-    const QString m_scopeId;
+    QString m_scopeId;
+    unity::scopes::ScopeProxy m_scopeProxy;
     int m_settingsTimeout;
 
     QList<QSharedPointer<Data>> m_data;
