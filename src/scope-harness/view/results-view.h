@@ -63,6 +63,7 @@ public:
 
     ~ResultsView() = default;
 
+
     void setQuery(const std::string& searchString);
 
     std::string query() const;
@@ -93,6 +94,8 @@ public:
 
     int queryId() const;
 
+    void forceRefresh();
+
     results::Category::List categories();
 
     results::Category category(std::size_t row);
@@ -107,11 +110,13 @@ public:
 
     bool hasAltNavigation() const;
 
-    std::string navigationId() const;
+    std::string departmentId() const;
 
-    void setNavigationId(const std::string& id);
+    std::string altDepartmentId() const;
 
-    results::Department navigationModel(const std::string& id);
+    results::Department browseDepartment(const std::string& id = std::string());
+
+    results::Department browseAltDepartment(const std::string& id = std::string());
 
     // TODO Remove / replace these
     unity::shell::scopes::CategoriesInterface* raw_categories() const;

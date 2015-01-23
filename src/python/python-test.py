@@ -151,9 +151,9 @@ class DepartmentsTest (ScopeHarnessTestCase):
 
         self.assertTrue(self.view.has_navigation)
         self.assertFalse(self.view.has_alt_navigation)
-        self.assertEqual(self.view.navigation_id, '')
+        self.assertEqual(self.view.department_id, '')
 
-        departments = self.view.navigation_model('')
+        departments = self.view.browse_department('')
         self.assertEqual(departments.label, 'All departments')
         self.assertEqual(departments.all_label, '')
         self.assertEqual(departments.parent_id, '')
@@ -177,7 +177,6 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.assertEqual(dep.label, 'Toys, Children & Baby')
         self.assertTrue(dep.has_children)
         self.assertFalse(dep.is_active)
-
 
 if __name__ == '__main__':
     unittest.main()

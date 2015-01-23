@@ -54,8 +54,8 @@ void export_results_view()
     class_<shv::ResultsView, bases<shv::AbstractView>>("ResultsView",
                                                        "This is the main class for driving search and inspecting search results. "
                                                        "Set search_query property to invoke search, then inspect categories property "
-                                                       "to access returned categories and their results. Use navigation_model method to "
-                                                       "inspect deparments returned by this search request.",
+                                                       "to access returned categories and their results. Use browse_department method to "
+                                                       "change active department.",
                                                        no_init)
         .add_property("scope_id", &shv::ResultsView::scopeId)
         .add_property("display_name", &shv::ResultsView::displayName)
@@ -69,12 +69,14 @@ void export_results_view()
         .add_property("categories", &getCategories)
         .add_property("search_query", &shv::ResultsView::query, &shv::ResultsView::setQuery)
         .add_property("active_scope", &shv::ResultsView::activeScope, &shv::ResultsView::setActiveScope)
-        .add_property("navigation_id", &shv::ResultsView::navigationId, &shv::ResultsView::setNavigationId)
+        .add_property("department_id", &shv::ResultsView::departmentId)
+        .add_property("alt_department_id", &shv::ResultsView::altDepartmentId)
         .add_property("has_navigation", &shv::ResultsView::hasNavigation)
         .add_property("has_alt_navigation", &shv::ResultsView::hasAltNavigation)
-        .def("navigation_model", &shv::ResultsView::navigationModel, "Get Department instance by department id")
-        //.def("wait_for_results_change", &shv::ResultsView::waitForResultsChange) FIXME: this probably shouldn't be exposed
-        //.def("override_category_json", &shv::ResultsView::overrideCategoryJson) FIXME: this probably shouldn't be exposed
+        .def("browse_department", &shv::ResultsView::browseDepartment,
+             "Go to a specific department by id. Returns Department instance.")
+        .def("browse_alt_department", &shv::ResultsView::browseAltDepartment,
+             "Go to a specific alternate (e.g. the top-right selection filter if provided by the scope) department by id. Returns Department instance.")
         .def("category", category_by_row, "Get Category instance by row index")
         .def("category", category_by_id, "Get Category instance by id")
     ;
