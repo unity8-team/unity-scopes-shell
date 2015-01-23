@@ -2,16 +2,18 @@
 from pyscope_harness import *
 from pyscope_harness.testing import *
 import unittest
+import sys
 
-TEST_DATA_DIR='/home/vivid/python-harness/tests/data/'
+# first argument is the directory of test scopes
+TEST_DATA_DIR = sys.argv[1]
 
 class ResultsTest (ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
-            TEST_DATA_DIR + "mock-scope/mock-scope.ini",
-            TEST_DATA_DIR + "mock-scope-info/mock-scope-info.ini",
-            TEST_DATA_DIR + "mock-scope-ttl/mock-scope-ttl.ini"
+            TEST_DATA_DIR + "/mock-scope/mock-scope.ini",
+            TEST_DATA_DIR + "/mock-scope-info/mock-scope-info.ini",
+            TEST_DATA_DIR + "/mock-scope-ttl/mock-scope-ttl.ini"
             ]))
         cls.view = cls.harness.results_view
         cls.view.active_scope = "mock-scope"
@@ -35,7 +37,7 @@ class PreviewTest (ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
-            TEST_DATA_DIR + "mock-scope/mock-scope.ini",
+            TEST_DATA_DIR + "/mock-scope/mock-scope.ini",
             ]))
         cls.view = cls.harness.results_view
         cls.view.active_scope = "mock-scope"
@@ -132,9 +134,9 @@ class DepartmentsTest (ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
-                    TEST_DATA_DIR + "mock-scope-departments/mock-scope-departments.ini",
-                    TEST_DATA_DIR + "mock-scope-double-nav/mock-scope-double-nav.ini",
-                    TEST_DATA_DIR + "mock-scope-departments-flipflop/mock-scope-departments-flipflop.ini"
+                    TEST_DATA_DIR + "/mock-scope-departments/mock-scope-departments.ini",
+                    TEST_DATA_DIR + "/mock-scope-double-nav/mock-scope-double-nav.ini",
+                    TEST_DATA_DIR + "/mock-scope-departments-flipflop/mock-scope-departments-flipflop.ini"
             ]))
         cls.view = cls.harness.results_view
 
@@ -167,10 +169,10 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.assertFalse(dep.is_active)
 
         # excercise different methods for getting children
-        #dep2 = departments.child(0)
-        #dep3 = departments.children[0]
-        #self.assertEqual(dep, dep2)
-        #self.assertEqual(dep2, dep3)
+        dep2 = departments.child(0)
+        dep3 = departments.children[0]
+        self.assertEqual(dep.id, dep2.id)
+        self.assertEqual(dep2.id, dep3.id)
 
         dep = departments[4]
         self.assertEqual(dep.id, 'toys')
@@ -179,4 +181,4 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.assertFalse(dep.is_active)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(argv = sys.argv[:1])
