@@ -35,10 +35,11 @@
 #include <previewwidgetmodel.h>
 
 #include <scope-harness/registry/pre-existing-registry.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 using namespace scopes_ng;
 using namespace unity::scopeharness;
+using namespace unity::scopeharness::internal;
 using namespace unity::scopeharness::registry;
 
 class OverviewTest : public QObject

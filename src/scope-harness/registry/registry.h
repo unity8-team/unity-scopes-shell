@@ -38,6 +38,14 @@ public:
 
     virtual void start() = 0;
 
+    Registry(const Registry& other) = delete;
+
+    Registry(Registry&& other) = delete;
+
+    Registry& operator=(const Registry& other) = delete;
+
+    Registry& operator=(Registry&& other) = delete;
+
 protected:
     Registry() = default;
 };

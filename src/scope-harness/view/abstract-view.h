@@ -37,6 +37,14 @@ public:
     AbstractView() = default;
 
     virtual ~AbstractView() = default;
+
+    AbstractView(const AbstractView& other) = delete;
+
+    AbstractView(AbstractView&& other) = delete;
+
+    AbstractView& operator=(const AbstractView& other) = delete;
+
+    AbstractView& operator=(AbstractView&& other) = delete;
 };
 
 }

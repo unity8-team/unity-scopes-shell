@@ -28,7 +28,7 @@
 #include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 using namespace std;
 namespace ng = scopes_ng;
@@ -39,6 +39,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 namespace view
 {
 
@@ -231,14 +232,14 @@ void ResultsView::waitForResultsChange()
     throwIf(p->m_active_scope->searchInProgress(), "");
 }
 
-bool ResultsView::hasNavigation() const
+bool ResultsView::hasDepartments() const
 {
     p->checkActiveScope();
 
     return p->m_active_scope->hasNavigation();
 }
 
-bool ResultsView::hasAltNavigation() const
+bool ResultsView::hasAltDepartments() const
 {
     p->checkActiveScope();
 

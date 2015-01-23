@@ -25,6 +25,7 @@ add_library(
     scope-harness SHARED
     $<TARGET_OBJECTS:Unity-qml-object>
     internal/signal-handler.cpp
+    internal/test-utils.cpp
     matcher/category-matcher.cpp
     matcher/category-list-matcher.cpp
     matcher/child-department-matcher.cpp
@@ -46,7 +47,6 @@ add_library(
     view/preview-view.cpp
     view/results-view.cpp
     scope-harness.cpp
-    test-utils.cpp
 )
 
 target_link_libraries(

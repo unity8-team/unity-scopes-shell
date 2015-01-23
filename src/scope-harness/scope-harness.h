@@ -40,7 +40,7 @@ namespace unity
 namespace scopeharness
 {
 
-class Q_DECL_EXPORT ScopeHarness
+class Q_DECL_EXPORT ScopeHarness final
 {
 public:
     UNITY_DEFINES_PTRS(ScopeHarness);

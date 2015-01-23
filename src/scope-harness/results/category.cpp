@@ -18,7 +18,7 @@
 
 #include <scope-harness/results/category.h>
 #include <scope-harness/internal/category-arguments.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
 
@@ -33,6 +33,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 namespace results
 {
 

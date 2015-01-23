@@ -35,7 +35,7 @@ class Result;
 namespace matcher
 {
 
-class Q_DECL_EXPORT ResultMatcher
+class Q_DECL_EXPORT ResultMatcher final
 {
 public:
     ResultMatcher(const std::string& uri);

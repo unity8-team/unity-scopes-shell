@@ -35,7 +35,7 @@ namespace results
 {
 class Result;
 
-class Q_DECL_EXPORT Category
+class Q_DECL_EXPORT Category final
 {
 public:
     typedef std::vector<Category> List;

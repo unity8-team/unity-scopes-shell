@@ -41,6 +41,7 @@ namespace ss = unity::shell::scopes;
 
 namespace unity {
 namespace scopeharness {
+namespace internal {
 
 void throwIf(bool condition, const std::string& message)
 {
@@ -166,5 +167,6 @@ QStringList getFavoriteScopes()
     return favs;
 }
 
+}
 }
 }

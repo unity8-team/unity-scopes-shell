@@ -36,7 +36,7 @@ namespace results
 {
 class Department;
 
-class Q_DECL_EXPORT ChildDepartment
+class Q_DECL_EXPORT ChildDepartment final
 {
 public:
     typedef std::vector<ChildDepartment> List;

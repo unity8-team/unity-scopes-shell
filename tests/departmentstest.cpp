@@ -25,7 +25,6 @@
 #include <scope-harness/matcher/department-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/scope-harness.h>
-#include <scope-harness/test-utils.h>
 
 using namespace std;
 
@@ -70,8 +69,8 @@ private Q_SLOTS:
         m_resultsView->setActiveScope("mock-scope-departments");
         m_resultsView->setQuery("foo");
 
-        QVERIFY(!m_resultsView->hasNavigation());
-        QVERIFY(!m_resultsView->hasAltNavigation());
+        QVERIFY(!m_resultsView->hasDepartments());
+        QVERIFY(!m_resultsView->hasAltDepartments());
     }
 
     void testRootDepartment()
@@ -79,8 +78,8 @@ private Q_SLOTS:
         m_resultsView->setActiveScope("mock-scope-departments");
         m_resultsView->setQuery("");
 
-        QVERIFY(m_resultsView->hasNavigation());
-        QVERIFY(!m_resultsView->hasAltNavigation());
+        QVERIFY(m_resultsView->hasDepartments());
+        QVERIFY(!m_resultsView->hasAltDepartments());
         QVERIFY(m_resultsView->departmentId().empty());
 
         auto departments = m_resultsView->browseDepartment();
@@ -228,8 +227,8 @@ private Q_SLOTS:
         m_resultsView->setQuery("");
         auto root = m_resultsView->browseDepartment();
 
-        QVERIFY(m_resultsView->hasNavigation());
-        QVERIFY(m_resultsView->hasAltNavigation());
+        QVERIFY(m_resultsView->hasDepartments());
+        QVERIFY(m_resultsView->hasAltDepartments());
         QVERIFY(m_resultsView->departmentId().empty());
         QCOMPARE(m_resultsView->altDepartmentId(), string("featured"));
 
@@ -295,8 +294,8 @@ private Q_SLOTS:
         m_resultsView->setQuery("");
         auto root = m_resultsView->browseDepartment();
 
-        QVERIFY(m_resultsView->hasNavigation());
-        QVERIFY(!m_resultsView->hasAltNavigation());
+        QVERIFY(m_resultsView->hasDepartments());
+        QVERIFY(!m_resultsView->hasAltDepartments());
         QVERIFY(m_resultsView->departmentId().empty());
 
         QVERIFY_MATCHRESULT(

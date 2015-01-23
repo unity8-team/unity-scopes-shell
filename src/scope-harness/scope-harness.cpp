@@ -22,7 +22,7 @@
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/registry/system-registry.h>
 #include <scope-harness/scope-harness.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 #include <QSignalSpy>
 
@@ -33,6 +33,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 
 struct ScopeHarness::Priv
 {

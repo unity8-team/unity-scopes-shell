@@ -31,7 +31,7 @@ namespace scopeharness
 namespace matcher
 {
 
-class Q_DECL_EXPORT MatchResult
+class Q_DECL_EXPORT MatchResult final
 {
 public:
     MatchResult();
