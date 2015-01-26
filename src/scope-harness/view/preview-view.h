@@ -42,7 +42,7 @@ namespace view
 {
 class ResultsView;
 
-class Q_DECL_EXPORT PreviewView: public AbstractView
+class Q_DECL_EXPORT PreviewView final: public AbstractView
 {
 public:
     UNITY_DEFINES_PTRS(PreviewView);
@@ -50,6 +50,14 @@ public:
     PreviewView();
 
     ~PreviewView() = default;
+
+    PreviewView(const PreviewView& other) = delete;
+
+    PreviewView(PreviewView&& other) = delete;
+
+    PreviewView& operator=(const PreviewView& other) = delete;
+
+    PreviewView& operator=(PreviewView&& other) = delete;
 
     void setColumnCount(unsigned int count);
 

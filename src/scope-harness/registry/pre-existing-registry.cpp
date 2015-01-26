@@ -17,7 +17,7 @@
  */
 
 #include <scope-harness/registry/pre-existing-registry.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 #include <QDir>
 #include <QFile>
@@ -32,6 +32,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 namespace registry
 {
 

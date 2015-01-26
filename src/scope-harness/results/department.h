@@ -41,7 +41,7 @@ class ResultsView;
 namespace results
 {
 
-class Q_DECL_EXPORT Department
+class Q_DECL_EXPORT Department final
 {
 public:
     Department(const Department& other);

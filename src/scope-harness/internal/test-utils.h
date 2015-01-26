@@ -27,6 +27,7 @@
 
 namespace unity {
 namespace scopeharness {
+namespace internal {
 
 Q_DECL_EXPORT
 void throwIf(bool condition, const std::string& message);
@@ -61,5 +62,6 @@ void setFavouriteScopes(const QStringList& cannedQueries);
 Q_DECL_EXPORT
 QStringList getFavoriteScopes();
 
+}
 }
 }

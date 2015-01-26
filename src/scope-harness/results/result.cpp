@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/results/result.h>
 #include <scope-harness/view/preview-view.h>
@@ -41,6 +41,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 namespace results
 {
 namespace

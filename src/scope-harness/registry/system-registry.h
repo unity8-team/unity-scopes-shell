@@ -27,7 +27,7 @@ namespace scopeharness
 namespace registry
 {
 
-class Q_DECL_EXPORT SystemRegistry: public Registry
+class Q_DECL_EXPORT SystemRegistry final: public Registry
 {
 public:
     UNITY_DEFINES_PTRS(SystemRegistry);
@@ -37,6 +37,14 @@ public:
     ~SystemRegistry();
 
     void start() override;
+
+    SystemRegistry(const SystemRegistry& other) = delete;
+
+    SystemRegistry(SystemRegistry&& other) = delete;
+
+    SystemRegistry& operator=(const SystemRegistry& other) = delete;
+
+    SystemRegistry& operator=(SystemRegistry&& other) = delete;
 };
 
 }

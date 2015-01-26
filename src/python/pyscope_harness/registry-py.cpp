@@ -75,7 +75,7 @@ void export_registry()
              "Enable particular types of scopes via named arguments")
         ;
 
-    class_<shr::CustomRegistry>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
+    class_<shr::CustomRegistry, boost::noncopyable>("CustomRegistry", init<const shr::CustomRegistry::Parameters&>())
         .def("start", &shr::CustomRegistry::start)
     ;
 }

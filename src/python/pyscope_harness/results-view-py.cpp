@@ -51,7 +51,7 @@ void export_results_view()
         .value("UNKNOWN", unity::shell::scopes::ScopeInterface::Status::Unknown)
         ;
 
-    class_<shv::ResultsView, bases<shv::AbstractView>>("ResultsView",
+    class_<shv::ResultsView, bases<shv::AbstractView>, boost::noncopyable>("ResultsView",
                                                        "This is the main class for driving search and inspecting search results. "
                                                        "Set search_query property to invoke search, then inspect categories property "
                                                        "to access returned categories and their results. Use browse_department method to "
@@ -71,8 +71,8 @@ void export_results_view()
         .add_property("active_scope", &shv::ResultsView::activeScope, &shv::ResultsView::setActiveScope)
         .add_property("department_id", &shv::ResultsView::departmentId)
         .add_property("alt_department_id", &shv::ResultsView::altDepartmentId)
-        .add_property("has_navigation", &shv::ResultsView::hasNavigation)
-        .add_property("has_alt_navigation", &shv::ResultsView::hasAltNavigation)
+        .add_property("has_departments", &shv::ResultsView::hasDepartments)
+        .add_property("has_alt_departments", &shv::ResultsView::hasAltDepartments)
         .def("browse_department", &shv::ResultsView::browseDepartment,
              "Go to a specific department by id. Returns Department instance.")
         .def("browse_alt_department", &shv::ResultsView::browseAltDepartment,

@@ -19,12 +19,8 @@
 
 #include <QObject>
 #include <QTest>
-#include <QJsonValue>
-#include <QJsonObject>
-#include <QThread>
-#include <QScopedPointer>
+#include <QTimer>
 #include <QSignalSpy>
-#include <QVariantList>
 #include <QDBusConnection>
 
 #include <Unity/resultsmodel.h>
@@ -40,7 +36,6 @@
 #include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/scope-harness.h>
-#include <scope-harness/test-utils.h>
 
 using namespace std;
 namespace sh = unity::scopeharness;

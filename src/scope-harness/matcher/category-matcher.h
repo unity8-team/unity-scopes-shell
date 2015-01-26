@@ -38,7 +38,7 @@ namespace matcher
 {
 class ResultMatcher;
 
-class Q_DECL_EXPORT CategoryMatcher
+class Q_DECL_EXPORT CategoryMatcher final
 {
 public:
     enum class Mode

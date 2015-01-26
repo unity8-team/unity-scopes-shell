@@ -31,7 +31,7 @@ class ChildDepartment;
 namespace matcher
 {
 
-class Q_DECL_EXPORT ChildDepartmentMatcher
+class Q_DECL_EXPORT ChildDepartmentMatcher final
 {
 public:
     ChildDepartmentMatcher(const std::string& id);

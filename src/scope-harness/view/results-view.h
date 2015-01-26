@@ -54,7 +54,7 @@ namespace view
 {
 class PreviewView;
 
-class Q_DECL_EXPORT ResultsView: public AbstractView
+class Q_DECL_EXPORT ResultsView final: public AbstractView
 {
 public:
     UNITY_DEFINES_PTRS(ResultsView);
@@ -63,6 +63,13 @@ public:
 
     ~ResultsView() = default;
 
+    ResultsView(const ResultsView& other) = delete;
+
+    ResultsView(ResultsView&& other) = delete;
+
+    ResultsView& operator=(const ResultsView& other) = delete;
+
+    ResultsView& operator=(ResultsView&& other) = delete;
 
     void setQuery(const std::string& searchString);
 
@@ -106,9 +113,9 @@ public:
 
     // Navigation
 
-    bool hasNavigation() const;
+    bool hasDepartments() const;
 
-    bool hasAltNavigation() const;
+    bool hasAltDepartments() const;
 
     std::string departmentId() const;
 

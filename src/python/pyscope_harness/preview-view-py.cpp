@@ -36,7 +36,7 @@ static object previewViewWidgetsWrapper(shv::PreviewView* view)
 
 void export_preview_view()
 {
-    class_<shv::PreviewView, bases<shv::AbstractView>>("PreviewView",
+    class_<shv::PreviewView, bases<shv::AbstractView>, boost::noncopyable>("PreviewView",
                                                        "This is a view on a preview returned by activation of search Result. "
                                                        "Set column_count property to the desired number of columns, then "
                                                        "inspect widgets in every column using widgets_in_column(index) method.",

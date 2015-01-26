@@ -31,7 +31,7 @@ class Department;
 namespace matcher
 {
 
-class Q_DECL_EXPORT DepartmentMatcher
+class Q_DECL_EXPORT DepartmentMatcher final
 {
 public:
     enum class Mode

@@ -20,7 +20,7 @@
 #include <scope-harness/preview/preview-widget.h>
 #include <scope-harness/view/abstract-view.h>
 #include <scope-harness/view/preview-view.h>
-#include <scope-harness/test-utils.h>
+#include <scope-harness/internal/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
@@ -39,6 +39,7 @@ namespace unity
 {
 namespace scopeharness
 {
+using namespace internal;
 namespace preview
 {
 

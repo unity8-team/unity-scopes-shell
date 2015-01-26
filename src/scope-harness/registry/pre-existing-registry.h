@@ -29,12 +29,20 @@ namespace scopeharness
 namespace registry
 {
 
-class Q_DECL_EXPORT PreExistingRegistry : public Registry
+class Q_DECL_EXPORT PreExistingRegistry final: public Registry
 {
 public:
     PreExistingRegistry(const std::string &runtimeConfig);
 
     ~PreExistingRegistry();
+
+    PreExistingRegistry(const PreExistingRegistry& other) = delete;
+
+    PreExistingRegistry(PreExistingRegistry&& other) = delete;
+
+    PreExistingRegistry& operator=(const PreExistingRegistry& other) = delete;
+
+    PreExistingRegistry& operator=(PreExistingRegistry&& other) = delete;
 
     void start() override;
 

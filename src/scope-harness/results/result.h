@@ -42,7 +42,7 @@ class PreviewView;
 namespace results
 {
 
-class Q_DECL_EXPORT Result
+class Q_DECL_EXPORT Result final
 {
 public:
     typedef std::vector<Result> List;

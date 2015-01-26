@@ -144,15 +144,15 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.view.active_scope = 'mock-scope-departments'
         self.view.search_query = 'foo'
 
-        self.assertFalse(self.view.has_navigation)
-        self.assertFalse(self.view.has_alt_navigation)
+        self.assertFalse(self.view.has_departments)
+        self.assertFalse(self.view.has_alt_departments)
 
     def test_root_department(self):
         self.view.active_scope = 'mock-scope-departments'
         self.view.search_query = ''
 
-        self.assertTrue(self.view.has_navigation)
-        self.assertFalse(self.view.has_alt_navigation)
+        self.assertTrue(self.view.has_departments)
+        self.assertFalse(self.view.has_alt_departments)
         self.assertEqual(self.view.department_id, '')
 
         departments = self.view.browse_department('')
