@@ -1109,13 +1109,15 @@ void Scope::activate(QVariant const& result_var)
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("service_name") &&
+        if (details.contains("scope_id") &&
+            details.contains("service_name") &&
             details.contains("service_type") &&
             details.contains("provider_name") &&
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("service_name").toString(),
+            bool success = loginToAccount(details.value("scope_id").toString(),
+                                          details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());
 
@@ -1173,13 +1175,15 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("service_name") &&
+        if (details.contains("scope_id") &&
+            details.contains("service_name") &&
             details.contains("service_type") &&
             details.contains("provider_name") &&
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("service_name").toString(),
+            bool success = loginToAccount(details.value("scope_id").toString(),
+                                          details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());
 
@@ -1260,7 +1264,7 @@ void Scope::activateUri(QString const& uri)
     }
 }
 
-bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
+bool Scope::loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name)
 {
     // Set the UNITY_SCOPES_OA_UI_POLICY environment variable here so that OnlineAccountClient knows we're
     // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
@@ -1299,7 +1303,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     if (!service_enabled)
     {
         OnlineAccountsClient::Setup setup;
-        setup.setApplicationId(id());
+        setup.setApplicationId(scope_id.isEmpty() ? id() : scope_id);
         setup.setServiceTypeId(service_type);
         setup.setProviderId(provider_name);
         setup.exec();
