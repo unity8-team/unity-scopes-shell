@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+"""
+This is a test of scope harness python bindings against mock scopes.
+The test cases here replicate some of the cases of the original C++ tests.
+"""
+
 from pyscope_harness import *
 from pyscope_harness.testing import *
 import unittest
