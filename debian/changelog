@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.4+15.04.20150126~rtm-0ubuntu1) 14.09; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Read scope ID from the OA details embedded in a log-in item (LP:
+    #1414560)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 26 Jan 2015 12:24:18 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150120~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Pete Woods ]
