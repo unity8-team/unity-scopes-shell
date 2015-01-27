@@ -208,17 +208,17 @@ private Q_SLOTS:
 
         auto toys = m_resultsView->browseDepartment("toys");
         QCOMPARE(m_resultsView->departmentId(), string("toys"));
-        QCOMPARE(toys.size(), 2ul);
+        QCOMPARE(toys.size(), size_t(2));
 
         auto toysGames = m_resultsView->browseDepartment("toys-games");
         QCOMPARE(m_resultsView->departmentId(), string("toys-games"));
-        QCOMPARE(toysGames.size(), 0ul);
+        QCOMPARE(toysGames.size(), size_t(0));
 
         // after getting the parent department model, it should still have
         // all the leaves, even though the leaf served just itself
         auto toys2 = m_resultsView->browseDepartment("toys");
         QCOMPARE(m_resultsView->departmentId(), string("toys"));
-        QCOMPARE(toys2.size(), 2ul);
+        QCOMPARE(toys2.size(), size_t(2));
     }
 
     void testDoubleNavigation()
