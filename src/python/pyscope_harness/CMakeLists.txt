@@ -37,3 +37,5 @@ add_subdirectory(testing)
 
 install(FILES __init__.py DESTINATION ${pyscope_harnessdir})
 install(TARGETS _pyscope_harness LIBRARY DESTINATION ${pyscope_harnessdir})
+
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py COPYONLY)
