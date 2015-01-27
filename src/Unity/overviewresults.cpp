@@ -145,6 +145,28 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
 {
     if (!scopeMetadata->is_aggregator())
     {
+        ///!===
+        /// TODO: This code should be removed as soon as we can remove child_scope_ids() from ScopeMetadata.
+        /// Aggregators should now be implementing the child_scopes() method rather than setting ChildScopes in config.
+        auto const children = scopeMetadata->child_scope_ids();
+        if (children.size())
+        {
+            // iterate over child scope ids, join their display names and insert into m_childScopes for current scope
+            QStringList childNames;
+            for (auto const& id: children)
+            {
+                auto it = scopeIdToName.find(QString::fromStdString(id));
+                if (it != scopeIdToName.end())
+                {
+                    childNames << *it;
+                }
+            }
+            if (!childNames.empty())
+            {
+                m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(", ");
+            }
+        }
+        ///!===
         return;
     }
 
