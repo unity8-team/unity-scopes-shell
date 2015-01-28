@@ -22,6 +22,7 @@
 #include <scope-harness/results/result.h>
 
 #include <boost/optional.hpp>
+#include <boost/regex.hpp>
 
 #include <unordered_map>
 
@@ -70,7 +71,7 @@ static void check_string(MatchResult& matchResult, const results::Category& cate
                             + expectedValue + "'");
         }
     }
-    catch (exception& e)
+    catch (std::exception& e)
     {
         matchResult.failure(
                 "Category with ID '" + category.id()
@@ -120,24 +121,24 @@ struct CategoryMatcher::Priv
 
     void byUri(MatchResult& matchResult, const results::Result::List& resultList)
     {
-        unordered_map<string, results::Result> resultsByUri;
-        for (const auto& result : resultList)
-        {
-            resultsByUri.insert(make_pair(result.uri(), result));
-        }
-
         for (const auto& expectedResult : m_results)
         {
-            auto it = resultsByUri.find(expectedResult.getUri());
-            if (it == resultsByUri.end())
+            regex e(expectedResult.getUri());
+            bool matched = false;
+            for (const auto& result : resultList)
+            {
+                if (regex_match(result.uri(), e)) {
+                    matched = true;
+                    expectedResult.match(matchResult, result);
+                    break;
+                }
+            }
+
+            if (!matched)
             {
                 matchResult.failure(
                         "Result with URI " + expectedResult.getUri()
                                 + " could not be found");
-            }
-            else
-            {
-                expectedResult.match(matchResult, it->second);
             }
         }
     }
