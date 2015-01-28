@@ -916,7 +916,7 @@ private Q_SLOTS:
         );
 
         auto abstractView =
-                resultsView->category("cat1").result("scope://mock-scope?q=next-scope-query").activate();
+                resultsView->category("cat1").result("scope:\\/\\/mock-scope\\?q=next-scope-query").activate();
         QVERIFY(bool(abstractView));
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
