@@ -20,9 +20,13 @@
 #include <boost/python/stl_iterator.hpp>
 #include <unity/scopes/Variant.h>
 #include <scope-harness/results/category.h>
+#include <scope-harness/results/department.h>
+#include <scope-harness/results/child-department.h>
 #include <scope-harness/matcher/match-result.h>
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
+#include <scope-harness/matcher/department-matcher.h>
+#include <scope-harness/matcher/child-department-matcher.h>
 #include <scope-harness/matcher/category-list-matcher.h>
 
 using namespace boost::python;
@@ -89,6 +93,12 @@ void export_matchers()
         .def("failure", &shm::MatchResult::failure)
         ;
 
+    enum_<shm::DepartmentMatcher::Mode>("DepartmentMatcherMode")
+        .value("ALL", shm::DepartmentMatcher::Mode::all)
+        .value("BY_ID", shm::DepartmentMatcher::Mode::by_id)
+        .value("STARTS_WITH", shm::DepartmentMatcher::Mode::starts_with)
+        ;
+
     {
         shm::MatchResult (shm::ResultMatcher::*matchresult_by_result)(const shr::Result&) const = &shm::ResultMatcher::match;
         void (shm::ResultMatcher::*match_by_match_result_and_result)(shm::MatchResult&, const shr::Result&) const = &shm::ResultMatcher::match;
@@ -141,6 +151,42 @@ void export_matchers()
             .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, return_internal_reference<1>())
             .def("has_exactly", &shm::CategoryListMatcher::hasExactly, return_internal_reference<1>())
             .def("match", getMatchResultByResultList, return_value_policy<return_by_value>())
+            ;
+    }
+
+    {
+        shm::MatchResult (shm::DepartmentMatcher::*matchresult_by_department)(const shr::Department&) const = &shm::DepartmentMatcher::match;
+        void (shm::ResultMatcher::*match_by_match_result_and_department)(shm::MatchResult&, const shr::Department&) const = &shm::DepartmentMatcher::match;
+        shm::DepartmentMatcher& (shm::DepartmentMatcher::*by_child_department_matcher)(const shm::ChildDepartmentMatcher&) = &shm::DepartmentMatcher::child;
+
+        class_<shm::DepartmentMatcher, boost::noncopyable>("DepartmentMatcher", init<>())
+            .def("mode", &shm::DepartmentMatcher::mode, return_internal_reference<1>())
+            .def("has_exactly", &shm::DepartmentMatcher::hasExactly, return_internal_reference<1>())
+            .def("has_at_least", &shm::DepartmentMatcher::hasAtLeast, return_internal_reference<1>())
+            .def("id", &shm::DepartmentMatcher::id, return_internal_reference<1>())
+            .def("label", &shm::DepartmentMatcher::label, return_internal_reference<1>())
+            .def("all_label", &shm::DepartmentMatcher::allLabel, return_internal_reference<1>())
+            .def("parent_id", &shm::DepartmentMatcher::parentId, return_internal_reference<1>())
+            .def("parent_label", &shm::DepartmentMatcher::parentLabel, return_internal_reference<1>())
+            .def("is_root", &shm::DepartmentMatcher::isRoot, return_internal_reference<1>())
+            .def("is_hidden", &shm::DepartmentMatcher::isHidden, return_internal_reference<1>())
+            .def("child", by_child_department_matcher, return_internal_reference<1>())
+            .def("match", matchresult_by_department, return_value_policy<return_by_value>())
+            .def("match", match_by_match_result_and_department)
+            ;
+    }
+
+    {
+        shm::MatchResult (shm::ChildDepartmentMatcher::*matchresult_by_child_department)(const shr::ChildDepartment&) const = &shm::ChildDepartmentMatcher::match;
+        void (shm::ChildDepartmentMatcher::*match_by_match_result_and_child_department)(shm::MatchResult&, const shr::ChildDepartment&) const = &shm::ChildDepartmentMatcher::match;
+
+        class_<shm::ChildDepartmentMatcher>("ChildDepartmentMatcher", init<const std::string&>())
+            .add_property("id", &shm::ChildDepartmentMatcher::getId)
+            .def("label", &shm::ChildDepartmentMatcher::label, return_internal_reference<1>())
+            .def("has_children", &shm::ChildDepartmentMatcher::hasChildren, return_internal_reference<1>())
+            .def("is_active", &shm::ChildDepartmentMatcher::isActive, return_internal_reference<1>())
+            .def("match", matchresult_by_child_department, return_value_policy<return_by_value>())
+            .def("match", match_by_match_result_and_child_department)
             ;
     }
 }

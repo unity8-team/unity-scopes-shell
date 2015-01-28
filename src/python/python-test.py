@@ -178,29 +178,38 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.assertEqual(self.view.department_id, '')
 
         departments = self.view.browse_department('')
-        self.assertEqual(departments.label, 'All departments')
-        self.assertEqual(departments.all_label, '')
-        self.assertEqual(departments.parent_id, '')
-        self.assertTrue(departments.is_root)
+        
         self.assertEqual(len(departments), 5)
-
-        dep = departments[0]
-        self.assertEqual(dep.id, 'books')
-        self.assertEqual(dep.label, 'Books')
-        self.assertTrue(dep.has_children)
-        self.assertFalse(dep.is_active)
-
         # excercise different methods for getting children
+        dep = departments[0]
         dep2 = departments.child(0)
         dep3 = departments.children[0]
         self.assertEqual(dep.id, dep2.id)
         self.assertEqual(dep2.id, dep3.id)
 
-        dep = departments[4]
-        self.assertEqual(dep.id, 'toys')
-        self.assertEqual(dep.label, 'Toys, Children & Baby')
-        self.assertTrue(dep.has_children)
-        self.assertFalse(dep.is_active)
+        match = DepartmentMatcher() \
+            .has_exactly(5) \
+            .label('All departments') \
+            .all_label('') \
+            .parent_id('') \
+            .parent_label('') \
+            .is_root(True) \
+            .is_hidden(False) \
+            .child(ChildDepartmentMatcher('books') \
+                   .label('Books') \
+                   .has_children(True) \
+                   .is_active(False) \
+                   ) \
+            .child(ChildDepartmentMatcher('movies')) \
+            .child(ChildDepartmentMatcher('electronics')) \
+            .child(ChildDepartmentMatcher('home')) \
+            .child(ChildDepartmentMatcher('toys') \
+                   .label('Toys') \
+                   .has_children(True) \
+                   .is_active(False) \
+                   ) \
+            .match(departments)
+        
 
 if __name__ == '__main__':
     unittest.main(argv = sys.argv[:1])
