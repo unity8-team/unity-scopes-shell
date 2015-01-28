@@ -910,7 +910,7 @@ private Q_SLOTS:
                 .mode(shm::CategoryListMatcher::Mode::starts_with)
                 .category(shm::CategoryMatcher("cat1")
                     .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(shm::ResultMatcher("scope://mock-scope?q=next-scope-query"))
+                    .result(shm::ResultMatcher("scope:\\/\\/mock-scope\\?q=next-scope-query"))
                 )
                 .match(resultsView->categories())
         );

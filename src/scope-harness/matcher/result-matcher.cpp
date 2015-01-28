@@ -23,6 +23,7 @@
 #include <unity/scopes/Variant.h>
 
 #include <boost/optional.hpp>
+#include <boost/regex.hpp>
 
 using namespace std;
 using namespace boost;
@@ -86,7 +87,30 @@ static void check_string(MatchResult& matchResult, const results::Result& result
                             + expectedValue + "'");
         }
     }
-    catch (exception& e)
+    catch (std::exception& e)
+    {
+        matchResult.failure(
+                "Result with URI '" + result.uri()
+                        + "' does not contain expected property '" + name
+                        + "'");
+    }
+}
+
+static void check_regex(MatchResult& matchResult, const results::Result& result,
+             const string& name, const string& actualValue,
+             const regex& expectedValue)
+{
+    try
+    {
+        if (!regex_match(actualValue, expectedValue))
+        {
+            matchResult.failure(
+                    "Result with URI '" + result.uri() + "' has '" + name
+                            + "' == '" + actualValue + "' but expected to match '"
+                            + expectedValue.str() + "'");
+        }
+    }
+    catch (std::exception& e)
     {
         matchResult.failure(
                 "Result with URI '" + result.uri()
@@ -231,7 +255,7 @@ void ResultMatcher::match(MatchResult& matchResult, const results::Result& resul
 {
     if(!p->m_uri.empty())
     {
-        check_string(matchResult, result, "uri", result.uri(), p->m_uri);
+        check_regex(matchResult, result, "uri", result.uri(), regex(p->m_uri));
     }
     if (p->m_dndUri)
     {
