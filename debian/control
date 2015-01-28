@@ -3,6 +3,7 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
+               libboost-regex-dev,
                libunity-api-dev (>= 7.94),
                libunity-scopes-dev (>= 0.6.9~),
                libgsettings-qt-dev (>= 0.1),
