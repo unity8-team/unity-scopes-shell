@@ -127,6 +127,11 @@ ResultMatcher::ResultMatcher(const string& uri) :
     p->m_uri = uri;
 }
 
+ResultMatcher ResultMatcher::any_uri()
+{
+    return ResultMatcher(string());
+}
+
 ResultMatcher::ResultMatcher(const ResultMatcher& other) :
     p(new Priv)
 {
@@ -224,7 +229,10 @@ MatchResult ResultMatcher::match(const results::Result& result) const
 
 void ResultMatcher::match(MatchResult& matchResult, const results::Result& result) const
 {
-    check_string(matchResult, result, "uri", result.uri(), p->m_uri);
+    if(!p->m_uri.empty())
+    {
+        check_string(matchResult, result, "uri", result.uri(), p->m_uri);
+    }
     if (p->m_dndUri)
     {
         check_string(matchResult, result, "dnd_uri", result.dnd_uri(),

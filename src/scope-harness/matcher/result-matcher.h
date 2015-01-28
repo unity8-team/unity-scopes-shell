@@ -40,6 +40,8 @@ class Q_DECL_EXPORT ResultMatcher final
 public:
     ResultMatcher(const std::string& uri);
 
+    static ResultMatcher any_uri();
+
     ~ResultMatcher() = default;
 
     ResultMatcher(const ResultMatcher& other);
