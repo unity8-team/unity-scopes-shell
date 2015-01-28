@@ -10,6 +10,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
     
 add_definitions(
@@ -52,6 +53,7 @@ add_library(
 target_link_libraries(
     scope-harness
     ${SCOPES_SHELL_DEPENDENCIES}
+    ${Boost_LIBRARIES}
 )
 
 qt5_use_modules(
