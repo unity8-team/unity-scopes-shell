@@ -164,6 +164,8 @@ QVariant SettingsModel::value(const QString& id) const
 {
     m_settings->sync();
 
+    // Check for the setting id in the child scopes list first, in case the
+    // aggregator is incorrectly using a scope id as a settings as well.
     if (m_child_scopes_data_by_id.contains(id))
     {
         for (auto const& child_scope : m_child_scopes)
@@ -299,6 +301,8 @@ void SettingsModel::settings_timeout()
     QString setting_id = timer->property("setting_id").toString();
     QVariant value = timer->property("value");
 
+    // Check for the setting id in the child scopes list first, in case the
+    // aggregator is incorrectly using a scope id as a settings as well.
     if (m_child_scopes_data_by_id.contains(setting_id))
     {
         int setting_index = timer->property("index").toInt();
