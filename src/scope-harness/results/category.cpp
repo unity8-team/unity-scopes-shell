@@ -24,7 +24,10 @@
 
 #include <Unity/utils.h>
 
+#include <boost/regex.hpp>
+
 using namespace std;
+using namespace boost;
 namespace ng = scopes_ng;
 namespace sc = unity::scopes;
 namespace ss = unity::shell::scopes;
@@ -121,9 +124,10 @@ Result::List Category::results() const
 
 Result Category::result(const string& uri) const
 {
+    regex e(uri);
     for (const auto& result : p->m_results)
     {
-        if (result.uri() == uri)
+        if (regex_match(result.uri(), e))
         {
             return result;
         }

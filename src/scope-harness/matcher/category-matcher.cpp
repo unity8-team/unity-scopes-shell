@@ -16,6 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
+#include <scope-harness/internal/test-utils.h>
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/results/category.h>
@@ -123,7 +124,10 @@ struct CategoryMatcher::Priv
     {
         for (const auto& expectedResult : m_results)
         {
-            regex e(expectedResult.getUri());
+            string expectedUri = expectedResult.getUri();
+            internal::throwIf(expectedUri.empty(), "Cannot match by_uri with empty expected URI");
+
+            regex e(expectedUri);
             bool matched = false;
             for (const auto& result : resultList)
             {

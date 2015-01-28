@@ -23,6 +23,7 @@
 #include <unity/scopes/Variant.h>
 
 #include <boost/optional.hpp>
+#include <boost/regex.hpp>
 
 using namespace std;
 using namespace boost;
@@ -86,7 +87,30 @@ static void check_string(MatchResult& matchResult, const results::Result& result
                             + expectedValue + "'");
         }
     }
-    catch (exception& e)
+    catch (std::exception& e)
+    {
+        matchResult.failure(
+                "Result with URI '" + result.uri()
+                        + "' does not contain expected property '" + name
+                        + "'");
+    }
+}
+
+static void check_regex(MatchResult& matchResult, const results::Result& result,
+             const string& name, const string& actualValue,
+             const regex& expectedValue)
+{
+    try
+    {
+        if (!regex_match(actualValue, expectedValue))
+        {
+            matchResult.failure(
+                    "Result with URI '" + result.uri() + "' has '" + name
+                            + "' == '" + actualValue + "' but expected to match '"
+                            + expectedValue.str() + "'");
+        }
+    }
+    catch (std::exception& e)
     {
         matchResult.failure(
                 "Result with URI '" + result.uri()
@@ -125,6 +149,11 @@ ResultMatcher::ResultMatcher(const string& uri) :
         p(new Priv)
 {
     p->m_uri = uri;
+}
+
+ResultMatcher ResultMatcher::any_uri()
+{
+    return ResultMatcher(string());
 }
 
 ResultMatcher::ResultMatcher(const ResultMatcher& other) :
@@ -224,7 +253,10 @@ MatchResult ResultMatcher::match(const results::Result& result) const
 
 void ResultMatcher::match(MatchResult& matchResult, const results::Result& result) const
 {
-    check_string(matchResult, result, "uri", result.uri(), p->m_uri);
+    if(!p->m_uri.empty())
+    {
+        check_regex(matchResult, result, "uri", result.uri(), regex(p->m_uri));
+    }
     if (p->m_dndUri)
     {
         check_string(matchResult, result, "dnd_uri", result.dnd_uri(),

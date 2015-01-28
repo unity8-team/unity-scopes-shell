@@ -910,13 +910,13 @@ private Q_SLOTS:
                 .mode(shm::CategoryListMatcher::Mode::starts_with)
                 .category(shm::CategoryMatcher("cat1")
                     .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(shm::ResultMatcher("scope://mock-scope?q=next-scope-query"))
+                    .result(shm::ResultMatcher("scope:\\/\\/mock-scope\\?q=next-scope-query"))
                 )
                 .match(resultsView->categories())
         );
 
         auto abstractView =
-                resultsView->category("cat1").result("scope://mock-scope?q=next-scope-query").activate();
+                resultsView->category("cat1").result("scope:\\/\\/mock-scope\\?q=next-scope-query").activate();
         QVERIFY(bool(abstractView));
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
