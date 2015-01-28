@@ -107,7 +107,6 @@ struct DepartmentMatcher::Priv
 
     void startsWith(MatchResult& matchResult, const results::Department& department)
     {
-        matchResult.failure("not implemented - startsWith");
         if (department.size() < m_children.size())
         {
             matchResult.failure(
