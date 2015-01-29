@@ -249,6 +249,7 @@ private Q_SLOTS:
                         .dndUri("test:dnd_uri")
                         .title("result for: \"\"")
                         .art("art")
+                        .property("booleanness", sc::Variant(true))
                     )
                 )
                 .match(resultsView->categories())
