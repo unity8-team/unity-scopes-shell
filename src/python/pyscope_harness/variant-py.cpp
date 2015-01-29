@@ -96,7 +96,11 @@ struct VariantFromPythonObj
         // happily convert between both), so use python C API directly to check real data type, which
         // is also more efficient for multiple checks.
         //
-        if (PyUnicode_Check(obj))
+        if (PyBool_Check(obj))
+        {
+            new (storage) us::Variant(extract<bool>(obj));
+        }
+        else if (PyUnicode_Check(obj))
         {
             new (storage) us::Variant(extract<std::string>(obj));
         }
@@ -112,10 +116,6 @@ struct VariantFromPythonObj
         else if (PyFloat_Check(obj))
         {
             new (storage) us::Variant(extract<double>(obj));
-        }
-        else if (PyBool_Check(obj))
-        {
-            new (storage) us::Variant(extract<bool>(obj));
         }
         else if (PyList_Check(obj))
         {
