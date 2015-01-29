@@ -45,7 +45,7 @@ static void matchByMatchResultAndPreviewWidgetsLists(shm::PreviewColumnMatcher* 
 void export_preview_matchers()
 {
     {
-        shm::PreviewWidgetMatcher& (shm::PreviewMatcher::*data_by_variant)(const unity::scopes::Variant& data) = &shm::PreviewWidgetMatcher::data;
+        shm::PreviewWidgetMatcher& (shm::PreviewWidgetMatcher::*data_by_variant)(const unity::scopes::Variant& data) = &shm::PreviewWidgetMatcher::data;
         shm::MatchResult (shm::PreviewWidgetMatcher::*matchresult_by_widget)(const shp::PreviewWidget&) const = &shm::PreviewWidgetMatcher::match;
         void (shm::PreviewMatcher::*match_by_matchresult_and_widget)(shm::MatchResult&, const shp::PreviewWidget&) const = &shm::PreviewWidgetMatcher::match;
 
