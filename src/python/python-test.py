@@ -209,6 +209,10 @@ class DepartmentsTest (ScopeHarnessTestCase):
                    .is_active(False) \
                    ) \
             .match(departments)
+
+    def test_child_department(self):
+        self.view.active_scope = 'mock-scope-departments'
+        departments = self.view.browse_department('books')
         
 
 if __name__ == '__main__':

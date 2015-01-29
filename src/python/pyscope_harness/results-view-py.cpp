@@ -74,9 +74,12 @@ void export_results_view()
         .add_property("has_departments", &shv::ResultsView::hasDepartments)
         .add_property("has_alt_departments", &shv::ResultsView::hasAltDepartments)
         .def("browse_department", &shv::ResultsView::browseDepartment,
-             "Go to a specific department by id. Returns Department instance.")
+             "Go to a specific department by id. Returns Department instance.", return_value_policy<return_by_value>())
         .def("browse_alt_department", &shv::ResultsView::browseAltDepartment,
-             "Go to a specific alternate (e.g. the top-right selection filter if provided by the scope) department by id. Returns Department instance.")
+             "Go to a specific alternate (e.g. the top-right selection filter if provided by the scope)"
+             " department by id. Returns Department instance.",
+             return_value_policy<return_by_value>()
+            )
         .def("category", category_by_row, "Get Category instance by row index")
         .def("category", category_by_id, "Get Category instance by id")
     ;
