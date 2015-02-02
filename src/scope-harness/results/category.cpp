@@ -122,6 +122,16 @@ Result::List Category::results() const
     return p->m_results;
 }
 
+size_t Category::size() const
+{
+    return p->m_results.size();
+}
+
+bool Category::empty() const
+{
+    return p->m_results.empty();
+}
+
 Result Category::result(const string& uri) const
 {
     regex e(uri);

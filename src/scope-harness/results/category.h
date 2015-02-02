@@ -64,6 +64,10 @@ public:
 
     Result::List results() const;
 
+    std::size_t size() const;
+
+    bool empty() const;
+
     Result result(const std::string& uri) const;
 
     Result result(std::size_t index) const;

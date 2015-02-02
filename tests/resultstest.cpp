@@ -796,14 +796,11 @@ private Q_SLOTS:
 
         resultsView->setQuery("two-categories-one-result");
 
-        // FIXME: There are actually 3 categories in the CategoryModel at this point
-        // It seems like categories aren't being cleared out (perhaps intentionally?)
         QVERIFY_MATCHRESULT(
             shm::CategoryListMatcher()
                 .category(shm::CategoryMatcher("cat1")
                     .result(shm::ResultMatcher("test:uri"))
                 )
-                .category(shm::CategoryMatcher("cat2"))
                 .match(resultsView->categories())
         );
 
