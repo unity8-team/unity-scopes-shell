@@ -86,7 +86,13 @@ void export_matchers()
         .value("BY_URI", shm::CategoryMatcher::Mode::by_uri)
         ;
 
-    class_<shm::MatchResult>("MatchResult", init<>())
+    class_<shm::MatchResult>("MatchResult",
+                             "Represents the result of matching and is the final object you want to check in your tests. "
+                             "An instance of MatchResult can be obtained by calling one of the match() methods of "
+                             "ResultMatcher, CategoryMatcher, CategoryListMatcher, DepartmentMatcher and ChildDepartmentMatcher. "
+                             "When implementing tests on top of pyscope_harness.testing.ScopeHarnessTestCase class, use its assertMatchResult "
+                             "helper method to assert on MatchResult instance.",
+                             init<>())
         .add_property("success", &shm::MatchResult::success)
         .add_property("failures", &getFailuresWrapper)
         .add_property("concat_failures", &shm::MatchResult::concat_failures)
@@ -103,7 +109,9 @@ void export_matchers()
         shm::MatchResult (shm::ResultMatcher::*matchresult_by_result)(const shr::Result&) const = &shm::ResultMatcher::match;
         void (shm::ResultMatcher::*match_by_match_result_and_result)(shm::MatchResult&, const shr::Result&) const = &shm::ResultMatcher::match;
 
-        class_<shm::ResultMatcher, boost::noncopyable>("ResultMatcher", init<const std::string>())
+        class_<shm::ResultMatcher, boost::noncopyable>("ResultMatcher",
+                                                       "Matcher object that holds constraints for matching search result.",
+                                                       init<const std::string>())
             .add_property("uri", &shm::ResultMatcher::getUri)
             .def("dnd_uri", &shm::ResultMatcher::dndUri, return_internal_reference<1>())
             .def("title", &shm::ResultMatcher::title, return_internal_reference<1>())
@@ -127,7 +135,9 @@ void export_matchers()
         shm::MatchResult (shm::CategoryMatcher::*match_result_by_category)(const shr::Category&) const = &shm::CategoryMatcher::match;
         void (shm::CategoryMatcher::*match_by_match_result_and_category)(shm::MatchResult&, const shr::Category&) const = &shm::CategoryMatcher::match;
 
-        class_<shm::CategoryMatcher, boost::noncopyable>("CategoryMatcher", init<const std::string&>())
+        class_<shm::CategoryMatcher, boost::noncopyable>("CategoryMatcher",
+                                                         "Matcher object that holds constraints for matching search category.",
+                                                         init<const std::string&>())
             .add_property("id", &getIdWrapper, &setIdWrapper)
             .def("mode", &shm::CategoryMatcher::mode, return_internal_reference<1>())
             .def("title", &shm::CategoryMatcher::title, return_internal_reference<1>())
@@ -145,7 +155,9 @@ void export_matchers()
     {
         shm::CategoryListMatcher& (shm::CategoryListMatcher::*category_match)(const shm::CategoryMatcher&) = &shm::CategoryListMatcher::category;
 
-        class_<shm::CategoryListMatcher, boost::noncopyable>("CategoryListMatcher", init<>())
+        class_<shm::CategoryListMatcher, boost::noncopyable>("CategoryListMatcher",
+                                                             "Matcher object that holds constraints for matching search categories.",
+                                                             init<>())
             .def("mode", &shm::CategoryListMatcher::mode, return_internal_reference<1>())
             .def("category", category_match, return_internal_reference<1>())
             .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, return_internal_reference<1>())
@@ -159,7 +171,9 @@ void export_matchers()
         void (shm::ResultMatcher::*match_by_match_result_and_department)(shm::MatchResult&, const shr::Department&) const = &shm::DepartmentMatcher::match;
         shm::DepartmentMatcher& (shm::DepartmentMatcher::*by_child_department_matcher)(const shm::ChildDepartmentMatcher&) = &shm::DepartmentMatcher::child;
 
-        class_<shm::DepartmentMatcher, boost::noncopyable>("DepartmentMatcher", init<>())
+        class_<shm::DepartmentMatcher, boost::noncopyable>("DepartmentMatcher",
+                                                           "Matcher object that holds constraints for matching departments.",
+                                                           init<>())
             .def("mode", &shm::DepartmentMatcher::mode, return_internal_reference<1>())
             .def("has_exactly", &shm::DepartmentMatcher::hasExactly, return_internal_reference<1>())
             .def("has_at_least", &shm::DepartmentMatcher::hasAtLeast, return_internal_reference<1>())
@@ -180,7 +194,9 @@ void export_matchers()
         shm::MatchResult (shm::ChildDepartmentMatcher::*matchresult_by_child_department)(const shr::ChildDepartment&) const = &shm::ChildDepartmentMatcher::match;
         void (shm::ChildDepartmentMatcher::*match_by_match_result_and_child_department)(shm::MatchResult&, const shr::ChildDepartment&) const = &shm::ChildDepartmentMatcher::match;
 
-        class_<shm::ChildDepartmentMatcher>("ChildDepartmentMatcher", init<const std::string&>())
+        class_<shm::ChildDepartmentMatcher>("ChildDepartmentMatcher",
+                                            "Matcher object that holds constraints for matching child departments of a department.",
+                                            init<const std::string&>())
             .add_property("id", &shm::ChildDepartmentMatcher::getId)
             .def("label", &shm::ChildDepartmentMatcher::label, return_internal_reference<1>())
             .def("has_children", &shm::ChildDepartmentMatcher::hasChildren, return_internal_reference<1>())
