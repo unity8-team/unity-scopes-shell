@@ -88,7 +88,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         newResult[QString::fromStdString(res->scope_id())] = pos++;
     }
 
-    // itearate over old results, remove rows that are not present in new results
+    // iterate over old results, remove rows that are not present in new results
     int row = 0;
     for (auto it = m_results.begin(); it != m_results.end();)
     {
@@ -111,7 +111,11 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     row = 0;
     for (auto const newRes: results)
     {
-        updateChildScopes(newRes, scopeIdToName);
+        if (updateChildScopes(newRes, scopeIdToName))
+        {
+            // update aggregator subtitles when child scopes change
+            Q_EMIT dataChanged(index(row), index(row), {RoleSubtitle});
+        }
         if (!oldResult.contains(QString::fromStdString(newRes->scope_id())))
         {
             beginInsertRows(QModelIndex(), row, row);
@@ -141,7 +145,7 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     Q_EMIT countChanged();
 }
 
-void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName)
+bool OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName)
 {
     if (!scopeMetadata->is_aggregator())
     {
@@ -167,7 +171,7 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
             }
         }
         ///!===
-        return;
+        return false;
     }
 
     unity::scopes::ChildScopeList children;
@@ -178,7 +182,7 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     catch (std::exception const& e)
     {
         qWarning("OverviewResultsModel::updateChildScopes: Exception caught from proxy()->child_scopes_ordered(): %s", e.what());
-        return;
+        return false;
     }
 
     if (children.size())
@@ -198,6 +202,11 @@ void OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
             m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(", ");
         }
     }
+    else
+    {
+        m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = "";
+    }
+    return true;
 }
 
 QString OverviewResultsModel::categoryId() const
