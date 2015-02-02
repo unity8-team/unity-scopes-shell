@@ -245,6 +245,7 @@ public:
             res.set_dnd_uri("test:dnd_uri");
             res["session-id"] = search_metadata()["session-id"].get_string();
             res["query-id"] = Variant(search_metadata()["query-id"].get_int());
+            res["booleanness"] = Variant(true);
             res.set_intercept_activation();
             reply->push(res);
         }

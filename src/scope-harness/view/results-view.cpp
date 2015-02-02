@@ -45,9 +45,52 @@ namespace view
 
 struct ResultsView::Priv
 {
-    void checkActiveScope()
+    Priv(ResultsView& self, shared_ptr<ng::Scopes> scopes) :
+        m_self(self), m_scopes(scopes)
+    {
+    }
+
+    void checkActiveScope() const
     {
         throwIfNot(m_active_scope, "There is no active scope");
+    }
+
+    ss::CategoriesInterface* internalRawCategories() const
+    {
+        checkActiveScope();
+        return m_active_scope->categories();
+    }
+
+    results::Category internalCategory(size_t row)
+    {
+        auto cats = internalRawCategories();
+        auto categoryIndex = cats->index(row);
+
+        QVariant variant = cats->data(categoryIndex, ng::Categories::RoleCategorySPtr);
+        if (!variant.canConvert<sc::Category::SCPtr>())
+        {
+            throw range_error("Invalid category data at index " + to_string(row));
+        }
+        auto rawCategory = variant.value<sc::Category::SCPtr>();
+
+        QVariant resultsVariant = cats->data(
+                cats->index(row), ng::Categories::RoleResultsSPtr);
+        QSharedPointer<ss::ResultsModelInterface> resultModel = resultsVariant.value<
+                QSharedPointer<ss::ResultsModelInterface>>();
+        results::Result::List results;
+        if (resultModel)
+        {
+            for (int i = 0; i < resultModel->rowCount(); ++i)
+            {
+                auto idx = resultModel->index(i);
+                results.emplace_back(results::Result(internal::ResultArguments
+                    { resultModel, m_active_scope, idx,
+                      dynamic_pointer_cast<ResultsView>(m_self.shared_from_this()),
+                      m_previewView.lock() }));
+            }
+        }
+
+        return results::Category(internal::CategoryArguments{cats, categoryIndex, results});
     }
 
     results::Department browseDepartment(const string& id, bool altNavigation)
@@ -99,6 +142,8 @@ struct ResultsView::Priv
         return results::Department(internal::DepartmentArguments{navigationModel});
     }
 
+    ResultsView& m_self;
+
     shared_ptr<ng::Scopes> m_scopes;
 
     weak_ptr<PreviewView> m_previewView;
@@ -107,9 +152,8 @@ struct ResultsView::Priv
 };
 
 ResultsView::ResultsView(const internal::ResultsViewArguments& arguments) :
-        p(new Priv)
+        p(new Priv(*this, arguments.scopes))
 {
-    p->m_scopes = arguments.scopes;
 }
 
 void ResultsView::setPreviewView(PreviewView::SPtr previewView)
@@ -287,7 +331,11 @@ results::Category::List ResultsView::categories()
     {
         try
         {
-            result.emplace_back(category(i));
+            auto cat = p->internalCategory(i);
+            if (!cat.empty())
+            {
+                result.emplace_back(cat);
+            }
         }
         catch (range_error& e)
         {
@@ -299,34 +347,8 @@ results::Category::List ResultsView::categories()
 
 results::Category ResultsView::category(size_t row)
 {
-    auto cats = raw_categories();
-    auto categoryIndex = cats->index(row);
-
-    QVariant variant = cats->data(categoryIndex, ng::Categories::RoleCategorySPtr);
-    if (!variant.canConvert<sc::Category::SCPtr>())
-    {
-        throw range_error("Invalid category data at index " + to_string(row));
-    }
-    auto rawCategory = variant.value<sc::Category::SCPtr>();
-
-    QVariant resultsVariant = cats->data(
-            cats->index(row), ng::Categories::RoleResultsSPtr);
-    QSharedPointer<ss::ResultsModelInterface> resultModel = resultsVariant.value<
-            QSharedPointer<ss::ResultsModelInterface>>();
-    results::Result::List results;
-    if (resultModel)
-    {
-        for (int i = 0; i < resultModel->rowCount(); ++i)
-        {
-            auto idx = resultModel->index(i);
-            results.emplace_back(results::Result(internal::ResultArguments
-                { resultModel, p->m_active_scope, idx,
-                  dynamic_pointer_cast<ResultsView>(shared_from_this()),
-                  p->m_previewView.lock() }));
-        }
-    }
-
-    return results::Category(internal::CategoryArguments{cats, categoryIndex, results});
+    auto cats = categories();
+    return cats.at(row);
 }
 
 results::Category ResultsView::category(const string& categoryId_)
@@ -348,13 +370,12 @@ results::Category ResultsView::category(const string& categoryId_)
     }
 
     throwIf(row == -1, "Could not find category");
-    return category(row);
+    return p->internalCategory(row);
 }
 
 ss::CategoriesInterface* ResultsView::raw_categories() const
 {
-    p->checkActiveScope();
-    return p->m_active_scope->categories();
+    return p->internalRawCategories();
 }
 
 string ResultsView::scopeId() const
