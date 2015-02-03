@@ -169,6 +169,14 @@ public:
     {
         return nullptr;
     }
+
+    virtual ChildScopeList child_scopes() const
+    {
+        ChildScopeList list;
+        list.push_back({"mock-scope-double-nav", true});
+        list.push_back({"mock-scope", true});
+        return list;
+    }
 };
 
 extern "C"

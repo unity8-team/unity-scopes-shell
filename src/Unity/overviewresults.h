@@ -55,7 +55,7 @@ public:
     Q_INVOKABLE int scopeIndex(const QString& scopeId) const;
 
 private:
-    void updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName);
+    bool updateChildScopes(const unity::scopes::ScopeMetadata::SPtr& scopeMetadata, const QMap<QString, QString>& scopeIdToName);
     QList<unity::scopes::ScopeMetadata::SPtr> m_results;
     QMap<QString, QString> m_childScopes;
 };

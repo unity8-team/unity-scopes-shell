@@ -3,7 +3,7 @@ include(Plugins)
 
 # Dependencies
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=5)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.9)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.12)
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
 pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
@@ -23,6 +23,7 @@ set(QMLPLUGIN_SRC
     department.cpp
     departmentnode.cpp
     geoip.cpp
+    localization.h
     locationservice.cpp
     overviewcategories.cpp
     overviewresults.cpp
