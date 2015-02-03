@@ -46,6 +46,7 @@ void export_category()
         .add_property("renderer", &shr::Category::renderer)
         .add_property("components", &shr::Category::components)
         .add_property("results", &getResultsList)
+        .add_property("empty", &shr::Category::empty)
         .def("result", result_by_uri, return_value_policy<return_by_value>())
         .def("result", result_by_index, return_value_policy<return_by_value>())
         ;
