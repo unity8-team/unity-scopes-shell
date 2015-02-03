@@ -49,9 +49,11 @@ void export_preview_matchers()
         shm::MatchResult (shm::PreviewWidgetMatcher::*matchresult_by_widget)(const shp::PreviewWidget&) const = &shm::PreviewWidgetMatcher::match;
         void (shm::PreviewMatcher::*match_by_matchresult_and_widget)(shm::MatchResult&, const shp::PreviewWidget&) const = &shm::PreviewWidgetMatcher::match;
 
-        class_<shm::PreviewWidgetMatcher>("PreviewWidgetMatcher", init<const std::string&>())
-            .def("type", &shm::PreviewWidgetMatcher::type, return_internal_reference<1>())
-            .def("data", data_by_variant, return_internal_reference<1>())
+        class_<shm::PreviewWidgetMatcher>("PreviewWidgetMatcher",
+                                          "Matcher object that holds constraints for matching a preview widget.",
+                                          init<const std::string&>())
+            .def("type", &shm::PreviewWidgetMatcher::type, "Set the expected widget type.", return_internal_reference<1>())
+            .def("data", data_by_variant, "Set the expected widget definition", return_internal_reference<1>())
             .def("match", matchresult_by_widget, return_value_policy<return_by_value>())
             .def("match", match_by_matchresult_and_widget)
             ;

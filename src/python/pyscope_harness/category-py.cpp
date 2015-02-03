@@ -47,7 +47,9 @@ void export_category()
         .add_property("components", &shr::Category::components)
         .add_property("results", &getResultsList)
         .add_property("empty", &shr::Category::empty)
-        .def("result", result_by_uri, return_value_policy<return_by_value>())
-        .def("result", result_by_index, return_value_policy<return_by_value>())
+        .def("result", result_by_uri, return_value_policy<return_by_value>(),
+            "Get a Result instance by its uri. Throws RuntimeError if uri doesn't exist.")
+        .def("result", result_by_index, return_value_policy<return_by_value>(),
+             "Get a Result instance by index. Throws RuntimeError if index is out of range.")
         ;
 }
