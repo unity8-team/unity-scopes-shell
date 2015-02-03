@@ -17,6 +17,7 @@ Build-Depends: cmake,
                qtdeclarative5-qtquick2-plugin,
                unity-schemas (>= 7.3.1),
                libonline-accounts-client-dev,
+               intltool,
 Standards-Version: 3.9.5
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
