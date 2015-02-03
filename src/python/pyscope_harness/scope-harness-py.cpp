@@ -82,9 +82,15 @@ void export_scopeharness()
     boost::python::register_ptr_to_python<std::shared_ptr<ScopeHarnessWrapper>>();
     class_<ScopeHarnessWrapper>("ScopeHarness",
                                 "This is the main class for scope harness testing. An instance of it needs to be created "
-                                "using one of the static class methods (new_from_*) before any tests can be performed. "
+                                "using one of the static class methods (new_from_*) before any tests can be performed.\n"
                                 "The instance of ResultsView provided by results_view property is the entry point for "
-                                "invoking actual queries.",
+                                "invoking actual queries.\n\n"
+                                "Here is an example of a search request:\n"
+                                " harness = ScopeHarness.new_from_scope_list(Parameters(['my-scope.ini'])\n"
+                                " view = harness.results_view\n"
+                                " view.active_scope = 'my-scope'\n"
+                                " view.search_query = ''"
+                                ,
                                 no_init)
         .add_property("results_view", &ScopeHarnessWrapper::resultsView)
         .def("new_from_pre_existing_config", &ScopeHarnessWrapper::newFromPreExistingConfig,
