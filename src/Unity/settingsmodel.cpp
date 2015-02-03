@@ -214,7 +214,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
-        QString displayName = _("Display results from ") + QString(scopes_metadata[id]->display_name().c_str());
+        QString displayName = _("Display results from") + QString(" ") + QString(scopes_metadata[id]->display_name().c_str());
 
         QSharedPointer<QTimer> timer(new QTimer());
         timer->setProperty("setting_id", id);
