@@ -34,6 +34,7 @@ void export_scopeharness();
 void export_matchers();
 void export_preview_matchers();
 void export_department();
+void export_scope_uri();
 
 BOOST_PYTHON_MODULE(_pyscope_harness)
 {

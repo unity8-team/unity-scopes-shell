@@ -25,6 +25,7 @@ add_library(_pyscope_harness SHARED
         results-view-py.cpp
         result-py.cpp
         scope-harness-py.cpp
+        scope-uri-py.cpp
         registry-py.cpp
         variant-py.cpp
         main.cpp)
