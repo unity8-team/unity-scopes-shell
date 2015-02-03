@@ -19,6 +19,7 @@
 #pragma once
 
 #include <scope-harness/matcher/match-result.h>
+#include <scope-harness/matcher/scope-uri.h>
 
 namespace unity
 {
@@ -38,6 +39,8 @@ namespace matcher
 class Q_DECL_EXPORT ResultMatcher final
 {
 public:
+    ResultMatcher(const ScopeUri& uri);
+
     ResultMatcher(const std::string& uri);
 
     static ResultMatcher any_uri();

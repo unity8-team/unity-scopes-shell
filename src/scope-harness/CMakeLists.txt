@@ -36,6 +36,7 @@ add_library(
     matcher/preview-column-matcher.cpp
     matcher/preview-widget-matcher.cpp
     matcher/result-matcher.cpp
+    matcher/scope-uri.cpp
     preview/preview-widget.cpp
     preview/preview-widget-list.cpp
     registry/custom-registry.cpp

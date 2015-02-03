@@ -151,6 +151,12 @@ ResultMatcher::ResultMatcher(const string& uri) :
     p->m_uri = uri;
 }
 
+ResultMatcher::ResultMatcher(const ScopeUri& uri) :
+        p(new Priv)
+{
+    p->m_uri = uri.toString();
+}
+
 ResultMatcher ResultMatcher::any_uri()
 {
     return ResultMatcher(string());
