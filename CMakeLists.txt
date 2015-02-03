@@ -44,6 +44,7 @@ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
                                        ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
 
 find_package(PkgConfig)
+find_package(Intltool)
 find_package(Qt5Core)
 find_package(Qt5DBus)
 find_package(Qt5Qml)
@@ -81,6 +82,10 @@ endif()
 # "signals" and "slots"
 add_definitions(-DQT_NO_KEYWORDS)
 
+# Translation
+set(GETTEXT_PACKAGE "unity-plugin-scopes")
+add_definitions(-DGETTEXT_PACKAGE="{GETTEXT_PACKAGE}")
+
 # Tests
 include(CTest)
 enable_testing()
@@ -94,8 +99,4 @@ add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(data)
 add_subdirectory(tools)
-
-#
-# Translation
-#
-#add_subdirectory(po)
+add_subdirectory(po)
