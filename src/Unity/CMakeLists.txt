@@ -52,6 +52,9 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
 )
 
+# Workaround for gcc failure LP: #1417664
+set_source_files_properties(previewwidgetmodel.cpp PROPERTIES COMPILE_FLAGS -O1)
+
 add_library(Unity-qml SHARED ${QMLPLUGIN_SRC})
 
 target_link_libraries(Unity-qml
