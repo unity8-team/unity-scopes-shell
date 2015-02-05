@@ -76,7 +76,7 @@ public:
 
     unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
     void addTempScope(unity::shell::scopes::ScopeInterface* scope);
-    Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope);
+    Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
 
 Q_SIGNALS:
     void metadataRefreshed();
