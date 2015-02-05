@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.4+15.04.20150126~rtm.is.0.5.4+15.04.20150120~rtm-0ubuntu1) 14.09; urgency=medium
+
+  * Revert the previous landing as it is causing a regression in the
+    scopes (LP: #1415595)
+
+ -- Łukasz 'sil2100' Zemczak <lukasz.zemczak@canonical.com>  Wed, 28 Jan 2015 20:59:40 +0100
+
 unity-scopes-shell (0.5.4+15.04.20150126~rtm-0ubuntu1) 14.09; urgency=low
 
   [ Marcus Tomlinson ]
