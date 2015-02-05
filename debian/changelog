@@ -1,3 +1,17 @@
+unity-scopes-shell (0.5.4+15.04.20150203-0ubuntu1) vivid; urgency=medium
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+  [ Marcus Tomlinson ]
+  * Allow scope ID to be optional in a log-in result's
+    online_account_details map.
+  * Prefer IsAggregator config parameter and child_scopes_ordered()
+    method over the ChildScopes config parameter, when populating
+    settings and overview.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 03 Feb 2015 11:15:32 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150126-0ubuntu1) vivid; urgency=low
 
   [ Marcus Tomlinson ]

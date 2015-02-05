@@ -13,3 +13,4 @@ add_library(mock-scope-departments MODULE ${SCOPE_SOURCES})
 target_link_libraries(mock-scope-departments ${SCOPESLIB_LDFLAGS})
 
 configure_file(mock-scope-departments.ini.in mock-scope-departments.ini)
+configure_file(mock-scope-departments-settings.ini mock-scope-departments-settings.ini)

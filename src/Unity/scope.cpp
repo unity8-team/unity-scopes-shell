@@ -848,6 +848,7 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
+    m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
     return m_settingsModel.data();
 }
 
@@ -1106,14 +1107,13 @@ void Scope::activate(QVariant const& result_var)
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("scope_id") &&
-            details.contains("service_name") &&
+        if (details.contains("service_name") &&
             details.contains("service_type") &&
             details.contains("provider_name") &&
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("scope_id").toString(),
+            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
                                           details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());
@@ -1172,14 +1172,13 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("scope_id") &&
-            details.contains("service_name") &&
+        if (details.contains("service_name") &&
             details.contains("service_type") &&
             details.contains("provider_name") &&
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("scope_id").toString(),
+            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
                                           details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());

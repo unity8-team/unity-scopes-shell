@@ -147,6 +147,31 @@ private Q_SLOTS:
         // Check that the results are dirty
         QCOMPARE(m_scope->resultsDirty(), true);
     }
+
+    void testChildScopes()
+    {
+        // get aggregator scope proxy
+        m_scope = m_scopes->getScopeById("mock-scope-departments");
+        QVERIFY(m_scope != nullptr);
+        m_scope->setActive(true);
+
+        const auto settings = m_scope->settings();
+        QVERIFY(settings);
+
+        // Wait for the settings model to initialize
+        if(settings->count() == 0)
+        {
+            QSignalSpy settingsCountSpy(settings, SIGNAL(countChanged()));
+            QVERIFY(settingsCountSpy.wait());
+        }
+
+        QCOMPARE(settings->count(), 4);
+
+        verifySetting(settings, 0, "string-setting", "String Setting", "string", QVariantMap({ {"defaultValue", "Hello"} }), "Hello");
+        verifySetting(settings, 1, "number-setting", "Number Setting", "number", QVariantMap({ {"defaultValue", 13} }), 13);
+        verifySetting(settings, 2, "mock-scope-double-nav", "Display results from mock-double-nav.DisplayName", "boolean", QVariantMap(), true);
+        verifySetting(settings, 3, "mock-scope", "Display results from mock.DisplayName", "boolean", QVariantMap(), true);
+    }
 };
 
 QTEST_GUILESS_MAIN(SettingsEndToEndTest)
