@@ -1,3 +1,14 @@
+unity-scopes-shell (0.5.4+15.04.20150205-0ubuntu1) vivid; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Workaround for ICE with recently uploaded gxx (vivid).
+
+  [ Marcus Tomlinson ]
+  * Check validity of m_settingsModel and m_scopesInstance pointers
+    before dereferencing them in Scope::settings()
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 05 Feb 2015 08:27:24 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150203-0ubuntu1) vivid; urgency=medium
 
   [ Ubuntu daily release ]
