@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.4+15.04.20150206~rtm-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Add a new changelog entry manually.
+
+ -- Timo Jyrinki <timo-jyrinki@ubuntu.com>  Fri, 06 Feb 2015 08:11:52 +0200
+
 unity-scopes-shell (0.5.4+15.04.20150126~rtm.is.0.5.4+15.04.20150120~rtm-0ubuntu1) 14.09; urgency=medium
 
   * Revert the previous landing as it is causing a regression in the
