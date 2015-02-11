@@ -547,12 +547,7 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
     Scope* scope = getScopeById(scopeName);
     if (scope == nullptr) {
         // check temporary scopes
-        for (auto s: m_scopes) {
-            scope = qobject_cast<Scope*>(s->findTempScope(scopeName));
-            if (scope) {
-                break;
-            }
-        }
+        scope = qobject_cast<Scope*>(findTempScope(scopeName));
     }
 
     if (scope) {
