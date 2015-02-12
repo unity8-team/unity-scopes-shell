@@ -649,16 +649,14 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
 
 void Scopes::addTempScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    if (!m_tempScopes.contains(scope)) {
-        m_tempScopes.insert(scope);
-    }
+    m_tempScopes.insert(scope);
 }
-    
+
 void Scopes::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
     if (m_tempScopes.remove(scope)) {
         scope->deleteLater();
-    }        
+    }
 }
 
 unity::shell::scopes::ScopeInterface* Scopes::findTempScope(QString const& id) const
