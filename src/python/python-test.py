@@ -78,7 +78,7 @@ class PreviewTest (ScopeHarnessTestCase):
                         ).match(self.view.categories)
         self.assertMatchResult(match)
 
-        pview = self.view.category(0).result(0).activate()
+        pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
 
         match2 = PreviewColumnMatcher().column( \
@@ -112,7 +112,7 @@ class PreviewTest (ScopeHarnessTestCase):
 
     def test_preview_action(self):
         self.view.search_query = "layout"
-        pview = self.view.category(0).result(0).activate()
+        pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
         match = PreviewColumnMatcher() \
                  .column(PreviewMatcher() \
@@ -128,7 +128,7 @@ class PreviewTest (ScopeHarnessTestCase):
 
     def test_preview_replacing_preview(self):
         self.view.search_query = "layout"
-        pview = self.view.category(0).result(0).activate()
+        pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
         match = PreviewColumnMatcher() \
                 .column(PreviewMatcher() \

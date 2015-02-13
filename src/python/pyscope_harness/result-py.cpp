@@ -37,8 +37,11 @@ void export_result()
         .add_property("summary", &shr::Result::summary)
         .add_property("background", &shr::Result::background)
         .def("__getitem__", &shr::Result::value, return_internal_reference<1>())
-        .def("activate", &shr::Result::activate, "Activates the result, as if user tapped it. "
+        .def("tap", &shr::Result::tap, "Activates the result, as if user tapped it. "
              "Returns an instance of PreviewView (if result was previewed) or ResultsView "
              " (if result's uri was a canned scope query, resulting in a new search)")
+        .def("long_press", &shr::Result::longPress, "Activates the result, as if user long-pressed it. "
+             "Returns an instance of PreviewView (if result was previewed) or None "
+             " (if result's uri was a canned scope query)")
         ;
 }

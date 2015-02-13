@@ -83,6 +83,9 @@ public:
 
     view::AbstractView::SPtr activate() const;
 
+    view::AbstractView::SPtr tap() const;
+    view::AbstractView::SPtr longPress() const;
+
 protected:
     friend view::ResultsView;
     friend view::PreviewView;
