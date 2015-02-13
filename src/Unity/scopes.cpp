@@ -547,12 +547,7 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
     Scope* scope = getScopeById(scopeName);
     if (scope == nullptr) {
         // check temporary scopes
-        for (auto s: m_scopes) {
-            scope = qobject_cast<Scope*>(s->findTempScope(scopeName));
-            if (scope) {
-                break;
-            }
-        }
+        scope = qobject_cast<Scope*>(findTempScope(scopeName));
     }
 
     if (scope) {
@@ -650,6 +645,28 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
             m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
         }
     }
+}
+
+void Scopes::addTempScope(unity::shell::scopes::ScopeInterface* scope)
+{
+    m_tempScopes.insert(scope);
+}
+
+void Scopes::closeScope(unity::shell::scopes::ScopeInterface* scope)
+{
+    if (m_tempScopes.remove(scope)) {
+        scope->deleteLater();
+    }
+}
+
+unity::shell::scopes::ScopeInterface* Scopes::findTempScope(QString const& id) const
+{
+    for (auto s: m_tempScopes) {
+        if (s->id() == id) {
+            return s;
+        }
+    }
+    return nullptr;
 }
 
 void Scopes::moveFavoriteTo(QString const& scopeId, int index)

@@ -3,7 +3,7 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
-               libunity-api-dev (>= 7.94),
+               libunity-api-dev (>= 7.96),
                libunity-scopes-dev (>= 0.6.12~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
@@ -38,6 +38,7 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-0,
           unity-scopes-impl-1,
           unity-scopes-impl-4,
+          unity-scopes-impl-6,
 Breaks: unity8-private (<< 7.84),
         unity8 (<< 8.02)
 Replaces: unity8-private (<< 7.84)

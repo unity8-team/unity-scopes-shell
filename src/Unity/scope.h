@@ -29,7 +29,6 @@
 #include <QNetworkConfigurationManager>
 #include <QPointer>
 #include <QMultiMap>
-#include <QSet>
 #include <QGSettings>
 #include <QUuid>
 
@@ -246,7 +245,6 @@ private:
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
-    QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
     QMultiMap<QString, Department*> m_departmentModels;
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;

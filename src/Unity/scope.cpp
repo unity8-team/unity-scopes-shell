@@ -279,13 +279,13 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            scope = new scopes_ng::Scope(this);
+            scope = new scopes_ng::Scope(m_scopesInstance);
             scope->setScopeData(*meta_sptr);
             scope->setScopesInstance(m_scopesInstance);
             scope->setCurrentNavigationId(departmentId);
             scope->setFilterState(query.filter_state());
             scope->setSearchQuery(searchString);
-            m_tempScopes.insert(scope);
+            m_scopesInstance->addTempScope(scope);
             Q_EMIT openScope(scope);
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
@@ -429,13 +429,10 @@ void Scope::flushUpdates(bool finalize)
     }
 }
 
-
 unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
 {
-    for (auto s: m_tempScopes) {
-        if (s->id() == id) {
-            return s;
-        }
+    if (m_scopesInstance) {
+        return m_scopesInstance->findTempScope(id);
     }
     return nullptr;
 }
@@ -1234,8 +1231,8 @@ void Scope::invalidateResults()
 
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    if (m_tempScopes.remove(scope)) {
-        delete scope;
+    if (m_scopesInstance) {
+        m_scopesInstance->closeScope(scope);
     }
 }
 
