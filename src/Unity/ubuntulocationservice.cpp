@@ -176,6 +176,7 @@ public Q_SLOTS:
                     && m_session->updates().position_status
                             == culss::Interface::Updates::Status::disabled)
             {
+                qDebug() << "Enabling location updates";
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
                 m_geoipTimer.start();
@@ -184,6 +185,7 @@ public Q_SLOTS:
                     && m_session->updates().position_status
                             == culss::Interface::Updates::Status::enabled)
             {
+                qDebug() << "Disabling location updates";
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::disabled;
                 m_geoipTimer.stop();
