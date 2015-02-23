@@ -6,8 +6,8 @@ Build-Depends: cmake,
                dh-python,
                libboost-python-dev,
                libboost-regex-dev,
-               libunity-api-dev (>= 7.94),
-               libunity-scopes-dev (>= 0.6.9~),
+               libunity-api-dev (>= 7.96),
+               libunity-scopes-dev (>= 0.6.12~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
@@ -21,6 +21,7 @@ Build-Depends: cmake,
                qtdeclarative5-qtquick2-plugin,
                unity-schemas (>= 7.3.1),
                libonline-accounts-client-dev,
+               intltool,
 Standards-Version: 3.9.5
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Homepage: https://launchpad.net/unity-scopes-shell
@@ -42,6 +43,7 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-0,
           unity-scopes-impl-1,
           unity-scopes-impl-4,
+          unity-scopes-impl-6,
 Breaks: unity8-private (<< 7.84),
         unity8 (<< 8.02)
 Replaces: unity8-private (<< 7.84)

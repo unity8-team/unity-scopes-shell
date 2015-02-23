@@ -1,3 +1,55 @@
+unity-scopes-shell (0.5.4+15.04.20150213-0ubuntu1) vivid; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Keep temporary scopes list in the Scopes object instances and make
+    Scopes the partent of temp scopes instances. Temp scopes can be
+    closed (and freed) using closeScope() method of the original scope,
+    or by calling closeScope() method of Scopes instance. (LP: #1410337,
+    #1410191)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Fri, 13 Feb 2015 16:47:39 +0000
+
+unity-scopes-shell (0.5.4+15.04.20150205-0ubuntu1) vivid; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Workaround for ICE with recently uploaded gxx (vivid).
+
+  [ Marcus Tomlinson ]
+  * Check validity of m_settingsModel and m_scopesInstance pointers
+    before dereferencing them in Scope::settings()
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 05 Feb 2015 08:27:24 +0000
+
+unity-scopes-shell (0.5.4+15.04.20150203-0ubuntu1) vivid; urgency=medium
+
+  [ Ubuntu daily release ]
+  * New rebuild forced
+
+  [ Marcus Tomlinson ]
+  * Allow scope ID to be optional in a log-in result's
+    online_account_details map.
+  * Prefer IsAggregator config parameter and child_scopes_ordered()
+    method over the ChildScopes config parameter, when populating
+    settings and overview.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 03 Feb 2015 11:15:32 +0000
+
+unity-scopes-shell (0.5.4+15.04.20150126-0ubuntu1) vivid; urgency=low
+
+  [ Marcus Tomlinson ]
+  * Read scope ID from the OA details embedded in a log-in item (LP:
+    #1414560)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 26 Jan 2015 09:04:44 +0000
+
+unity-scopes-shell (0.5.4+15.04.20150120-0ubuntu1) vivid; urgency=low
+
+  [ Pete Woods ]
+  * Remove distance-based filtering and refresh GeoIP data every minute
+    (LP: #1411201)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Jan 2015 09:16:15 +0000
+
 unity-scopes-shell (0.5.4+15.04.20141216.1-0ubuntu1) vivid; urgency=low
 
   [ Pawel Stolowski ]

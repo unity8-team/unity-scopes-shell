@@ -3,6 +3,13 @@ include(Plugins)
 
 include(QtWithObjectTarget)
 
+# Dependencies
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=6)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.12)
+pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
+pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
+pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -22,6 +29,7 @@ set(QMLPLUGIN_SRC
     department.cpp
     departmentnode.cpp
     geoip.cpp
+    localization.h
     locationservice.cpp
     overviewcategories.cpp
     overviewresults.cpp
@@ -49,7 +57,7 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
 )
 
-# Object code library 
+# Object code library
 
 add_library(
     Unity-qml-object OBJECT
@@ -86,6 +94,8 @@ qt5_use_modules(
     Qml
     ${SCOPES_SHELL_QT_DEPENDENCIES}
 )
+# Workaround for gcc failure LP: #1417664
+set_source_files_properties(previewwidgetmodel.cpp PROPERTIES COMPILE_FLAGS -O1)
 
 # export the qmldir qmltypes and plugin files
 export_qmlfiles(Unity Unity)
