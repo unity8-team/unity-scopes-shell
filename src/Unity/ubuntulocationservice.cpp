@@ -51,6 +51,11 @@ namespace
      */
     static const int DEACTIVATE_INTERVAL = 5000;
 
+    /**
+     * Re-do the GeoIP call every 60 seconds
+     */
+    static const int GEOIP_INTERVAL = 60000;
+
     class DBusThread : public QThread
     {
 
@@ -92,7 +97,11 @@ public:
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
 
-        m_geoIp->start();
+        m_geoipTimer.moveToThread(thread());
+        m_geoipTimer.setInterval(GEOIP_INTERVAL);
+        m_geoipTimer.setTimerType(Qt::CoarseTimer);
+
+        QMetaObject::invokeMethod(m_geoIp.data(), "start", Qt::QueuedConnection);
 
         try
         {
@@ -115,6 +124,9 @@ public:
 
         // Wire up the network request finished timer
         connect(m_geoIp.data(), &GeoIp::finished, this, &Priv::requestFinished, Qt::QueuedConnection);
+
+        // Wire up the GeoIP repeat timer
+        connect(&m_geoipTimer, &QTimer::timeout, m_geoIp.data(), &GeoIp::start, Qt::QueuedConnection);
     }
 
     ~Priv()
@@ -166,6 +178,7 @@ public Q_SLOTS:
             {
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::enabled;
+                m_geoipTimer.start();
             }
             else if (m_activationCount == 0
                     && m_session->updates().position_status
@@ -173,6 +186,7 @@ public Q_SLOTS:
             {
                 m_session->updates().position_status =
                         culss::Interface::Updates::Status::disabled;
+                m_geoipTimer.stop();
             }
         }
         catch (exception& e)
@@ -184,19 +198,6 @@ public Q_SLOTS:
     void positionChanged(const cul::Update<cul::Position>& newPosition)
     {
         QMutexLocker lock(&m_lastLocationMutex);
-
-        if (m_locationUpdatedAtLeastOnce)
-        {
-            culu::Quantity<culu::Length> distance = cul::haversine_distance(
-                    m_lastLocation, newPosition.value);
-            culu::Quantity<culu::Length> threshold(50.0 * culu::Meters);
-
-            // Ignore the update if we haven't moved significantly
-            if (distance <= threshold)
-            {
-                return;
-            }
-        }
 
         m_locationUpdatedAtLeastOnce = true;
         m_lastLocation = newPosition.value;
@@ -242,6 +243,8 @@ public:
     bool m_locationUpdatedAtLeastOnce = false;
 
     int m_activationCount = 0;
+
+    QTimer m_geoipTimer;
 
     QTimer m_deactivateTimer;
 

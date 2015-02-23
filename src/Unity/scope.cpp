@@ -281,7 +281,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             scope->setCurrentNavigationId(departmentId);
             scope->setFilterState(query.filter_state());
             scope->setSearchQuery(searchString);
-            m_tempScopes.insert(scopeId, scope);
+            m_scopesInstance->addTempScope(scope);
             Q_EMIT openScope(scope.data());
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
@@ -426,13 +426,10 @@ void Scope::flushUpdates(bool finalize)
     }
 }
 
-
 Scope::Ptr Scope::findTempScope(QString const& id) const
 {
-    auto it = m_tempScopes.find(id);
-    if (it != m_tempScopes.end())
-    {
-        return *it;
+    if (m_scopesInstance) {
+        return m_scopesInstance->findTempScope(id);
     }
     return Scope::Ptr();
 }
@@ -848,6 +845,10 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
+    if (m_settingsModel && m_scopesInstance)
+    {
+        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+    }
     return m_settingsModel.data();
 }
 
@@ -1112,7 +1113,8 @@ void Scope::activate(QVariant const& result_var)
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("service_name").toString(),
+            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
+                                          details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());
 
@@ -1176,7 +1178,8 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
             details.contains("login_passed_action") &&
             details.contains("login_failed_action"))
         {
-            bool success = loginToAccount(details.value("service_name").toString(),
+            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
+                                          details.value("service_name").toString(),
                                           details.value("service_type").toString(),
                                           details.value("provider_name").toString());
 
@@ -1225,7 +1228,9 @@ void Scope::invalidateResults()
 
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    m_tempScopes.remove(scope->id());
+    if (m_scopesInstance) {
+        m_scopesInstance->closeScope(scope);
+    }
 }
 
 bool Scope::resultsDirty() const {
@@ -1260,7 +1265,7 @@ void Scope::activateUri(QString const& uri)
     }
 }
 
-bool Scope::loginToAccount(QString const& service_name, QString const& service_type, QString const& provider_name)
+bool Scope::loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name)
 {
     // Set the UNITY_SCOPES_OA_UI_POLICY environment variable here so that OnlineAccountClient knows we're
     // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
@@ -1299,7 +1304,7 @@ bool Scope::loginToAccount(QString const& service_name, QString const& service_t
     if (!service_enabled)
     {
         OnlineAccountsClient::Setup setup;
-        setup.setApplicationId(id());
+        setup.setApplicationId(scope_id.isEmpty() ? id() : scope_id);
         setup.setServiceTypeId(service_type);
         setup.setProviderId(provider_name);
         setup.exec();

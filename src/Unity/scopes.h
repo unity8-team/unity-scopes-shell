@@ -29,6 +29,8 @@
 #include <QTimer>
 #include <QStringList>
 #include <QSharedPointer>
+#include <QSet>
+#include <QGSettings>
 
 #include <unity/scopes/Runtime.h>
 #include <unity/scopes/Registry.h>
@@ -76,6 +78,10 @@ public:
     QSharedPointer<LocationService> locationService() const;
     QString userAgentString() const;
 
+    Scope::Ptr findTempScope(QString const& id) const;
+    void addTempScope(Scope::Ptr const& scope);
+    Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
+
 Q_SIGNALS:
     void metadataRefreshed();
 
@@ -118,6 +124,7 @@ private:
     QTimer m_startupQueryTimeout;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
+    QMap<QString, Scope::Ptr> m_tempScopes;
 
     std::unique_ptr<Priv> m_priv;
 };
