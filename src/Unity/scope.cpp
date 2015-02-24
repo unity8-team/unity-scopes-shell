@@ -46,6 +46,8 @@
 #include <QLocale>
 #include <QtConcurrent>
 
+#include <QQmlEngine>
+
 #include <libintl.h>
 
 #include <online-accounts-client/Setup>
@@ -87,6 +89,7 @@ Scope::Scope(scopes_ng::Scopes* parent) : //unity::shell::scopes::ScopeInterface
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
 {
+    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     m_categories.reset(new Categories(this));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
