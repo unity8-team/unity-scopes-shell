@@ -74,7 +74,7 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
-Scope::Scope(scopes_ng::Scopes* parent) : //unity::shell::scopes::ScopeInterface(parent)
+Scope::Scope(scopes_ng::Scopes* parent) :
       m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
