@@ -276,7 +276,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            scope.reset(new Scope(m_scopesInstance));
+            scope.reset(new Scope(m_scopesInstance), &QObject::deleteLater);
             scope->setScopeData(*meta_sptr);
             scope->setCurrentNavigationId(departmentId);
             scope->setFilterState(query.filter_state());

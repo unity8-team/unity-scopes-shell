@@ -660,9 +660,7 @@ void Scopes::addTempScope(Scope::Ptr const& scope)
 
 void Scopes::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    if (m_tempScopes.remove(scope->id())) {
-        scope->deleteLater();
-    }
+    m_tempScopes.remove(scope->id());
 }
 
 Scope::Ptr Scopes::findTempScope(QString const& id) const
