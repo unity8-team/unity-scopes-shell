@@ -19,6 +19,7 @@ set(
     DBus
     Gui
     Network
+    Qml
 )
 
 add_subdirectory(Unity)
