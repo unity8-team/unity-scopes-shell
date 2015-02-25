@@ -247,6 +247,20 @@ void Scope::internetFlagChanged(QString const& key)
     invalidateResults();
 }
 
+void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
+{
+    setCurrentNavigationId(QString::fromStdString(query.department_id()));
+    setFilterState(query.filter_state());
+    if (query.has_data()) {
+        m_queryData.reset(new unity::scopes::Variant(query.data()));
+    }
+    else
+    {
+        m_queryData.reset(nullptr);
+    }
+    setSearchQuery(QString::fromStdString(query.query_string()));
+}
+
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
 {
     if (!m_scopesInstance) {
@@ -254,9 +268,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         return;
     }
 
-    QString scopeId(QString::fromStdString(query.scope_id()));
-    QString searchString(QString::fromStdString(query.query_string()));
-    QString departmentId(QString::fromStdString(query.department_id()));
+    const QString scopeId(QString::fromStdString(query.scope_id()));
 
     Scope* scope = nullptr;
     if (scopeId == id()) {
@@ -267,9 +279,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     }
 
     if (scope != nullptr) {
-        scope->setCurrentNavigationId(departmentId);
-        scope->setFilterState(query.filter_state());
-        scope->setSearchQuery(searchString);
+        scope->setCannedQuery(query);
         // FIXME: implement better way to do multiple changes to search props and dispatch single search
         if (!scope->searchInProgress()) {
             scope->invalidateResults();
@@ -282,9 +292,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             scope = new scopes_ng::Scope(m_scopesInstance);
             scope->setScopeData(*meta_sptr);
             scope->setScopesInstance(m_scopesInstance);
-            scope->setCurrentNavigationId(departmentId);
-            scope->setFilterState(query.filter_state());
-            scope->setSearchQuery(searchString);
+            scope->setCannedQuery(query);
             m_scopesInstance->addTempScope(scope);
             Q_EMIT openScope(scope);
         } else if (allowDelayedActivation) {
@@ -718,7 +726,9 @@ void Scope::dispatchSearch()
         m_searchController->setListener(listener);
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
-            scopes::QueryCtrlProxy controller = m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
+            scopes::QueryCtrlProxy controller = m_queryData ?
+                m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, *m_queryData, meta, listener) :
+                m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
             qWarning("Caught an error from create_query(): %s", e.what());
