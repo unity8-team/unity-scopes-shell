@@ -41,6 +41,7 @@ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
 
 find_package(PkgConfig)
 find_package(Intltool)
+find_package(Qt5Concurrent)
 find_package(Qt5Core)
 find_package(Qt5DBus)
 find_package(Qt5Qml)
