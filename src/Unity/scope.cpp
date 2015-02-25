@@ -262,9 +262,16 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
     QString searchString(QString::fromStdString(query.query_string()));
     QString departmentId(QString::fromStdString(query.department_id()));
 
-    Scope::Ptr scope;
-    // figure out if this scope is already favourited
-    scope = m_scopesInstance->getScopeById(scopeId);
+    Scope* scope = nullptr;
+    if (scopeId == id()) {
+        scope = this;
+    } else {
+        // figure out if this scope is already favourited
+        auto tmp = m_scopesInstance->getScopeById(scopeId);
+        if (tmp) {
+           scope = tmp.data();
+        }
+    }
 
     if (scope) {
         scope->setCurrentNavigationId(departmentId);
@@ -274,18 +281,20 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         if (!scope->searchInProgress()) {
             scope->invalidateResults();
         }
-        if (scope != this) Q_EMIT gotoScope(scopeId);
+        if (scope != this) {
+            Q_EMIT gotoScope(scopeId);
+        }
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            scope.reset(new Scope(m_scopesInstance), &QObject::deleteLater);
-            scope->setScopeData(*meta_sptr);
-            scope->setCurrentNavigationId(departmentId);
-            scope->setFilterState(query.filter_state());
-            scope->setSearchQuery(searchString);
-            m_scopesInstance->addTempScope(scope);
-            Q_EMIT openScope(scope.data());
+            Scope::Ptr newScope(new Scope(m_scopesInstance), &QObject::deleteLater);
+            newScope->setScopeData(*meta_sptr);
+            newScope->setCurrentNavigationId(departmentId);
+            newScope->setFilterState(query.filter_state());
+            newScope->setSearchQuery(searchString);
+            m_scopesInstance->addTempScope(newScope);
+            Q_EMIT openScope(newScope.data());
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
             m_delayedActivation = std::make_shared<scopes::ActivationResponse>(query);
