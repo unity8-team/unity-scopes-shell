@@ -295,7 +295,7 @@ void Scopes::discoveryFinished()
         // add all visible scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
-                QSharedPointer<Scope> scope(new Scope(this));
+                QSharedPointer<Scope> scope(new Scope(this), &QObject::deleteLater);
                 connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
@@ -458,7 +458,7 @@ void Scopes::processFavoriteScopes()
                 auto it = m_cachedMetadata.find(fav);
                 if (it != m_cachedMetadata.end())
                 {
-                    Scope::Ptr scope(new Scope(this));
+                    Scope::Ptr scope(new Scope(this), &QObject::deleteLater);
                     connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
