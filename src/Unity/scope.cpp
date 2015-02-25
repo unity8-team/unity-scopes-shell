@@ -74,6 +74,11 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
+Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
+{
+    return Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+}
+
 Scope::Scope(scopes_ng::Scopes* parent) :
       m_query_id(0)
     , m_formFactor("phone")
@@ -288,7 +293,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            Scope::Ptr newScope(new Scope(m_scopesInstance), &QObject::deleteLater);
+            Scope::Ptr newScope = Scope::newInstance(m_scopesInstance);
             newScope->setScopeData(*meta_sptr);
             newScope->setCurrentNavigationId(departmentId);
             newScope->setFilterState(query.filter_state());

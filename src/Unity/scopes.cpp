@@ -124,7 +124,7 @@ Scopes::Scopes(QObject *parent)
         QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
-    m_overviewScope.reset(new OverviewScope(this));
+    m_overviewScope = OverviewScope::newInstance(this);
     m_locationService.reset(new UbuntuLocationService());
 
     createUserAgentString();
@@ -304,7 +304,7 @@ void Scopes::discoveryFinished()
         // add all visible scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
-                QSharedPointer<Scope> scope(new Scope(this), &QObject::deleteLater);
+                Scope::Ptr scope = Scope::newInstance(this);
                 connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
@@ -469,7 +469,7 @@ void Scopes::processFavoriteScopes()
                 auto it = m_cachedMetadata.find(fav);
                 if (it != m_cachedMetadata.end())
                 {
-                    Scope::Ptr scope(new Scope(this), &QObject::deleteLater);
+                    Scope::Ptr scope = Scope::newInstance(this);
                     connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);

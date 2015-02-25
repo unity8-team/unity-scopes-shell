@@ -30,7 +30,8 @@ class Q_DECL_EXPORT OverviewScope : public scopes_ng::Scope
     Q_OBJECT
 
 public:
-    explicit OverviewScope(scopes_ng::Scopes* parent = 0);
+    static QSharedPointer<OverviewScope> newInstance(scopes_ng::Scopes* parent);
+
     virtual ~OverviewScope();
 
     /* getters */
@@ -41,6 +42,9 @@ public:
     void updateFavorites(const QStringList& favorites);
 
     unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const override;
+
+protected:
+    explicit OverviewScope(scopes_ng::Scopes* parent);
 
 private Q_SLOTS:
     void metadataChanged();
