@@ -26,10 +26,10 @@ but there no obligation to use it - the only functionality that ScopeHarnessTest
 helper assertMatchResult method, that can easily be replaced with a custom implementation.
 
 from pyscope_harness import *
-from pyscope_harness.testing import *
+from pyscope_harness.testing import ScopeHarnessTestCase
 import unittest
 
-class MyScopeTest (ScopeHarnessTestCase):
+class MyScopeTest(ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
