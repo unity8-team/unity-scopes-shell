@@ -15,10 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+__all__ = ['ScopeHarnessTestCase']
+
 from unittest import TestCase
 from pyscope_harness import MatchResult
 
-class ScopeHarnessTestCase (TestCase):
+class ScopeHarnessTestCase(TestCase):
     """ A class whose instances are single test cases.
 
     This class extends unittest.TestCase with helper methods relevant for testing of Unity scopes.

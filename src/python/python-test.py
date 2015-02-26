@@ -21,15 +21,17 @@ This is a test of scope harness python bindings against mock scopes.
 The test cases here replicate some of the cases of the original C++ tests.
 """
 
-from pyscope_harness import *
-from pyscope_harness.testing import *
+from pyscope_harness import ScopeHarness, CategoryMatcher, CategoryMatcherMode, CategoryListMatcher
+from pyscope_harness import CategoryListMatcherMode, ResultMatcher, PreviewMatcher, PreviewWidgetMatcher, PreviewColumnMatcher, PreviewView
+from pyscope_harness import Parameters, DepartmentMatcher, ChildDepartmentMatcher
+from pyscope_harness.testing import ScopeHarnessTestCase
 import unittest
 import sys
 
 # first argument is the directory of test scopes
 TEST_DATA_DIR = sys.argv[1]
 
-class ResultsTest (ScopeHarnessTestCase):
+class ResultsTest(ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
@@ -55,7 +57,7 @@ class ResultsTest (ScopeHarnessTestCase):
             .match(self.view.categories)
         self.assertMatchResult(match)
 
-class PreviewTest (ScopeHarnessTestCase):
+class PreviewTest(ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
@@ -152,7 +154,7 @@ class PreviewTest (ScopeHarnessTestCase):
                        ).match(pview2.widgets)
         self.assertMatchResult(match2)
 
-class DepartmentsTest (ScopeHarnessTestCase):
+class DepartmentsTest(ScopeHarnessTestCase):
     @classmethod
     def setUpClass(cls):
         cls.harness = ScopeHarness.new_from_scope_list(Parameters([
@@ -178,7 +180,7 @@ class DepartmentsTest (ScopeHarnessTestCase):
         self.assertEqual(self.view.department_id, '')
 
         departments = self.view.browse_department('')
-        
+
         self.assertEqual(len(departments), 5)
         # excercise different methods for getting children
         dep = departments[0]
@@ -213,7 +215,6 @@ class DepartmentsTest (ScopeHarnessTestCase):
     def test_child_department(self):
         self.view.active_scope = 'mock-scope-departments'
         departments = self.view.browse_department('books')
-        
 
 if __name__ == '__main__':
     unittest.main(argv = sys.argv[:1])

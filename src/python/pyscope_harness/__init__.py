@@ -1,4 +1,3 @@
-"""
 #
 # Copyright (C) 2015 Canonical Ltd.
 # Author: Pawel Stolowski <pawel.stolowski@canonical.com>
@@ -16,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""
 The pyscope_harness module provides python bindings for scope-harness C++ library.
 It makes testing scopes easy with classes that help writing high-level
 assertions about expected results, categories etc.
@@ -39,7 +39,7 @@ class MyScopeTest (ScopeHarnessTestCase):
     def setUp(self):
         self.view = self.harness.results_view
         self.view.active_scope = 'myscope'
-        
+
     def test_surfacing_results(self):
         self.view.browse_department('')
         self.view.search_query = ''

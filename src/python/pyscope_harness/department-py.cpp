@@ -38,11 +38,6 @@ static shr::ChildDepartment getChildDepartmentByIndex(shr::Department *dep, int 
     return dep->child(index); // can throw out_of_range
 }
 
-/*static bool compareChildDepartments(const shr::ChildDepartment& self, const shr::ChildDepartment& other)
-{
-    return self == other;
-}*/
-
 void export_department()
 {
     class_<shr::ChildDepartment>("ChildDepartment",
@@ -52,7 +47,6 @@ void export_department()
         .add_property("label", &shr::ChildDepartment::label)
         .add_property("has_children", &shr::ChildDepartment::hasChildren)
         .add_property("is_active", &shr::ChildDepartment::isActive)
-        //.def("__eq__", compareChildDepartments)
     ;
 
     class_<shr::Department>("Department",

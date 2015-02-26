@@ -29,7 +29,7 @@ static void translate_out_of_range(const std::out_of_range &e)
 
 static void translate_domain_error(const std::domain_error &e)
 {
-    PyErr_SetString(PyExc_RuntimeError, e.what()); //FIXME: it would be great to support IndexError and KeyError
+    PyErr_SetString(PyExc_ValueError, e.what());
 }
 
 void export_exceptions()
