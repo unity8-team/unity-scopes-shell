@@ -76,6 +76,26 @@ namespace
 
 }
 
+class UbuntuLocationService::TokenImpl: public LocationService::Token
+{
+    Q_OBJECT
+
+public:
+    TokenImpl(UbuntuLocationService& locationService)
+    {
+        connect(this, &TokenImpl::destroyed, &locationService, &UbuntuLocationService::enqueueDeactivate);
+        Q_EMIT locationService.enqueueActivate();
+    }
+
+    ~TokenImpl()
+    {
+        Q_EMIT destroyed();
+    }
+
+Q_SIGNALS:
+    void destroyed();
+};
+
 class UbuntuLocationService::Priv : public QObject
 {
 Q_OBJECT
@@ -363,14 +383,9 @@ bool UbuntuLocationService::hasLocation() const
     return p->m_result.valid || p->m_locationUpdatedAtLeastOnce;
 }
 
-void UbuntuLocationService::activate()
+QSharedPointer<LocationService::Token> UbuntuLocationService::activate()
 {
-    Q_EMIT enqueueActivate();
-}
-
-void UbuntuLocationService::deactivate()
-{
-    Q_EMIT enqueueDeactivate();
+    return QSharedPointer<Token>(new TokenImpl(*this));
 }
 
 #include "ubuntulocationservice.moc"
