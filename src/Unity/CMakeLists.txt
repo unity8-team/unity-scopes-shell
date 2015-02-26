@@ -89,7 +89,6 @@ target_link_libraries(
 
 qt5_use_modules(
     Unity-qml
-    Qml
     ${SCOPES_SHELL_QT_DEPENDENCIES}
 )
 # Workaround for gcc failure LP: #1417664

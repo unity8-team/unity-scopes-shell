@@ -101,6 +101,7 @@ private Q_SLOTS:
     void dpkgFinished();
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
+    void purgeScopesToDelete();
 
 private:
     void createUserAgentString();
@@ -110,6 +111,7 @@ private:
     class Priv;
 
     QList<QSharedPointer<Scope>> m_scopes;
+    QList<QSharedPointer<Scope>> m_scopesToDelete;
     bool m_noFavorites;
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
@@ -122,6 +124,7 @@ private:
 
     QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
+    QTimer m_scopesToDeleteTimer;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

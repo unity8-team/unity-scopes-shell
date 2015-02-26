@@ -124,10 +124,14 @@ Scopes::Scopes(QObject *parent)
         QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
-    m_overviewScope.reset(new OverviewScope(this));
+    m_overviewScope = OverviewScope::newInstance(this);
     m_locationService.reset(new UbuntuLocationService());
 
     createUserAgentString();
+
+    m_scopesToDeleteTimer.setSingleShot(true);
+    m_scopesToDeleteTimer.setInterval(1000 * SCOPE_DELETE_DELAY);
+    connect(&m_scopesToDeleteTimer, SIGNAL(timeout()), SLOT(purgeScopesToDelete()));
 }
 
 Scopes::~Scopes()
@@ -141,6 +145,11 @@ Scopes::~Scopes()
 QString Scopes::userAgentString() const
 {
     return m_userAgent;
+}
+
+void Scopes::purgeScopesToDelete()
+{
+    m_scopesToDelete.clear();
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -295,7 +304,7 @@ void Scopes::discoveryFinished()
         // add all visible scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
-                QSharedPointer<Scope> scope(new Scope(this));
+                Scope::Ptr scope = Scope::newInstance(this);
                 connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
@@ -433,10 +442,12 @@ void Scopes::processFavoriteScopes()
             if (!favScopesLut.contains((*it)->id()))
             {
                 beginRemoveRows(QModelIndex(), row, row);
-                (*it)->setFavorite(false);
-                //
+                Scope::Ptr toDelete = *it;
+                toDelete->setFavorite(false);
                 // we need to delay actual deletion of Scope object so that shell can animate it
-                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it).data(), SLOT(deleteLater()));
+                m_scopesToDelete.push_back(toDelete);
+                // if the timer is already active, we just wait a bit longer, which is no problem
+                m_scopesToDeleteTimer.start();
                 it = m_scopes.erase(it);
                 endRemoveRows();
             }
@@ -458,7 +469,7 @@ void Scopes::processFavoriteScopes()
                 auto it = m_cachedMetadata.find(fav);
                 if (it != m_cachedMetadata.end())
                 {
-                    Scope::Ptr scope(new Scope(this));
+                    Scope::Ptr scope = Scope::newInstance(this);
                     connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
