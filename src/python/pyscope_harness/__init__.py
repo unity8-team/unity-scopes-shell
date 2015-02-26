@@ -45,25 +45,23 @@ class MyScopeTest(ScopeHarnessTestCase):
         self.view.search_query = ''
 
         # Check first results of first two categories (out of 3 expected categories)
-        match = CategoryListMatcher() \\
-            .has_exactly(3) \\
-            .mode(CategoryListMatcherMode.BY_ID) \\
-            .category(CategoryMatcher("mycat1") \\
-                    .has_at_least(1) \\
-                    .mode(CategoryMatcherMode.BY_URI) \\
-                    .result(ResultMatcher("http://myscopeuri1") \\
-                    .title('Result 1') \\
-            )) \\
-            .category(CategoryMatcher("mycat2") \\
-                      .has_at_least(1) \\
-                      .mode(CategoryMatcherMode.STARTS_WITH) \\
-                      .result(ResultMatcher("http://myscopeuri2") \\
-                      .properties({'myboolattribute': True, 'mystringattribute': 'a'}) \\
-                      .title('Result 2') \\
-            )) \\
-            .match(self.view.categories)
-
-        self.assertMatchResult(match)
+        self.assertMatchResult(CategoryListMatcher()
+            .has_exactly(3)
+            .mode(CategoryListMatcherMode.BY_ID)
+            .category(CategoryMatcher("mycat1")
+                    .has_at_least(1)
+                    .mode(CategoryMatcherMode.BY_URI)
+                    .result(ResultMatcher("http://myscopeuri1")
+                    .title('Result 1')
+            ))
+            .category(CategoryMatcher("mycat2")
+                      .has_at_least(1)
+                      .mode(CategoryMatcherMode.STARTS_WITH)
+                      .result(ResultMatcher("http://myscopeuri2")
+                      .properties({'myboolattribute': True, 'mystringattribute': 'a'})
+                      .title('Result 2')
+            ))
+            .match(self.view.categories))
 """
 
 # FIXME: it would be really nice to include the list of classes from _pyscope_harness in the scope of the above docstring,

@@ -44,18 +44,17 @@ class ResultsTest(ScopeHarnessTestCase):
         cls.view.search_query = ""
 
     def test_basic_result(self):
-        match = CategoryListMatcher() \
-            .has_at_least(1) \
-            .mode(CategoryListMatcherMode.BY_ID) \
-            .category(CategoryMatcher("cat1") \
-                    .has_at_least(1) \
-                    .mode(CategoryMatcherMode.BY_URI) \
-                    .result(ResultMatcher("test:uri") \
-                    .properties({'title': 'result for: ""', 'art':'art'}) \
-                    .dnd_uri("test:dnd_uri") \
-                    )) \
-            .match(self.view.categories)
-        self.assertMatchResult(match)
+        self.assertMatchResult(CategoryListMatcher()
+            .has_at_least(1)
+            .mode(CategoryListMatcherMode.BY_ID)
+            .category(CategoryMatcher("cat1")
+                    .has_at_least(1)
+                    .mode(CategoryMatcherMode.BY_URI)
+                    .result(ResultMatcher("test:uri")
+                    .properties({'title': 'result for: ""', 'art':'art'})
+                    .dnd_uri("test:dnd_uri")
+                    ))
+            .match(self.view.categories))
 
 class PreviewTest(ScopeHarnessTestCase):
     @classmethod
@@ -70,60 +69,56 @@ class PreviewTest(ScopeHarnessTestCase):
 
     def test_preview_layouts(self):
         self.view.search_query = "layout"
-        match = CategoryListMatcher() \
-                .has_at_least(1) \
-                .mode(CategoryListMatcherMode.STARTS_WITH) \
-                .category(CategoryMatcher("cat1") \
+        self.assertMatchResult(CategoryListMatcher()
+                .has_at_least(1)
+                .mode(CategoryListMatcherMode.STARTS_WITH)
+                .category(CategoryMatcher("cat1")
                         .has_at_least(1)
-                        .mode(CategoryMatcherMode.STARTS_WITH) \
-                        .result(ResultMatcher("test:layout")) \
-                        ).match(self.view.categories)
-        self.assertMatchResult(match)
+                        .mode(CategoryMatcherMode.STARTS_WITH)
+                        .result(ResultMatcher("test:layout"))
+                        ).match(self.view.categories))
 
         pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
 
-        match2 = PreviewColumnMatcher().column( \
-                PreviewMatcher() \
-                    .widget(PreviewWidgetMatcher("img")) \
-                    .widget(PreviewWidgetMatcher("hdr")) \
-                    .widget(PreviewWidgetMatcher("desc")) \
-                    .widget(PreviewWidgetMatcher("actions")) \
-                ).match(pview.widgets)
+        self.assertMatchResult(PreviewColumnMatcher().column(
+                PreviewMatcher()
+                    .widget(PreviewWidgetMatcher("img"))
+                    .widget(PreviewWidgetMatcher("hdr"))
+                    .widget(PreviewWidgetMatcher("desc"))
+                    .widget(PreviewWidgetMatcher("actions"))
+                ).match(pview.widgets))
 
         pview.column_count = 2
-        match3 = PreviewColumnMatcher() \
-                 .column(PreviewMatcher() \
-                         .widget(PreviewWidgetMatcher("img"))) \
-                 .column(PreviewMatcher() \
-                         .widget(PreviewWidgetMatcher("hdr")) \
-                         .widget(PreviewWidgetMatcher("desc")) \
-                         .widget(PreviewWidgetMatcher("actions")) \
-                        ).match(pview.widgets)
-        self.assertMatchResult(match3)
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img")))
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
 
         pview.column_count = 1
-        match4 = PreviewColumnMatcher() \
-                 .column(PreviewMatcher() \
-                         .widget(PreviewWidgetMatcher("img")) \
-                         .widget(PreviewWidgetMatcher("hdr")) \
-                         .widget(PreviewWidgetMatcher("desc")) \
-                         .widget(PreviewWidgetMatcher("actions")) \
-                        ).match(pview.widgets)
-        self.assertMatchResult(match4)
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img"))
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
 
     def test_preview_action(self):
         self.view.search_query = "layout"
         pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
-        match = PreviewColumnMatcher() \
-                 .column(PreviewMatcher() \
-                         .widget(PreviewWidgetMatcher("img")) \
-                         .widget(PreviewWidgetMatcher("hdr")) \
-                         .widget(PreviewWidgetMatcher("desc")) \
-                         .widget(PreviewWidgetMatcher("actions")) \
-                        ).match(pview.widgets)
-        self.assertMatchResult(match)
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img"))
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
 
         next_view = pview.widgets_in_first_column["actions"].trigger("hide", None)
         self.assertEqual(pview, next_view)
@@ -132,27 +127,25 @@ class PreviewTest(ScopeHarnessTestCase):
         self.view.search_query = "layout"
         pview = self.view.category(0).result(0).tap()
         self.assertIsInstance(pview, PreviewView)
-        match = PreviewColumnMatcher() \
-                .column(PreviewMatcher() \
-                        .widget(PreviewWidgetMatcher("img")) \
-                        .widget(PreviewWidgetMatcher("hdr")) \
-                        .widget(PreviewWidgetMatcher("desc")) \
-                        .widget(PreviewWidgetMatcher("actions")) \
-                       ).match(pview.widgets)
-        self.assertMatchResult(match)
+        self.assertMatchResult(PreviewColumnMatcher()
+                .column(PreviewMatcher()
+                        .widget(PreviewWidgetMatcher("img"))
+                        .widget(PreviewWidgetMatcher("hdr"))
+                        .widget(PreviewWidgetMatcher("desc"))
+                        .widget(PreviewWidgetMatcher("actions"))
+                       ).match(pview.widgets))
 
         hints = {"session-id": "goo"};
         pview2 = pview.widgets_in_first_column["actions"].trigger("download", hints)
 
-        match2 = PreviewColumnMatcher() \
-                .column(PreviewMatcher() \
-                        .widget(PreviewWidgetMatcher("img")) \
-                        .widget(PreviewWidgetMatcher("hdr")) \
-                        .widget(PreviewWidgetMatcher("desc")) \
-                        .widget(PreviewWidgetMatcher("actions")) \
-                        .widget(PreviewWidgetMatcher("extra")) \
-                       ).match(pview2.widgets)
-        self.assertMatchResult(match2)
+        self.assertMatchResult(PreviewColumnMatcher()
+                .column(PreviewMatcher()
+                        .widget(PreviewWidgetMatcher("img"))
+                        .widget(PreviewWidgetMatcher("hdr"))
+                        .widget(PreviewWidgetMatcher("desc"))
+                        .widget(PreviewWidgetMatcher("actions"))
+                        .widget(PreviewWidgetMatcher("extra"))
+                       ).match(pview2.widgets))
 
 class DepartmentsTest(ScopeHarnessTestCase):
     @classmethod
@@ -189,28 +182,28 @@ class DepartmentsTest(ScopeHarnessTestCase):
         self.assertEqual(dep.id, dep2.id)
         self.assertEqual(dep2.id, dep3.id)
 
-        match = DepartmentMatcher() \
-            .has_exactly(5) \
-            .label('All departments') \
-            .all_label('') \
-            .parent_id('') \
-            .parent_label('') \
-            .is_root(True) \
-            .is_hidden(False) \
-            .child(ChildDepartmentMatcher('books') \
-                   .label('Books') \
-                   .has_children(True) \
-                   .is_active(False) \
-                   ) \
-            .child(ChildDepartmentMatcher('movies')) \
-            .child(ChildDepartmentMatcher('electronics')) \
-            .child(ChildDepartmentMatcher('home')) \
-            .child(ChildDepartmentMatcher('toys') \
-                   .label('Toys') \
-                   .has_children(True) \
-                   .is_active(False) \
-                   ) \
-            .match(departments)
+        self.assertMatchResult(DepartmentMatcher()
+            .has_exactly(5)
+            .label('All departments')
+            .all_label('')
+            .parent_id('')
+            .parent_label('')
+            .is_root(True)
+            .is_hidden(False)
+            .child(ChildDepartmentMatcher('books')
+                   .label('Books')
+                   .has_children(True)
+                   .is_active(False)
+                   )
+            .child(ChildDepartmentMatcher('movies'))
+            .child(ChildDepartmentMatcher('electronics'))
+            .child(ChildDepartmentMatcher('home'))
+            .child(ChildDepartmentMatcher('toys')
+                   .label('Toys, Children & Baby')
+                   .has_children(True)
+                   .is_active(False)
+                   )
+            .match(departments))
 
     def test_child_department(self):
         self.view.active_scope = 'mock-scope-departments'
