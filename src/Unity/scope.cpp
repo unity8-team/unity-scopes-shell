@@ -1070,11 +1070,11 @@ void Scope::setActive(const bool active) {
         {
             if (m_isActive)
             {
-                m_locationService->activate();
+                m_locationToken = m_locationService->activate();
             }
             else
             {
-                m_locationService->deactivate();
+                m_locationToken.reset();
             }
         }
 
