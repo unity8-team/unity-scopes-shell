@@ -252,6 +252,7 @@ private:
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
     LocationService::Ptr m_locationService;
+    QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
 };
 

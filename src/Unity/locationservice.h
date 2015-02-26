@@ -43,6 +43,10 @@ class Q_DECL_EXPORT LocationService : public QObject
 public:
     typedef QSharedPointer<LocationService> Ptr;
 
+    class Token : public QObject
+    {
+    };
+
     LocationService();
 
     virtual ~LocationService() = default;
@@ -54,15 +58,7 @@ public:
     virtual bool isActive() const = 0;
 
 public Q_SLOTS:
-    /**
-     * @brief Initiate a location session. Reference counted.
-     */
-    virtual void activate() = 0;
-
-    /**
-     * @brief End a location session. Reference counted.
-     */
-    virtual void deactivate() = 0;
+    virtual QSharedPointer<Token> activate() = 0;
 
 Q_SIGNALS:
     void locationChanged();
