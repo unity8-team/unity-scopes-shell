@@ -371,10 +371,7 @@ view::AbstractView::SPtr Result::tap() const
             return previewView;
         }
     }
-    else
-    {
-        throw std::domain_error("Long press failed: invalid result");
-    }
+    throw std::domain_error("Long press failed: invalid result");
 }
 
 view::AbstractView::SPtr Result::longPress() const
