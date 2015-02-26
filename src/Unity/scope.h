@@ -216,7 +216,7 @@ private:
     QString m_currentNavigationId;
     QString m_currentAltNavigationId;
     QVariantMap m_customizations;
-    std::unique_ptr<unity::scopes::Variant> m_queryData;
+    std::unique_ptr<unity::scopes::Variant> m_queryUserData;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;

@@ -251,12 +251,12 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
 {
     setCurrentNavigationId(QString::fromStdString(query.department_id()));
     setFilterState(query.filter_state());
-    if (query.has_data()) {
-        m_queryData.reset(new unity::scopes::Variant(query.data()));
+    if (query.has_user_data()) {
+        m_queryUserData.reset(new unity::scopes::Variant(query.user_data()));
     }
     else
     {
-        m_queryData.reset(nullptr);
+        m_queryUserData.reset(nullptr);
     }
     setSearchQuery(QString::fromStdString(query.query_string()));
 }
@@ -726,8 +726,8 @@ void Scope::dispatchSearch()
         m_searchController->setListener(listener);
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
-            scopes::QueryCtrlProxy controller = m_queryData ?
-                m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, *m_queryData, meta, listener) :
+            scopes::QueryCtrlProxy controller = m_queryUserData ?
+                m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, *m_queryUserData, meta, listener) :
                 m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
             m_searchController->setController(controller);
         } catch (std::exception& e) {
