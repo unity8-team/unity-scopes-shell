@@ -36,7 +36,7 @@ void export_preview_matchers();
 void export_department();
 void export_scope_uri();
 
-BOOST_PYTHON_MODULE(_pyscope_harness)
+BOOST_PYTHON_MODULE(_scope_harness)
 {
     // enable custom docstring, disable auto-generated docstring including c++ signatures
     docstring_options local_docstring_options(true, true, false);

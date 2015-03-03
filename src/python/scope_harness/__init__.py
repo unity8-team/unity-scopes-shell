@@ -16,17 +16,17 @@
 #
 
 """
-The pyscope_harness module provides python bindings for scope-harness C++ library.
+The scope_harness module provides python bindings for scope-harness C++ library.
 It makes testing scopes easy with classes that help writing high-level
 assertions about expected results, categories etc.
 
-Here is a simple example for test case utilizing pyscope_harness. It is build upon
+Here is a simple example for test case utilizing scope_harness. It is build upon
 the standard unittest framework (by inheriting from ScopeHarnessTestCase, based on unittest.TestCase),
 but there no obligation to use it - the only functionality that ScopeHarnessTestCase provides is a
 helper assertMatchResult method, that can easily be replaced with a custom implementation.
 
-from pyscope_harness import *
-from pyscope_harness.testing import ScopeHarnessTestCase
+from scope_harness import *
+from scope_harness.testing import ScopeHarnessTestCase
 import unittest
 
 class MyScopeTest(ScopeHarnessTestCase):
@@ -64,7 +64,7 @@ class MyScopeTest(ScopeHarnessTestCase):
             .match(self.view.categories))
 """
 
-# FIXME: it would be really nice to include the list of classes from _pyscope_harness in the scope of the above docstring,
+# FIXME: it would be really nice to include the list of classes from _scope_harness in the scope of the above docstring,
 # cause the classes *are* imported and visible in the current scope.
 
-from ._pyscope_harness import *
+from ._scope_harness import *

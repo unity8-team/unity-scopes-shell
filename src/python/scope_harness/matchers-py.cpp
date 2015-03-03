@@ -90,7 +90,7 @@ void export_matchers()
                              "Represents the result of matching and is the final object you want to check in your tests. "
                              "An instance of MatchResult can be obtained by calling one of the match() methods of "
                              "ResultMatcher, CategoryMatcher, CategoryListMatcher, DepartmentMatcher and ChildDepartmentMatcher. "
-                             "When implementing tests on top of pyscope_harness.testing.ScopeHarnessTestCase class, use its assertMatchResult "
+                             "When implementing tests on top of scope_harness.testing.ScopeHarnessTestCase class, use its assertMatchResult "
                              "helper method to assert on MatchResult instance.",
                              init<>())
         .add_property("success", &shm::MatchResult::success)

@@ -71,7 +71,7 @@ Description: Test harness for Unity scopes
  Drive Unity scopes with a simple synchronous API. Make assertions
  about results. Development files.
 
-Package: python3-pyscope-harness
+Package: python3-scope-harness
 Architecture: any
 Depends: ${python3:Depends},
          ${shlibs:Depends},

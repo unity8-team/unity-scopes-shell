@@ -18,7 +18,7 @@
 __all__ = ['ScopeHarnessTestCase']
 
 from unittest import TestCase
-from pyscope_harness import MatchResult
+from scope_harness import MatchResult
 
 class ScopeHarnessTestCase(TestCase):
     """ A class whose instances are single test cases.
