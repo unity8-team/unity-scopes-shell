@@ -27,7 +27,7 @@ add_library(_pyscope_harness SHARED
         registry-py.cpp
         variant-py.cpp
         main.cpp)
-target_link_libraries(_pyscope_harness scope-harness ${Boost_LIBRARIES} ${PythonLibs_LIBRARIES})
+target_link_libraries(_pyscope_harness scope-harness ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 set_target_properties(_pyscope_harness PROPERTIES PREFIX "" )
 
 set(pyscope_harnessdir "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages/pyscope_harness")
