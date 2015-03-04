@@ -1,3 +1,14 @@
+unity-scopes-shell (0.5.4+15.04.20150226-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Pete Woods ]
+  * Manage location activations with shared pointers instead of manual
+    reference counting (LP: #1422879)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Thu, 26 Feb 2015 19:38:49 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150213-0ubuntu1) vivid; urgency=medium
 
   [ Pawel Stolowski ]

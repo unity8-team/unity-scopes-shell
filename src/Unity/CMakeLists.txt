@@ -5,7 +5,6 @@ include(QtWithObjectTarget)
 
 # Dependencies
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
 pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
 
 include_directories(
@@ -14,7 +13,6 @@ include_directories(
     ${SCOPESLIB_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
     ${U1DB_INCLUDE_DIRS}
-    ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
 )
 
 add_definitions(

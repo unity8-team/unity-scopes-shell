@@ -41,6 +41,7 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
+#include "locationservice.h"
 
 class QGSettings;
 
@@ -257,6 +258,7 @@ private:
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
     QSharedPointer<LocationService> m_locationService;
+    QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
 };
 
