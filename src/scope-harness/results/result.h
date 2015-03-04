@@ -81,8 +81,6 @@ public:
 
     unity::scopes::Variant const& value(std::string const& key) const;
 
-    view::AbstractView::SPtr activate() const;
-
     view::AbstractView::SPtr tap() const;
     view::AbstractView::SPtr longPress() const;
 

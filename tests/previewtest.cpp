@@ -100,7 +100,7 @@ private Q_SLOTS:
                 .match(m_resultsView->categories())
         );
 
-        auto abstractView = m_resultsView->category(0).result(0).activate();
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
         QVERIFY(bool(abstractView));
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
@@ -206,7 +206,7 @@ private Q_SLOTS:
                 .match(m_resultsView->categories())
         );
 
-        auto abstractView = m_resultsView->category(0).result(0).activate();
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
         QVERIFY(bool(abstractView));
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
@@ -257,7 +257,7 @@ private Q_SLOTS:
     {
         m_resultsView->setQuery("layout");
 
-        auto abstractView = m_resultsView->category(0).result(0).activate();
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
         QVERIFY(bool(abstractView));
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
@@ -284,7 +284,7 @@ private Q_SLOTS:
     {
         m_resultsView->setQuery("layout");
 
-        auto abstractView = m_resultsView->category(0).result(0).activate();
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
         QVERIFY(bool(abstractView));
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));

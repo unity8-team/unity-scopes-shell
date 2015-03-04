@@ -345,11 +345,6 @@ sc::Variant const& Result::value(string const& key) const
     return result->value(key);
 }
 
-view::AbstractView::SPtr Result::activate() const
-{
-    return p->activate();
-}
-
 view::AbstractView::SPtr Result::tap() const
 {
     auto result_var = p->m_resultsModel->data(p->m_index, ss::ResultsModelInterface::Roles::RoleResult);

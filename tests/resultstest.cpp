@@ -834,7 +834,7 @@ private Q_SLOTS:
         );
 
         auto abstractView =
-                resultsView->category("cat1").result("test:uri").activate();
+                resultsView->category("cat1").result("test:uri").longPress();
         QVERIFY(bool(abstractView));
         auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
         QVERIFY(bool(previewView));
@@ -854,13 +854,13 @@ private Q_SLOTS:
                 .mode(shm::CategoryListMatcher::Mode::starts_with)
                 .category(shm::CategoryMatcher("cat1")
                     .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(shm::ResultMatcher("test:perform-query"))
+                    .result(shm::ResultMatcher("scope://test:perform-query"))
                 )
                 .match(resultsView->categories())
         );
 
         auto abstractView =
-                resultsView->category("cat1").result("test:perform-query").activate();
+                resultsView->category("cat1").result("scope://test:perform-query").tap();
         QVERIFY(bool(abstractView));
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
@@ -882,13 +882,13 @@ private Q_SLOTS:
                 .mode(shm::CategoryListMatcher::Mode::starts_with)
                 .category(shm::CategoryMatcher("cat1")
                     .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(shm::ResultMatcher("test:perform-query"))
+                    .result(shm::ResultMatcher("scope://test:perform-query"))
                 )
                 .match(resultsView->categories())
         );
 
         auto abstractView =
-                resultsView->category("cat1").result("test:perform-query").activate();
+                resultsView->category("cat1").result("scope://test:perform-query").tap();
         QVERIFY(bool(abstractView));
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
@@ -915,7 +915,7 @@ private Q_SLOTS:
 
         auto abstractView =
                 resultsView->category("cat1").result(
-                        shm::ScopeUri("mock-scope").query("next-scope-query").toString()).activate();
+                        shm::ScopeUri("mock-scope").query("next-scope-query").toString()).tap();
         QVERIFY(bool(abstractView));
         auto nextView = dynamic_pointer_cast<shv::ResultsView>(abstractView);
         QVERIFY(bool(nextView));
