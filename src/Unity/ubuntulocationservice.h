@@ -34,6 +34,8 @@ class Q_DECL_EXPORT UbuntuLocationService : public LocationService
     Q_OBJECT
 
 public:
+    class TokenImpl;
+
     UbuntuLocationService(GeoIp::Ptr geoIp = GeoIp::Ptr(new GeoIp));
 
     virtual ~UbuntuLocationService();
@@ -44,9 +46,7 @@ public:
 
     bool isActive() const override;
 
-    void activate() override;
-
-    void deactivate() override;
+    QSharedPointer<Token> activate() override;
 
 Q_SIGNALS:
     void enqueueActivate();

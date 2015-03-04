@@ -200,7 +200,7 @@ private Q_SLOTS:
     void testLocation()
     {
         QSignalSpy spy(locationService.data(), SIGNAL(locationChanged()));
-        locationService->activate();
+        auto token = locationService->activate();
 
         // The GeoIP HTTP call should return now
         QVERIFY(spy.wait());
