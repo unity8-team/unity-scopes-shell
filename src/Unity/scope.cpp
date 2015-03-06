@@ -123,14 +123,16 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     scopes::Department::SCPtr rootDepartment;
     scopes::OptionSelectorFilter::SCPtr sortOrderFilter;
     scopes::FilterState filterState;
+    QList<scopes::FilterBase::SCPtr> filters;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filterState);
+    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters, filterState);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     m_rootDepartment = rootDepartment;
     m_sortOrderFilter = sortOrderFilter;
+    m_receivedFilters = filters;
     m_receivedFilterState = filterState;
 
     if (m_cachedResults.empty()) {
@@ -425,6 +427,20 @@ void Scope::flushUpdates(bool finalize)
 
             // update the alt navigation models
             updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+        }
+    }
+
+    // process other filters
+    if (finalize || m_receivedFilters.size() > 0)
+    {
+        bool containsFilters = (m_receivedFilters.size() > 0);
+
+        if (containsFilters) {
+            m_filtersModel->update(m_receivedFilters, m_receivedFilterState);
+        }
+        else
+        {
+            m_filtersModel->clear();
         }
     }
 }

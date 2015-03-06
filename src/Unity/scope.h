@@ -39,6 +39,7 @@
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 
+#include "filters.h"
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
@@ -236,6 +237,8 @@ private:
     unity::scopes::FilterState m_filterState;
     unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
+    QList<unity::scopes::FilterBase::SCPtr> m_receivedFilters;
+    QScopedPointer<Filters> m_filtersModel;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
