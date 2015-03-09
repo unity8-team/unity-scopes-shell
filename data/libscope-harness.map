@@ -1,0 +1,25 @@
+{
+global:
+    extern "C++" {
+        typeinfo?for?unity::scopeharness::[!i]*;
+        typeinfo?for?unity::scopeharness::matcher::[!i]*;
+        typeinfo?for?unity::scopeharness::preview::[!i]*;
+        typeinfo?for?unity::scopeharness::registry::[!i]*;
+        typeinfo?for?unity::scopeharness::results::[!i]*;
+        typeinfo?for?unity::scopeharness::view::[!i]*;
+        vtable?for?unity::scopeharness::[!i]*;
+        vtable?for?unity::scopeharness::matcher::[!i]*;
+        vtable?for?unity::scopeharness::preview::[!i]*;
+        vtable?for?unity::scopeharness::registry::[!i]*;
+        vtable?for?unity::scopeharness::results::[!i]*;
+        vtable?for?unity::scopeharness::view::[!i]*;
+        unity::scopeharness::*;
+        unity::scopeharness::matcher::*;
+        unity::scopeharness::preview::*;
+        unity::scopeharness::registry::*;
+        unity::scopeharness::results::*;
+        unity::scopeharness::view::*;
+    };
+local:
+    *;
+};

@@ -324,7 +324,7 @@ bool ResultsView::overrideCategoryJson(string const& categoryId, string const& j
 
 results::Category::List ResultsView::categories()
 {
-    auto cats = raw_categories();
+    auto cats = p->internalRawCategories();
 
     results::Category::List result;
     for (int i = 0; i < cats->rowCount(); ++i)
@@ -353,7 +353,7 @@ results::Category ResultsView::category(size_t row)
 
 results::Category ResultsView::category(const string& categoryId_)
 {
-    auto cats = raw_categories();
+    auto cats = p->internalRawCategories();
 
     QString categoryId = QString::fromStdString(categoryId_);
     int row = -1;
@@ -371,11 +371,6 @@ results::Category ResultsView::category(const string& categoryId_)
 
     throwIf(row == -1, "Could not find category");
     return p->internalCategory(row);
-}
-
-ss::CategoriesInterface* ResultsView::raw_categories() const
-{
-    return p->internalRawCategories();
 }
 
 string ResultsView::scopeId() const

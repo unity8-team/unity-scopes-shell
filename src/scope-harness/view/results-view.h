@@ -125,9 +125,6 @@ public:
 
     results::Department browseAltDepartment(const std::string& id = std::string());
 
-    // TODO Remove / replace these
-    unity::shell::scopes::CategoriesInterface* raw_categories() const;
-
 protected:
     friend ScopeHarness;
 

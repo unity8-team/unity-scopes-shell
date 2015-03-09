@@ -2,6 +2,8 @@
 set(API_VERSION 1)
 set(ABI_VERSION 1)
 
+set(SYMBOL_MAP "${CMAKE_SOURCE_DIR}/data/libscope-harness.map")
+
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPESDIR "" --variable=scopesdir )
@@ -25,7 +27,6 @@ add_definitions(
 add_library(
     scope-harness SHARED
     $<TARGET_OBJECTS:Unity-qml-object>
-    internal/signal-handler.cpp
     internal/test-utils.cpp
     matcher/category-matcher.cpp
     matcher/category-list-matcher.cpp
@@ -68,6 +69,8 @@ set_target_properties(
     PROPERTIES
     VERSION ${API_VERSION}.0.0
     SOVERSION ${ABI_VERSION}
+    LINK_FLAGS "-Wl,--version-script,${SYMBOL_MAP}"
+    LINK_DEPENDS "${SYMBOL_MAP}"
 )
 
 install(
@@ -82,14 +85,3 @@ install(
     PATTERN "internal" EXCLUDE
 )
 
-# Custom registry executable
-
-add_executable(
-    custom-registry
-    registry/custom-registry-main.cpp
-)
-
-target_link_libraries(
-    custom-registry
-    scope-harness
-)
