@@ -573,6 +573,7 @@ private Q_SLOTS:
         );
     }
 
+// FIXME Add code to harness to test special categories
 //    void testSpecialCategory()
 //    {
 //        auto resultsView = m_harness->resultsView();
