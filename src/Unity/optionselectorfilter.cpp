@@ -23,12 +23,16 @@
 namespace scopes_ng
 {
 
-OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::shell::scopes::FiltersInterface *parent)
+OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::OptionSelectorFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
     m_multiSelect(filter->multi_select()),
-    m_label(QString::fromStdString(filter->label()))
+    m_label(QString::fromStdString(filter->label())),
+    m_options(new OptionSelectorOptions(this)),
+    m_filterState(filterState),
+    m_filter(filter)
 {
+    connect(m_options.data(), SIGNAL(optionChecked(const QString&, bool)), this, SLOT(onOptionChecked(const QString &id, bool)));
 }
 
 QString OptionSelectorFilter::id() const
@@ -51,9 +55,21 @@ bool OptionSelectorFilter::multiSelect() const
     return m_multiSelect;
 }
 
-int OptionSelectorFilter::count() const
+void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
 {
-    return m_options->count();
+    if (m_filterState)
+    {
+        auto const optid = id.toStdString();
+        for (auto const opt: m_filter->options())
+        {
+            if (opt->id() == optid)
+            {
+                m_filter->update_state(*m_filterState, opt, checked);
+                Q_EMIT filterStateChanged();
+                break;
+            }
+        }
+    }
 }
 
 unity::shell::scopes::OptionSelectorOptionsInterface* OptionSelectorFilter::options() const
@@ -61,8 +77,10 @@ unity::shell::scopes::OptionSelectorOptionsInterface* OptionSelectorFilter::opti
     return m_options.data();
 }
 
-void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState const& filterState)
+void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
 {
+    m_filterState = filterState;
+
     unity::scopes::OptionSelectorFilter::SCPtr optselfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
     if (!optselfilter) {
         qWarning() << "OptionSelectorFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());

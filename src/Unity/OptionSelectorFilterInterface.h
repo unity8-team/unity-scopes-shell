@@ -40,13 +40,11 @@ public:
 
     virtual QString label() const = 0;
     virtual bool multiSelect() const = 0;
-    virtual int count() const = 0;
     virtual OptionSelectorOptionsInterface* options() const = 0;
 
 Q_SIGNALS:
     void labelChanged(const QString&);
     void multiSelectChanged(bool);
-    void countChanged(int);
 
 protected:
     /// @cond

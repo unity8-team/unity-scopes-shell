@@ -34,20 +34,27 @@ class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSe
     Q_OBJECT
 
 public:
-    explicit OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString id() const override;
     QString filterType() const override;
     QString label() const override;
     bool multiSelect() const override;
-    int count() const override;
     unity::shell::scopes::OptionSelectorOptionsInterface* options() const override;
-    void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState const& filterState) override;
+    void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+
+Q_SIGNALS:
+    void filterStateChanged();
+
+protected Q_SLOTS:
+    void onOptionChecked(const QString& id, bool checked);
 
 private:
-    QScopedPointer<OptionSelectorOptions> m_options;
     QString m_id;
     bool m_multiSelect;
     QString m_label;
+    QScopedPointer<OptionSelectorOptions> m_options;
+    unity::scopes::FilterState::SPtr m_filterState;
+    unity::scopes::OptionSelectorFilter::SCPtr m_filter;
 };
 
 } // namespace scopes_ng

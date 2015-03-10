@@ -41,15 +41,6 @@ public:
         RoleFilter
     };
 
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
-
-    virtual int count() const = 0;
-
-Q_SIGNALS:
-    // @cond
-    void countChanged();
-    // @endcond
-
 protected:
     /// @cond
     explicit FiltersInterface(QObject* parent = 0) : QAbstractListModel(parent) {}

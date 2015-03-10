@@ -37,17 +37,18 @@ class Q_DECL_EXPORT Filters : public unity::shell::scopes::FiltersInterface
 
 public:
     explicit Filters(unity::shell::scopes::ScopeInterface *parent = nullptr);
-    int count() const override;
+    int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     void clear();
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState);
 
 Q_SIGNALS:
-    //TODO signal filter state change
+    void filterStateChanged();
 
 private:
     unity::shell::scopes::FilterBaseInterface* createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
     QList<unity::shell::scopes::FilterBaseInterface*> m_filters;
+    unity::scopes::FilterState::SPtr m_filterState;
 };
 
 } // namespace scopes_ng

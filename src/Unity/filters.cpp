@@ -34,7 +34,7 @@ Filters::Filters(unity::shell::scopes::ScopeInterface *parent)
 {
 }
 
-int Filters::count() const
+int Filters::rowCount(const QModelIndex& parent) const
 {
     return m_filters.count();
 }
@@ -74,6 +74,8 @@ void Filters::clear()
 
 void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState)
 {
+    m_filterState.reset(new unity::scopes::FilterState(filterState));
+
     int pos = 0;
     QMap<QString, int> newFilters;
     for (auto filter: filters)
@@ -150,7 +152,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
             if (existingFilter->filterType() == QString::fromStdString(receivedFilter->filter_type()))
             {
                 qDebug() << "Updating filter" << existingFilter->id() << "of type" << existingFilter->filterType();
-                existingFilter->update(receivedFilter, filterState);
+                existingFilter->update(receivedFilter, m_filterState);
             }
             else
             {
@@ -169,7 +171,8 @@ unity::shell::scopes::FilterBaseInterface* Filters::createFilterObject(unity::sc
     if (filter->filter_type() == "option_selector")
     {
         unity::scopes::OptionSelectorFilter::SCPtr optfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
-        return new OptionSelectorFilter(optfilter);
+        auto filterObj = new OptionSelectorFilter(optfilter, m_filterState, this);
+        connect(filterObj, SIGNAL(filterStateChanged()), this, SIGNAL(filterStateChanged()));
     }
     return nullptr;
 }

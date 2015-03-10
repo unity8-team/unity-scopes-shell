@@ -38,7 +38,7 @@ class FilterBaseInterface : public QObject
         Q_PROPERTY(QString id READ id)
         Q_PROPERTY(QString filterType READ filterType)
 
-        virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState const& filterState) = 0;
+        virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) = 0;
         virtual QString id() const = 0;
         virtual QString filterType() const = 0;
 

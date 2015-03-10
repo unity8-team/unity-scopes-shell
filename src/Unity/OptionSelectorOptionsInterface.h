@@ -61,12 +61,7 @@ public:
         RoleOption = Qt::UserRole + 1
     };
 
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
-    virtual int count() const = 0;
-    virtual void update(std::list<unity::scopes::FilterOption::SCPtr> options, unity::scopes::FilterState const& filterState) = 0;
-
-Q_SIGNALS:
-    void countChanged();
+    virtual void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const& filterState) = 0;
 
 protected:
     /// @cond
@@ -79,6 +74,7 @@ protected:
 }
 }
 
+Q_DECLARE_METATYPE(unity::shell::scopes::OptionSelectorOptionInterface*)
 Q_DECLARE_METATYPE(unity::shell::scopes::OptionSelectorOptionsInterface*)
 
 
