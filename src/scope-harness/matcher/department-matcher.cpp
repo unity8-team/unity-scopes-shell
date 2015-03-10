@@ -60,7 +60,7 @@ static void check_bool(MatchResult& matchResult, const results::Department& depa
 }
 }
 
-struct DepartmentMatcher::Priv
+struct DepartmentMatcher::_Priv
 {
     void all(MatchResult& matchResult, const results::Department& department)
     {
@@ -147,7 +147,7 @@ struct DepartmentMatcher::Priv
 };
 
 DepartmentMatcher::DepartmentMatcher() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 

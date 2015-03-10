@@ -34,7 +34,7 @@ namespace scopeharness
 namespace matcher
 {
 
-struct CategoryListMatcher::Priv
+struct CategoryListMatcher::_Priv
 {
     Mode m_mode = Mode::all;
 
@@ -106,7 +106,7 @@ struct CategoryListMatcher::Priv
 };
 
 CategoryListMatcher::CategoryListMatcher() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 

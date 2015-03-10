@@ -18,7 +18,7 @@
 
 #include <scope-harness/results/category.h>
 #include <scope-harness/internal/category-arguments.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
 
@@ -40,7 +40,7 @@ using namespace internal;
 namespace results
 {
 
-struct Category::Priv
+struct Category::_Priv
 {
     ss::CategoriesInterface* m_categoriesModel;
     QModelIndex m_index;
@@ -48,7 +48,7 @@ struct Category::Priv
 };
 
 Category::Category(const internal::CategoryArguments& arguments) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_categoriesModel = arguments.categoriesModel;
     p->m_index = arguments.index;
@@ -56,13 +56,13 @@ Category::Category(const internal::CategoryArguments& arguments) :
 }
 
 Category::Category(Category&& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = move(other);
 }
 
 Category::Category(const Category& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }
@@ -148,7 +148,7 @@ Result Category::result(const string& uri) const
 
 Result Category::result(size_t index) const
 {
-    throwIf(index >= p->m_results.size(), "Invalid index " + to_string(index) + " in result lookup");
+    TestUtils::throwIf(index >= p->m_results.size(), "Invalid index " + to_string(index) + " in result lookup");
 
     return p->m_results.at(index);
 }

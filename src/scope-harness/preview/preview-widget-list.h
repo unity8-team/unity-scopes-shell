@@ -63,9 +63,9 @@ protected:
 
     PreviewWidgetList(const internal::PreviewWidgetListArguments& arguments);
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

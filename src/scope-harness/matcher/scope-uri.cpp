@@ -54,7 +54,7 @@ static void paramJoin(stringstream& s, const vector<pair<string, string>>& v)
 }
 }
 
-struct ScopeUri::Priv
+struct ScopeUri::_Priv
 {
     string m_id;
 
@@ -64,7 +64,7 @@ struct ScopeUri::Priv
 };
 
 ScopeUri::ScopeUri(const string& id) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_id = id;
 }
@@ -74,7 +74,7 @@ ScopeUri::~ScopeUri()
 }
 
 ScopeUri::ScopeUri(const ScopeUri& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

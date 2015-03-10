@@ -28,7 +28,7 @@
 #include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 using namespace std;
 namespace ng = scopes_ng;
@@ -43,16 +43,16 @@ using namespace internal;
 namespace view
 {
 
-struct ResultsView::Priv
+struct ResultsView::_Priv
 {
-    Priv(ResultsView& self, shared_ptr<ng::Scopes> scopes) :
+    _Priv(ResultsView& self, shared_ptr<ng::Scopes> scopes) :
         m_self(self), m_scopes(scopes)
     {
     }
 
     void checkActiveScope() const
     {
-        throwIfNot(m_active_scope, "There is no active scope");
+        TestUtils::throwIfNot(m_active_scope, "There is no active scope");
     }
 
     ss::CategoriesInterface* internalRawCategories() const
@@ -106,7 +106,7 @@ struct ResultsView::Priv
         {
             navigationModel.reset(m_active_scope->getNavigation(QString::fromStdString(id)));
         }
-        throwIfNot(bool(navigationModel), "Unknown department: '" + id + "'");
+        TestUtils::throwIfNot(bool(navigationModel), "Unknown department: '" + id + "'");
 
         QSignalSpy spy(navigationModel.data(), SIGNAL(loadedChanged()));
 
@@ -131,12 +131,12 @@ struct ResultsView::Priv
         {
             m_active_scope->setNavigationState(QString::fromStdString(id),
                                                altNavigation);
-            waitForSearchFinish(m_active_scope);
+            TestUtils::waitForSearchFinish(m_active_scope);
         }
 
         if (!navigationModel->loaded())
         {
-            throwIfNot(spy.wait(), "Department model failed to load");
+            TestUtils::throwIfNot(spy.wait(), "Department model failed to load");
         }
 
         return results::Department(internal::DepartmentArguments{navigationModel});
@@ -152,7 +152,7 @@ struct ResultsView::Priv
 };
 
 ResultsView::ResultsView(const internal::ResultsViewArguments& arguments) :
-        p(new Priv(*this, arguments.scopes))
+        p(new _Priv(*this, arguments.scopes))
 {
 }
 
@@ -195,7 +195,7 @@ void ResultsView::setActiveScope(const string &id_)
             }
             if (scope->searchInProgress())
             {
-                throwIfNot(spy.wait(), "Active scope didn't finish searching");
+                TestUtils::throwIfNot(spy.wait(), "Active scope didn't finish searching");
             }
 
             break;
@@ -227,53 +227,53 @@ void ResultsView::setQuery(const string& searchString_)
         return;
     }
 
-    throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
 
     QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
     // perform a search
     p->m_active_scope->setSearchQuery(searchString);
     // search should not be happening yet
-    throwIf(p->m_active_scope->searchInProgress(), "Search was in progress too soon");
-    throwIfNot(spy.wait(), "Search spy received no events");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search was in progress too soon");
+    TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
     if (p->m_active_scope->searchInProgress())
     {
         // wait for the search to finish
-        throwIfNot(spy.wait(), "Search spy received no events");
+        TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
     }
-    throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
 }
 
 void ResultsView::forceRefresh()
 {
     p->checkActiveScope();
 
-    throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
 
     QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
     // perform a search
     p->m_active_scope->refresh();
     // search should not be happening yet
-    throwIfNot(p->m_active_scope->searchInProgress() || spy.count() > 1, "Refresh failed to start");
+    TestUtils::throwIfNot(p->m_active_scope->searchInProgress() || spy.count() > 1, "Refresh failed to start");
     if (p->m_active_scope->searchInProgress())
     {
         // wait for the search to finish
-        throwIfNot(spy.wait(), "Search spy received no events");
+        TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
     }
-    throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
 }
 
 void ResultsView::waitForResultsChange()
 {
     p->checkActiveScope();
 
-    throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
     // wait for the search to finish
     QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
-    throwIfNot(spy.wait(), "Search status didn't change");
+    TestUtils::throwIfNot(spy.wait(), "Search status didn't change");
     if(spy.size() == 1) {
-        throwIfNot(spy.wait(), "Search status didn't change");
+        TestUtils::throwIfNot(spy.wait(), "Search status didn't change");
     }
-    throwIf(p->m_active_scope->searchInProgress(), "");
+    TestUtils::throwIf(p->m_active_scope->searchInProgress(), "");
 }
 
 bool ResultsView::hasDepartments() const
@@ -369,7 +369,7 @@ results::Category ResultsView::category(const string& categoryId_)
         }
     }
 
-    throwIf(row == -1, "Could not find category");
+    TestUtils::throwIf(row == -1, "Could not find category");
     return p->internalCategory(row);
 }
 

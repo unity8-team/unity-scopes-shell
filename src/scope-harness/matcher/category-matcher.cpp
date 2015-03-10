@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 #include <scope-harness/matcher/category-matcher.h>
 #include <scope-harness/matcher/result-matcher.h>
 #include <scope-harness/results/category.h>
@@ -82,7 +82,7 @@ static void check_string(MatchResult& matchResult, const results::Category& cate
 }
 }
 
-struct CategoryMatcher::Priv
+struct CategoryMatcher::_Priv
 {
     void all(MatchResult& matchResult, const results::Result::List& resultList)
     {
@@ -125,7 +125,7 @@ struct CategoryMatcher::Priv
         for (const auto& expectedResult : m_results)
         {
             string expectedUri = expectedResult.getUri();
-            internal::throwIf(expectedUri.empty(), "Cannot match by_uri with empty expected URI");
+            TestUtils::throwIf(expectedUri.empty(), "Cannot match by_uri with empty expected URI");
 
             regex e(expectedUri);
             bool matched = false;
@@ -167,13 +167,13 @@ struct CategoryMatcher::Priv
 };
 
 CategoryMatcher::CategoryMatcher(const string& id) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_id = id;
 }
 
 CategoryMatcher::CategoryMatcher(const CategoryMatcher& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

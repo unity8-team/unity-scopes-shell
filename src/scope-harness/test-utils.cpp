@@ -41,9 +41,8 @@ namespace ss = unity::shell::scopes;
 
 namespace unity {
 namespace scopeharness {
-namespace internal {
 
-void throwIf(bool condition, const std::string& message)
+void TestUtils::throwIf(bool condition, const std::string& message)
 {
     if (condition)
     {
@@ -51,7 +50,7 @@ void throwIf(bool condition, const std::string& message)
     }
 }
 
-void throwIfNot(bool condition, const std::string& message)
+void TestUtils::throwIfNot(bool condition, const std::string& message)
 {
     if (!condition)
     {
@@ -59,7 +58,7 @@ void throwIfNot(bool condition, const std::string& message)
     }
 }
 
-void checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result, bool& success)
+void TestUtils::checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result, bool& success)
 {
     // ensure categories have > 0 rows
     QVERIFY(categories->rowCount() > 0);
@@ -76,14 +75,14 @@ void checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, s
     success = true;
 }
 
-bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result)
+bool TestUtils::getFirstResult(unity::shell::scopes::CategoriesInterface* categories, sc::Result::SPtr& result)
 {
     bool success = false;
     checkedFirstResult(categories, result, success);
     return success;
 }
 
-void refreshSearch(ng::Scope::Ptr scope)
+void TestUtils::refreshSearch(ng::Scope::Ptr scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
     QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
@@ -97,7 +96,7 @@ void refreshSearch(ng::Scope::Ptr scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void performSearch(QSharedPointer<ss::ScopeInterface> scope, QString const& searchString)
+void TestUtils::performSearch(QSharedPointer<ss::ScopeInterface> scope, QString const& searchString)
 {
     QCOMPARE(scope->searchInProgress(), false);
     QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
@@ -113,7 +112,7 @@ void performSearch(QSharedPointer<ss::ScopeInterface> scope, QString const& sear
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void waitForResultsChange(QSharedPointer<ss::ScopeInterface> scope)
+void TestUtils::waitForResultsChange(QSharedPointer<ss::ScopeInterface> scope)
 {
     QCOMPARE(scope->searchInProgress(), false);
     // wait for the search to finish
@@ -125,7 +124,7 @@ void waitForResultsChange(QSharedPointer<ss::ScopeInterface> scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-void waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
+void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
 {
     QCOMPARE(scope->searchInProgress(), true);
     QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
@@ -137,7 +136,7 @@ void waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
-bool previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
+bool TestUtils::previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
 {
     performSearch(scope, searchString);
 
@@ -149,14 +148,14 @@ bool previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QS
     return true;
 }
 
-void setFavouriteScopes(const QStringList& cannedQueries)
+void TestUtils::setFavouriteScopes(const QStringList& cannedQueries)
 {
     setenv("GSETTINGS_BACKEND", "memory", 1);
     QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
     settings.set("favoriteScopes", QVariant(cannedQueries));
 }
 
-QStringList getFavoriteScopes()
+QStringList TestUtils::getFavoriteScopes()
 {
     setenv("GSETTINGS_BACKEND", "memory", 1);
     QGSettings settings("com.canonical.Unity.Dash", QByteArray(), nullptr);
@@ -167,6 +166,5 @@ QStringList getFavoriteScopes()
     return favs;
 }
 
-}
 }
 }

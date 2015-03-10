@@ -30,13 +30,13 @@ namespace scopeharness
 namespace matcher
 {
 
-struct PreviewColumnMatcher::Priv
+struct PreviewColumnMatcher::_Priv
 {
     vector<PreviewMatcher> m_matchers;
 };
 
 PreviewColumnMatcher::PreviewColumnMatcher() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 
@@ -45,7 +45,7 @@ PreviewColumnMatcher::~PreviewColumnMatcher()
 }
 
 PreviewColumnMatcher::PreviewColumnMatcher(const PreviewColumnMatcher& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

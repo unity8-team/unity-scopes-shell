@@ -19,7 +19,7 @@
  */
 
 #include <scope-harness/registry/custom-registry.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -33,7 +33,6 @@ namespace unity
 {
 namespace scopeharness
 {
-using namespace internal;
 namespace registry
 {
 namespace
@@ -135,9 +134,9 @@ CustomRegistry::Parameters& CustomRegistry::Parameters::includeRemoteScopes()
     return *this;
 }
 
-struct CustomRegistry::Priv
+struct CustomRegistry::_Priv
 {
-    Priv(const Parameters& parameters) :
+    _Priv(const Parameters& parameters) :
         m_parameters(parameters)
     {
     }
@@ -150,7 +149,7 @@ struct CustomRegistry::Priv
 };
 
 CustomRegistry::CustomRegistry(const Parameters& parameters):
-    p(new Priv(parameters))
+    p(new _Priv(parameters))
 {
     p->m_parameters = parameters;
 }
@@ -178,7 +177,7 @@ void CustomRegistry::start()
     tmp.mkpath("endpoints");
     QDir endpointsDir(tmp.filePath("endpoints"));
 
-    throwIf(!runtimeConfig.open(QIODevice::WriteOnly)
+    TestUtils::throwIf(!runtimeConfig.open(QIODevice::WriteOnly)
             || !registryConfig.open(QIODevice::WriteOnly)
             || !mwConfig.open(QIODevice::WriteOnly)
             || !endpointsDir.exists(),
@@ -191,21 +190,21 @@ void CustomRegistry::start()
     if (!p->m_parameters.p->m_includeSystemScopes)
     {
         scopeInstallDir = tmp.filePath("scopes");
-        throwIfNot(tmp.mkpath("scopes"), string("Unable to create directory: ") + scopeInstallDir.path().toStdString());
+        TestUtils::throwIfNot(tmp.mkpath("scopes"), string("Unable to create directory: ") + scopeInstallDir.path().toStdString());
     }
 
     QDir clickInstallDir(QDir::home().filePath(".local/share/unity-scopes"));
     if (!p->m_parameters.p->m_includeClickScopes)
     {
         clickInstallDir = tmp.filePath("click");
-        throwIfNot(tmp.mkpath("click"), string("Unable to create directory: ") + clickInstallDir.path().toStdString());
+        TestUtils::throwIfNot(tmp.mkpath("click"), string("Unable to create directory: ") + clickInstallDir.path().toStdString());
     }
 
     QDir oemInstallDir("/custom/share/unity-scopes");
     if (!p->m_parameters.p->m_includeOemScopes)
     {
         oemInstallDir = tmp.filePath("oem");
-        throwIfNot(tmp.mkpath("oem"), string("Unable to create directory: ") + oemInstallDir.path().toStdString());
+        TestUtils::throwIfNot(tmp.mkpath("oem"), string("Unable to create directory: ") + oemInstallDir.path().toStdString());
     }
 
     // FIXME: keep in sync with the SSRegistry config
@@ -243,7 +242,7 @@ void CustomRegistry::start()
 
     p->m_registryProcess.setProcessChannelMode(QProcess::ForwardedChannels);
     p->m_registryProcess.start(scopeRegistryBin.fileName(), arguments);
-    throwIfNot(p->m_registryProcess.waitForStarted(), "Scope registry failed to start");
+    TestUtils::throwIfNot(p->m_registryProcess.waitForStarted(), "Scope registry failed to start");
 
     // FIXME hard-coded path
     QProcess::startDetached(

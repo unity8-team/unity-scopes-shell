@@ -130,9 +130,9 @@ protected:
 
     void setPreviewView(std::shared_ptr<PreviewView> previewView);
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

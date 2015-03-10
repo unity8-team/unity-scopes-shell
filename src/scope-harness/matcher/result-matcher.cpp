@@ -120,7 +120,7 @@ static void check_regex(MatchResult& matchResult, const results::Result& result,
 }
 }
 
-struct ResultMatcher::Priv
+struct ResultMatcher::_Priv
 {
     string m_uri;
 
@@ -146,13 +146,13 @@ struct ResultMatcher::Priv
 };
 
 ResultMatcher::ResultMatcher(const string& uri) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_uri = uri;
 }
 
 ResultMatcher::ResultMatcher(const ScopeUri& uri) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_uri = uri.toString();
 }
@@ -163,7 +163,7 @@ ResultMatcher ResultMatcher::any_uri()
 }
 
 ResultMatcher::ResultMatcher(const ResultMatcher& other) :
-    p(new Priv)
+    p(new _Priv)
 {
     *this = other;
 }

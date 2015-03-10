@@ -77,9 +77,9 @@ protected:
 
     Category(const internal::CategoryArguments& arguments);
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

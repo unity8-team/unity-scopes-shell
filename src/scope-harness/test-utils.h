@@ -27,41 +27,46 @@
 
 namespace unity {
 namespace scopeharness {
-namespace internal {
+
+class TestUtils
+{
+public:
 
 Q_DECL_EXPORT
-void throwIf(bool condition, const std::string& message);
+static void throwIf(bool condition, const std::string& message);
 
 Q_DECL_EXPORT
-void throwIfNot(bool condition, const std::string& message);
+static void throwIfNot(bool condition, const std::string& message);
 
 Q_DECL_EXPORT
-void checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, unity::scopes::Result::SPtr& result, bool& success);
+static void checkedFirstResult(unity::shell::scopes::CategoriesInterface* categories, unity::scopes::Result::SPtr& result, bool& success);
 
 Q_DECL_EXPORT
-bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, unity::scopes::Result::SPtr& result);
+static bool getFirstResult(unity::shell::scopes::CategoriesInterface* categories, unity::scopes::Result::SPtr& result);
 
 Q_DECL_EXPORT
-void refreshSearch(scopes_ng::Scope::Ptr);
+static void refreshSearch(scopes_ng::Scope::Ptr);
 
 Q_DECL_EXPORT
-void performSearch(QSharedPointer<shell::scopes::ScopeInterface> scope, QString const& searchString);
+static void performSearch(QSharedPointer<shell::scopes::ScopeInterface> scope, QString const& searchString);
 
 Q_DECL_EXPORT
-void waitForResultsChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
+static void waitForResultsChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
 
 Q_DECL_EXPORT
-void waitForSearchFinish(QSharedPointer<shell::scopes::ScopeInterface> scope);
+static void waitForSearchFinish(QSharedPointer<shell::scopes::ScopeInterface> scope);
 
 Q_DECL_EXPORT
-bool previewForFirstResult(scopes_ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<scopes_ng::PreviewStack>& preview_stack);
+static bool previewForFirstResult(scopes_ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<scopes_ng::PreviewStack>& preview_stack);
 
 Q_DECL_EXPORT
-void setFavouriteScopes(const QStringList& cannedQueries);
+static void setFavouriteScopes(const QStringList& cannedQueries);
 
 Q_DECL_EXPORT
-QStringList getFavoriteScopes();
+static QStringList getFavoriteScopes();
 
-}
+};
+
+
 }
 }

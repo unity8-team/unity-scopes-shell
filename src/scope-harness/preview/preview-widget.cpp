@@ -20,7 +20,7 @@
 #include <scope-harness/preview/preview-widget.h>
 #include <scope-harness/view/abstract-view.h>
 #include <scope-harness/view/preview-view.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
@@ -43,7 +43,7 @@ using namespace internal;
 namespace preview
 {
 
-struct PreviewWidget::Priv
+struct PreviewWidget::_Priv
 {
     unity::shell::scopes::PreviewWidgetModelInterface* m_previewWidgetModel;
 
@@ -57,7 +57,7 @@ struct PreviewWidget::Priv
 };
 
 PreviewWidget::PreviewWidget(const internal::PreviewWidgetArguments& arguments) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_previewWidgetModel = arguments.previewWidgetModel;
     p->m_previewModel = arguments.previewModel;
@@ -68,7 +68,7 @@ PreviewWidget::PreviewWidget(const internal::PreviewWidgetArguments& arguments) 
 
 
 PreviewWidget::PreviewWidget(const PreviewWidget& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }
@@ -124,10 +124,10 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
             QString::fromStdString(id()), QString::fromStdString(name),
             ng::scopeVariantToQVariant(v).toMap());
 
-    throwIfNot(p->m_previewModel->processingAction(), "Should be processing action");
+    TestUtils::throwIfNot(p->m_previewModel->processingAction(), "Should be processing action");
     QSignalSpy spy(p->m_previewModel, SIGNAL(processingActionChanged()));
-    throwIfNot(spy.wait(), "Processing action property didn't change");
-    throwIf(p->m_previewModel->processingAction(), "Should have finished processing action");
+    TestUtils::throwIfNot(spy.wait(), "Processing action property didn't change");
+    TestUtils::throwIf(p->m_previewModel->processingAction(), "Should have finished processing action");
 
     view::PreviewView::SPtr previewView = p->m_previewView.lock();
     previewView->refresh();

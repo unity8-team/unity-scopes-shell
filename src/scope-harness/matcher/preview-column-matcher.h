@@ -54,9 +54,9 @@ public:
     void match(MatchResult& matchResult, const std::vector<preview::PreviewWidgetList>& preview) const;
 
 protected:
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

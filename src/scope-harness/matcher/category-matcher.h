@@ -83,9 +83,9 @@ public:
     void match(MatchResult& matchResult, const results::Category& category) const;
 
 protected:
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

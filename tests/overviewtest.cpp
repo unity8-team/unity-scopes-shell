@@ -35,11 +35,10 @@
 #include <previewwidgetmodel.h>
 
 #include <scope-harness/registry/pre-existing-registry.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 using namespace scopes_ng;
 using namespace unity::scopeharness;
-using namespace unity::scopeharness::internal;
 using namespace unity::scopeharness::registry;
 
 class OverviewTest : public QObject
@@ -66,7 +65,7 @@ private Q_SLOTS:
     {
         QStringList favs;
         favs << "scope://mock-scope-departments" << "scope://mock-scope-double-nav";
-        setFavouriteScopes(favs);
+        TestUtils::setFavouriteScopes(favs);
 
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
@@ -106,7 +105,7 @@ private Q_SLOTS:
 
     void testSurfacingQuery()
     {
-        performSearch(m_scope, QString(""));
+        TestUtils::performSearch(m_scope, QString(""));
 
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
@@ -125,7 +124,7 @@ private Q_SLOTS:
 
     void testPreview()
     {
-        performSearch(m_scope, QString(""));
+        TestUtils::performSearch(m_scope, QString(""));
 
         // get a result from the model
         auto categories = m_scope->categories();

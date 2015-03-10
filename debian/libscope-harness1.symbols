@@ -1,34 +1,29 @@
 libscope-harness.so.1 libscope-harness1 #MINVER#
- (c++)"vtable for unity::scopeharness::view::PreviewView@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::view::ResultsView@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::view::AbstractView@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::results::Result::Priv@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::registry::CustomRegistry@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::registry::SystemRegistry@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::registry::PreExistingRegistry@Base" 0replaceme
- (c++)"vtable for unity::scopeharness::registry::Registry@Base" 0replaceme
  (c++)"unity::scopeharness::ScopeHarness::resultsView()@Base" 0replaceme
  (c++)"unity::scopeharness::ScopeHarness::newFromSystem()@Base" 0replaceme
  (c++)"unity::scopeharness::ScopeHarness::newFromScopeList(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0replaceme
  (c++)"unity::scopeharness::ScopeHarness::newFromPreExistingConfig(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::ScopeHarness::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::ScopeHarness::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::ScopeHarness::ScopeHarness(std::shared_ptr<unity::scopeharness::registry::Registry>)@Base" 0replaceme
- (c++)"unity::scopeharness::ScopeHarness::ScopeHarness(std::shared_ptr<unity::scopeharness::registry::Registry>)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::throwIfNot(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::performSearch(QSharedPointer<unity::shell::scopes::ScopeInterface>, QString const&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::refreshSearch(QSharedPointer<scopes_ng::Scope>)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::getFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::getFavoriteScopes()@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::checkedFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&, bool&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::setFavouriteScopes(QStringList const&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::waitForResultsChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::previewForFirstResult(QSharedPointer<scopes_ng::Scope>, QString const&, QScopedPointer<scopes_ng::PreviewStack, QScopedPointerDeleter<scopes_ng::PreviewStack> >&)@Base" 0replaceme
+ (c++)"unity::scopeharness::TestUtils::throwIf(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::setColumnCount(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::setResultsView(std::shared_ptr<unity::scopeharness::view::ResultsView>)@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned long)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::widgetsInFirstColumn()@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::Priv::iteratePreviewModel(unity::shell::scopes::PreviewModelInterface*, std::shared_ptr<unity::scopeharness::view::PreviewView>)@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::preview(std::shared_ptr<unity::shell::scopes::PreviewStackInterface>)@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::refresh()@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::widgets()@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::PreviewView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::PreviewView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::categories()@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::forceRefresh()@Base" 0replaceme
@@ -38,20 +33,12 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::view::ResultsView::browseAltDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::overrideCategoryJson(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::waitForResultsChange()@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::Priv::browseDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::Priv::internalCategory(unsigned long)@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::category(unsigned long)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::setQuery(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::ResultsView(unity::scopeharness::internal::ResultsViewArguments const&)@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::ResultsView(unity::scopeharness::internal::ResultsViewArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::~ResultsView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::~ResultsView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::ResultsView::~ResultsView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0replaceme
  (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::MatchResult::failure(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult&&)@Base" 0replaceme
@@ -65,8 +52,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ResultMatcher::attributes(unity::scopes::Variant const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ResultMatcher::background(unity::scopes::Variant const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ResultMatcher::art(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ResultMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ResultMatcher::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ResultMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ResultMatcher::dndUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ResultMatcher::emblem(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
@@ -92,14 +77,12 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewMatcher::~PreviewMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::PreviewMatcher::~PreviewMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::components(unity::scopes::Variant const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::headerLink(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryMatcher::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::icon(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::mode(unity::scopeharness::matcher::CategoryMatcher::Mode)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
@@ -114,12 +97,12 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned long)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentLabel(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::id(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::mode(unity::scopeharness::matcher::DepartmentMatcher::Mode)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0replaceme
@@ -129,17 +112,14 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::isHidden(bool)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentId(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::DepartmentMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::DepartmentMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::~DepartmentMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::~DepartmentMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned long)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::Priv::~Priv()@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned long)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::mode(unity::scopeharness::matcher::CategoryListMatcher::Mode)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::CategoryListMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::CategoryListMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0replaceme
@@ -150,11 +130,8 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::~PreviewColumnMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::~PreviewColumnMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::type(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
@@ -165,12 +142,9 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::~PreviewWidgetMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::~PreviewWidgetMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::hasChildren(bool)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::isActive(bool)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0replaceme
@@ -180,12 +154,9 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::~ChildDepartmentMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::~ChildDepartmentMatcher()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::operator=(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::operator=(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::department(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ScopeUri::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ScopeUri::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0replaceme
@@ -194,11 +165,8 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::~ScopeUri()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::ScopeUri::~ScopeUri()@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri&&)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri const&)@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidget::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidget::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::trigger(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget&&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::internal::PreviewWidgetArguments const&)@Base" 0replaceme
@@ -206,7 +174,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget&&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::internal::PreviewWidgetArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget const&)@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidget::~PreviewWidget()@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::~PreviewWidget()@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget&&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget const&)@Base" 0replaceme
@@ -217,7 +184,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::internal::PreviewWidgetListArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::~PreviewWidgetList()@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidgetList::~PreviewWidgetList()@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0replaceme
@@ -226,7 +192,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::internal::DepartmentArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department const&)@Base" 0replaceme
- (c++)"unity::scopeharness::results::Department::~Department()@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::~Department()@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department&&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department const&)@Base" 0replaceme
@@ -237,16 +202,8 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::internal::ChildDepartmentArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::ChildDepartment::~ChildDepartment()@Base" 0replaceme
- (c++)"unity::scopeharness::results::ChildDepartment::~ChildDepartment()@Base" 0replaceme
  (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment&&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment const&)@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::qt_metacall(QMetaObject::Call, int, void**)@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::qt_metacast(char const*)@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::staticMetaObject@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::activated(int, QVariant const&)@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result&&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::internal::ResultArguments const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result const&)@Base" 0replaceme
@@ -263,17 +220,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category const&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category&&)@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category const&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::throwIfNot(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::performSearch(QSharedPointer<unity::shell::scopes::ScopeInterface>, QString const&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::refreshSearch(QSharedPointer<scopes_ng::Scope>)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::getFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::getFavoriteScopes()@Base" 0replaceme
- (c++)"unity::scopeharness::internal::checkedFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&, bool&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::setFavouriteScopes(QStringList const&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::waitForResultsChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::previewForFirstResult(QSharedPointer<scopes_ng::Scope>, QString const&, QScopedPointer<scopes_ng::PreviewStack, QScopedPointerDeleter<scopes_ng::PreviewStack> >&)@Base" 0replaceme
- (c++)"unity::scopeharness::internal::throwIf(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeOemScopes()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeClickScopes()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeRemoteScopes()@Base" 0replaceme
@@ -286,27 +232,14 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0replaceme
- (c++)"unity::scopeharness::registry::CustomRegistry::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::CustomRegistry::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::start()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::CustomRegistry(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0replaceme
- (c++)"unity::scopeharness::registry::CustomRegistry::CustomRegistry(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0replaceme
- (c++)"unity::scopeharness::registry::CustomRegistry::~CustomRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::CustomRegistry::~CustomRegistry()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::CustomRegistry::~CustomRegistry()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::SystemRegistry::start()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::SystemRegistry::SystemRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::SystemRegistry::SystemRegistry()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::SystemRegistry::~SystemRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::SystemRegistry::~SystemRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::SystemRegistry::~SystemRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::PreExistingRegistry::Priv::~Priv()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::PreExistingRegistry::Priv::~Priv()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::PreExistingRegistry::start()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::PreExistingRegistry::PreExistingRegistry(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::registry::PreExistingRegistry::PreExistingRegistry(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::registry::PreExistingRegistry::~PreExistingRegistry()@Base" 0replaceme
- (c++)"unity::scopeharness::registry::PreExistingRegistry::~PreExistingRegistry()@Base" 0replaceme
  (c++)"unity::scopeharness::registry::PreExistingRegistry::~PreExistingRegistry()@Base" 0replaceme
  (c++)"unity::scopeharness::view::PreviewView::columnCount() const@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::searchHint() const@Base" 0replaceme
@@ -351,14 +284,17 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::preview::PreviewWidget::data() const@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidget::type() const@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::at(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned long) const@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned long) const@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned int) const@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::size() const@Base" 0replaceme
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator[](std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
- (c++)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned long) const@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned long) const@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned int) const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::parentLabel() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::id() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::size() const@Base" 0replaceme
- (c++)"unity::scopeharness::results::Department::child(unsigned long) const@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Department::child(unsigned long) const@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Department::child(unsigned int) const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::label() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::isRoot() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Department::loaded() const@Base" 0replaceme
@@ -375,8 +311,6 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Result::art() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::tap() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::uri() const@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::metaObject() const@Base" 0replaceme
- (c++)"unity::scopeharness::results::Result::Priv::activate() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::title() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::value(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Result::emblem() const@Base" 0replaceme
@@ -394,15 +328,21 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Category::empty() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::title() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::result(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0replaceme
- (c++)"unity::scopeharness::results::Category::result(unsigned long) const@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Category::result(unsigned long) const@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Category::result(unsigned int) const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::results() const@Base" 0replaceme
  (c++)"unity::scopeharness::results::Category::renderer() const@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::view::PreviewView@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::view::ResultsView@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::view::AbstractView@Base" 0replaceme
- (c++)"typeinfo for unity::scopeharness::results::Result::Priv@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::registry::CustomRegistry@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::registry::SystemRegistry@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::registry::PreExistingRegistry@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::registry::Registry@Base" 0replaceme
-
+ (c++)"vtable for unity::scopeharness::view::PreviewView@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::view::ResultsView@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::view::AbstractView@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::registry::CustomRegistry@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::registry::SystemRegistry@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::registry::PreExistingRegistry@Base" 0replaceme
+ (c++)"vtable for unity::scopeharness::registry::Registry@Base" 0replaceme

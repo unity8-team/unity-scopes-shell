@@ -28,20 +28,20 @@ namespace scopeharness
 namespace preview
 {
 
-struct PreviewWidgetList::Priv
+struct PreviewWidgetList::_Priv
 {
     std::vector<preview::PreviewWidget> previewWidgets;
 };
 
 PreviewWidgetList::PreviewWidgetList(const internal::PreviewWidgetListArguments& arguments) :
-    p(new Priv)
+    p(new _Priv)
 {
     p->previewWidgets = arguments.previewWidgets;
 }
 
 
 PreviewWidgetList::PreviewWidgetList(const PreviewWidgetList& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

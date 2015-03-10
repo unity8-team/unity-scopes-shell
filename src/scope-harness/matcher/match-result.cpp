@@ -29,7 +29,7 @@ namespace scopeharness
 namespace matcher
 {
 
-struct MatchResult::Priv
+struct MatchResult::_Priv
 {
     bool m_success = true;
 
@@ -37,7 +37,7 @@ struct MatchResult::Priv
 };
 
 MatchResult::MatchResult() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 
@@ -47,7 +47,7 @@ MatchResult::MatchResult(MatchResult&& other)
 }
 
 MatchResult::MatchResult(const MatchResult& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

@@ -59,7 +59,7 @@ static void check_bool(MatchResult& matchResult, const results::ChildDepartment&
 }
 }
 
-struct ChildDepartmentMatcher::Priv
+struct ChildDepartmentMatcher::_Priv
 {
     string m_id;
 
@@ -71,7 +71,7 @@ struct ChildDepartmentMatcher::Priv
 };
 
 ChildDepartmentMatcher::ChildDepartmentMatcher(const string& id) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_id = id;
 }
@@ -81,7 +81,7 @@ ChildDepartmentMatcher::~ChildDepartmentMatcher()
 }
 
 ChildDepartmentMatcher::ChildDepartmentMatcher(const ChildDepartmentMatcher& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }
