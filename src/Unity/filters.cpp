@@ -34,7 +34,7 @@ Filters::Filters(unity::shell::scopes::ScopeInterface *parent)
 {
 }
 
-int Filters::rowCount(const QModelIndex& parent) const
+int Filters::rowCount(const QModelIndex&) const
 {
     return m_filters.count();
 }

@@ -52,11 +52,8 @@ private:
 
 class Q_DECL_EXPORT OptionSelectorOptions :
     public ModelUpdate<unity::shell::scopes::OptionSelectorOptionsInterface,
-                       const std::list<unity::scopes::FilterOption::SCPtr>&,
-                       QList<QSharedPointer<OptionSelectorOption>>,
-                       std::function<QString(unity::scopes::FilterOption::SCPtr const&)>,
-                       std::function<QString(QSharedPointer<OptionSelectorOption> const&)>,
-                       std::function<QSharedPointer<OptionSelectorOption>(unity::scopes::FilterOption::SCPtr const&)>>
+                       std::list<unity::scopes::FilterOption::SCPtr>,
+                       QList<QSharedPointer<OptionSelectorOption>>>
 {
     Q_OBJECT
 

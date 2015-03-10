@@ -19,12 +19,16 @@
 
 #include <QSet>
 #include <QString>
+#include <functional>
 
-template <class ModelBase, class InputContainer, class OutputContainer, class InputKeyFunc, class OutputKeyFunc, class CreateFunc>
+template <class ModelBase, class InputContainer, class OutputContainer>
 class ModelUpdate: public ModelBase
 {
 public:
-    void syncModel(InputContainer const& input, OutputContainer &model, InputKeyFunc inKeyFunc, OutputKeyFunc outKeyFunc, CreateFunc createFunc)
+    void syncModel(InputContainer const& input, OutputContainer &model,
+            const std::function<QString(typename InputContainer::value_type)>& inKeyFunc,
+            const std::function<QString(typename OutputContainer::value_type)>& outKeyFunc,
+            const std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)> createFunc)
     {
         // TODO update?
 
