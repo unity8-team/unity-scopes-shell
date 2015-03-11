@@ -36,7 +36,7 @@ namespace scopeharness
 namespace results
 {
 
-struct ChildDepartment::Priv
+struct ChildDepartment::_Priv
 {
     QSharedPointer<ss::NavigationInterface> m_navigationModel;
 
@@ -44,7 +44,7 @@ struct ChildDepartment::Priv
 };
 
 ChildDepartment::ChildDepartment(const internal::ChildDepartmentArguments& arguments) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_navigationModel = arguments.navigationModel;
     p->m_index = arguments.index;
@@ -55,7 +55,7 @@ ChildDepartment::~ChildDepartment()
 }
 
 ChildDepartment::ChildDepartment(const ChildDepartment& other) :
-    p(new Priv)
+    p(new _Priv)
 {
     *this = other;
 }

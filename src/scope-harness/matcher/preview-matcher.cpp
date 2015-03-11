@@ -28,13 +28,13 @@ namespace scopeharness
 namespace matcher
 {
 
-struct PreviewMatcher::Priv
+struct PreviewMatcher::_Priv
 {
     vector<PreviewWidgetMatcher> m_matchers;
 };
 
 PreviewMatcher::PreviewMatcher() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 
@@ -43,7 +43,7 @@ PreviewMatcher::~PreviewMatcher()
 }
 
 PreviewMatcher::PreviewMatcher(const PreviewMatcher& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

@@ -17,7 +17,7 @@
  */
 
 #include <scope-harness/registry/pre-existing-registry.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <QDir>
 #include <QFile>
@@ -32,11 +32,10 @@ namespace unity
 {
 namespace scopeharness
 {
-using namespace internal;
 namespace registry
 {
 
-struct PreExistingRegistry::Priv
+struct PreExistingRegistry::_Priv
 {
     QString m_runtimeConfig;
 
@@ -48,7 +47,7 @@ struct PreExistingRegistry::Priv
 };
 
 PreExistingRegistry::PreExistingRegistry(const std::string &runtimeConfig) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_runtimeConfig = QString::fromStdString(runtimeConfig);
     QSettings runtimeSettings(p->m_runtimeConfig, QSettings::IniFormat);
@@ -75,7 +74,7 @@ void PreExistingRegistry::start()
     p->m_registryProcess.reset(new QProcess());
     p->m_registryProcess->setProcessChannelMode(QProcess::ForwardedChannels);
     p->m_registryProcess->start(registryBin, QStringList() << p->m_runtimeConfig);
-    throwIfNot(p->m_registryProcess->waitForStarted(), "Scope registry failed to start");
+    TestUtils::throwIfNot(p->m_registryProcess->waitForStarted(), "Scope registry failed to start");
 
     // FIXME hard-coded path
     QProcess::startDetached(

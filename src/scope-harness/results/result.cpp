@@ -16,7 +16,7 @@
  * Author: Pete Woods <pete.woods@canonical.com>
  */
 
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/results/result.h>
 #include <scope-harness/view/preview-view.h>
@@ -49,7 +49,7 @@ namespace
 const static QStringList EXTERNAL_URI {"http", "https", "file"};
 }
 
-struct Result::Priv: public QObject
+struct Result::_Priv: public QObject
 {
     Q_OBJECT
 
@@ -92,39 +92,39 @@ public:
     {
         auto result = m_resultsModel->data(m_index,
                 ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
-        throwIfNot(bool(result), "Couldn't get result");
+        TestUtils::throwIfNot(bool(result), "Couldn't get result");
 
         QSignalSpy spy(this, SIGNAL(activated(int, const QVariant&)));
         m_scope->activate(QVariant::fromValue(result));
         if (spy.empty())
         {
-            throwIfNot(spy.wait(), "Scope activation signal failed to emit");
+            TestUtils::throwIfNot(spy.wait(), "Scope activation signal failed to emit");
         }
 
         QVariantList response = spy.front();
         QVariant signal = response.at(0);
-        auto activationResponse = Priv::ActivationResponse(signal.toInt());
+        auto activationResponse = _Priv::ActivationResponse(signal.toInt());
         QVariant parameter = response.at(1);
 
         view::AbstractView::SPtr view;
         auto resultsView = m_resultsView.lock();
-        throwIfNot(bool(resultsView), "ResultsView not available");
+        TestUtils::throwIfNot(bool(resultsView), "ResultsView not available");
         auto previewView = m_previewView.lock();
-        throwIfNot(bool(previewView), "PreviewView not available");
+        TestUtils::throwIfNot(bool(previewView), "PreviewView not available");
 
         switch (activationResponse)
         {
-            case Priv::ActivationResponse::failed:
+            case _Priv::ActivationResponse::failed:
                 {
                     view = resultsView;
                     break;
                 }
-            case Priv::ActivationResponse::show_dash:
+            case _Priv::ActivationResponse::show_dash:
                 {
                     qDebug() << "show_dash";
                     break;
                 }
-            case Priv::ActivationResponse::hide_dash:
+            case _Priv::ActivationResponse::hide_dash:
                 {
                     qDebug() << "hide_dash";
                     // TODO set scope inactive?
@@ -136,7 +136,7 @@ public:
                     view = previewView;
                     break;
                 }
-            case Priv::ActivationResponse::goto_uri:
+            case _Priv::ActivationResponse::goto_uri:
                 {
                     qDebug() << "goto_uri" << parameter;
                     QUrl url(parameter.toString());
@@ -146,7 +146,7 @@ public:
                     }
                     else if (url.scheme() == "scope")
                     {
-                        waitForSearchFinish(m_scope);
+                        TestUtils::waitForSearchFinish(m_scope);
                         view = resultsView;
                     }
                     else
@@ -161,19 +161,19 @@ public:
                     }
                     break;
                 }
-            case Priv::ActivationResponse::preview_requested:
+            case _Priv::ActivationResponse::preview_requested:
                 {
                     qDebug() << "preview_requested" << parameter;
                     break;
                 }
-            case Priv::ActivationResponse::goto_scope:
+            case _Priv::ActivationResponse::goto_scope:
                 {
                     qDebug() << "goto_scope" << parameter;
                     resultsView->setActiveScope(parameter.toString().toStdString());
                     view = resultsView;
                     break;
                 }
-            case Priv::ActivationResponse::open_scope:
+            case _Priv::ActivationResponse::open_scope:
                 {
                     qDebug() << "open_scope" << parameter;
                     break;
@@ -224,7 +224,7 @@ Q_SIGNALS:
 };
 
 Result::Result(const internal::ResultArguments& arguments) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_resultsModel = arguments.resultsModel;
     p->m_scope = arguments.scope;
@@ -241,7 +241,7 @@ Result::Result(Result&& other)
 }
 
 Result::Result(const Result& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }
@@ -249,7 +249,7 @@ Result::Result(const Result& other) :
 Result& Result::operator=(const Result& other)
 {
     // This will disconnect all the existing Qt signal connections
-    p = make_shared<Priv>();
+    p = make_shared<_Priv>();
 
     p->m_resultsModel = other.p->m_resultsModel;
     p->m_scope = other.p->m_scope;

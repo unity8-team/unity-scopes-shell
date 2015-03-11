@@ -69,7 +69,7 @@ static void check_variant(MatchResult& matchResult, const preview::PreviewWidget
 
 }
 
-struct PreviewWidgetMatcher::Priv
+struct PreviewWidgetMatcher::_Priv
 {
     string m_id;
 
@@ -79,13 +79,13 @@ struct PreviewWidgetMatcher::Priv
 };
 
 PreviewWidgetMatcher::PreviewWidgetMatcher(const string& id) :
-        p(new Priv)
+        p(new _Priv)
 {
     p->m_id = id;
 }
 
 PreviewWidgetMatcher::PreviewWidgetMatcher(const PreviewWidgetMatcher& other) :
-        p(new Priv)
+        p(new _Priv)
 {
     *this = other;
 }

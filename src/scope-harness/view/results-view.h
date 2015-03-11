@@ -125,17 +125,14 @@ public:
 
     results::Department browseAltDepartment(const std::string& id = std::string());
 
-    // TODO Remove / replace these
-    unity::shell::scopes::CategoriesInterface* raw_categories() const;
-
 protected:
     friend ScopeHarness;
 
     void setPreviewView(std::shared_ptr<PreviewView> previewView);
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

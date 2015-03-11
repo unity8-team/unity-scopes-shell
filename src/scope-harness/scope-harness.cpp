@@ -22,7 +22,7 @@
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/registry/system-registry.h>
 #include <scope-harness/scope-harness.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <QSignalSpy>
 
@@ -35,7 +35,7 @@ namespace scopeharness
 {
 using namespace internal;
 
-struct ScopeHarness::Priv
+struct ScopeHarness::_Priv
 {
     registry::Registry::SPtr m_registry;
 
@@ -65,7 +65,7 @@ ScopeHarness::UPtr ScopeHarness::newFromSystem()
 }
 
 ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
-        p(new Priv)
+        p(new _Priv)
 {
     qputenv("UNITY_SCOPES_NO_FAVORITES", "1");
     qputenv("UNITY_SCOPES_NO_OPEN_URL", "1");
@@ -82,14 +82,14 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
     p->m_previewView->setResultsView(p->m_resultsView);
 
     // no scopes on startup
-    throwIf(p->m_scopes->rowCount() != 0 || p->m_scopes->loaded(),
+    TestUtils::throwIf(p->m_scopes->rowCount() != 0 || p->m_scopes->loaded(),
           "Scopes object was pre-populated");
 
     // wait till the registry spawns
     QSignalSpy spy(p->m_scopes.get(), SIGNAL(loadedChanged()));
-    throwIfNot(spy.wait(), "Scopes failed to initalize");
+    TestUtils::throwIfNot(spy.wait(), "Scopes failed to initalize");
 
-    throwIf(p->m_scopes->rowCount() == 0 || !p->m_scopes->loaded(), "No scopes loaded");
+    TestUtils::throwIf(p->m_scopes->rowCount() == 0 || !p->m_scopes->loaded(), "No scopes loaded");
 
     for (int i = 0; i < p->m_scopes->rowCount(); ++i)
     {
@@ -98,7 +98,7 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
         if (scope->searchInProgress())
         {
-            throwIfNot(spy.wait(), "Search progress didn't change");
+            TestUtils::throwIfNot(spy.wait(), "Search progress didn't change");
         }
     }
 }

@@ -80,9 +80,9 @@ protected:
 
     void refresh();
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }

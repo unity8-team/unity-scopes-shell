@@ -20,7 +20,7 @@
 #include <scope-harness/internal/preview-widget-list-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
-#include <scope-harness/internal/test-utils.h>
+#include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewStackInterface.h>
@@ -41,7 +41,7 @@ using namespace internal;
 namespace view
 {
 
-struct PreviewView::Priv
+struct PreviewView::_Priv
 {
     preview::PreviewWidgetList iterateWidgetModel(ss::PreviewWidgetModelInterface* previewWidgetModel,
                                                     ss::PreviewModelInterface* previewModel, PreviewView::SPtr previewView)
@@ -96,7 +96,7 @@ struct PreviewView::Priv
 
     void checkPreviewStack()
     {
-        throwIfNot(bool(m_previewStack), "");
+        TestUtils::throwIfNot(bool(m_previewStack), "");
     }
 
     shared_ptr<ss::PreviewStackInterface> m_previewStack;
@@ -107,7 +107,7 @@ struct PreviewView::Priv
 };
 
 PreviewView::PreviewView() :
-        p(new Priv)
+        p(new _Priv)
 {
 }
 

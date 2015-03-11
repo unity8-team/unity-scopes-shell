@@ -61,8 +61,8 @@ public:
 protected:
     ScopeHarness(registry::Registry::SPtr registry);
 
-    struct Priv;
-    std::shared_ptr<Priv> p;
+    struct _Priv;
+    std::shared_ptr<_Priv> p;
 };
 
 }

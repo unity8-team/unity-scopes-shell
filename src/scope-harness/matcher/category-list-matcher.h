@@ -68,9 +68,9 @@ protected:
 
     CategoryListMatcher& operator=(CategoryListMatcher&& other) = delete;
 
-    struct Priv;
+    struct _Priv;
 
-    std::shared_ptr<Priv> p;
+    std::shared_ptr<_Priv> p;
 };
 
 }
