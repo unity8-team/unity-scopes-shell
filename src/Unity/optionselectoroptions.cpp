@@ -46,11 +46,6 @@ bool OptionSelectorOption::checked() const
     return m_checked;
 }
 
-void OptionSelectorOption::update(const unity::scopes::FilterOption::SCPtr& opt , unity::scopes::FilterState::SPtr const& filterState)
-{
-    //TODO
-}
-
 void OptionSelectorOption::setChecked(bool checked)
 {
     if (checked != m_checked)
@@ -65,11 +60,20 @@ OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent)
 {
 }
 
-void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const& filterState)
+void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options, const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions)
 {
+    QSet<QString> actOpts;
+    for (auto const& opt: activeOptions)
+    {
+        actOpts.insert(QString::fromStdString(opt->id()));
+    }
+
     syncModel(options, m_options,
+            // key function for scopes api filter option
             [](const unity::scopes::FilterOption::SCPtr& opt) -> QString { return QString::fromStdString(opt->id()); },
+            // key function for shell api filter option
             [](const QSharedPointer<OptionSelectorOption>& opt) -> QString { return opt->id(); },
+            // factory function for creating shell filter option from scopes api filter option
             [this](const unity::scopes::FilterOption::SCPtr& opt) -> QSharedPointer<OptionSelectorOption> {
                 auto optObj = QSharedPointer<OptionSelectorOption>(
                     new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label())));
@@ -77,12 +81,16 @@ void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::
                 connect(optObj.data(), SIGNAL(checkedChanged(bool)), this, SLOT(onOptionChecked(bool)));
                 return optObj;
             },
-            [filterState](const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
+            // filter option update function
+            [&actOpts](const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
                 if (op2->id() != QString::fromStdString(op1->id())) {
                     return false;
                 }
-                //op2->update(op1, filterState);
-
+                bool backendState = actOpts.contains(op2->id());
+                if (backendState != op2->checked())
+                {
+                    op2->setChecked(backendState);
+                }
                 return true;
             });
 }

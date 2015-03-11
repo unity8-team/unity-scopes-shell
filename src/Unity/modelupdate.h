@@ -108,7 +108,7 @@ public:
         }
 
         // check if any of the existing objects which didn't change position needs updating
-        {
+        /*{
             int row = 0;
             for (auto const& in: input)
             {
@@ -122,7 +122,22 @@ public:
                 }
                 ++row;
             }
+        }*/
+
+        // call updateFunc for all objects to synchornize changes to properties
+        {
+            int row = 0;
+            for (auto const& in: input)
+            {
+                if (!updateFunc(in, model[row]))
+                {
+                    model[row] = createFunc(in);
+                    Q_EMIT this->dataChanged(this->index(row, 0), this->index(row, 0)); // or beginRemoveRows & beginInsertRows ?
+                }
+                ++row;
+            }
         }
+
     }
 };
 

@@ -25,6 +25,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <list>
+#include <set>
 #include <functional>
 
 namespace scopes_ng
@@ -43,7 +44,6 @@ public:
     QString label() const override;
     bool checked() const override;
     void setChecked(bool checked) override;
-    void update(const unity::scopes::FilterOption::SCPtr& opt , unity::scopes::FilterState::SPtr const& filterState);
 
 private:
     QString m_id;
@@ -60,7 +60,7 @@ class Q_DECL_EXPORT OptionSelectorOptions :
 
 public:
     explicit OptionSelectorOptions(OptionSelectorFilter *parent = nullptr);
-    void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const& filterState);
+    void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions);
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

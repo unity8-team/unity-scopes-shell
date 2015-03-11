@@ -76,5 +76,4 @@ protected:
 Q_DECLARE_METATYPE(unity::shell::scopes::OptionSelectorOptionInterface*)
 Q_DECLARE_METATYPE(unity::shell::scopes::OptionSelectorOptionsInterface*)
 
-
 #endif

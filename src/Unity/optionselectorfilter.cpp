@@ -59,13 +59,26 @@ void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
 {
     if (m_filterState)
     {
+        // check current state of filter to see if the state really
+        // has changed, or it's a notification after we just updated
+        // filter models with received state.
         auto const optid = id.toStdString();
+        QSet<QString> actOpts;
+        for (auto const& opt: m_filter->active_options(*m_filterState))
+        {
+            actOpts.insert(QString::fromStdString(opt->id()));
+        }
+
         for (auto const opt: m_filter->options())
         {
             if (opt->id() == optid)
             {
-                m_filter->update_state(*m_filterState, opt, checked);
-                Q_EMIT filterStateChanged();
+                bool previousState = actOpts.contains(id);
+                if (previousState != checked)
+                {
+                    m_filter->update_state(*m_filterState, opt, checked);
+                    Q_EMIT filterStateChanged();
+                }
                 break;
             }
         }
@@ -87,6 +100,8 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
         return;
     }
 
+    m_filter = optselfilter;
+
     if (optselfilter->multi_select() != m_multiSelect)
     {
         m_multiSelect = optselfilter->multi_select();
@@ -99,7 +114,7 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
         Q_EMIT labelChanged(m_label);
     }
 
-    m_options->update(optselfilter->options(), filterState);
+    m_options->update(optselfilter->options(), optselfilter->active_options(*m_filterState));
 }
 
 }
