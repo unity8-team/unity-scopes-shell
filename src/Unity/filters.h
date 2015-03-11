@@ -25,13 +25,18 @@
 #include <unity/scopes/FilterBase.h>
 #include <unity/scopes/FilterState.h>
 #include "FilterBaseInterface.h"
+#include "modelupdate.h"
 
 #include <QList>
+#include <QSharedPointer>
 
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT Filters : public unity::shell::scopes::FiltersInterface
+class Q_DECL_EXPORT Filters :
+    public ModelUpdate<unity::shell::scopes::FiltersInterface,
+        QList<unity::scopes::FilterBase::SCPtr>,
+        QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>>>
 {
     Q_OBJECT
 
@@ -42,12 +47,14 @@ public:
     void clear();
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState);
 
+    unity::scopes::FilterState filterState();
+
 Q_SIGNALS:
     void filterStateChanged();
 
 private:
-    unity::shell::scopes::FilterBaseInterface* createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
-    QList<unity::shell::scopes::FilterBaseInterface*> m_filters;
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
+    QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
     unity::scopes::FilterState::SPtr m_filterState;
 };
 

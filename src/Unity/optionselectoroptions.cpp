@@ -65,6 +65,9 @@ void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::
                     new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label())));
                     connect(optObj.data(), SIGNAL(checkedChanged(bool)), this, SLOT(onOptionChecked(bool)));
                     return optObj;
+            },
+            [](const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
+                return false;
             });
 }
 

@@ -17,6 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef NG_MODEL_UPDATE_H
+#define NG_MODEL_UPDATE_H
+
 #include <QSet>
 #include <QString>
 #include <functional>
@@ -25,58 +28,70 @@ template <class ModelBase, class InputContainer, class OutputContainer>
 class ModelUpdate: public ModelBase
 {
 public:
-    void syncModel(InputContainer const& input, OutputContainer &model,
-            const std::function<QString(typename InputContainer::value_type)>& inKeyFunc,
-            const std::function<QString(typename OutputContainer::value_type)>& outKeyFunc,
-            const std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)> createFunc)
+    using InputKeyFunc = std::function<QString(typename InputContainer::value_type)>;
+    using OutputKeyFunc = std::function<QString(typename OutputContainer::value_type)>;
+    using CreateFunc = std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)>;
+    using UpdateFunc = std::function<bool(typename InputContainer::value_type const&, typename OutputContainer::value_type const&)>;
+
+    void syncModel(InputContainer const& input,
+            OutputContainer &model,
+            const InputKeyFunc& inKeyFunc,
+            const OutputKeyFunc& outKeyFunc,
+            const CreateFunc& createFunc,
+            const UpdateFunc& updateFunc)
     {
-        // TODO update?
+        QMap<QString, int> newItems; // lookup for recevied objects and their desired rows in the model
+        QSet<QString> oldItems; // lookup for objects that were already displayed
 
-        int pos = 0;
-        QMap<QString, int> newItems;
-        for (auto item: input)
         {
-            newItems[inKeyFunc(item)] = pos++;
-        }
-
-        int row = 0;
-        QSet<QString> oldItems; // lookup for filters that were already displayed
-        // iterate over old filters, remove filters that are not present anymore
-        for (auto it = model.begin(); it != model.end();)
-        {
-            const QString id = outKeyFunc(*it);
-            if (!newItems.contains(id))
+            int pos = 0;
+            for (auto item: input)
             {
-                this->beginRemoveRows(QModelIndex(), row, row);
-                it = model.erase(it);
-                this->endRemoveRows();
-            }
-            else
-            {
-                oldItems.insert(id);
-                ++it;
-                ++row;
+                newItems[inKeyFunc(item)] = pos++;
             }
         }
 
-        // iterate over new filters, insert new filters
-        row = 0;
-        for (auto const& item: input)
+        // iterate over old objects, remove objects that are not present anymore
         {
-            if (!oldItems.contains(inKeyFunc(item)))
+            int row = 0;
+            for (auto it = model.begin(); it != model.end();)
             {
-                auto filterObj = createFunc(item);
-                if (filterObj)
+                const QString id = outKeyFunc(*it);
+                if (!newItems.contains(id))
                 {
-                    this->beginInsertRows(QModelIndex(), row, row);
-                    //model.insert(row, filterObj);
-                    this->endInsertRows();
+                    this->beginRemoveRows(QModelIndex(), row, row);
+                    it = model.erase(it);
+                    this->endRemoveRows();
+                }
+                else
+                {
+                    oldItems.insert(id);
+                    ++it;
+                    ++row;
                 }
             }
-            row++;
         }
 
-        // move filters if position changed
+        // iterate over new objects and insert them in the model
+        {
+            int row = 0;
+            for (auto const& item: input)
+            {
+                if (!oldItems.contains(inKeyFunc(item)))
+                {
+                    auto obj = createFunc(item);
+                    if (obj)
+                    {
+                        this->beginInsertRows(QModelIndex(), row, row);
+                        model.insert(row, obj);
+                        this->endInsertRows();
+                    }
+                }
+                row++;
+            }
+        }
+
+        // move objects if position changed
         for (int i = 0; i<model.size(); )
         {
             auto const id = outKeyFunc(model[i]);
@@ -89,5 +104,24 @@ public:
             }
             i++;
         }
+
+        // check if any of the existing objects which didn't change position needs updating
+        {
+            int row = 0;
+            for (auto const& in: input)
+            {
+                if (oldItems.contains(inKeyFunc(in)))
+                {
+                    if (!updateFunc(in, model[row]))
+                    {
+                        model[row] = createFunc(in);
+                        Q_EMIT this->dataChanged(this->index(row, 0), this->index(row, 0)); // or beginRemoveRows & beginInsertRows ?
+                    }
+                }
+                ++row;
+            }
+        }
     }
 };
+
+#endif
