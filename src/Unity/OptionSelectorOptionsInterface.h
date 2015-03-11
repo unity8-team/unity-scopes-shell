@@ -36,7 +36,7 @@ class UNITY_API OptionSelectorOptionInterface : public QObject
 
 public:
     Q_PROPERTY(QString id READ id)
-    Q_PROPERTY(QString label READ label)
+    Q_PROPERTY(QString label READ label NOTIFY labelChanged)
     Q_PROPERTY(bool checked READ checked WRITE setChecked NOTIFY checkedChanged)
 
     virtual QString id() const = 0;
@@ -47,7 +47,8 @@ public Q_SLOTS:
     virtual void setChecked(bool) = 0;
 
 Q_SIGNALS:
-    void checkedChanged();
+    void checkedChanged(bool);
+    void labelChanged(const QString&);
 };
 
 class UNITY_API OptionSelectorOptionsInterface : public QAbstractListModel
@@ -60,8 +61,6 @@ public:
     enum Roles {
         RoleOption = Qt::UserRole + 1
     };
-
-    virtual void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const& filterState) = 0;
 
 protected:
     /// @cond

@@ -87,6 +87,9 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_status(Status::Okay)
 {
     m_categories.reset(new Categories(this));
+    m_filtersModel.reset(new Filters(this));
+
+    QQmlEngine::setObjectOwnership(m_filtersModel.data(), QQmlEngine::CppOwnership);
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);

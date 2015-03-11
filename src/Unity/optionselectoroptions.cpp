@@ -19,6 +19,7 @@
 
 #include "optionselectoroptions.h"
 #include "optionselectorfilter.h"
+#include <QQmlEngine>
 #include <QDebug>
 
 namespace scopes_ng
@@ -45,29 +46,44 @@ bool OptionSelectorOption::checked() const
     return m_checked;
 }
 
+void OptionSelectorOption::update(const unity::scopes::FilterOption::SCPtr& opt , unity::scopes::FilterState::SPtr const& filterState)
+{
+    //TODO
+}
+
 void OptionSelectorOption::setChecked(bool checked)
 {
+    if (checked != m_checked)
+    {
+        m_checked = checked;
+        Q_EMIT checkedChanged(m_checked);
+    }
 }
 
 OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent)
-    //: unity::shell::scopes::OptionSelectorOptionsInterface(parent)
+    : ModelUpdate(parent)
 {
 }
 
-void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const&)
+void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options, unity::scopes::FilterState::SPtr const& filterState)
 {
-    //TODO
     syncModel(options, m_options,
             [](const unity::scopes::FilterOption::SCPtr& opt) -> QString { return QString::fromStdString(opt->id()); },
             [](const QSharedPointer<OptionSelectorOption>& opt) -> QString { return opt->id(); },
             [this](const unity::scopes::FilterOption::SCPtr& opt) -> QSharedPointer<OptionSelectorOption> {
                 auto optObj = QSharedPointer<OptionSelectorOption>(
                     new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label())));
-                    connect(optObj.data(), SIGNAL(checkedChanged(bool)), this, SLOT(onOptionChecked(bool)));
-                    return optObj;
+                QQmlEngine::setObjectOwnership(optObj.data(), QQmlEngine::CppOwnership);
+                connect(optObj.data(), SIGNAL(checkedChanged(bool)), this, SLOT(onOptionChecked(bool)));
+                return optObj;
             },
-            [](const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
-                return false;
+            [filterState](const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
+                if (op2->id() != QString::fromStdString(op1->id())) {
+                    return false;
+                }
+                //op2->update(op1, filterState);
+
+                return true;
             });
 }
 

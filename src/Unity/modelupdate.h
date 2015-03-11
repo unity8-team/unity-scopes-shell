@@ -33,6 +33,8 @@ public:
     using CreateFunc = std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)>;
     using UpdateFunc = std::function<bool(typename InputContainer::value_type const&, typename OutputContainer::value_type const&)>;
 
+    ModelUpdate(QObject *parent = nullptr): ModelBase(parent) {}
+
     void syncModel(InputContainer const& input,
             OutputContainer &model,
             const InputKeyFunc& inKeyFunc,
