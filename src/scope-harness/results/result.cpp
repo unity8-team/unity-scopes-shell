@@ -88,6 +88,101 @@ public:
         connect(m_scope.data(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)), SLOT(openScope(unity::shell::scopes::ScopeInterface*)));
     }
 
+    view::AbstractView::SPtr activate() const
+    {
+        auto result = m_resultsModel->data(m_index,
+                ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
+        throwIfNot(bool(result), "Couldn't get result");
+
+        QSignalSpy spy(this, SIGNAL(activated(int, const QVariant&)));
+        m_scope->activate(QVariant::fromValue(result));
+        if (spy.empty())
+        {
+            throwIfNot(spy.wait(), "Scope activation signal failed to emit");
+        }
+
+        QVariantList response = spy.front();
+        QVariant signal = response.at(0);
+        auto activationResponse = Priv::ActivationResponse(signal.toInt());
+        QVariant parameter = response.at(1);
+
+        view::AbstractView::SPtr view;
+        auto resultsView = m_resultsView.lock();
+        throwIfNot(bool(resultsView), "ResultsView not available");
+        auto previewView = m_previewView.lock();
+        throwIfNot(bool(previewView), "PreviewView not available");
+
+        switch (activationResponse)
+        {
+            case Priv::ActivationResponse::failed:
+                {
+                    view = resultsView;
+                    break;
+                }
+            case Priv::ActivationResponse::show_dash:
+                {
+                    qDebug() << "show_dash";
+                    break;
+                }
+            case Priv::ActivationResponse::hide_dash:
+                {
+                    qDebug() << "hide_dash";
+                    // TODO set scope inactive?
+                    auto result = m_resultsModel->data(
+                            m_index, ss::ResultsModelInterface::Roles::RoleResult);
+                    shared_ptr<ss::PreviewStackInterface> preview(
+                            m_scope->preview(result));
+                    previewView->preview(preview);
+                    view = previewView;
+                    break;
+                }
+            case Priv::ActivationResponse::goto_uri:
+                {
+                    qDebug() << "goto_uri" << parameter;
+                    QUrl url(parameter.toString());
+                    if (EXTERNAL_URI.contains(url.scheme(), Qt::CaseInsensitive))
+                    {
+                        view = resultsView;
+                    }
+                    else if (url.scheme() == "scope")
+                    {
+                        waitForSearchFinish(m_scope);
+                        view = resultsView;
+                    }
+                    else
+                    {
+                        auto result = m_resultsModel->data(
+                                m_index,
+                                ss::ResultsModelInterface::Roles::RoleResult);
+                        shared_ptr<ss::PreviewStackInterface> preview(
+                                m_scope->preview(result));
+                        previewView->preview(preview);
+                        view = previewView;
+                    }
+                    break;
+                }
+            case Priv::ActivationResponse::preview_requested:
+                {
+                    qDebug() << "preview_requested" << parameter;
+                    break;
+                }
+            case Priv::ActivationResponse::goto_scope:
+                {
+                    qDebug() << "goto_scope" << parameter;
+                    resultsView->setActiveScope(parameter.toString().toStdString());
+                    view = resultsView;
+                    break;
+                }
+            case Priv::ActivationResponse::open_scope:
+                {
+                    qDebug() << "open_scope" << parameter;
+                    break;
+                }
+        }
+
+        return view;
+    }
+
 public Q_SLOTS:
     void activationFailed(QString const& scopeId)
     {
@@ -250,99 +345,53 @@ sc::Variant const& Result::value(string const& key) const
     return result->value(key);
 }
 
-view::AbstractView::SPtr Result::activate() const
+view::AbstractView::SPtr Result::tap() const
 {
-    auto result = p->m_resultsModel->data(p->m_index,
-                                       ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
-    throwIfNot(bool(result), "Couldn't get result");
+    auto result_var = p->m_resultsModel->data(p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
 
-    QSignalSpy spy(p.get(), SIGNAL(activated(int, const QVariant&)));
-    p->m_scope->activate(QVariant::fromValue(result));
-    if (spy.empty())
+    if (result_var.canConvert<std::shared_ptr<scopes::Result>>())
     {
-        throwIfNot(spy.wait(), "Scope activation signal failed to emit");
-    }
-
-    QVariantList response = spy.front();
-    QVariant signal = response.at(0);
-    auto activationResponse = Priv::ActivationResponse(signal.toInt());
-    QVariant parameter = response.at(1);
-
-    view::AbstractView::SPtr view;
-    auto resultsView = p->m_resultsView.lock();
-    throwIfNot(bool(resultsView), "ResultsView not available");
-    auto previewView = p->m_previewView.lock();
-    throwIfNot(bool(previewView), "PreviewView not available");
-
-    switch (activationResponse)
-    {
-        case Priv::ActivationResponse::failed:
+        scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
+        if (result)
         {
-            view = resultsView;
-            break;
-        }
-        case Priv::ActivationResponse::show_dash:
-        {
-            qDebug() << "show_dash";
-            break;
-        }
-        case Priv::ActivationResponse::hide_dash:
-        {
-            qDebug() << "hide_dash";
-            // TODO set scope inactive?
-            auto result = p->m_resultsModel->data(
-                    p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
-            shared_ptr<ss::PreviewStackInterface> preview(
-                    p->m_scope->preview(result));
+            const QUrl url(QString::fromStdString(result->uri()));
+            if (url.scheme() == "scope" || p->m_scope->id() == "clickscope")
+            {
+                return p->activate();
+            }
+
+            auto previewView = p->m_previewView.lock();
+            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var));
             previewView->preview(preview);
-            view = previewView;
-            break;
+            return previewView;
         }
-        case Priv::ActivationResponse::goto_uri:
+    }
+    throw std::domain_error("Long press failed: invalid result");
+}
+
+view::AbstractView::SPtr Result::longPress() const
+{
+    auto result_var = p->m_resultsModel->data(
+                    p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
+
+    if (result_var.canConvert<std::shared_ptr<scopes::Result>>())
+    {
+        scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
+        if (result)
         {
-            qDebug() << "goto_uri" << parameter;
-            QUrl url(parameter.toString());
-            if (EXTERNAL_URI.contains(url.scheme(), Qt::CaseInsensitive))
+            const QUrl url(QString::fromStdString(result->uri()));
+            if (url.scheme() == "scope")
             {
-                view = resultsView;
+                return nullptr; // nothing happens for scope:// uris
             }
-            else if (url.scheme() == "scope")
-            {
-                waitForSearchFinish(p->m_scope);
-                view = resultsView;
-            }
-            else
-            {
-                auto result = p->m_resultsModel->data(
-                        p->m_index,
-                        ss::ResultsModelInterface::Roles::RoleResult);
-                shared_ptr<ss::PreviewStackInterface> preview(
-                        p->m_scope->preview(result));
-                previewView->preview(preview);
-                view = previewView;
-            }
-            break;
-        }
-        case Priv::ActivationResponse::preview_requested:
-        {
-            qDebug() << "preview_requested" << parameter;
-            break;
-        }
-        case Priv::ActivationResponse::goto_scope:
-        {
-            qDebug() << "goto_scope" << parameter;
-            resultsView->setActiveScope(parameter.toString().toStdString());
-            view = resultsView;
-            break;
-        }
-        case Priv::ActivationResponse::open_scope:
-        {
-            qDebug() << "open_scope" << parameter;
-            break;
+            auto previewView = p->m_previewView.lock();
+            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var));
+            previewView->preview(preview);
+            return previewView;
         }
     }
 
-    return view;
+    throw std::domain_error("Long press failed: invalid result");
 }
 
 }
