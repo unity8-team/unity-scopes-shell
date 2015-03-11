@@ -98,14 +98,14 @@ public:
     virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
         SearchQueryBase::UPtr query(new MyQuery(q, metadata));
-        cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
+        cout << "scope-scopes: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
 
     virtual PreviewQueryBase::UPtr preview(Result const& result, ActionMetadata const& metadata) override
     {
         PreviewQueryBase::UPtr query(new MyPreview(result, metadata));
-        cout << "scope-A: created preview query: \"" << result.uri() << "\"" << endl;
+        cout << "scope-scopes: created preview query: \"" << result.uri() << "\"" << endl;
         return query;
     }
 };

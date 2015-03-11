@@ -29,7 +29,6 @@
 #include <QNetworkConfigurationManager>
 #include <QPointer>
 #include <QMultiMap>
-#include <QGSettings>
 #include <QUuid>
 
 // scopes
@@ -44,12 +43,15 @@
 #include "department.h"
 #include "locationservice.h"
 
+class QGSettings;
+
 namespace scopes_ng
 {
 
 class Categories;
 class PushEvent;
 class PreviewStack;
+class LocationService;
 class SettingsModel;
 class Scopes;
 
@@ -106,7 +108,10 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
     Q_OBJECT
 
 public:
-    explicit Scope(QObject *parent = 0);
+    typedef QSharedPointer<Scope> Ptr;
+
+    static Scope::Ptr newInstance(scopes_ng::Scopes* parent);
+
     virtual ~Scope();
 
     virtual bool event(QEvent* ev) override;
@@ -163,7 +168,7 @@ public:
     int queryId() const;
     bool initialQueryDone() const;
 
-    unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
+    Scope::Ptr findTempScope(QString const& id) const;
 
     bool loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name);
 
@@ -174,6 +179,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void resultsDirtyChanged();
     void favoriteChanged(bool);
+    void activationFailed(QString const& id);
 
 private Q_SLOTS:
     void typingFinished();
@@ -183,6 +189,8 @@ private Q_SLOTS:
     void departmentModelDestroyed(QObject* obj);
 
 protected:
+    explicit Scope(scopes_ng::Scopes* parent);
+
     void setSearchInProgress(bool searchInProgress);
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
@@ -249,7 +257,7 @@ private:
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
-    LocationService::Ptr m_locationService;
+    QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
 };

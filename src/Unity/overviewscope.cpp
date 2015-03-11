@@ -33,7 +33,12 @@ namespace scopes_ng
 
 using namespace unity;
 
-OverviewScope::OverviewScope(QObject *parent) : scopes_ng::Scope(parent)
+QSharedPointer<OverviewScope> OverviewScope::newInstance(scopes_ng::Scopes* parent)
+{
+    return QSharedPointer<OverviewScope>(new OverviewScope(parent), &QObject::deleteLater);
+}
+
+OverviewScope::OverviewScope(scopes_ng::Scopes* parent) : scopes_ng::Scope(parent)
 {
     m_categories.reset(new OverviewCategories(this));
 

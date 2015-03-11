@@ -3,6 +3,7 @@ Priority: optional
 Section: libs
 Build-Depends: cmake,
                debhelper (>= 9),
+               libboost-regex-dev,
                libunity-api-dev (>= 7.96),
                libunity-scopes-dev (>= 0.6.12~),
                libgsettings-qt-dev (>= 0.1),
@@ -44,3 +45,24 @@ Breaks: unity8-private (<< 7.84),
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell
+
+Package: libscope-harness1
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+Description: Test harness for Unity scopes
+ Drive Unity scopes with a simple synchronous API. Make assertions
+ about results. Runtime library.
+
+Package: libscope-harness-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         libscope-harness1 (= ${binary:Version})
+Description: Test harness for Unity scopes
+ Drive Unity scopes with a simple synchronous API. Make assertions
+ about results. Development files.

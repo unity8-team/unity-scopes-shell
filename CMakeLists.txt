@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-# Default install location. Must be set here, before setting the project.
-if (NOT DEFINED CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "" FORCE)
-endif()
-
 project(unity-scopes-shell C CXX)
 
 if(${PROJECT_BINARY_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
@@ -15,6 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/mod
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_lower) # Build types should always be lowercase but sometimes they are not.
 
@@ -45,11 +41,16 @@ add_custom_target(cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2
 
 find_package(PkgConfig)
 find_package(Intltool)
+find_package(Qt5Concurrent)
 find_package(Qt5Core)
 find_package(Qt5DBus)
 find_package(Qt5Qml)
 find_package(Qt5Quick)
 find_package(Qt5Gui)
+find_package(Boost COMPONENTS regex REQUIRED)
+
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.12)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=6)
 
 # Standard install paths
 include(GNUInstallDirs)

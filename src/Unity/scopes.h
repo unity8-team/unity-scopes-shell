@@ -21,8 +21,7 @@
 #define NG_SCOPES_H
 
 #include <unity/shell/scopes/ScopesInterface.h>
-
-#include "locationservice.h"
+#include "scope.h"
 
 // Qt
 #include <QList>
@@ -39,9 +38,12 @@
 #include <unity/scopes/ScopeProxyFwd.h>
 #include <unity/scopes/ScopeMetadata.h>
 
+class QGSettings;
+
 namespace scopes_ng
 {
 
+class LocationService;
 class Scope;
 class OverviewScope;
 
@@ -58,7 +60,8 @@ public:
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(QString const& scopeId) const override;
 
-    Scope* getScopeById(QString const& scopeId) const;
+    Scope::Ptr getScopeByRow(int row) const;
+    Scope::Ptr getScopeById(QString const& scopeId) const;
     unity::scopes::ScopeMetadata::SPtr getCachedMetadata(QString const& scopeId) const;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> getAllMetadata() const;
     QStringList getFavoriteIds() const;
@@ -70,12 +73,13 @@ public:
     bool loaded() const override;
     int count() const override;
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
+    Scope::Ptr overviewScopeSPtr() const;
 
-    LocationService::Ptr locationService() const;
+    QSharedPointer<LocationService> locationService() const;
     QString userAgentString() const;
 
-    unity::shell::scopes::ScopeInterface* findTempScope(QString const& id) const;
-    void addTempScope(unity::shell::scopes::ScopeInterface* scope);
+    Scope::Ptr findTempScope(QString const& id) const;
+    void addTempScope(Scope::Ptr const& scope);
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
 
 Q_SIGNALS:
@@ -97,6 +101,7 @@ private Q_SLOTS:
     void dpkgFinished();
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
+    void purgeScopesToDelete();
 
 private:
     void createUserAgentString();
@@ -105,22 +110,24 @@ private:
     static const int SCOPE_DELETE_DELAY;
     class Priv;
 
-    QList<Scope*> m_scopes;
+    QList<QSharedPointer<Scope>> m_scopes;
+    QList<QSharedPointer<Scope>> m_scopesToDelete;
     bool m_noFavorites;
     QStringList m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
-    OverviewScope* m_overviewScope;
+    QSharedPointer<OverviewScope> m_overviewScope;
     QThread* m_listThread;
     QList<QPair<QString, QString>> m_versions;
     QString m_userAgent;
     bool m_loaded;
 
-    LocationService::Ptr m_locationService;
+    QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
+    QTimer m_scopesToDeleteTimer;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
-    QSet<unity::shell::scopes::ScopeInterface*> m_tempScopes;
+    QMap<QString, Scope::Ptr> m_tempScopes;
 
     std::unique_ptr<Priv> m_priv;
 };

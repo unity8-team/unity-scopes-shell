@@ -177,6 +177,16 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "next-scope-query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title", "art": "art"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("next-scope-query");
+            res.set_art("next-scope-query-art");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else if (query_ == "two-categories")
         {
             auto cat1 = reply->register_category("cat1", "Category 1", "");
@@ -235,6 +245,7 @@ public:
             res.set_dnd_uri("test:dnd_uri");
             res["session-id"] = search_metadata()["session-id"].get_string();
             res["query-id"] = Variant(search_metadata()["query-id"].get_int());
+            res["booleanness"] = Variant(true);
             res.set_intercept_activation();
             reply->push(res);
         }

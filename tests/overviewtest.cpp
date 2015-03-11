@@ -34,23 +34,27 @@
 #include <previewstack.h>
 #include <previewwidgetmodel.h>
 
-#include "registry-spawner.h"
-#include "test-utils.h"
+#include <scope-harness/registry/pre-existing-registry.h>
+#include <scope-harness/internal/test-utils.h>
 
 using namespace scopes_ng;
+using namespace unity::scopeharness;
+using namespace unity::scopeharness::internal;
+using namespace unity::scopeharness::registry;
 
 class OverviewTest : public QObject
 {
     Q_OBJECT
 private:
     QScopedPointer<Scopes> m_scopes;
-    Scope* m_scope;
-    QScopedPointer<RegistrySpawner> m_registry;
+    Scope::Ptr m_scope;
+    Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner);
+        m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -74,15 +78,15 @@ private Q_SLOTS:
         QCOMPARE(m_scopes->loaded(), true);
 
         // get scope proxy
-        m_scope = qobject_cast<scopes_ng::Scope*>(m_scopes->overviewScope());
-        QVERIFY(m_scope != nullptr);
+        m_scope = m_scopes->overviewScopeSPtr();
+        QVERIFY(bool(m_scope));
         m_scope->setActive(true);
     }
 
     void cleanup()
     {
         m_scopes.reset();
-        m_scope = nullptr;
+        m_scope.reset();
     }
 
     void testScopeProperties()
