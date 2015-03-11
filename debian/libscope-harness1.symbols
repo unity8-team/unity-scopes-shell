@@ -33,7 +33,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::view::ResultsView::browseAltDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::overrideCategoryJson(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++)"unity::scopeharness::view::ResultsView::waitForResultsChange()@Base" 0replaceme
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
+ (arch=amd64 arm64 ppc64el)"_ZN5unity12scopeharness4view11ResultsView8categoryERKSs@Base" 0replaceme
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned long)@Base" 0replaceme
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0replaceme
