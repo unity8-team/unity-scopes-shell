@@ -20,11 +20,11 @@
 #ifndef NG_FILTERS_H
 #define NG_FILTERS_H
 
-#include "FiltersInterface.h"
+#include <unity/shell/scopes/FiltersInterface.h>
 #include <unity/shell/scopes/ScopeInterface.h>
 #include <unity/scopes/FilterBase.h>
 #include <unity/scopes/FilterState.h>
-#include "FilterBaseInterface.h"
+#include <unity/shell/scopes/FilterBaseInterface.h>
 #include "modelupdate.h"
 
 #include <QList>
@@ -47,7 +47,7 @@ public:
     void clear();
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState);
 
-    unity::scopes::FilterState filterState();
+    unity::scopes::FilterState filterState() const;
 
 Q_SIGNALS:
     void filterStateChanged();

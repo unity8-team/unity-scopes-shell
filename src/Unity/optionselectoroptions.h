@@ -20,7 +20,7 @@
 #ifndef NG_OPTIONSELECTOROPTIONS_H
 #define NG_OPTIONSELECTOROPTIONS_H
 
-#include "OptionSelectorOptionsInterface.h"
+#include <unity/shell/scopes/OptionSelectorOptionsInterface.h>
 #include "modelupdate.h"
 #include <QSharedPointer>
 #include <QList>

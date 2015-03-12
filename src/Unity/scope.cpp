@@ -87,9 +87,10 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_status(Status::Okay)
 {
     m_categories.reset(new Categories(this));
-    m_filtersModel.reset(new Filters(this));
+    m_filters.reset(new Filters(this));
 
-    QQmlEngine::setObjectOwnership(m_filtersModel.data(), QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(m_filters.data(), QQmlEngine::CppOwnership);
+    connect(m_filters.data(), SIGNAL(filterStateChanged()), this, SLOT(filterStateChanged()));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
@@ -439,11 +440,11 @@ void Scope::flushUpdates(bool finalize)
         bool containsFilters = (m_receivedFilters.size() > 0);
 
         if (containsFilters) {
-            m_filtersModel->update(m_receivedFilters, m_receivedFilterState);
+            m_filters->update(m_receivedFilters, m_receivedFilterState);
         }
         else
         {
-            m_filtersModel->clear();
+            m_filters->clear();
         }
     }
 }
@@ -873,13 +874,6 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
     }
     return m_settingsModel.data();
 }
-
-/*
-Filters* Scope::filters() const
-{
-    return m_filters.get();
-}
-*/
 
 unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& navId)
 {
@@ -1349,6 +1343,17 @@ bool Scope::loginToAccount(QString const& scope_id, QString const& service_name,
 bool Scope::initialQueryDone() const
 {
     return m_initialQueryDone;
+}
+
+unity::shell::scopes::FiltersInterface* Scope::filters() const
+{
+    return m_filters.data();
+}
+
+void Scope::filterStateChanged()
+{
+    qDebug() << "Filters changed";
+    m_filterState = m_filters->filterState();
 }
 
 } // namespace scopes_ng

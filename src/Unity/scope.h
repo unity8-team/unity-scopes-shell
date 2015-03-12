@@ -126,6 +126,8 @@ public:
     unity::shell::scopes::ScopeInterface::Status status() const override;
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
+    unity::shell::scopes::FiltersInterface* filters() const override;
+
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
@@ -182,6 +184,7 @@ private Q_SLOTS:
     void metadataRefreshed();
     void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
+    void filterStateChanged();
 
 protected:
     void setSearchInProgress(bool searchInProgress);
@@ -238,7 +241,7 @@ private:
     unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
     QList<unity::scopes::FilterBase::SCPtr> m_receivedFilters;
-    QScopedPointer<Filters> m_filtersModel;
+    QScopedPointer<Filters> m_filters;
     QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;

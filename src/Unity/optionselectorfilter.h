@@ -20,8 +20,8 @@
 #ifndef NG_OPTIONSELECTORFILTER_H
 #define NG_OPTIONSELECTORFILTER_H
 
-#include "OptionSelectorFilterInterface.h"
-#include "FiltersInterface.h"
+#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
+#include <unity/shell/scopes/FiltersInterface.h>
 #include <unity/scopes/OptionSelectorFilter.h>
 #include "optionselectoroptions.h"
 #include <QScopedPointer>

@@ -119,7 +119,7 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     return filterObj;
 }
 
-unity::scopes::FilterState Filters::filterState()
+unity::scopes::FilterState Filters::filterState() const
 {
     if (m_filterState) {
         return *m_filterState;

@@ -63,20 +63,27 @@ void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
         // has changed, or it's a notification after we just updated
         // filter models with received state.
         auto const optid = id.toStdString();
-        QSet<QString> actOpts;
+        /*QSet<QString> actOpts;
         for (auto const& opt: m_filter->active_options(*m_filterState))
         {
             actOpts.insert(QString::fromStdString(opt->id()));
-        }
+        }*/
 
         for (auto const opt: m_filter->options())
         {
             if (opt->id() == optid)
             {
-                bool previousState = actOpts.contains(id);
+                /*bool previousState = actOpts.contains(id);
                 if (previousState != checked)
                 {
                     m_filter->update_state(*m_filterState, opt, checked);
+                    Q_EMIT filterStateChanged();
+                }*/
+
+                auto const before = m_filter->active_options(*m_filterState);
+                m_filter->update_state(*m_filterState, opt, checked);
+                auto const after = m_filter->active_options(*m_filterState);
+                if (before != after) {
                     Q_EMIT filterStateChanged();
                 }
                 break;
