@@ -32,7 +32,7 @@ OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::
     m_filterState(filterState),
     m_filter(filter)
 {
-    connect(m_options.data(), SIGNAL(optionChecked(const QString&, bool)), this, SLOT(onOptionChecked(const QString &id, bool)));
+    connect(m_options.data(), SIGNAL(optionChecked(const QString&, bool)), this, SLOT(onOptionChecked(const QString&, bool)));
 }
 
 QString OptionSelectorFilter::id() const
@@ -40,9 +40,9 @@ QString OptionSelectorFilter::id() const
     return m_id;
 }
 
-QString OptionSelectorFilter::filterType() const
+unity::shell::scopes::FiltersInterface::FilterType OptionSelectorFilter::filterType() const
 {
-    return "option_selector";
+    return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
 }
 
 QString OptionSelectorFilter::label() const

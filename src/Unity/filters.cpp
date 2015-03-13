@@ -42,7 +42,7 @@ int Filters::rowCount(const QModelIndex&) const
 
 QVariant Filters::data(const QModelIndex& index, int role) const
 {
-    if (index.row() > m_filters.count())
+    if (index.row() >= m_filters.count())
     {
         return QVariant();
     }
@@ -55,7 +55,7 @@ QVariant Filters::data(const QModelIndex& index, int role) const
         case unity::shell::scopes::FiltersInterface::Roles::RoleFilterType:
             return m_filters.at(index.row())->filterType();
         case unity::shell::scopes::FiltersInterface::Roles::RoleFilter:
-            return QVariant::fromValue(m_filters.at(index.row()));
+            return QVariant::fromValue(m_filters.at(index.row()).data());
         default:
             break;
     };
@@ -88,7 +88,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 },
             // filter update function
             [this](const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
-                if (f2->id() != QString::fromStdString(f1->id()) || f2->filterType() != QString::fromStdString(f1->filter_type()))
+                if (f2->id() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
                 {
                     return false;
                 }
@@ -103,7 +103,7 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     if (filter->filter_type() == "option_selector")
     {
         unity::scopes::OptionSelectorFilter::SCPtr optfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
-        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new OptionSelectorFilter(optfilter, m_filterState, this));
+        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::OptionSelectorFilter(optfilter, m_filterState, this));
     }
 
     if (filterObj)
@@ -117,6 +117,15 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     }
 
     return filterObj;
+}
+
+unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity::scopes::FilterBase::SCPtr const& filter)
+{
+    if (typeid(*filter) == typeid(unity::scopes::OptionSelectorFilter))
+    {
+        return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
+    }
+    return unity::shell::scopes::FiltersInterface::FilterType::Invalid;
 }
 
 unity::scopes::FilterState Filters::filterState() const

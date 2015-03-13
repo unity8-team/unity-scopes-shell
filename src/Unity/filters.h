@@ -42,7 +42,7 @@ class Q_DECL_EXPORT Filters :
 
 public:
     explicit Filters(unity::shell::scopes::ScopeInterface *parent = nullptr);
-    int rowCount(const QModelIndex& parent) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     void clear();
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState);
@@ -53,6 +53,7 @@ Q_SIGNALS:
     void filterStateChanged();
 
 private:
+    static unity::shell::scopes::FiltersInterface::FilterType getFilterType(unity::scopes::FilterBase::SCPtr const& filter);
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
     QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
     unity::scopes::FilterState::SPtr m_filterState;
