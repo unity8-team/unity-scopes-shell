@@ -372,7 +372,7 @@ void Scope::flushUpdates(bool finalize)
         bool containsDepartments = m_rootDepartment.get() != nullptr;
         // design decision - no navigation when doing searches
         containsDepartments &= m_searchQuery.isEmpty();
-        
+
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -1353,7 +1353,12 @@ unity::shell::scopes::FiltersInterface* Scope::filters() const
 void Scope::filterStateChanged()
 {
     qDebug() << "Filters changed";
-    m_filterState = m_filters->filterState();
+    auto newState = m_filters->filterState();
+    if (m_filterState != newState)
+    {
+        m_filterState = newState;
+    }
+    invalidateResults();
 }
 
 } // namespace scopes_ng
