@@ -38,6 +38,14 @@ private Q_SLOTS:
     void init()
     {
         filtersModel.reset(new Filters());
+
+        f1 = unity::scopes::OptionSelectorFilter::create("f1", "Filter1", false);
+        f1o1 = f1->add_option("o1", "Option1");
+        f1o2 = f1->add_option("o2", "Option2");
+
+        f2 = unity::scopes::OptionSelectorFilter::create("f2", "Filter2", false);
+        f2o1 = f2->add_option("o1", "Option1");
+        f2o2 = f2->add_option("o2", "Option2");
     }
 
     void initTestCase()
@@ -51,12 +59,9 @@ private Q_SLOTS:
         QSignalSpy filtersSpy(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
         {
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
-            unity::scopes::OptionSelectorFilter::SPtr f1 = unity::scopes::OptionSelectorFilter::create("f1", "Filter1", false);
-            auto opt1 = f1->add_option("o1", "Option1");
-            auto opt2 = f1->add_option("o2", "Option2");
             backendFilters.append(f1);
 
-            f1->update_state(filterState, opt1, true);
+            f1->update_state(filterState, f1o1, true);
 
             filtersModel->update(backendFilters, filterState);
         }
@@ -93,19 +98,8 @@ private Q_SLOTS:
     void testFiltersModelUpdate()
     {
         unity::scopes::FilterState filterState;
-        unity::scopes::OptionSelectorFilter::SPtr f1 = unity::scopes::OptionSelectorFilter::create("f1", "Filter1", false);
-        {
-            auto opt1 = f1->add_option("o1", "Option1");
-            auto opt2 = f1->add_option("o2", "Option2");
-            f1->update_state(filterState, opt1, true);
-        }
-
-        unity::scopes::OptionSelectorFilter::SPtr f2 = unity::scopes::OptionSelectorFilter::create("f2", "Filter2", false);
-        {
-            auto opt1 = f2->add_option("o1", "Option1");
-            auto opt2 = f2->add_option("o2", "Option2");
-            f2->update_state(filterState, opt1, true);
-        }
+        f1->update_state(filterState, f1o1, true);
+        f2->update_state(filterState, f2o2, true);
 
         QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
         QSignalSpy rowsRemovedSignal(filtersModel.data(), SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
@@ -145,11 +139,11 @@ private Q_SLOTS:
             QCOMPARE(row, 1);
         }
 
-        auto idx = filtersModel->index(0, 0);
+        auto idx1 = filtersModel->index(0, 0);
+        auto idx2 = filtersModel->index(1, 0);
         QCOMPARE(filtersModel->rowCount(), 2);
-        QCOMPARE(filtersModel->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
-        idx = filtersModel->index(1, 0);
-        QCOMPARE(filtersModel->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+        QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
+        QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
 
         // change filters positions
         {
@@ -163,13 +157,17 @@ private Q_SLOTS:
 
         QCOMPARE(rowsInsertedSignal.count(), 0); // no change
         QCOMPARE(rowsMovedSignal.count(), 1);
+
+        QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+        QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
+
         // verify arguments of rowsMovedSignal
         {
             auto args = rowsMovedSignal.takeFirst();
             auto srcRow = args.at(1).toInt();
             auto dstRow = args.at(4).toInt();
             QCOMPARE(srcRow, 0);
-            QCOMPARE(dstRow, 1);
+            QCOMPARE(dstRow, 2);
         }
 
         rowsMovedSignal.clear();
@@ -177,7 +175,7 @@ private Q_SLOTS:
         // remove a filter
         {
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
-            backendFilters.append(f2); // filter1
+            backendFilters.append(f2); // filter1 not present (removed)
 
             filtersModel->update(backendFilters, filterState);
         }
@@ -185,10 +183,21 @@ private Q_SLOTS:
         QCOMPARE(rowsInsertedSignal.count(), 0);
         QCOMPARE(rowsMovedSignal.count(), 0);
         QCOMPARE(rowsRemovedSignal.count(), 1);
+        // verify arguments of rowsRemovedSignal
+        {
+            auto args = rowsRemovedSignal.takeFirst();
+            auto first = args.at(1).toInt();
+            auto last = args.at(2).toInt();
+            QCOMPARE(first, 1);
+            QCOMPARE(last, 1);
+        }
+
     }
 
 private:
     QScopedPointer<Filters> filtersModel;
+    unity::scopes::OptionSelectorFilter::SPtr f1, f2;
+    unity::scopes::FilterOption::SCPtr f1o1, f1o2, f2o1, f2o2;
 };
 
 QTEST_GUILESS_MAIN(FiltersTest)
