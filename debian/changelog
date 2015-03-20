@@ -1,3 +1,24 @@
+unity-scopes-shell (0.5.4+15.04.20150311.3-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * debian/libscope-harness1.symbols: auto-update to released version
+
+  [ Pawel Stolowski ]
+  * Add test harness for scopes
+  * Implementation of python bindings for scope harness testing.
+
+  [ Pete Woods ]
+  * Add symbols file and perform symbols filtering for scope harness
+    removed: src/scope-harness/internal/signal-handler.cpp src/scope-
+    harness/internal/signal-handler.h src/scope-harness/registry/custom-
+    registry-main.cpp added: data/libscope-harness.map debian/libscope-
+    harness1.symbols renamed: src/scope-harness/internal/test-utils.cpp
+    => src/scope-harness/test-utils.cpp src/scope-harness/internal/test-
+    utils.h => src/scope-harness/test-utils.h
+  * Add test harness for scopes
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 11 Mar 2015 14:48:22 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150226-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]

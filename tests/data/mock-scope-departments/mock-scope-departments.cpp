@@ -145,7 +145,7 @@ public:
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
         res1.set_uri("test:uri");
-        res1.set_title("result for: \"" + query().query_string() + "\"");
+        res1.set_title("result for: \"" + query().query_string() + "\", department \"" + department_id_ + "\"");
         reply->push(res1);
     }
 

@@ -51,7 +51,7 @@ QVariant scopeVariantToQVariant(scopes::Variant const& variant)
         case scopes::Variant::Type::Array: {
             scopes::VariantArray arr(variant.get_array());
             QVariantList result_list;
-            for (unsigned i = 0; i < arr.size(); i++) {
+            for (size_t i = 0; i < arr.size(); i++) {
                 result_list.append(scopeVariantToQVariant(arr[i]));
             }
             return result_list;

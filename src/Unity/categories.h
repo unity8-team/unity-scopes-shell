@@ -43,6 +43,12 @@ class Q_DECL_EXPORT Categories : public unity::shell::scopes::CategoriesInterfac
 public:
     explicit Categories(QObject* parent = 0);
 
+    enum ExtraRoles
+    {
+        RoleResultsSPtr = 999998,
+        RoleCategorySPtr = 999999
+    };
+
     ~Categories();
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -73,5 +79,6 @@ private:
 } // namespace scopes_ng
 
 Q_DECLARE_METATYPE(scopes_ng::Categories*)
+Q_DECLARE_METATYPE(std::shared_ptr<const unity::scopes::Category>)
 
 #endif // NG_CATEGORIES_H

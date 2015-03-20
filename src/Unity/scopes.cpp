@@ -27,6 +27,7 @@
 
 // Qt
 #include <QDebug>
+#include <QGSettings>
 #include <QTimer>
 #include <QDBusConnection>
 #include <QProcess>
@@ -123,10 +124,14 @@ Scopes::Scopes(QObject *parent)
         QObject::connect(m_dashSettings, &QGSettings::changed, this, &Scopes::dashSettingsChanged);
     }
 
-    m_overviewScope = new OverviewScope(this);
+    m_overviewScope = OverviewScope::newInstance(this);
     m_locationService.reset(new UbuntuLocationService());
 
     createUserAgentString();
+
+    m_scopesToDeleteTimer.setSingleShot(true);
+    m_scopesToDeleteTimer.setInterval(1000 * SCOPE_DELETE_DELAY);
+    connect(&m_scopesToDeleteTimer, SIGNAL(timeout()), SLOT(purgeScopesToDelete()));
 }
 
 Scopes::~Scopes()
@@ -140,6 +145,11 @@ Scopes::~Scopes()
 QString Scopes::userAgentString() const
 {
     return m_userAgent;
+}
+
+void Scopes::purgeScopesToDelete()
+{
+    m_scopesToDelete.clear();
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -294,8 +304,8 @@ void Scopes::discoveryFinished()
         // add all visible scopes
         for (auto it = scopes.begin(); it != scopes.end(); ++it) {
             if (!it->second.invisible()) {
-                auto scope = new Scope(this);
-                connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
+                Scope::Ptr scope = Scope::newInstance(this);
+                connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                 scope->setScopeData(it->second);
                 m_scopes.append(scope);
             }
@@ -360,7 +370,7 @@ void Scopes::completeDiscoveryFinished()
 
 void Scopes::prepopulateNextScopes()
 {
-    for (QList<Scope*>::iterator it = m_scopes.begin(); it != m_scopes.end(); it++) {
+    for (auto it = m_scopes.begin(); it != m_scopes.end(); it++) {
         // query next two scopes following currently active scope
         if ((*it)->isActive()) {
             ++it;
@@ -432,10 +442,12 @@ void Scopes::processFavoriteScopes()
             if (!favScopesLut.contains((*it)->id()))
             {
                 beginRemoveRows(QModelIndex(), row, row);
-                (*it)->setFavorite(false);
-                //
+                Scope::Ptr toDelete = *it;
+                toDelete->setFavorite(false);
                 // we need to delay actual deletion of Scope object so that shell can animate it
-                QTimer::singleShot(1000 * SCOPE_DELETE_DELAY, (*it), SLOT(deleteLater()));
+                m_scopesToDelete.push_back(toDelete);
+                // if the timer is already active, we just wait a bit longer, which is no problem
+                m_scopesToDeleteTimer.start();
                 it = m_scopes.erase(it);
                 endRemoveRows();
             }
@@ -457,8 +469,8 @@ void Scopes::processFavoriteScopes()
                 auto it = m_cachedMetadata.find(fav);
                 if (it != m_cachedMetadata.end())
                 {
-                    auto scope = new Scope(this);
-                    connect(scope, SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
+                    Scope::Ptr scope = Scope::newInstance(this);
+                    connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
@@ -538,13 +550,13 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
     } else if (scopeName == "scopes") {
         // emitted when smart-scopes proxy or scope registry discovers new scopes
         refreshScopeMetadata();
-        Q_FOREACH(Scope* scope, m_scopes) {
+        Q_FOREACH(Scope::Ptr scope, m_scopes) {
             scope->invalidateResults();
         }
         return;
     }
 
-    Scope* scope = getScopeById(scopeName);
+    auto scope = getScopeById(scopeName);
     if (scope == nullptr) {
         // check temporary scopes
         scope = qobject_cast<Scope*>(findTempScope(scopeName));
@@ -567,11 +579,11 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    Scope* scope = m_scopes.at(index.row());
+    Scope::Ptr scope = m_scopes.at(index.row());
 
     switch (role) {
         case Scopes::RoleScope:
-            return QVariant::fromValue(scope);
+            return QVariant::fromValue(scope.data());
         case Scopes::RoleId:
             return QString(scope->id());
         case Scopes::RoleTitle:
@@ -583,26 +595,31 @@ QVariant Scopes::data(const QModelIndex& index, int role) const
 
 unity::shell::scopes::ScopeInterface* Scopes::getScope(int row) const
 {
+    return getScopeByRow(row).data();
+}
+
+Scope::Ptr Scopes::getScopeByRow(int row) const
+{
     if (row >= m_scopes.size() || row < 0) {
-        return nullptr;
+        return Scope::Ptr();
     }
     return m_scopes[row];
 }
 
 unity::shell::scopes::ScopeInterface* Scopes::getScope(const QString& scopeId) const
 {
-    return getScopeById(scopeId);
+    return getScopeById(scopeId).data();
 }
 
-Scope* Scopes::getScopeById(QString const& scopeId) const
+Scope::Ptr Scopes::getScopeById(QString const& scopeId) const
 {
-    Q_FOREACH(Scope* scope, m_scopes) {
+    Q_FOREACH(Scope::Ptr scope, m_scopes) {
         if (scope->id() == scopeId) {
             return scope;
         }
     }
 
-    return nullptr;
+    return Scope::Ptr();
 }
 
 QStringList Scopes::getFavoriteIds() const
@@ -647,26 +664,24 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
     }
 }
 
-void Scopes::addTempScope(unity::shell::scopes::ScopeInterface* scope)
+void Scopes::addTempScope(Scope::Ptr const& scope)
 {
-    m_tempScopes.insert(scope);
+    m_tempScopes.insert(scope->id(), scope);
 }
 
 void Scopes::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
-    if (m_tempScopes.remove(scope)) {
-        scope->deleteLater();
-    }
+    m_tempScopes.remove(scope->id());
 }
 
-unity::shell::scopes::ScopeInterface* Scopes::findTempScope(QString const& id) const
+Scope::Ptr Scopes::findTempScope(QString const& id) const
 {
-    for (auto s: m_tempScopes) {
-        if (s->id() == id) {
-            return s;
-        }
+    auto it = m_tempScopes.find(id);
+    if (it != m_tempScopes.end())
+    {
+        return *it;
     }
-    return nullptr;
+    return Scope::Ptr();
 }
 
 void Scopes::moveFavoriteTo(QString const& scopeId, int index)
@@ -733,7 +748,17 @@ void Scopes::refreshScopeMetadata()
 
 unity::shell::scopes::ScopeInterface* Scopes::overviewScope() const
 {
-    return m_loaded ? m_overviewScope : nullptr;
+    return overviewScopeSPtr().data();
+}
+
+Scope::Ptr Scopes::overviewScopeSPtr() const
+{
+    Scope::Ptr result;
+    if (m_loaded)
+    {
+        result = m_overviewScope;
+    }
+    return result;
 }
 
 bool Scopes::loaded() const

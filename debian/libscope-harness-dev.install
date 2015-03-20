@@ -1,0 +1,3 @@
+usr/include/*
+usr/lib/*/libscope-harness.so
+usr/lib/*/pkgconfig/libscope-harness.pc
