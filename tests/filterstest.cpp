@@ -89,17 +89,15 @@ private Q_SLOTS:
 
         idx = opts->index(0, 0);
         QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o1"));
-        QVERIFY(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
+        QVERIFY(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool()); // option1 is checked
         idx = opts->index(1, 0);
         QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o2"));
         QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
     }
 
-    void testFiltersModelUpdate()
+    void testFiltersModelInsert()
     {
         unity::scopes::FilterState filterState;
-        f1->update_state(filterState, f1o1, true);
-        f2->update_state(filterState, f2o2, true);
 
         QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
         QSignalSpy rowsRemovedSignal(filtersModel.data(), SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
@@ -112,6 +110,8 @@ private Q_SLOTS:
             filtersModel->update(backendFilters, filterState);
         }
 
+        QCOMPARE(rowsMovedSignal.count(), 0);
+        QCOMPARE(rowsRemovedSignal.count(), 0);
         QCOMPARE(rowsInsertedSignal.count(), 1);
         // verify arguments of rowsInsertedSignal
         {
@@ -131,6 +131,8 @@ private Q_SLOTS:
             filtersModel->update(backendFilters, filterState);
         }
 
+        QCOMPARE(rowsMovedSignal.count(), 0);
+        QCOMPARE(rowsRemovedSignal.count(), 0);
         QCOMPARE(rowsInsertedSignal.count(), 1);
         // verify arguments of rowsInsertedSignal
         {
@@ -144,6 +146,22 @@ private Q_SLOTS:
         QCOMPARE(filtersModel->rowCount(), 2);
         QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
         QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+    }
+
+    void testFiltersModelMove()
+    {
+        unity::scopes::FilterState filterState;
+        {
+            QList<unity::scopes::FilterBase::SCPtr> backendFilters;
+            backendFilters.append(f1);
+            backendFilters.append(f2);
+
+            filtersModel->update(backendFilters, filterState);
+        }
+
+        QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+        QSignalSpy rowsRemovedSignal(filtersModel.data(), SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
+        QSignalSpy rowsMovedSignal(filtersModel.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
 
         // change filters positions
         {
@@ -156,8 +174,13 @@ private Q_SLOTS:
         }
 
         QCOMPARE(rowsInsertedSignal.count(), 0); // no change
+        QCOMPARE(rowsRemovedSignal.count(), 0);
         QCOMPARE(rowsMovedSignal.count(), 1);
 
+        QCOMPARE(filtersModel->rowCount(), 2);
+
+        auto idx1 = filtersModel->index(0, 0);
+        auto idx2 = filtersModel->index(1, 0);
         QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
         QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
 
@@ -169,8 +192,22 @@ private Q_SLOTS:
             QCOMPARE(srcRow, 0);
             QCOMPARE(dstRow, 2);
         }
+    }
 
-        rowsMovedSignal.clear();
+    void testFiltersModelRemove()
+    {
+        unity::scopes::FilterState filterState;
+        {
+            QList<unity::scopes::FilterBase::SCPtr> backendFilters;
+            backendFilters.append(f2);
+            backendFilters.append(f1);
+
+            filtersModel->update(backendFilters, filterState);
+        }
+
+        QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+        QSignalSpy rowsRemovedSignal(filtersModel.data(), SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
+        QSignalSpy rowsMovedSignal(filtersModel.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
 
         // remove a filter
         {
@@ -192,6 +229,10 @@ private Q_SLOTS:
             QCOMPARE(last, 1);
         }
 
+        QCOMPARE(filtersModel->rowCount(), 1);
+
+        auto idx1 = filtersModel->index(0, 0);
+        QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
     }
 
 private:
