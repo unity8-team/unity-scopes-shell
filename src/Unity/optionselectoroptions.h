@@ -32,24 +32,7 @@ namespace scopes_ng
 {
 
 class OptionSelectorFilter;
-
-class Q_DECL_EXPORT OptionSelectorOption : public unity::shell::scopes::OptionSelectorOptionInterface
-{
-    Q_OBJECT
-
-public:
-    OptionSelectorOption(const QString& id, const QString &label);
-
-    QString id() const override;
-    QString label() const override;
-    bool checked() const override;
-    void setChecked(bool checked) override;
-
-private:
-    QString m_id;
-    QString m_label;
-    bool m_checked;
-};
+class OptionSelectorOption;
 
 class Q_DECL_EXPORT OptionSelectorOptions :
     public ModelUpdate<unity::shell::scopes::OptionSelectorOptionsInterface,
@@ -63,12 +46,10 @@ public:
     void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions);
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    Q_INVOKABLE void setChecked(int row, bool checked) override;
 
 Q_SIGNALS:
     void optionChecked(const QString&, bool);
-
-protected Q_SLOTS:
-    void onOptionChecked(bool checked);
 
 private:
     QList<QSharedPointer<OptionSelectorOption>> m_options;

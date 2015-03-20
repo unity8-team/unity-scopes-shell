@@ -31,7 +31,7 @@ public:
     using InputKeyFunc = std::function<QString(typename InputContainer::value_type)>;
     using OutputKeyFunc = std::function<QString(typename OutputContainer::value_type)>;
     using CreateFunc = std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)>;
-    using UpdateFunc = std::function<bool(typename InputContainer::value_type const&, typename OutputContainer::value_type const&)>;
+    using UpdateFunc = std::function<bool(int, typename InputContainer::value_type const&, typename OutputContainer::value_type const&)>;
 
     ModelUpdate(QObject *parent = nullptr): ModelBase(parent) {}
 
@@ -129,7 +129,7 @@ public:
             int row = 0;
             for (auto const& in: input)
             {
-                if (!updateFunc(in, model[row]))
+                if (!updateFunc(row, in, model[row]))
                 {
                     model[row] = createFunc(in);
                     Q_EMIT this->dataChanged(this->index(row, 0), this->index(row, 0)); // or beginRemoveRows & beginInsertRows ?

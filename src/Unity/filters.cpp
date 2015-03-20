@@ -87,7 +87,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 return createFilterObject(f);
                 },
             // filter update function
-            [this](const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
+            [this](int, const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
                 if (f2->id() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
                 {
                     return false;
