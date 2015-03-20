@@ -151,7 +151,7 @@ public:
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
-            res.set_uri("test:perform-query");
+            res.set_uri("scope://test:perform-query"); // FIXME: workaround for https://bugs.launchpad.net/ubuntu/+source/unity8/+bug/1428063
             res.set_title("result for: \"" + query_ + "\"");
             res["scope-id"] = "mock-scope-ttl";
             res.set_intercept_activation();
@@ -162,7 +162,7 @@ public:
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
-            res.set_uri("test:perform-query");
+            res.set_uri("scope://test:perform-query"); // FIXME: workaround for https://bugs.launchpad.net/ubuntu/+source/unity8/+bug/1428063
             res.set_title("result for: \"" + query_ + "\"");
             res["scope-id"] = "nonexisting-scope";
             res.set_intercept_activation();
@@ -174,6 +174,16 @@ public:
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
             res.set_uri("scope://mock-scope?q=next-scope-query");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
+        else if (query_ == "next-scope-query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title", "art": "art"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("next-scope-query");
+            res.set_art("next-scope-query-art");
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
@@ -235,6 +245,7 @@ public:
             res.set_dnd_uri("test:dnd_uri");
             res["session-id"] = search_metadata()["session-id"].get_string();
             res["query-id"] = Variant(search_metadata()["query-id"].get_int());
+            res["booleanness"] = Variant(true);
             res.set_intercept_activation();
             reply->push(res);
         }

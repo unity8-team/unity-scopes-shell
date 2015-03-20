@@ -247,9 +247,9 @@ public:
         return true;
     }
 
+    scopes::Category::SCPtr m_category;
 private:
     static QJsonValue* DEFAULTS;
-    scopes::Category::SCPtr m_category;
     QString m_catId;
     QString m_catTitle;
     QString m_catIcon;
@@ -512,7 +512,7 @@ QVariant
 Categories::data(const QModelIndex& index, int role) const
 {
     int row = index.row();
-    if (row >= m_categories.size())
+    if (row >= m_categories.size() || row < 0)
     {
         qWarning() << "Categories::data - invalid index" << row << "size"
                 << m_categories.size();
@@ -552,11 +552,35 @@ Categories::data(const QModelIndex& index, int role) const
             }
             else
             {
+                qWarning() << "Category data has no results model" << catData->categoryId();
                 return QVariant();
             }
         }
         case RoleCount:
             return catData->resultsModelCount();
+        case RoleResultsSPtr:
+        {
+            QSharedPointer<unity::shell::scopes::ResultsModelInterface> resultsModel = catData->resultsModel();
+            if (resultsModel)
+            {
+                return QVariant::fromValue(resultsModel);
+            }
+            else
+            {
+                return QVariant();
+            }
+        }
+        case RoleCategorySPtr:
+        {
+            if (catData->m_category)
+            {
+                return QVariant::fromValue(catData->m_category);
+            }
+            else
+            {
+                return QVariant();
+            }
+        }
         default:
             return QVariant();
     }

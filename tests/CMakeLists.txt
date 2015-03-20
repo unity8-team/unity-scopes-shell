@@ -4,47 +4,27 @@ pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
 pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1>=0.2 REQUIRED)
 
-_pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
-_pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPEREGISTRY_BIN "" --variable=scoperegistry_bin )
-
-set(SCOPES_TEST_RUNTIME ${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini)
+set(TEST_DATA_DIR "${CMAKE_CURRENT_BINARY_DIR}/data/")
+set(TEST_RUNTIME_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini")
 
 add_subdirectory(data)
 
 add_definitions(
     -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
-    -DTEST_SCOPEREGISTRY_BIN="${SCOPESLIB_SCOPEREGISTRY_BIN}"
-    -DTEST_RUNTIME_CONFIG="${SCOPES_TEST_RUNTIME}"
+    -DTEST_DATA_DIR="${TEST_DATA_DIR}"
+    -DTEST_RUNTIME_CONFIG="${TEST_RUNTIME_CONFIG}"
     -DTEST_SETTINGS_UNICODE="${CMAKE_CURRENT_SOURCE_DIR}/data/settings-unicode.ini"
     )
 
 include_directories(
-    ${Unity-qml_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/Unity
+    ${CMAKE_SOURCE_DIR}/src/Unity
+    ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
-    ${GSETTINGSQT_INCLUDE_DIRS}
     ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
     ${QTDBUSTEST_INCLUDE_DIRS}
     ${QTDBUSMOCK_INCLUDE_DIRS}
-    )
-
-add_library(
-    test-utils SHARED
-    registry-spawner.cpp
-    test-utils.cpp
-    )
-
-target_link_libraries(
-    test-utils
-    Unity-qml
-    ${GSETTINGSQT_LDFLAGS}
-    )
-
-qt5_use_modules(
-    test-utils
-    Network
-    Test
+    ${GSETTINGSQT_INCLUDE_DIRS}
     )
 
 macro(run_tests)
@@ -69,10 +49,9 @@ macro(run_tests)
         target_link_libraries(${_test}Exec
             Unity-qml
             ${SCOPESLIB_LDFLAGS}
-            ${GSETTINGSQT_LDFLAGS}
             ${QTDBUSTEST_LIBRARIES}
             ${QTDBUSMOCK_LIBRARIES}
-            test-utils
+            scope-harness
             )
 
         set(_test_list "${_test_list};${_test}")

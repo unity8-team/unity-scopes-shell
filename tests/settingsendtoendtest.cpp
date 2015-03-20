@@ -26,10 +26,12 @@
 
 #include <unity/shell/scopes/SettingsModelInterface.h>
 
-#include "test-utils.h"
-#include "registry-spawner.h"
+#include <scope-harness/registry/pre-existing-registry.h>
+#include <scope-harness/test-utils.h>
 
 using namespace scopes_ng;
+using namespace unity::scopeharness;
+using namespace unity::scopeharness::registry;
 using namespace unity::shell::scopes;
 
 class SettingsEndToEndTest : public QObject
@@ -37,13 +39,14 @@ class SettingsEndToEndTest : public QObject
     Q_OBJECT
 private:
     QScopedPointer<Scopes> m_scopes;
-    Scope* m_scope;
-    QScopedPointer<RegistrySpawner> m_registry;
+    Scope::Ptr m_scope;
+    Registry::UPtr m_registry;
 
 private Q_SLOTS:
     void initTestCase()
     {
-        m_registry.reset(new RegistrySpawner);
+        m_registry.reset(new PreExistingRegistry(TEST_RUNTIME_CONFIG));
+        m_registry->start();
     }
 
     void cleanupTestCase()
@@ -54,7 +57,7 @@ private Q_SLOTS:
     void init()
     {
         const QStringList favs {"scope://mock-scope-departments", "scope://mock-scope-double-nav", "scope://mock-scope"};
-        setFavouriteScopes(favs);
+        TestUtils::setFavouriteScopes(favs);
 
         m_scopes.reset(new Scopes(nullptr));
         // no scopes on startup
@@ -76,7 +79,7 @@ private Q_SLOTS:
     void cleanup()
     {
         m_scopes.reset();
-        m_scope = nullptr;
+        m_scope.reset();
     }
 
     void verifySetting(const SettingsModelInterface* settings, int index,

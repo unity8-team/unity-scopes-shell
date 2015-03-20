@@ -24,6 +24,7 @@
 #include "categories.h"
 #include "collectors.h"
 #include "previewstack.h"
+#include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
 #include "settingsmodel.h"
@@ -32,8 +33,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
+#include <QGSettings>
 #include <QtGui/QDesktopServices>
-#include <QQmlEngine>
 #include <QEvent>
 #include <QMutex>
 #include <QMutexLocker>
@@ -44,6 +45,8 @@
 #include <QDir>
 #include <QLocale>
 #include <QtConcurrent>
+
+#include <QQmlEngine>
 
 #include <libintl.h>
 
@@ -71,8 +74,13 @@ const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
-Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
-    , m_query_id(0)
+Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
+{
+    return Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+}
+
+Scope::Scope(scopes_ng::Scopes* parent) :
+      m_query_id(0)
     , m_formFactor("phone")
     , m_isActive(false)
     , m_searchInProgress(false)
@@ -86,12 +94,13 @@ Scope::Scope(QObject *parent) : unity::shell::scopes::ScopeInterface(parent)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
 {
+    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     m_categories.reset(new Categories(this));
 
     m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
     QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
-    setScopesInstance(qobject_cast<scopes_ng::Scopes*>(parent));
+    setScopesInstance(parent);
 
     m_typingTimer.setSingleShot(true);
     if (qEnvironmentVariableIsSet("UNITY_SCOPES_TYPING_TIMEOUT_OVERRIDE"))
@@ -275,32 +284,37 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         scope = this;
     } else {
         // figure out if this scope is already favourited
-        scope = m_scopesInstance->getScopeById(scopeId);
+        auto tmp = m_scopesInstance->getScopeById(scopeId);
+        if (tmp) {
+           scope = tmp.data();
+        }
     }
 
-    if (scope != nullptr) {
+    if (scope) {
         scope->setCannedQuery(query);
         // FIXME: implement better way to do multiple changes to search props and dispatch single search
         if (!scope->searchInProgress()) {
             scope->invalidateResults();
         }
-        if (scope != this) Q_EMIT gotoScope(scopeId);
+        if (scope != this) {
+            Q_EMIT gotoScope(scopeId);
+        }
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
         if (meta_sptr) {
-            scope = new scopes_ng::Scope(m_scopesInstance);
-            scope->setScopeData(*meta_sptr);
-            scope->setScopesInstance(m_scopesInstance);
-            scope->setCannedQuery(query);
-            m_scopesInstance->addTempScope(scope);
-            Q_EMIT openScope(scope);
+            Scope::Ptr newScope = Scope::newInstance(m_scopesInstance);
+            newScope->setScopeData(*meta_sptr);
+            newScope->setCannedQuery(query);
+            m_scopesInstance->addTempScope(newScope);
+            Q_EMIT openScope(newScope.data());
         } else if (allowDelayedActivation) {
             // request registry refresh to get the missing metadata
             m_delayedActivation = std::make_shared<scopes::ActivationResponse>(query);
             m_scopesInstance->refreshScopeMetadata();
         } else {
-            qWarning("Unable to find scope \"%s\" after metadata refresh", query.scope_id().c_str());
+            qWarning("Unable to find scope \"%s\" after metadata refresh", qPrintable(scopeId));
+            Q_EMIT activationFailed(scopeId);
         }
     }
 }
@@ -437,12 +451,12 @@ void Scope::flushUpdates(bool finalize)
     }
 }
 
-unity::shell::scopes::ScopeInterface* Scope::findTempScope(QString const& id) const
+Scope::Ptr Scope::findTempScope(QString const& id) const
 {
     if (m_scopesInstance) {
         return m_scopesInstance->findTempScope(id);
     }
-    return nullptr;
+    return Scope::Ptr();
 }
 
 void Scope::updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation)
@@ -1080,11 +1094,11 @@ void Scope::setActive(const bool active) {
         {
             if (m_isActive)
             {
-                m_locationService->activate();
+                m_locationToken = m_locationService->activate();
             }
             else
             {
-                m_locationService->deactivate();
+                m_locationToken.reset();
             }
         }
 
@@ -1263,13 +1277,18 @@ void Scope::activateUri(QString const& uri)
     /*
      * If it's a scope URI, perform the query, otherwise ask Qt to open it.
      */
+    Q_EMIT gotoUri(uri);
     QUrl url(uri);
-    if (url.scheme() == QLatin1String("scope")) {
-        qDebug() << "Got scope URI" << uri;
+    if (url.scheme() == QLatin1String("scope"))
+    {
         performQuery(uri);
-    } else {
-        qDebug() << "Trying to open" << uri;
-        QDesktopServices::openUrl(url);
+    }
+    else
+    {
+        if (qEnvironmentVariableIsEmpty("UNITY_SCOPES_NO_OPEN_URL"))
+        {
+            QDesktopServices::openUrl(url);
+        }
     }
 }
 
