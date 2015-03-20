@@ -48,10 +48,6 @@ private Q_SLOTS:
         f2o2 = f2->add_option("o2", "Option2");
     }
 
-    void initTestCase()
-    {
-    }
-
     void testFiltersModelInit()
     {
         unity::scopes::FilterState filterState;
@@ -81,18 +77,6 @@ private Q_SLOTS:
         QCOMPARE(opf->id(), QString("f1"));
         QCOMPARE(opf->label(), QString("Filter1"));
         QVERIFY(!opf->multiSelect());
-
-        // check options of the option selector filter
-        auto opts = opf->options();
-        QVERIFY(opts != nullptr);
-        QCOMPARE(opts->rowCount(), 2);
-
-        idx = opts->index(0, 0);
-        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o1"));
-        QVERIFY(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool()); // option1 is checked
-        idx = opts->index(1, 0);
-        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o2"));
-        QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
     }
 
     void testFiltersModelInsert()
@@ -146,6 +130,9 @@ private Q_SLOTS:
         QCOMPARE(filtersModel->rowCount(), 2);
         QCOMPARE(filtersModel->data(idx1, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
         QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+        QCOMPARE(filtersModel->data(idx2, unity::shell::scopes::FiltersInterface::Roles::RoleFilterType).toInt(),
+                static_cast<int>(unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter));
+
     }
 
     void testFiltersModelMove()
