@@ -66,11 +66,20 @@ void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::
                 if (op2->id != QString::fromStdString(op1->id())) {
                     return false;
                 }
+
                 bool backendState = actOpts.contains(op2->id);
-                if (backendState != op2->checked)
-                {
-                    const QVector<int> roles {unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked};
+                QVector<int> roles;
+                if (backendState != op2->checked) {
                     op2->checked = backendState;
+                    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked);
+                }
+
+                if (op2->label != QString::fromStdString(op1->label())) {
+                    op2->label = QString::fromStdString(op1->label());
+                    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionLabel);
+                }
+
+                if (roles.count()) {
                     Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
                 }
                 return true;

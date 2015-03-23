@@ -18,6 +18,7 @@
  */
 
 #include "optionselectorfilter.h"
+#include <QQmlEngine>
 #include <QDebug>
 
 namespace scopes_ng
@@ -32,6 +33,7 @@ OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::
     m_filterState(filterState),
     m_filter(filter)
 {
+    QQmlEngine::setObjectOwnership(m_options.data(), QQmlEngine::CppOwnership);
     connect(m_options.data(), SIGNAL(optionChecked(const QString&, bool)), this, SLOT(onOptionChecked(const QString&, bool)));
 }
 

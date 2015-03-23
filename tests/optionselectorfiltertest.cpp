@@ -152,6 +152,58 @@ private Q_SLOTS:
         }
     }
 
+    void testBackendOptionLabelChange()
+    {
+        auto idx = filtersModel->index(1, 0);
+        {
+            // get 1st option selector filter
+            auto opf = filtersModel->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
+            QVERIFY(opf != nullptr);
+            QCOMPARE(opf->id(), QString("f2"));
+            auto opts = opf->options();
+            QVERIFY(opts != nullptr);
+            QCOMPARE(opts->rowCount(), 2);
+
+            auto idx1 = opts->index(0, 0);
+            auto idx2 = opts->index(1, 0);
+            QCOMPARE(opts->data(idx1, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("Option1"));
+            QCOMPARE(opts->data(idx2, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("Option2"));
+
+            QSignalSpy dataChangedSignal(opts, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
+            QSignalSpy stateChangeSignal(filtersModel.data(), SIGNAL(filterStateChanged()));
+
+            unity::scopes::OptionSelectorFilter::SPtr f3 = unity::scopes::OptionSelectorFilter::create("f2", "Filter2", true);
+            auto f3o1 = f3->add_option("f2o1", "Option1");
+            auto f3o2 = f3->add_option("f2o2", "UpdatedOption2");
+
+            QList<unity::scopes::FilterBase::SCPtr> backendFilters2;
+            backendFilters2.append(f1);
+            backendFilters2.append(f3);
+
+            // sync model with new backend filters
+            filtersModel->update(backendFilters2, filterState);
+
+            if (dataChangedSignal.empty()) {
+                QVERIFY(dataChangedSignal.wait());
+            }
+            QCOMPARE(dataChangedSignal.count(), 1);
+
+            QCOMPARE(opts->data(idx1, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("Option1"));
+            QCOMPARE(opts->data(idx2, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("UpdatedOption2"));
+
+            QCOMPARE(stateChangeSignal.count(), 0); // change initiated by backend, so no state change signal
+
+            // verify arguments of dataChanged signal
+            {
+                auto args = dataChangedSignal.takeFirst();
+                auto topLeft = args.at(0).value<QModelIndex>();
+                auto roles = args.at(2).value<QVector<int>>();
+                QCOMPARE(topLeft.row(), 1);
+                QCOMPARE(roles[0], static_cast<int>(uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel));
+            }
+        }
+    }
+
     void testUICheckedStateChange()
     {
         auto idx1 = filtersModel->index(0, 0);
