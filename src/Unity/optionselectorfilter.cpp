@@ -65,6 +65,7 @@ void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
             if (opt->id() == optid)
             {
                 m_filter->update_state(*m_filterState, opt, checked);
+                m_options->update(m_filter->options(), m_filter->active_options(*m_filterState));
                 Q_EMIT filterStateChanged();
                 break;
             }

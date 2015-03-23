@@ -89,9 +89,9 @@ void OptionSelectorOptions::setChecked(int row, bool checked)
         auto opt = m_options.at(row);
         if (checked != opt->checked)
         {
-            opt->checked = checked;
-            const QVector<int> roles {unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked};
-            Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+            //opt->checked = checked;
+            //const QVector<int> roles {unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked};
+            //Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
             Q_EMIT optionChecked(opt->id, checked);
         }
     }
