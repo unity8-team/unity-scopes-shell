@@ -459,6 +459,7 @@ void Scope::flushUpdates(bool finalize)
     // process other filters
     if (finalize || m_receivedFilters.size() > 0)
     {
+        qDebug() << "Processing filters";
         bool containsFilters = (m_receivedFilters.size() > 0);
 
         if (containsFilters) {
@@ -1382,11 +1383,7 @@ unity::shell::scopes::FiltersInterface* Scope::filters() const
 void Scope::filterStateChanged()
 {
     qDebug() << "Filters changed";
-    auto newState = m_filters->filterState();
-    if (m_filterState != newState)
-    {
-        m_filterState = newState;
-    }
+    m_filterState = m_filters->filterState();
     invalidateResults();
 }
 

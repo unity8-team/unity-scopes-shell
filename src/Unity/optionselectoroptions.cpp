@@ -93,7 +93,7 @@ int OptionSelectorOptions::rowCount(const QModelIndex& parent) const
 
 void OptionSelectorOptions::setChecked(int row, bool checked)
 {
-    if (row > 0 && row < m_options.count())
+    if (row >= 0 && row < m_options.count())
     {
         auto opt = m_options.at(row);
         if (checked != opt->checked)

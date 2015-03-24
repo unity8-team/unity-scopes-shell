@@ -1,0 +1,112 @@
+/*
+ * Copyright (C) 2015 Canonical Ltd
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Pawel Stolowski <pawel.stolowski@canonical.com>
+ */
+
+#include <unity/scopes/CategorisedResult.h>
+#include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/ScopeBase.h>
+#include <unity/scopes/SearchReply.h>
+
+#include <iostream>
+#include <sstream>
+
+#define EXPORT __attribute__ ((visibility ("default")))
+
+using namespace std;
+using namespace unity::scopes;
+
+class MyQuery : public SearchQueryBase
+{
+public:
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata) :
+        SearchQueryBase(query, metadata)
+    {
+    }
+
+    ~MyQuery()
+    {
+    }
+
+    virtual void cancelled() override
+    {
+    }
+
+    virtual void run(SearchReplyProxy const& reply) override
+    {
+        OptionSelectorFilter::UPtr filter1 = OptionSelectorFilter::create("f1", "Filter1");
+        auto opt1 = filter1->add_option("o1", "Option1");
+        filter1->add_option("o2", "Option2");
+
+        auto cat1 = reply->register_category("cat1", "Category 1", "");
+        CategorisedResult res1(cat1);
+        res1.set_uri("test:uri");
+
+        auto selected = filter1->active_options(query().filter_state());
+        if (selected.size() == 1) {
+            std::cerr << "Option is selected\n";
+            res1.set_title("result for option " + (*selected.begin())->id());
+        } else {
+            std::cerr << "Option is NOT selected\n";
+            res1.set_title("result for: \"" + query().query_string() + "\"");
+        }
+
+        Filters filters;
+        filters.push_back(std::move(filter1));
+
+        reply->push(filters, query().filter_state());
+        reply->push(res1);
+    }
+};
+
+class MyScope : public ScopeBase
+{
+public:
+    MyScope()
+    {
+    }
+
+    virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
+    {
+        return SearchQueryBase::UPtr(new MyQuery(q, metadata));
+    }
+
+    virtual PreviewQueryBase::UPtr preview(Result const&, ActionMetadata const&) override
+    {
+        return nullptr;
+    }
+};
+
+extern "C"
+{
+
+    EXPORT
+    unity::scopes::ScopeBase*
+    // cppcheck-suppress unusedFunction
+    UNITY_SCOPE_CREATE_FUNCTION()
+    {
+        return new MyScope;
+    }
+
+    EXPORT
+    void
+    // cppcheck-suppress unusedFunction
+    UNITY_SCOPE_DESTROY_FUNCTION(unity::scopes::ScopeBase* scope_base)
+    {
+        delete scope_base;
+    }
+
+}
