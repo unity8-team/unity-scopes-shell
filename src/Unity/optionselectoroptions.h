@@ -21,6 +21,7 @@
 #define NG_OPTIONSELECTOROPTIONS_H
 
 #include <unity/shell/scopes/OptionSelectorOptionsInterface.h>
+#include <unity/scopes/FilterOption.h>
 #include "modelupdate.h"
 #include <QSharedPointer>
 #include <QList>

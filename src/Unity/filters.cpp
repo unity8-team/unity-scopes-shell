@@ -92,7 +92,10 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 {
                     return false;
                 }
-                f2->update(f1, m_filterState);
+                auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f2.data());
+                if (shellFilter) {
+                    shellFilter->update(f1, m_filterState);
+                }
                 return true;
             });
 }

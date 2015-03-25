@@ -22,6 +22,7 @@
 
 #include <unity/shell/scopes/OptionSelectorFilterInterface.h>
 #include <unity/shell/scopes/FiltersInterface.h>
+#include "filters.h"
 #include <unity/scopes/OptionSelectorFilter.h>
 #include "optionselectoroptions.h"
 #include <QScopedPointer>
@@ -29,7 +30,7 @@
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSelectorFilterInterface
+class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSelectorFilterInterface, public FilterUpdateInterface
 {
     Q_OBJECT
 

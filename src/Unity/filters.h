@@ -33,6 +33,12 @@
 namespace scopes_ng
 {
 
+class FilterUpdateInterface
+{
+    public:
+        virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) = 0;
+};
+
 class Q_DECL_EXPORT Filters :
     public ModelUpdate<unity::shell::scopes::FiltersInterface,
         QList<unity::scopes::FilterBase::SCPtr>,
