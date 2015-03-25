@@ -151,7 +151,7 @@ bool OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     {
         ///!===
         /// TODO: This code should be removed as soon as we can remove child_scope_ids() from ScopeMetadata.
-        /// Aggregators should now be implementing the child_scopes() method rather than setting ChildScopes in config.
+        /// Aggregators should now be implementing the find_child_scopes() method rather than setting ChildScopes in config.
         auto const children = scopeMetadata->child_scope_ids();
         if (children.size())
         {
@@ -177,11 +177,11 @@ bool OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
     unity::scopes::ChildScopeList children;
     try
     {
-        children = scopeMetadata->proxy()->child_scopes_ordered();
+        children = scopeMetadata->proxy()->child_scopes();
     }
     catch (std::exception const& e)
     {
-        qWarning("OverviewResultsModel::updateChildScopes: Exception caught from proxy()->child_scopes_ordered(): %s", e.what());
+        qWarning("OverviewResultsModel::updateChildScopes: Exception caught from proxy()->child_scopes(): %s", e.what());
         return false;
     }
 
