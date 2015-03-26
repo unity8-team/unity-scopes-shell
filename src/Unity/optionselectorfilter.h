@@ -36,7 +36,7 @@ class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSe
 
 public:
     OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
-    QString id() const override;
+    QString filterId() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
     QString label() const override;
     bool multiSelect() const override;

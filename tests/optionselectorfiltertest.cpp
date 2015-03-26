@@ -74,7 +74,7 @@ private Q_SLOTS:
             // get 1st option selector filter
             auto opf = filtersModel->data(idx1, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
             QVERIFY(opf != nullptr);
-            QCOMPARE(opf->id(), QString("f1"));
+            QCOMPARE(opf->filterId(), QString("f1"));
             QCOMPARE(opf->label(), QString("Filter1"));
             QVERIFY(!opf->multiSelect());
 
@@ -95,7 +95,7 @@ private Q_SLOTS:
             // get 2nd option selector filter
             auto opf = filtersModel->data(idx2, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
             QVERIFY(opf != nullptr);
-            QCOMPARE(opf->id(), QString("f2"));
+            QCOMPARE(opf->filterId(), QString("f2"));
             QCOMPARE(opf->label(), QString("Filter2"));
             QVERIFY(opf->multiSelect());
 
@@ -159,7 +159,7 @@ private Q_SLOTS:
             // get 1st option selector filter
             auto opf = filtersModel->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
             QVERIFY(opf != nullptr);
-            QCOMPARE(opf->id(), QString("f2"));
+            QCOMPARE(opf->filterId(), QString("f2"));
             auto opts = opf->options();
             QVERIFY(opts != nullptr);
             QCOMPARE(opts->rowCount(), 2);

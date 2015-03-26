@@ -74,7 +74,7 @@ private Q_SLOTS:
         // get filter object from the model
         auto opf = filtersModel->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
         QVERIFY(opf != nullptr);
-        QCOMPARE(opf->id(), QString("f1"));
+        QCOMPARE(opf->filterId(), QString("f1"));
         QCOMPARE(opf->label(), QString("Filter1"));
         QVERIFY(!opf->multiSelect());
     }

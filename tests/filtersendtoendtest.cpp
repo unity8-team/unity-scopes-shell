@@ -93,7 +93,7 @@ private Q_SLOTS:
 
         auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
         QVERIFY(f1 != nullptr);
-        QCOMPARE(f1->id(), QString("f1"));
+        QCOMPARE(f1->filterId(), QString("f1"));
         QCOMPARE(f1->label(), QString("Filter1"));
         QVERIFY(!f1->multiSelect());
 

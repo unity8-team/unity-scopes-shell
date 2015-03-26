@@ -37,7 +37,7 @@ OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::
     connect(m_options.data(), SIGNAL(optionChecked(const QString&, bool)), this, SLOT(onOptionChecked(const QString&, bool)));
 }
 
-QString OptionSelectorFilter::id() const
+QString OptionSelectorFilter::filterId() const
 {
     return m_id;
 }

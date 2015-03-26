@@ -50,7 +50,7 @@ QVariant Filters::data(const QModelIndex& index, int role) const
     switch (role)
     {
         case unity::shell::scopes::FiltersInterface::Roles::RoleFilterId:
-            return m_filters.at(index.row())->id();
+            return m_filters.at(index.row())->filterId();
         case Qt::DisplayRole:
         case unity::shell::scopes::FiltersInterface::Roles::RoleFilterType:
             return m_filters.at(index.row())->filterType();
@@ -81,14 +81,14 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
             // key function for scopes api filter
             [](const unity::scopes::FilterBase::SCPtr& f) -> QString { return QString::fromStdString(f->id()); },
             // key function for shell api filter
-            [](const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f) -> QString { return f->id(); },
+            [](const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f) -> QString { return f->filterId(); },
             // factory function
             [this](const unity::scopes::FilterBase::SCPtr& f) -> QSharedPointer<unity::shell::scopes::FilterBaseInterface> {
                 return createFilterObject(f);
                 },
             // filter update function
             [this](int, const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
-                if (f2->id() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
+                if (f2->filterId() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
                 {
                     return false;
                 }
