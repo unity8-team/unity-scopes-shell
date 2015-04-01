@@ -25,6 +25,7 @@
 #include "utils.h"
 
 #include <unity/scopes/Result.h>
+#include <unity/scopes/Scope.h>
 #include <QSet>
 
 namespace scopes_ng {
