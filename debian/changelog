@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.4+15.04.20150407-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Marcus Tomlinson ]
+  * Rename "child_scopes()" to "find_child_scopes()" and
+    "child_scopes_ordered()" to "child_scopes()" as the ordering
+    constraint has been removed.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 07 Apr 2015 06:33:25 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150311.3-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]
