@@ -1,3 +1,14 @@
+unity-scopes-shell (0.5.4+15.04.20150410.2-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Pawel Stolowski ]
+  * Pass user data attached to canned queries back with search request
+    when canned query is executed.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Fri, 10 Apr 2015 16:08:44 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150407-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]
