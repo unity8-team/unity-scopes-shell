@@ -199,7 +199,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     m_scopeProxy = scopes_metadata[m_scopeId]->proxy();
     try
     {
-        m_child_scopes = m_scopeProxy->child_scopes_ordered();
+        m_child_scopes = m_scopeProxy->child_scopes();
     }
     catch (std::exception const& e)
     {
@@ -313,11 +313,11 @@ void SettingsModel::settings_timeout()
         {
             try
             {
-                m_scopeProxy->set_child_scopes_ordered(m_child_scopes);
+                m_scopeProxy->set_child_scopes(m_child_scopes);
             }
             catch (std::exception const& e)
             {
-                qWarning("SettingsModel::settings_timeout: Exception caught from m_scopeProxy->set_child_scopes_ordered(): %s", e.what());
+                qWarning("SettingsModel::settings_timeout: Exception caught from m_scopeProxy->set_child_scopes(): %s", e.what());
                 return;
             }
         }
