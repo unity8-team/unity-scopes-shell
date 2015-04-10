@@ -208,6 +208,7 @@ private:
     void setCurrentNavigationId(QString const& id);
     void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
+    void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
@@ -223,6 +224,7 @@ private:
     QString m_currentNavigationId;
     QString m_currentAltNavigationId;
     QVariantMap m_customizations;
+    std::unique_ptr<unity::scopes::Variant> m_queryUserData;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
