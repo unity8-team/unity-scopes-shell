@@ -33,6 +33,7 @@
 #include "previewmodel.h"
 #include "previewwidgetmodel.h"
 #include "settingsmodel.h"
+#include "rangeinputfilter.h"
 
 void UnityPlugin::registerTypes(const char *uri)
 {
@@ -48,6 +49,7 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterUncreatableType<unity::shell::scopes::PreviewModelInterface>(uri, 0, 2, "PreviewModel", "Can't create new PreviewModel in QML. Get them from PreviewStack instance.");
     qmlRegisterUncreatableType<scopes_ng::PreviewWidgetModel>(uri, 0, 2, "PreviewWidgetModel", "Can't create new PreviewWidgetModel in QML. Get them from PreviewModel instance.");
     qmlRegisterUncreatableType<unity::shell::scopes::PreviewStackInterface>(uri, 0, 2, "PreviewStack", "Can't create new PreviewStack in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::RangeInputFilterInterface>(uri, 0, 2, "RangeInputFilter", "Can't create new RangeInputFilter in QML. Get them from Filters instance.");
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)

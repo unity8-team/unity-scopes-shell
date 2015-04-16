@@ -20,12 +20,14 @@
 // Self
 #include "filters.h"
 #include "optionselectorfilter.h"
+#include "rangeinputfilter.h"
 #include <QSet>
 #include <QMap>
 #include <QQmlEngine>
 #include <QDebug>
 
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
 
 namespace scopes_ng
 {
@@ -107,6 +109,11 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     {
         unity::scopes::OptionSelectorFilter::SCPtr optfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::OptionSelectorFilter(optfilter, m_filterState, this));
+    }
+    else if (filter->filter_type() == "range_input")
+    {
+        unity::scopes::experimental::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter);
+        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::RangeInputFilter(rangefilter, m_filterState, this));
     }
 
     if (filterObj)
