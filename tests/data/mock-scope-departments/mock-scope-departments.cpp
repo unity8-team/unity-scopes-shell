@@ -170,11 +170,11 @@ public:
         return nullptr;
     }
 
-    virtual ChildScopeList child_scopes() const
+    virtual ChildScopeList find_child_scopes() const
     {
         ChildScopeList list;
-        list.push_back({"mock-scope-double-nav", true});
-        list.push_back({"mock-scope", true});
+        list.push_back({"mock-scope-double-nav", registry()->get_metadata("mock-scope-double-nav"), true});
+        list.push_back({"mock-scope", registry()->get_metadata("mock-scope"), true});
         return list;
     }
 };
