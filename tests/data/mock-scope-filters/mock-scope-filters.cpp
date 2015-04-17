@@ -18,6 +18,7 @@
 
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
@@ -28,6 +29,7 @@
 
 using namespace std;
 using namespace unity::scopes;
+using namespace unity::scopes::experimental;
 
 class MyQuery : public SearchQueryBase
 {
@@ -51,6 +53,8 @@ public:
         auto opt1 = filter1->add_option("o1", "Option1");
         filter1->add_option("o2", "Option2");
 
+        RangeInputFilter::SPtr filter2 = RangeInputFilter::create("f2", "start", "end", "unit");
+
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
         res1.set_uri("test:uri");
@@ -64,8 +68,19 @@ public:
             res1.set_title("result for: \"" + query().query_string() + "\"");
         }
 
+        bool has_start_val = filter2->has_start_value(query().filter_state());
+        bool has_end_val = filter2->has_end_value(query().filter_state());
+
+        if (has_start_val || has_end_val)
+        {
+            res1.set_title("result for range: " +
+                    (has_start_val ? std::to_string(filter2->start_value(query().filter_state())) : "***") + " - " +
+                    (has_end_val ? std::to_string(filter2->end_value(query().filter_state())) : "***"));
+        }
+
         Filters filters;
         filters.push_back(std::move(filter1));
+        filters.push_back(std::move(filter2));
 
         reply->push(filters, query().filter_state());
         reply->push(res1);

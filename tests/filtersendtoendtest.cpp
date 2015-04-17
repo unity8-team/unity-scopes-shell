@@ -84,7 +84,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 1);
+        QCOMPARE(filters->rowCount(), 2);
 
         auto idx = filters->index(0, 0);
         QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
@@ -122,7 +122,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 1);
+        QCOMPARE(filters->rowCount(), 2);
 
         auto idx = filters->index(0, 0);
         auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
