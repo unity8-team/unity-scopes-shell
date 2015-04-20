@@ -25,11 +25,13 @@
 #include "filters.h"
 #include "categories.h"
 #include "optionselectorfilter.h"
+#include "rangeinputfilter.h"
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
 
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
 
 using namespace unity::scopeharness;
 using namespace unity::scopeharness::registry;
@@ -136,17 +138,58 @@ private Q_SLOTS:
         // select option 1
         opts->setChecked(0, true);
         TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(filters, m_scope->filters());
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o1"));
 
         // select option 2
         opts->setChecked(1, true);
         TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(filters, m_scope->filters());
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o2"));
 
         // deselect option 2
         opts->setChecked(1, false);
         TestUtils::waitForSearchFinish(m_scope);
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for: \"\""));
+
+        QCOMPARE(filters, m_scope->filters());
+    }
+
+    void testRangeInputFilter()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 2);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+
+        QVERIFY(f2->startValue().isNull());
+        QVERIFY(f2->endValue().isNull());
+
+        f2->setStartValue(QVariant(111));
+        TestUtils::waitForSearchFinish(m_scope);
+
+        QCOMPARE(filters, m_scope->filters());
+
+        auto resultIdx = filters->index(0, 0);
+        QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - ***"));
+
+        QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
+        f2->setEndValue(QVariant(300.5f));
+        TestUtils::waitForSearchFinish(m_scope);
+
+        QCOMPARE(filters, m_scope->filters());
+        QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - 300.500000"));
     }
 
 private:

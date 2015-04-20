@@ -22,7 +22,6 @@
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
-#include <iostream>
 #include <sstream>
 
 #define EXPORT __attribute__ ((visibility ("default")))
@@ -61,10 +60,8 @@ public:
 
         auto selected = filter1->active_options(query().filter_state());
         if (selected.size() == 1) {
-            std::cerr << "Option is selected\n";
             res1.set_title("result for option " + (*selected.begin())->id());
         } else {
-            std::cerr << "Option is NOT selected\n";
             res1.set_title("result for: \"" + query().query_string() + "\"");
         }
 

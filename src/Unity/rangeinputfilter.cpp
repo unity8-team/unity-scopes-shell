@@ -109,7 +109,7 @@ bool RangeInputFilter::compare(QVariant const& v1, QVariant const& v2)
     }
 
     return (v1.type() == QVariant::Double && std::abs(v1.value<double>() - v2.value<double>()) < 0.00001f) ||
-            (v1.type() == QVariant::Int && v1.value<int>() != v2.value<int>()) ||
+            (v1.type() == QVariant::Int && v1.value<int>() == v2.value<int>()) ||
             (v1.isNull() && v2.isNull());
 }
 

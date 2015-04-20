@@ -90,6 +90,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 },
             // filter update function
             [this](int, const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
+                qDebug() << "Updating filter" << f2->filterId();
                 if (f2->filterId() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
                 {
                     return false;
@@ -134,6 +135,10 @@ unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity:
     if (typeid(*filter) == typeid(unity::scopes::OptionSelectorFilter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
+    }
+    if (typeid(*filter) == typeid(unity::scopes::experimental::RangeInputFilter))
+    {
+        return unity::shell::scopes::FiltersInterface::FilterType::RangeInputFilter;
     }
     return unity::shell::scopes::FiltersInterface::FilterType::Invalid;
 }
