@@ -75,6 +75,8 @@ scopes::Variant qVariantToScopeVariant(QVariant const& variant)
             return scopes::Variant(variant.toInt());
         case QMetaType::Double:
             return scopes::Variant(variant.toDouble());
+        case QMetaType::Float:
+            return scopes::Variant(variant.toDouble());
         case QMetaType::QString:
             return scopes::Variant(variant.toString().toStdString());
         case QMetaType::QVariantMap: {
