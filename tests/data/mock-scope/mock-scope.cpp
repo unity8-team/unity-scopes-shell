@@ -136,6 +136,15 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:query");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else if (query_ == "expandable-widget")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
@@ -314,6 +323,27 @@ public:
                 extra.add_attribute_value("text", Variant("got scope data"));
                 widgets.push_back(extra);
             }
+            reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("query") != std::string::npos)
+        {
+            PreviewWidget w1("actions", "actions");
+
+            VariantBuilder builder;
+            auto uri = CannedQuery("mock-scope").to_uri();
+            builder.add_tuple({
+                {"id", Variant("query")},
+                {"label", Variant("Search")},
+                {"uri", Variant(uri)}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"actions"});
+
+            reply->register_layout({l1});
+            PreviewWidgetList widgets({w1});
             reply->push(widgets);
             return;
         }

@@ -280,6 +280,32 @@ private Q_SLOTS:
         QVERIFY(bool(previewView2));
     }
 
+    void testPreviewActionRequestingSearch()
+    {
+        m_resultsView->setQuery("query");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        auto resView = previewView->widgetsInFirstColumn().at("actions").trigger("query",
+                previewView->widgetsInFirstColumn().at("actions").data().get_dict()["actions"].get_array()[0]);
+        // action with canned query uri should trigger a search
+        auto resultsView2 = dynamic_pointer_cast<shv::ResultsView>(resView);
+        QVERIFY(bool(resultsView2));
+        QCOMPARE(m_resultsView, resultsView2);
+    }
+
     void testPreviewReplacingPreview()
     {
         m_resultsView->setQuery("layout");

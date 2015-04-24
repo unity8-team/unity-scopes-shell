@@ -53,7 +53,7 @@ struct PreviewView::_Priv
         {
             previewWidgets.emplace_back(
                     preview::PreviewWidget(internal::PreviewWidgetArguments
-                    { previewWidgetModel, previewWidgetModel->index(row), previewModel, m_resultsView.lock(), previewView}));
+                    { previewWidgetModel, previewWidgetModel->index(row), previewModel, m_resultsView.lock(), previewView, m_previewStack}));
         }
 
         return preview::PreviewWidgetList(internal::PreviewWidgetListArguments{previewWidgets});

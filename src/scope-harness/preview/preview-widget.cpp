@@ -20,15 +20,18 @@
 #include <scope-harness/preview/preview-widget.h>
 #include <scope-harness/view/abstract-view.h>
 #include <scope-harness/view/preview-view.h>
+#include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
 
 #include <Unity/utils.h>
+#include <Unity/previewstack.h>
 
 #include <QDebug>
 #include <QSignalSpy>
+#include <memory>
 
 using namespace std;
 namespace ng = scopes_ng;
@@ -54,6 +57,8 @@ struct PreviewWidget::_Priv
     weak_ptr<view::ResultsView> m_resultsView;
 
     weak_ptr<view::PreviewView> m_previewView;
+
+    std::shared_ptr<unity::shell::scopes::PreviewStackInterface> m_previewStack;
 };
 
 PreviewWidget::PreviewWidget(const internal::PreviewWidgetArguments& arguments) :
@@ -64,6 +69,7 @@ PreviewWidget::PreviewWidget(const internal::PreviewWidgetArguments& arguments) 
     p->m_index = arguments.index;
     p->m_resultsView = arguments.resultsView;
     p->m_previewView = arguments.previewView;
+    p->m_previewStack = arguments.previewStack;
 }
 
 
@@ -85,6 +91,7 @@ PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
     p->m_index = other.p->m_index;
     p->m_resultsView = other.p->m_resultsView;
     p->m_previewView = other.p->m_previewView;
+    p->m_previewStack = other.p->m_previewStack;
     return *this;
 }
 
@@ -120,9 +127,19 @@ sc::Variant PreviewWidget::data() const
 
 view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Variant& v)
 {
+    auto ps = std::dynamic_pointer_cast<ng::PreviewStack>(p->m_previewStack);
+    TestUtils::throwIfNot(bool(ps), "No preview stack");
+    TestUtils::throwIfNot(bool(ps->associatedScope()), "Preview stack has no associated scope");
+    QSignalSpy showDashSpy(ps->associatedScope(), SIGNAL(showDash()));
+
     Q_EMIT p->m_previewModel->triggered(
             QString::fromStdString(id()), QString::fromStdString(name),
             ng::scopeVariantToQVariant(v).toMap());
+
+    if (!showDashSpy.empty())
+    {
+        return p->m_resultsView.lock();
+    }
 
     TestUtils::throwIfNot(p->m_previewModel->processingAction(), "Should be processing action");
     QSignalSpy spy(p->m_previewModel, SIGNAL(processingActionChanged()));

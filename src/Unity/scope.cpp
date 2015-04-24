@@ -300,7 +300,7 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
             Q_EMIT gotoScope(scopeId);
         } else {
             Q_EMIT showDash();
-       }
+        }
     } else {
         // create temp dash page
         auto meta_sptr = m_scopesInstance->getCachedMetadata(scopeId);
