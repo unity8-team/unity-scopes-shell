@@ -333,6 +333,10 @@ public:
             VariantBuilder builder;
             auto uri = CannedQuery("mock-scope").to_uri();
             builder.add_tuple({
+                {"id", Variant("nothing")},
+                {"label", Variant("Do nothing")}
+            });
+            builder.add_tuple({
                 {"id", Variant("query")},
                 {"label", Variant("Search")},
                 {"uri", Variant(uri)}

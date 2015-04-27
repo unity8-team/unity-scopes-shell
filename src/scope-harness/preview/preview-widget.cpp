@@ -132,9 +132,30 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
     TestUtils::throwIfNot(bool(ps->associatedScope()), "Preview stack has no associated scope");
     QSignalSpy showDashSpy(ps->associatedScope(), SIGNAL(showDash()));
 
+    QVariant widgetData;
+
+    if (type() == "actions" &&
+            v.which() == sc::Variant::Dict &&
+            v.get_dict()["actions"].which() == sc::Variant::Array)
+    {
+        for (auto el: v.get_dict()["actions"].get_array())
+        {
+            auto d = el.get_dict();
+            if (d["id"].get_string() == name)
+            {
+                widgetData = ng::scopeVariantToQVariant(el);
+                break;
+            }
+        }
+    }
+    else
+    {
+        widgetData = ng::scopeVariantToQVariant(v);
+    }
+
     Q_EMIT p->m_previewModel->triggered(
             QString::fromStdString(id()), QString::fromStdString(name),
-            ng::scopeVariantToQVariant(v).toMap());
+            widgetData.toMap());
 
     if (!showDashSpy.empty())
     {

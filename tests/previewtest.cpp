@@ -299,7 +299,7 @@ private Q_SLOTS:
         );
 
         auto resView = previewView->widgetsInFirstColumn().at("actions").trigger("query",
-                previewView->widgetsInFirstColumn().at("actions").data().get_dict()["actions"].get_array()[0]);
+                previewView->widgetsInFirstColumn().at("actions").data());
         // action with canned query uri should trigger a search
         auto resultsView2 = dynamic_pointer_cast<shv::ResultsView>(resView);
         QVERIFY(bool(resultsView2));
