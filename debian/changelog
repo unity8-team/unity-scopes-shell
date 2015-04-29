@@ -1,3 +1,16 @@
+unity-scopes-shell (0.5.4+15.04.20150429-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Pawel Stolowski ]
+  * Emit showDash() signal if canned query is executed for current
+    scope. (LP: #1335761)
+  * Reset user data set with previously executed canned query when shell
+    calls setSearchQuery() (i.e.user typed a new search). (LP: #1449928)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 29 Apr 2015 11:44:18 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150410.2-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]
