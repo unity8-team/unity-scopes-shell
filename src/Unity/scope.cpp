@@ -267,7 +267,7 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
     {
         m_queryUserData.reset(nullptr);
     }
-    setSearchQuery(QString::fromStdString(query.query_string()));
+    setSearchQueryString(QString::fromStdString(query.query_string()));
 }
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
@@ -1030,6 +1030,16 @@ QVariantMap Scope::customizations() const
 }
 
 void Scope::setSearchQuery(const QString& search_query)
+{
+    // this method is called by the shell when user types in search string,
+    // it needs to reset canned query user data.
+    if (m_searchQuery.isNull() || search_query != m_searchQuery) {
+        m_queryUserData.reset(nullptr);
+    }
+    setSearchQueryString(search_query);
+}
+
+void Scope::setSearchQueryString(const QString& search_query)
 {
     /* Checking for m_searchQuery.isNull() which returns true only when the string
        has never been set is necessary because when search_query is the empty
