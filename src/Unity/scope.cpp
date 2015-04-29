@@ -298,6 +298,8 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         }
         if (scope != this) {
             Q_EMIT gotoScope(scopeId);
+        } else {
+            Q_EMIT showDash();
         }
     } else {
         // create temp dash page

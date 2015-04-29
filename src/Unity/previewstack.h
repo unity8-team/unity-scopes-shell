@@ -61,6 +61,7 @@ public:
     void setWidgetColumnCount(int columnCount) override;
     int widgetColumnCount() const override;
     void setAssociatedScope(scopes_ng::Scope*, QUuid const&, QString const&);
+    scopes_ng::Scope* associatedScope() const;
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);
