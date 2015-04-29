@@ -84,6 +84,11 @@ void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& sess
     m_userAgent = userAgent;
 }
 
+scopes_ng::Scope* PreviewStack::associatedScope() const
+{
+    return m_associatedScope;
+}
+
 void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
 {
     m_previewedResult = result;
