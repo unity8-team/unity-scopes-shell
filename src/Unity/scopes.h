@@ -92,6 +92,7 @@ private Q_SLOTS:
     void dpkgFinished();
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
+    void scopeRegistryChanged();
 
 private:
     void createUserAgentString();
@@ -113,6 +114,7 @@ private:
 
     LocationService::Ptr m_locationService;
     QTimer m_startupQueryTimeout;
+    QTimer m_registryRefreshTimer;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
 
