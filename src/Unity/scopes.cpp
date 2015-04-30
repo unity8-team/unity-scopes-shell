@@ -566,7 +566,7 @@ void Scopes::scopeRegistryChanged()
 {
     qDebug() << "Refreshing scope metadata";
     refreshScopeMetadata();
-    Q_FOREACH(Scope::Ptr scope, m_scopes) {
+    Q_FOREACH(Scope* scope, m_scopes) {
         scope->invalidateResults();
     }
 }
