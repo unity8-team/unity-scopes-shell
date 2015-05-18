@@ -24,6 +24,7 @@
 #include <QSignalSpy>
 
 namespace ss = unity::shell::scopes;
+namespace sc = unity::scopes;
 
 using namespace std;
 
@@ -93,6 +94,10 @@ SettingsView::Option::List SettingsView::options() const
             if (i < static_cast<int64_t>(opt.displayValues.size()))
             {
                 opt.value = opt.displayValues[i];
+                if (opt.defaultValue.which() == sc::Variant::Int)
+                {
+                    opt.defaultValue = opt.displayValues[opt.defaultValue.get_int()];
+                }
             }
             else
             {
@@ -114,7 +119,7 @@ size_t SettingsView::count() const
     return p->m_scope->settings()->count();
 }
 
-void SettingsView::set(const std::string& option_id, const unity::scopes::Variant &value)
+void SettingsView::set(const std::string& option_id, const sc::Variant &value)
 {
     auto settings = p->m_scope->settings();
     for (auto i = 0; i<settings->count(); i++)
@@ -123,8 +128,32 @@ void SettingsView::set(const std::string& option_id, const unity::scopes::Varian
         auto const id = settings->data(index, ss::SettingsModelInterface::Roles::RoleSettingId).toString().toStdString();
         if (id == option_id)
         {
+            sc::Variant val = value;
+            if (settings->data(index, ss::SettingsModelInterface::Roles::RoleType).toString() == "list")
+            {
+                bool found = false;
+                auto props = settings->data(index, ss::SettingsModelInterface::Roles::RoleProperties).toMap();
+                if (props.contains("values"))
+                {
+                    auto str = val.get_string();
+                    auto const values = props["values"].toList();
+                    for (int i = 0; i<values.size(); i++)
+                    {
+                        if (values[i].toString().toStdString() == str)
+                        {
+                            val = i;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found)
+                {
+                    throw std::domain_error("Failed to update settings option with ID '" + option_id + "': no such value");
+                }
+            }
             QSignalSpy settingChangedSpy(settings, SIGNAL(settingsChanged()));
-            settings->setData(index, ng::scopeVariantToQVariant(value), ss::SettingsModelInterface::Roles::RoleValue);
+            settings->setData(index, ng::scopeVariantToQVariant(val), ss::SettingsModelInterface::Roles::RoleValue);
             TestUtils::throwIfNot(settingChangedSpy.wait(), "Settings update failed");
             return;
         }

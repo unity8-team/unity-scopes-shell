@@ -109,6 +109,7 @@ struct SettingsOptionMatcher::_Priv
     optional<string> m_displayName;
     optional<sc::Variant> m_defaultValue;
     optional<sc::Variant> m_value;
+    optional<sc::VariantArray> m_displayValues;
 };
 
 SettingsOptionMatcher::SettingsOptionMatcher(const std::string& optionId)
@@ -130,7 +131,7 @@ SettingsOptionMatcher& SettingsOptionMatcher::operator=(const SettingsOptionMatc
     p->m_displayName = other.p->m_displayName;
     p->m_defaultValue = other.p->m_defaultValue;
     p->m_value = other.p->m_value;
-    //TODO display values
+    p->m_displayValues = other.p->m_displayValues;
     return *this;
 }
 
@@ -163,6 +164,12 @@ SettingsOptionMatcher& SettingsOptionMatcher::value(const sc::Variant& value)
     return *this;
 }
 
+SettingsOptionMatcher& SettingsOptionMatcher::displayValues(const unity::scopes::VariantArray& values)
+{
+    p->m_displayValues = values;
+    return *this;
+}
+
 void SettingsOptionMatcher::match(MatchResult& matchResult, const view::SettingsView::Option& option) const
 {
     if (p->m_optionId != option.id)
@@ -188,6 +195,11 @@ void SettingsOptionMatcher::match(MatchResult& matchResult, const view::Settings
     if (p->m_value)
     {
         check(matchResult, option, "value", option.value, p->m_value.get());
+    }
+
+    if (p->m_displayValues)
+    {
+        check(matchResult, option, "displayValues", sc::Variant(option.displayValues), sc::Variant(p->m_displayValues.get()));
     }
 }
 
