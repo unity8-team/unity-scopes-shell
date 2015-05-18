@@ -22,16 +22,12 @@
 #include <memory>
 
 #include <scope-harness/matcher/match-result.h>
+#include <scope-harness/view/settings-view.h>
 
 namespace unity
 {
 namespace scopeharness
 {
-
-namespace view
-{
-class SettingsView;
-}
 
 namespace matcher
 {
@@ -52,8 +48,7 @@ public:
     SettingsMatcher& hasAtLeast(std::size_t minimum);
     SettingsMatcher& hasExactly(std::size_t amount);
 
-    MatchResult match(const view::SettingsView& settings) const;
-    void match(MatchResult& matchResult, const view::SettingsView& settings) const;
+    MatchResult match(const view::SettingsView::SPtr& settings) const;
 
 protected:
     struct _Priv;

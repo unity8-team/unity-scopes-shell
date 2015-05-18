@@ -89,8 +89,8 @@ SettingsView::Option::List SettingsView::options() const
             // for list type, the value is an index in the list;
             // make value keep actual option string.
             opt.optionType = OptionType::List;
-            long i = opt.value.get_int();
-            if (i < static_cast<long>(opt.displayValues.size()))
+            auto i = opt.value.get_int64_t();
+            if (i < static_cast<int64_t>(opt.displayValues.size()))
             {
                 opt.value = opt.displayValues[i];
             }
@@ -109,7 +109,7 @@ SettingsView::Option::List SettingsView::options() const
     return opts;
 }
 
-std::size_t SettingsView::count() const
+size_t SettingsView::count() const
 {
     return p->m_scope->settings()->count();
 }

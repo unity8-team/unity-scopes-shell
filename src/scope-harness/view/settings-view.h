@@ -48,7 +48,7 @@ public:
         Boolean
     };
 
-    struct Q_DECL_EXPORT Option
+    struct Option
     {
         typedef std::vector<Option> List;
 
@@ -79,16 +79,3 @@ protected:
 }
 }
 }
-
-/*
-   resultsView->settings()->set("foo", "Bar");
-
-   QVERIFY_MATCHRESULT(
-    SettingsMatcher().option(
-        SettingOptionMatcher("foo")
-            .displayName("Foo")
-            .optionType(SettingsMatcher::Type::String)
-            .defaultValue("def")
-        ).match(resultsView->settings())
-    );
-*/

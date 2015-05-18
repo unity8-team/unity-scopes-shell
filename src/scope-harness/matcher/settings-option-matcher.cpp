@@ -54,12 +54,41 @@ static void check(MatchResult& matchResult, const view::SettingsView::Option& op
     }
 }
 
+static double number_to_double(const sc::Variant v)
+{
+    auto tp = v.which();
+    if (tp == sc::Variant::Double)
+    {
+        return v.get_double();
+    }
+    if (tp == sc::Variant::Int)
+    {
+        return static_cast<double>(v.get_int());
+    }
+    if (tp == sc::Variant::Int64)
+    {
+        return static_cast<double>(v.get_int64_t());
+    }
+    throw std::logic_error("Variant doesn't have numeric value");
+}
+
 static void check(MatchResult& matchResult, const view::SettingsView::Option& option,
              const string& name, const sc::Variant& actualValue,
              const sc::Variant& expectedValue)
 {
     if (!(actualValue == expectedValue))
     {
+        try
+        {
+            if (std::abs(number_to_double(actualValue) - number_to_double(expectedValue)) < 0.0000000001f)
+            {
+                return;
+            }
+        }
+        catch (...)
+        {
+            // ignore - no match between variants possible, error out below
+        }
         auto actualValueString = actualValue.serialize_json();
         auto expectedValueString = expectedValue.serialize_json();
         // serialize_json includes a trailing carriage return
@@ -101,6 +130,7 @@ SettingsOptionMatcher& SettingsOptionMatcher::operator=(const SettingsOptionMatc
     p->m_displayName = other.p->m_displayName;
     p->m_defaultValue = other.p->m_defaultValue;
     p->m_value = other.p->m_value;
+    //TODO display values
     return *this;
 }
 

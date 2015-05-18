@@ -131,17 +131,17 @@ SettingsMatcher& SettingsMatcher::option(const SettingsOptionMatcher& optionMatc
     return *this;
 }
 
-MatchResult SettingsMatcher::match(const view::SettingsView& settings) const
+MatchResult SettingsMatcher::match(const view::SettingsView::SPtr& settings) const
 {
     MatchResult matchResult;
 
-    if (p->m_hasAtLeast && settings.count() < p->m_hasAtLeast)
+    if (p->m_hasAtLeast && settings->count() < p->m_hasAtLeast)
     {
         matchResult.failure(
                 "Expected at least " + to_string(p->m_hasAtLeast.get()) + " options");
     }
 
-    if (p->m_hasExactly && settings.count() != p->m_hasExactly)
+    if (p->m_hasExactly && settings->count() != p->m_hasExactly)
     {
         matchResult.failure(
                 "Expected exactly " + to_string(p->m_hasAtLeast.get()) + " options");
@@ -152,13 +152,13 @@ MatchResult SettingsMatcher::match(const view::SettingsView& settings) const
         switch (p->m_mode)
         {
             case Mode::all:
-                p->all(matchResult, settings);
+                p->all(matchResult, *settings);
                 break;
             case Mode::by_id:
-                p->byId(matchResult, settings);
+                p->byId(matchResult, *settings);
                 break;
             case Mode::starts_with:
-                p->startsWith(matchResult, settings);
+                p->startsWith(matchResult, *settings);
                 break;
         }
 
