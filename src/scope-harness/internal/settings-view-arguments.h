@@ -32,8 +32,6 @@ namespace internal
 
 struct SettingsViewArguments
 {
-//    unity::shell::scopes::SettingsModelInterface* settingsModel;
-    // hold scope shared ptr rather than settings model pointer, so that id doesn't disappear under our feet
     ng::Scope::Ptr m_scope;
 };
 

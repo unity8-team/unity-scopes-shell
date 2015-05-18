@@ -54,6 +54,9 @@ static void check(MatchResult& matchResult, const view::SettingsView::Option& op
     }
 }
 
+//
+// Convert scopes::Variant of type int/int64_t/double
+// to double.
 static double number_to_double(const sc::Variant v)
 {
     auto tp = v.which();
@@ -78,6 +81,8 @@ static void check(MatchResult& matchResult, const view::SettingsView::Option& op
 {
     if (!(actualValue == expectedValue))
     {
+        // the values may be actually the same but of different type; also doubles should be compared
+        // with some fuzziness.
         try
         {
             if (std::abs(number_to_double(actualValue) - number_to_double(expectedValue)) < 0.0000000001f)
