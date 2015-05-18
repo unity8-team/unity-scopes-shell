@@ -131,6 +131,7 @@ void SettingsView::set(const std::string& option_id, const sc::Variant &value)
             sc::Variant val = value;
             if (settings->data(index, ss::SettingsModelInterface::Roles::RoleType).toString() == "list")
             {
+                // list option expects index of current value, so iterate over list options to find the index.
                 bool found = false;
                 auto props = settings->data(index, ss::SettingsModelInterface::Roles::RoleProperties).toMap();
                 if (props.contains("values"))
