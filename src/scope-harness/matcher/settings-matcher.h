@@ -41,13 +41,19 @@ class SettingsOptionMatcher;
 class Q_DECL_EXPORT SettingsMatcher final
 {
 public:
+    enum class Mode
+    {
+        all, by_id, starts_with
+    };
+
     SettingsMatcher();
+    SettingsMatcher& mode(Mode mode);
     SettingsMatcher& option(const SettingsOptionMatcher& optionMatcher);
     SettingsMatcher& hasAtLeast(std::size_t minimum);
     SettingsMatcher& hasExactly(std::size_t amount);
 
-    MatchResult match(const view::SettingsView& settings);
-    void match(MatchResult& matchResult, const view::SettingsView& settings);
+    MatchResult match(const view::SettingsView& settings) const;
+    void match(MatchResult& matchResult, const view::SettingsView& settings) const;
 
 protected:
     struct _Priv;

@@ -127,7 +127,7 @@ public:
 
     results::Department browseAltDepartment(const std::string& id = std::string());
 
-    SettingsView settings() const;
+    SettingsView::SPtr settings() const;
 
 protected:
     friend ScopeHarness;

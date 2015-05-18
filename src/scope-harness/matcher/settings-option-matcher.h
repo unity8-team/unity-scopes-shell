@@ -47,7 +47,9 @@ public:
     SettingsOptionMatcher& defaultValue(const unity::scopes::Variant& value);
     SettingsOptionMatcher& value(const unity::scopes::Variant& value);
 
-    void match(MatchResult& matchResult, const view::SettingsView::Option& option);
+    std::string& getId() const;
+
+    void match(MatchResult& matchResult, const view::SettingsView::Option& option) const;
 
 protected:
     struct _Priv;

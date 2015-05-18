@@ -26,6 +26,12 @@ namespace unity
 {
 namespace scopeharness
 {
+
+namespace internal
+{
+struct SettingsViewArguments;
+}
+
 namespace view
 {
 
@@ -36,22 +42,28 @@ public:
 
     enum OptionType
     {
-        String
+        String,
+        Number,
+        List,
+        Boolean
     };
 
     struct Q_DECL_EXPORT Option
     {
+        typedef std::vector<Option> List;
+
         std::string id;
         std::string displayName;
-        unity::scopes::Variant defaultValue;
         unity::scopes::Variant value;
+        unity::scopes::Variant defaultValue;
+        unity::scopes::VariantArray displayValues;
+        OptionType optionType;
     };
 
     SettingsView(const SettingsView&) = delete;
-    SettingsView(SettingsView&&) = delete;
     SettingsView& operator=(const SettingsView&) = delete;
-    SettingsView& operator=(SettingsView&&) = delete;
 
+    Option::List options() const;
     std::size_t count() const;
 
     void set(const std::string& option_id, const unity::scopes::Variant &value);
@@ -59,6 +71,10 @@ public:
 protected:
     struct _Priv;
     std::shared_ptr<_Priv> p;
+
+    SettingsView(const internal::SettingsViewArguments& args);
+
+    friend class ResultsView;
 };
 }
 }
