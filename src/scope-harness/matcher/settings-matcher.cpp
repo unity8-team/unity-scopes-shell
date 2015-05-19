@@ -144,7 +144,7 @@ MatchResult SettingsMatcher::match(const view::SettingsView::SPtr& settings) con
     if (p->m_hasExactly && settings->count() != p->m_hasExactly)
     {
         matchResult.failure(
-                "Expected exactly " + to_string(p->m_hasAtLeast.get()) + " options");
+                "Expected exactly " + to_string(p->m_hasExactly.get()) + " options");
     }
 
     if (!p->m_options.empty())

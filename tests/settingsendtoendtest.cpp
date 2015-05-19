@@ -26,6 +26,14 @@
 #include <scope-harness/view/settings-view.h>
 #include <scope-harness/test-utils.h>
 
+#define QVERIFY_MATCHRESULT_FAILS(statement, errormsg) \
+do {\
+    auto result = (statement);\
+    QVERIFY(!result.success());\
+    QCOMPARE(QString::fromStdString(result.concat_failures().c_str()), QString::fromStdString(errormsg));\
+} while (0)
+
+
 namespace sh = unity::scopeharness;
 namespace shm = unity::scopeharness::matcher;
 namespace shr = unity::scopeharness::registry;
@@ -137,22 +145,152 @@ private Q_SLOTS:
                 );
     }
 
-    void verifySettingsChangedSignal()
+    void testBasicFailures()
     {
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope");
 
         auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
+        QVERIFY_MATCHRESULT_FAILS(
+                shm::SettingsMatcher()
+                    .hasAtLeast(6)
+                    .match(settings),
+                    "Failed expectations:\nExpected at least 6 options\n");
+
+        QVERIFY_MATCHRESULT_FAILS(
+                shm::SettingsMatcher()
+                    .hasExactly(2)
+                    .match(settings),
+                    "Failed expectations:\nExpected exactly 2 options\n");
+    }
+
+    void testOptionLookupFailures()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+
+        auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
+
+        QVERIFY_MATCHRESULT_FAILS(
+                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
+                    .option(
+                        shm::SettingsOptionMatcher("xyz")
+                    )
+                    .match(settings),
+                    "Failed expectations:\nSettings option with ID xyz could not be found\n"
+       );
+    }
+
+    void testTypeCheckFailures()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+
+        auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
+        QVERIFY_MATCHRESULT_FAILS(
+                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
+                    .option(
+                        shm::SettingsOptionMatcher("age")
+                            .optionType(shv::SettingsView::OptionType::String)
+                    )
+                    .option(
+                        shm::SettingsOptionMatcher("distanceUnit")
+                            .optionType(shv::SettingsView::OptionType::Boolean)
+                    )
+                    .option(
+                        shm::SettingsOptionMatcher("location")
+                            .optionType(shv::SettingsView::OptionType::Number)
+                    )
+                    .option(
+                        shm::SettingsOptionMatcher("color")
+                            .optionType(shv::SettingsView::OptionType::List)
+                    )
+                    .match(settings),
+                    "Failed expectations:\nOption ID age is of type number, expected string\nOption ID distanceUnit is of type list, expected boolean\nOption ID"
+                    " location is of type string, expected number\nOption ID color is of type string, expected list\n"
+        );
+    }
+
+    void testValueCheckFailures()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+
+        auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
+
+        QVERIFY_MATCHRESULT_FAILS(
+                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
+                    .option(
+                        shm::SettingsOptionMatcher("age")
+                            .value(sc::Variant("xyz"))
+                    )
+                    .option(
+                        shm::SettingsOptionMatcher("distanceUnit")
+                        .displayValues(sc::VariantArray {sc::Variant("Kilometers"), sc::Variant("Parsecs")})
+                    )
+                    .match(settings),
+                    "Failed expectations:\nOption with ID 'age' has 'value' == '23.0' but expected "
+                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '[\"Kilometers\",\"Miles\"]' but expected '[\"Kilometers\",\"Parsecs\"]'\n"
+       );
+    }
+
+    void testValueSetFailure()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+
+        auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
+        bool exception_thrown = false;
+        try
+        {
+            settings->set("distanceUnit", sc::Variant("foo"));
+        }
+        catch (const std::domain_error &e)
+        {
+            exception_thrown = true;
+            QCOMPARE(e.what(), "Failed to update settings option with ID 'distanceUnit': no such value 'foo'");
+        }
+        QVERIFY(exception_thrown);
+    }
+
+    void verifySettingsChange()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+
+        auto settings = resultsView->settings();
+        QVERIFY(settings.get());
+
         settings->set("location", sc::Variant("Barcelona"));
 
         QVERIFY_MATCHRESULT(
-                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::starts_with)
+                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
                     .option(
                         shm::SettingsOptionMatcher("location")
-                            .displayName("Location")
-                            .optionType(shv::SettingsView::OptionType::String)
                             .value(sc::Variant("Barcelona"))
                             .defaultValue(sc::Variant("London"))
+                        )
+                    .match(settings)
+                );
+
+        settings->set("distanceUnit", sc::Variant("Kilometers"));
+
+        QVERIFY_MATCHRESULT(
+                shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
+                    .option(
+                        shm::SettingsOptionMatcher("distanceUnit")
+                            .value(sc::Variant("Kilometers"))
+                            .defaultValue(sc::Variant("Miles"))
                         )
                     .match(settings)
                 );
