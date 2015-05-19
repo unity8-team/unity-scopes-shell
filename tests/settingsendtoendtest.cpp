@@ -250,17 +250,47 @@ private Q_SLOTS:
         auto settings = resultsView->settings();
         QVERIFY(settings.get());
 
-        bool exception_thrown = false;
-        try
         {
-            settings->set("distanceUnit", sc::Variant("foo"));
+            bool exception_thrown = false;
+            try
+            {
+                settings->set("distanceUnit", sc::Variant("foo"));
+            }
+            catch (const std::domain_error &e)
+            {
+                exception_thrown = true;
+                QCOMPARE(e.what(), "Failed to update settings option with ID 'distanceUnit': no such value 'foo'");
+            }
+            QVERIFY(exception_thrown);
         }
-        catch (const std::domain_error &e)
+
         {
-            exception_thrown = true;
-            QCOMPARE(e.what(), "Failed to update settings option with ID 'distanceUnit': no such value 'foo'");
+            bool exception_thrown = false;
+            try
+            {
+                settings->set("distanceUnit", sc::Variant(111));
+            }
+            catch (const std::domain_error &e)
+            {
+                exception_thrown = true;
+                QCOMPARE(e.what(), "Settings updated failed for option with ID 'distanceUnit': only string values are allowed");
+            }
+            QVERIFY(exception_thrown);
         }
-        QVERIFY(exception_thrown);
+
+        {
+            bool exception_thrown = false;
+            try
+            {
+                settings->set("xyz", sc::Variant("abc"));
+            }
+            catch (const std::domain_error &e)
+            {
+                exception_thrown = true;
+                QCOMPARE(e.what(), "Setting update failed. No such option: 'xyz'");
+            }
+            QVERIFY(exception_thrown);
+        }
     }
 
     void verifySettingsChange()
