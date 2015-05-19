@@ -126,8 +126,10 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::toString() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
+ (c++|arch=armhf i386)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0replaceme
+ (c++|arch=armhf i386)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::match(std::shared_ptr<unity::scopeharness::view::SettingsView> const&) const@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::mode(unity::scopeharness::matcher::SettingsMatcher::Mode)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::option(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0replaceme
