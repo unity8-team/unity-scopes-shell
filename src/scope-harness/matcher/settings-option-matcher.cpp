@@ -33,9 +33,18 @@ namespace matcher
 
 static string to_string(view::SettingsView::OptionType t)
 {
-    if (t == view::SettingsView::OptionType::String)
+    switch (t)
     {
-        return "string";
+        case view::SettingsView::OptionType::String:
+            return "string";
+        case view::SettingsView::OptionType::Number:
+            return "number";
+        case view::SettingsView::OptionType::List:
+            return "list";
+        case view::SettingsView::OptionType::Boolean:
+            return "boolean";
+        default:
+            break;
     }
 
     throw std::logic_error("Unexpected settings option type");
