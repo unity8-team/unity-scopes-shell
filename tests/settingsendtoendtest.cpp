@@ -69,19 +69,21 @@ private Q_SLOTS:
 
         QVERIFY_MATCHRESULT(
                 shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::by_id)
-                .option(
-                        shm::SettingsOptionMatcher("distanceUnit")
-                            .displayName("Distance Unit")
-                            .optionType(shv::SettingsView::OptionType::List)
-                            .displayValues(sc::VariantArray {sc::Variant("Kilometers"), sc::Variant("Miles")})
-                            .value(sc::Variant("Miles"))
-                            .defaultValue(sc::Variant("Miles"))
-                    )
-                    .match(settings)
+                    .hasAtLeast(1)
+                    .option(
+                            shm::SettingsOptionMatcher("distanceUnit")
+                                .displayName("Distance Unit")
+                                .optionType(shv::SettingsView::OptionType::List)
+                                .displayValues(sc::VariantArray {sc::Variant("Kilometers"), sc::Variant("Miles")})
+                                .value(sc::Variant("Miles"))
+                                .defaultValue(sc::Variant("Miles"))
+                        )
+                        .match(settings)
                 );
 
         QVERIFY_MATCHRESULT(
                 shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::starts_with)
+                    .hasAtLeast(1)
                     .option(
                         shm::SettingsOptionMatcher("location")
                             .displayName("Location")
@@ -94,6 +96,7 @@ private Q_SLOTS:
 
         QVERIFY_MATCHRESULT(
                 shm::SettingsMatcher().mode(shm::SettingsMatcher::Mode::all)
+                    .hasExactly(5)
                     .option(
                         shm::SettingsOptionMatcher("location")
                             .displayName("Location")
