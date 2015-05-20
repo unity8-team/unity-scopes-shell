@@ -35,6 +35,8 @@ void export_matchers();
 void export_preview_matchers();
 void export_department();
 void export_scope_uri();
+void export_settings_view();
+void export_settings_matchers();
 
 BOOST_PYTHON_MODULE(_scope_harness)
 {
@@ -55,4 +57,6 @@ BOOST_PYTHON_MODULE(_scope_harness)
     export_result();
     export_matchers();
     export_preview_matchers();
+    export_settings_view();
+    export_settings_matchers();
 }
