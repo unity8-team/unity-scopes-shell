@@ -19,22 +19,18 @@
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <unity/scopes/Variant.h>
-#include <scope-harness/results/category.h>
-#include <scope-harness/results/department.h>
-#include <scope-harness/results/child-department.h>
 #include <scope-harness/matcher/match-result.h>
 #include <scope-harness/matcher/settings-matcher.h>
 #include <scope-harness/matcher/settings-option-matcher.h>
 
 using namespace boost::python;
 namespace shm = unity::scopeharness::matcher;
-namespace shr = unity::scopeharness::results;
 
-static shm::MatchResult display_values_wrapper(shm::SettingsOptionMatcher* settingsOptionMatcher, const object& obj)
+static shm::SettingsOptionMatcher& display_values_wrapper(shm::SettingsOptionMatcher* settingsOptionMatcher, const object& obj)
 {
     // convert python list to variant array
-    stl_input_iterator<shr::Category> begin(obj), end;
-    unity::scopes::VariantArray cats(begin, end);
+    stl_input_iterator<unity::scopes::Variant> begin(obj), end;
+    unity::scopes::VariantArray values(begin, end);
     return settingsOptionMatcher->displayValues(values);
 }
 
@@ -59,10 +55,10 @@ void export_settings_matchers()
     class_<shm::SettingsOptionMatcher>("SettingsOptionMatcher",
                                        "",
                                        init<const std::string&>())
-        .def("display_name", &shm::SettingsMatcher::displayName, return_internal_reference<1>())
-        .def("option_type", &shm::SettingsMatcher::optionType, return_internal_reference<1>())
-        .def("default_value", &shm::SettingsMatcher::defaultValue, return_internal_reference<1>())
-        .def("value", &shm::SettingsMatcher::value, return_internal_reference<1>())
+        .def("display_name", &shm::SettingsOptionMatcher::displayName, return_internal_reference<1>())
+        .def("option_type", &shm::SettingsOptionMatcher::optionType, return_internal_reference<1>())
+        .def("default_value", &shm::SettingsOptionMatcher::defaultValue, return_internal_reference<1>())
+        .def("value", &shm::SettingsOptionMatcher::value, return_internal_reference<1>())
         .def("display_values", display_values_wrapper, return_internal_reference<1>())
         ;
 }
