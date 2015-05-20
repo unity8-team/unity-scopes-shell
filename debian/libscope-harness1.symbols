@@ -12,6 +12,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=armhf i386)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=armhf i386)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::match(std::vector<unity::scopeharness::results::Category, std::allocator<unity::scopeharness::results::Category> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::mode(unity::scopeharness::matcher::CategoryListMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
