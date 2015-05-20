@@ -48,7 +48,7 @@ public:
     SettingsOptionMatcher& value(const unity::scopes::Variant& value);
     SettingsOptionMatcher& displayValues(const unity::scopes::VariantArray& values);
 
-    std::string& getId() const;
+    std::string getId() const;
 
     void match(MatchResult& matchResult, const view::SettingsView::Option& option) const;
 

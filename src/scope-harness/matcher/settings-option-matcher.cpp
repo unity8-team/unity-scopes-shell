@@ -136,7 +136,7 @@ SettingsOptionMatcher& SettingsOptionMatcher::operator=(const SettingsOptionMatc
     return *this;
 }
 
-std::string& SettingsOptionMatcher::getId() const
+std::string SettingsOptionMatcher::getId() const
 {
     return p->m_optionId;
 }
