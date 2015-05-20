@@ -50,19 +50,6 @@ static string to_string(view::SettingsView::OptionType t)
     throw std::logic_error("Unexpected settings option type");
 }
 
-static void check(MatchResult& matchResult, const view::SettingsView::Option& option,
-             const string& name, const string& actualValue,
-             const string& expectedValue)
-{
-    if (actualValue != expectedValue)
-    {
-        matchResult.failure(
-                "Option with ID '" + option.id + "' has '" + name
-                + "' == '" + actualValue + "' but expected '"
-                + expectedValue + "'");
-    }
-}
-
 //
 // Convert scopes::Variant of type int/int64_t/double
 // to double.
@@ -198,7 +185,7 @@ void SettingsOptionMatcher::match(MatchResult& matchResult, const view::Settings
 
     if (p->m_displayName)
     {
-        check(matchResult, option, "displayName", option.displayName, p->m_displayName.get());
+        check(matchResult, option, "displayName", sc::Variant(option.displayName), sc::Variant(p->m_displayName.get()));
     }
 
     if (p->m_defaultValue)
