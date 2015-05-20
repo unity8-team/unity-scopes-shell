@@ -55,6 +55,7 @@ void export_settings_matchers()
     class_<shm::SettingsOptionMatcher>("SettingsOptionMatcher",
                                        "",
                                        init<const std::string&>())
+        .add_property("id", &shm::SettingsOptionMatcher::getId)
         .def("display_name", &shm::SettingsOptionMatcher::displayName, return_internal_reference<1>())
         .def("option_type", &shm::SettingsOptionMatcher::optionType, return_internal_reference<1>())
         .def("default_value", &shm::SettingsOptionMatcher::defaultValue, return_internal_reference<1>())

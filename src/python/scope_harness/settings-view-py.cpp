@@ -48,6 +48,8 @@ static object optionDisplayValuesWrapper(shv::SettingsView::Option* opt)
 
 void export_settings_view()
 {
+    boost::python::register_ptr_to_python<std::shared_ptr<shv::SettingsView>>();
+
     enum_<shv::SettingsView::OptionType>("SettingsOptionType")
         .value("STRING", shv::SettingsView::OptionType::String)
         .value("NUMBER", shv::SettingsView::OptionType::Number)
@@ -69,5 +71,6 @@ void export_settings_view()
         .add_property("count", &shv::SettingsView::count)
         .add_property("options", settingsViewOptionsWrapper)
         .def("set", &shv::SettingsView::set, "Set value of an option")
+        .def("__len__", &shv::SettingsView::count)
         ;
 }
