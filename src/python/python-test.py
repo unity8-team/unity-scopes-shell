@@ -266,6 +266,20 @@ class SettingsTest(ScopeHarnessTestCase):
                     )
                 .match(settings))
 
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.STARTS_WITH)
+                    .has_at_least(1)
+                    .option(
+                        SettingsOptionMatcher("location")
+                            .display_name("Location")
+                            .option_type(SettingsOptionType.STRING)
+                            .value("London")
+                            .default_value("London")
+                        )
+                    .match(settings)
+                )
+
     def test_settings_change(self):
         self.view.active_scope = 'mock-scope'
         settings = self.view.settings
