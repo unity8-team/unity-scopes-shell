@@ -43,7 +43,7 @@ void export_settings_matchers()
         ;
 
     class_<shm::SettingsMatcher>("SettingsMatcher",
-                                 "",
+                                 "Matcher object that holds constraints for matchins settings (SettingsView) object.",
                                  init<>())
         .def("mode", &shm::SettingsMatcher::mode, return_internal_reference<1>())
         .def("option", &shm::SettingsMatcher::option, return_internal_reference<1>())
@@ -53,7 +53,7 @@ void export_settings_matchers()
         ;
 
     class_<shm::SettingsOptionMatcher>("SettingsOptionMatcher",
-                                       "",
+                                       "Matcher object that holds constraints for matching a settings option.",
                                        init<const std::string&>())
         .add_property("id", &shm::SettingsOptionMatcher::getId)
         .def("display_name", &shm::SettingsOptionMatcher::displayName, return_internal_reference<1>())
