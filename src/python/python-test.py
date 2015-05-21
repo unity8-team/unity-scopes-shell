@@ -280,6 +280,25 @@ class SettingsTest(ScopeHarnessTestCase):
                     .match(settings)
                 )
 
+    def test_option(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+        self.assertEqual(len(settings), 5)
+
+        option = settings.options[0]
+        self.assertEqual(option.id, 'location')
+        self.assertEqual(option.option_type, SettingsOptionType.STRING)
+        self.assertEqual(option.display_name, 'Location')
+        self.assertEqual(option.value, 'London')
+        self.assertEqual(option.default_value, 'London')
+
+        option = settings.options[1]
+        self.assertEqual(option.display_values, ["Kilometers", "Miles"])
+
     def test_settings_change(self):
         self.view.active_scope = 'mock-scope'
         settings = self.view.settings

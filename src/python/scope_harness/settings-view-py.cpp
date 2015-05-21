@@ -34,6 +34,16 @@ static object settingsViewOptionsWrapper(shv::SettingsView* view)
     return pylist;
 }
 
+static object optionValueWwrapper(shv::SettingsView::Option* opt)
+{
+    return object(opt->value);
+}
+
+static object optionDefaultValueWwrapper(shv::SettingsView::Option* opt)
+{
+    return object(opt->defaultValue);
+}
+
 // wrapper function to create python list from a vector of variants
 // held by Option::displayValues.
 static object optionDisplayValuesWrapper(shv::SettingsView::Option* opt)
@@ -60,8 +70,8 @@ void export_settings_view()
     class_<shv::SettingsView::Option>("SettingsOption", "This is a class holding properies of an option", no_init)
         .add_property("id", &shv::SettingsView::Option::id)
         .add_property("display_name", &shv::SettingsView::Option::displayName)
-        .add_property("value", &shv::SettingsView::Option::value)
-        .add_property("default_value", &shv::SettingsView::Option::defaultValue)
+        .add_property("value", optionValueWwrapper)
+        .add_property("default_value", optionDefaultValueWwrapper)
         .add_property("display_values", optionDisplayValuesWrapper)
         .add_property("option_type", &shv::SettingsView::Option::optionType);
 
