@@ -267,9 +267,10 @@ texinfo_documents = [
 #if return_annotation != None and '_scope_harness' in return_annotation:
 #       return_annotation = return_annotation.replace('_scope_harness', '')
 
-#def fixSignature(app, what, name, obj, options, signature, return_annotation):
-#if signature != None and '_scope_harness' in signature:
-#       signature = signature.replace('_scope_harness', '')
+def fixSignature(app, what, name, obj, options, signature, return_annotation):
+    if signature != None:
+        signature = "xyz"
+    return (signature, 'aa'+return_annotation)
 #   if return_annotation != None and '_scope_harness' in return_annotation:
 #       return_annotation = return_annotation.replace('_scope_harness', '')
 
