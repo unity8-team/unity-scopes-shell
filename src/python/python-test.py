@@ -316,6 +316,19 @@ class SettingsTest(ScopeHarnessTestCase):
                     .match(settings)
                 )
 
+        settings.set("distanceUnit", "Kilometers");
+
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                    .option(
+                        SettingsOptionMatcher("distanceUnit")
+                            .value("Kilometers")
+                            .default_value("Miles")
+                        )
+                    .match(settings)
+                )
+
     def test_basic_failures(self):
         """
             Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
