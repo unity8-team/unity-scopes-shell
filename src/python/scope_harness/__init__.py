@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-The scope_harness module provides python bindings for scope-harness C++ library.
+""" Scope harness Python bindings.
+
 It makes testing scopes easy with classes that help writing high-level
 assertions about expected results, categories etc.
 
@@ -62,6 +62,7 @@ class MyScopeTest(ScopeHarnessTestCase):
                       .title('Result 2')
             ))
             .match(self.view.categories))
+
 """
 
 # FIXME: it would be really nice to include the list of classes from _scope_harness in the scope of the above docstring,
