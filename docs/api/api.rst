@@ -95,3 +95,6 @@ API
 
 .. autoclass:: SettingsView
     :members:
+
+.. automodule:: scope_harness.testing
+    :members:
