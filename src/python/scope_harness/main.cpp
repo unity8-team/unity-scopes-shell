@@ -40,6 +40,8 @@ void export_settings_matchers();
 
 BOOST_PYTHON_MODULE(_scope_harness)
 {
+    scope().attr("__name__") = "scope_harness";
+
     // enable custom docstring, disable auto-generated docstring including c++ signatures
     docstring_options local_docstring_options(true, true, false);
 
