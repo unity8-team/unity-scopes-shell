@@ -125,8 +125,7 @@ Note the following key features of scope harness shown in the above test case:
 
 More on category and results matching modes
 ===========================================
-When testing whether the list of categories returned by your scope matches expectations, you may verify the following characteristics of the list of categories
-via :class:`~scope_harness.CategoryListMatcher` and :class:`~scope_harness.CategoryMatcher`:
+When testing whether the list of categories returned by your scope matches expectations, you may verify the following characteristics of the list of categories via :class:`~scope_harness.CategoryListMatcher` and :class:`~scope_harness.CategoryMatcher`:
     * whether the list contains at least N categories, or exactly N categories: use :meth:`~scope_harness.CategoryListMatcher.has_at_least` or :meth:`~scope_harness.CategoryListMatcher.has_exactly`, respectively.
     * whether the list contains specific categories (some or all of them, and in the expected order):
         * to only verify if the list of categories contains specific categories (regardless of their position on the list),
@@ -139,11 +138,15 @@ via :class:`~scope_harness.CategoryListMatcher` and :class:`~scope_harness.Categ
 When testing results withing a categories specified via :class:`~scope_harness.CategoryMatcher`, the following checks can be made:
     * whether the category has at least N results: use :meth:`~scope_harness.CategoryMatcher.has_at_least`.
     * whether the category contains specific results (some or all of them, in the specific order or disregarding the order):
-        * TODO
+        * to verify if the category contains specific results regardless of their position, set the matching :meth:`~scope_harness.CategoryMatcherMode` to
+          ``CategoryMatcherMode.BY_URI`` and pass expected results via :class:`~scope_harness.ResultMatcher` objects to :meth:`~scope_harness.CategoryMatcher.result`.
+        * to verify if the specific results appear first in the category, but the category possibly has more results which you don't care about, set the matching :meth:`~scope_harness.CategoryMatcherMode` to
+          ``CategoryMatcherMode.STARTS_WITH`` and pass expected results as explained earlier.
+        * to verify if the category contains all the expected results in the given order, set the matching :meth:`~scope_harness.CategoryMatcherMode` to
+          ``CategoryMatcherMode.ALL`` and pass all results as explained above. This is the default matching mode if any :class:`~scope_harness.ResultMatcher` matchers are set for a category, so setting the mode can be omitted.
 
-Here is an example of test case which checks if there are at least five categories returned, and then checks four of them by ID (the order of the categories is not
-verified). For the four expected categories the test verifies that they have at least one result each, and for the categories ``top-apps`` and
-``our-favorite-games`` specific results are tested:
+
+Here is an example of test case which checks if there are at least five categories returned, and then checks four of them by ID (the order of the categories is not verified). For the four expected categories the test verifies that they have at least one result each, and for the categories ``top-apps`` and ``our-favorite-games`` specific results are tested:
         * the ``top-apps`` category needs to have a at least one result, and the first result of that category is matched against the provided :class:`~scope_harness.ResultMatcher`.
         * the ``our-favorite-games`` category needs to have at least one result, and the result specified by the the provided :class:`~scope_harness.ResultMatcher`
           needs to appear somewhere in that category, but it doesn't need to be the first one thanks to ``CategoryMatcherMode.BY_URI``.
@@ -178,6 +181,72 @@ verified). For the four expected categories the test verifies that they have at 
 
 Testing departments
 ===================
+
+Departments can be "browsed" by calling :meth:`~scope_harness.ResultsView.browse_department` method; changing the department invokes a new search and the method
+returns the new list of departments. The list of departments can be tested using :class:`~scope_harness.DepartmentMatcher` and :class:`~scope_harness.ChildDepartmentMatcher` matchers.
+The ``DepartmentMatcher`` support three modes of matching (``DepartmentMatcherMode.ALL``, ``DepartmentMatcherMode.STARTS_WITH`` and ``DepartmentMatcherMode.BY_ID``) which have the same semantics as with ``CategoryMatcher`` or ``CategoryListMatcher`` described above.
+
+Here is an example of two departments tests: the first test case checks the starting list of departments (the surfacing mode), the second case simulates browsing of ``games`` sub-department, verifies it has no further sub-departments and also verifies the returned categories.
+
+Note: the empty department ID corresponds to the root department.
+
+.. code-block:: python
+
+    def test_surfacing_departments(self):
+        self.view.search_query = ''
+        departments = self.view.browse_department('')
+        self.assertMatchResult(
+                DepartmentMatcher()
+                    .mode(DepartmentMatcherMode.STARTS_WITH)
+                        .id('')
+                        .label('All')
+                        .all_label('')
+                        .parent_id('')
+                        .parent_label('')
+                        .is_root(True)
+                        .is_hidden(False)
+                        .child(ChildDepartmentMatcher('business'))
+                        .child(ChildDepartmentMatcher('communication'))
+                        .child(ChildDepartmentMatcher('education'))
+                        .child(ChildDepartmentMatcher('entertainment'))
+                        .child(ChildDepartmentMatcher('finance'))
+                        .child(ChildDepartmentMatcher('games'))
+                        .child(ChildDepartmentMatcher('graphics'))
+                        .child(ChildDepartmentMatcher('accessories'))
+                        .child(ChildDepartmentMatcher('weather'))
+                        .match(departments))
+
+    def test_department_browsing(self):
+        self.view.search_query = ''
+        departments = self.view.browse_department('games')
+        self.assertMatchResult(DepartmentMatcher()
+            .has_exactly(0)
+            .mode(DepartmentMatcherMode.STARTS_WITH)
+            .label('Games')
+            .all_label('')
+            .parent_id('')
+            .parent_label('All')
+            .is_root(False)
+            .is_hidden(False)
+            .match(departments))
+
+        self.assertMatchResult(CategoryListMatcher()
+            .has_exactly(3)
+            .mode(CategoryListMatcherMode.BY_ID)
+            .category(CategoryMatcher("top-games")
+                      .has_at_least(1)
+            )
+            .category(CategoryMatcher("all-scopes")
+                      .has_at_least(1)
+            )
+            .category(CategoryMatcher("all-apps")
+                      .has_at_least(1)
+            )
+            .match(self.view.categories))
+
+Testing previews
+================
+
 
 Using scope settings
 ====================

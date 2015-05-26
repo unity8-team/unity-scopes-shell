@@ -1,99 +1,94 @@
 API
 ===
-.. automodule:: scope_harness
+
+.. autoclass:: scope_harness.Category
     :members:
 
-.. autoclass:: AbstractView
+.. autoclass:: scope_harness.CategoryListMatcher
     :members:
 
-.. autoclass:: Category
+.. autoclass:: scope_harness.CategoryListMatcherMode
     :members:
 
-.. autoclass:: CategoryListMatcher
+.. autoclass:: scope_harness.CategoryMatcher
     :members:
 
-.. autoclass:: CategoryListMatcherMode
+.. autoclass:: scope_harness.CategoryMatcherMode
     :members:
 
-.. autoclass:: CategoryMatcher
+.. autoclass:: scope_harness.ChildDepartment
     :members:
 
-.. autoclass:: CategoryMatcherMode
+.. autoclass:: scope_harness.ChildDepartmentMatcher
     :members:
 
-.. autoclass:: ChildDepartment
+.. autoclass:: scope_harness.CustomRegistry
     :members:
 
-.. autoclass:: ChildDepartmentMatcher
+.. autoclass:: scope_harness.Department
     :members:
 
-.. autoclass:: CustomRegistry
+.. autoclass:: scope_harness.DepartmentMatcher
     :members:
 
-.. autoclass:: Department
+.. autoclass:: scope_harness.DepartmentMatcherMode
     :members:
 
-.. autoclass:: DepartmentMatcher
+.. autoclass:: scope_harness.MatchResult
     :members:
 
-.. autoclass:: DepartmentMatcherMode
+.. autoclass:: scope_harness.Parameters
     :members:
 
-.. autoclass:: MatchResult
+.. autoclass:: scope_harness.PreviewColumnMatcher
     :members:
 
-.. autoclass:: Parameters
+.. autoclass:: scope_harness.PreviewMatcher
     :members:
 
-.. autoclass:: PreviewColumnMatcher
+.. autoclass:: scope_harness.PreviewView
     :members:
 
-.. autoclass:: PreviewMatcher
+.. autoclass:: scope_harness.PreviewWidget
     :members:
 
-.. autoclass:: PreviewView
+.. autoclass:: scope_harness.PreviewWidgetList
     :members:
 
-.. autoclass:: PreviewWidget
+.. autoclass:: scope_harness.PreviewWidgetMatcher
     :members:
 
-.. autoclass:: PreviewWidgetList
+.. autoclass:: scope_harness.Result
     :members:
 
-.. autoclass:: PreviewWidgetMatcher
+.. autoclass:: scope_harness.ResultMatcher
     :members:
 
-.. autoclass:: Result
+.. autoclass:: scope_harness.ResultsView
     :members:
 
-.. autoclass:: ResultMatcher
+.. autoclass:: scope_harness.ScopeHarness
     :members:
 
-.. autoclass:: ResultsView
+.. autoclass:: scope_harness.SearchStatus
     :members:
 
-.. autoclass:: ScopeHarness
+.. autoclass:: scope_harness.SettingsMatcher
     :members:
 
-.. autoclass:: SearchStatus
+.. autoclass:: scope_harness.SettingsMatcherMode
     :members:
 
-.. autoclass:: SettingsMatcher
+.. autoclass:: scope_harness.SettingsOption
     :members:
 
-.. autoclass:: SettingsMatcherMode
+.. autoclass:: scope_harness.SettingsOptionMatcher
     :members:
 
-.. autoclass:: SettingsOption
+.. autoclass:: scope_harness.SettingsOptionType
     :members:
 
-.. autoclass:: SettingsOptionMatcher
-    :members:
-
-.. autoclass:: SettingsOptionType
-    :members:
-
-.. autoclass:: SettingsView
+.. autoclass:: scope_harness.SettingsView
     :members:
 
 .. automodule:: scope_harness.testing

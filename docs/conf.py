@@ -260,24 +260,3 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-#def fixDocstring(app, what, name, obj, options, lines):
-#    name = name + "!?"
-#for i in range(0, len(lines)):
-#        lines[i] = lines[i] + "!!"
-#if return_annotation != None and '_scope_harness' in return_annotation:
-#       return_annotation = return_annotation.replace('_scope_harness', '')
-
-def fixSignature(app, what, name, obj, options, signature, return_annotation):
-    if signature != None:
-        signature = "xyz"
-    return (signature, 'aa'+return_annotation)
-#   if return_annotation != None and '_scope_harness' in return_annotation:
-#       return_annotation = return_annotation.replace('_scope_harness', '')
-
-#   print(name)
-#if return_annotation != None:
-#        return (signature, return_annotation + ";;;;")
-
-#def setup(app):
-#    app.connect('autodoc-process-docstring', fixDocstring)
-#    app.connect('autodoc-process-signature', fixSignature)
