@@ -2,6 +2,7 @@ API
 ===
 
 .. autoclass:: scope_harness.Category
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.CategoryListMatcher
@@ -11,6 +12,7 @@ API
     :members:
 
 .. autoclass:: scope_harness.CategoryMatcher
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.CategoryMatcherMode
@@ -20,12 +22,14 @@ API
     :members:
 
 .. autoclass:: scope_harness.ChildDepartmentMatcher
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.CustomRegistry
     :members:
 
 .. autoclass:: scope_harness.Department
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.DepartmentMatcher
@@ -35,6 +39,7 @@ API
     :members:
 
 .. autoclass:: scope_harness.MatchResult
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.Parameters
@@ -47,30 +52,41 @@ API
     :members:
 
 .. autoclass:: scope_harness.PreviewView
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.PreviewWidget
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.PreviewWidgetList
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.PreviewWidgetMatcher
     :members:
 
 .. autoclass:: scope_harness.Result
+    :undoc-members:
     :members:
+    :special-members:
 
 .. autoclass:: scope_harness.ResultMatcher
     :members:
 
 .. autoclass:: scope_harness.ResultsView
+    :undoc-members:
+    :members:
+
+.. autoclass:: scope_harness.ScopeUri
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.ScopeHarness
     :members:
 
 .. autoclass:: scope_harness.SearchStatus
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.SettingsMatcher
@@ -83,12 +99,14 @@ API
     :members:
 
 .. autoclass:: scope_harness.SettingsOptionMatcher
+    :undoc-members:
     :members:
 
 .. autoclass:: scope_harness.SettingsOptionType
     :members:
 
 .. autoclass:: scope_harness.SettingsView
+    :undoc-members:
     :members:
 
 .. automodule:: scope_harness.testing

@@ -61,4 +61,5 @@ BOOST_PYTHON_MODULE(_scope_harness)
     export_preview_matchers();
     export_settings_view();
     export_settings_matchers();
+    export_scope_uri();
 }

@@ -247,6 +247,66 @@ Note: the empty department ID corresponds to the root department.
 Testing previews
 ================
 
+Previews can be invoked by calling :meth:`~scope_harness.Result.tap` method of the result. Note that ``tapping`` the result will - in cases where result's
+``uri`` is a canned scope query (i.e. ``scope://`` uri) - execute a new search and return a :class:`~scope_harness.ResultsView` instance; in other cases a
+:class:`~scope_harness.PreviewView` will be returned. This conditions are verified by checks in lines 5 and 37.
+
+Below is an example of test cases covering preview widgets. The ``test_preview_layouts`` test case verifies different column layouts within the preview.
+The second test case simulates activation of preview action by calling :meth:`~scope_harness.PreviewWidget.trigger` (line 47) and verifies the same preview is
+returned in response.
+
+.. code-block:: python
+    :linenos:
+
+    def test_preview_layouts(self):
+        self.view.search_query = ''
+
+        pview = self.view.category(0).result(0).tap()
+        self.assertIsInstance(pview, PreviewView)
+
+        self.assertMatchResult(PreviewColumnMatcher().column(
+                PreviewMatcher()
+                    .widget(PreviewWidgetMatcher("img"))
+                    .widget(PreviewWidgetMatcher("hdr"))
+                    .widget(PreviewWidgetMatcher("desc"))
+                    .widget(PreviewWidgetMatcher("actions"))
+                ).match(pview.widgets))
+
+        pview.column_count = 2
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img")))
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
+
+        pview.column_count = 1
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img"))
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
+
+    def test_preview_action(self):
+        self.view.search_query = ''
+        pview = self.view.category(0).result(0).tap()
+        self.assertIsInstance(pview, PreviewView)
+
+        self.assertMatchResult(PreviewColumnMatcher()
+                 .column(PreviewMatcher()
+                         .widget(PreviewWidgetMatcher("img"))
+                         .widget(PreviewWidgetMatcher("hdr"))
+                         .widget(PreviewWidgetMatcher("desc"))
+                         .widget(PreviewWidgetMatcher("actions"))
+                        ).match(pview.widgets))
+
+        next_view = pview.widgets_in_first_column["actions"].trigger("hide", None)
+        self.assertEqual(pview, next_view)
+
 
 Using scope settings
 ====================

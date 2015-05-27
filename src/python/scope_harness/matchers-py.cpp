@@ -159,10 +159,10 @@ void export_matchers()
                                                              "Matcher object that holds constraints for matching search categories.",
                                                              init<>())
             .def("mode", &shm::CategoryListMatcher::mode, "Set the matching mode, see CategoryListMatcherMode.", return_internal_reference<1>())
-            .def("category", category_match, return_internal_reference<1>())
-            .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, return_internal_reference<1>())
-            .def("has_exactly", &shm::CategoryListMatcher::hasExactly, return_internal_reference<1>())
-            .def("match", getMatchResultByResultList, return_value_policy<return_by_value>())
+            .def("category", category_match, "Set the category matcher", return_internal_reference<1>())
+            .def("has_at_least", &shm::CategoryListMatcher::hasAtLeast, "Set the minimum number of expected categories", return_internal_reference<1>())
+            .def("has_exactly", &shm::CategoryListMatcher::hasExactly, "Set the exact number of expected categories", return_internal_reference<1>())
+            .def("match", getMatchResultByResultList, "Match the list of categories", return_value_policy<return_by_value>())
             ;
     }
 
@@ -175,18 +175,45 @@ void export_matchers()
                                                            "Matcher object that holds constraints for matching departments.",
                                                            init<>())
             .def("mode", &shm::DepartmentMatcher::mode, "Set the matching mode, see DepartmentMatcherMode.", return_internal_reference<1>())
-            .def("has_exactly", &shm::DepartmentMatcher::hasExactly, "Set the exact number of departments", return_internal_reference<1>())
-            .def("has_at_least", &shm::DepartmentMatcher::hasAtLeast, "Set the minimum number of departments", return_internal_reference<1>())
-            .def("id", &shm::DepartmentMatcher::id, return_internal_reference<1>())
-            .def("label", &shm::DepartmentMatcher::label, return_internal_reference<1>())
-            .def("all_label", &shm::DepartmentMatcher::allLabel, return_internal_reference<1>())
-            .def("parent_id", &shm::DepartmentMatcher::parentId, return_internal_reference<1>())
-            .def("parent_label", &shm::DepartmentMatcher::parentLabel, return_internal_reference<1>())
-            .def("is_root", &shm::DepartmentMatcher::isRoot, return_internal_reference<1>())
-            .def("is_hidden", &shm::DepartmentMatcher::isHidden, return_internal_reference<1>())
-            .def("child", by_child_department_matcher, return_internal_reference<1>())
-            .def("match", matchresult_by_department, return_value_policy<return_by_value>())
-            .def("match", match_by_match_result_and_department)
+            .def("has_exactly", &shm::DepartmentMatcher::hasExactly,
+                    "Set the exact number of departments\n\n"
+                    ":param arg2: number of departments\n"
+                    ":type arg2: int", return_internal_reference<1>())
+            .def("has_at_least", &shm::DepartmentMatcher::hasAtLeast,
+                    "Set the minimum number of departments\n\n"
+                    ":param arg2: number of departments\n"
+                    ":type arg2: int", return_internal_reference<1>())
+            .def("id", &shm::DepartmentMatcher::id,
+                    "Set the department id to match\n\n"
+                    ":param arg2: department id\n"
+                    ":type arg2: string", return_internal_reference<1>())
+            .def("label", &shm::DepartmentMatcher::label,
+                    "Set the department name (label) to match\n\n"
+                    ":param arg2: department label\n"
+                    ":type arg2: string", return_internal_reference<1>())
+            .def("all_label", &shm::DepartmentMatcher::allLabel,
+                    "Set the department alternate (the 'all' variant') label to match\n\n"
+                    ":param arg2: alternate department label\n"
+                    ":type arg2: string", return_internal_reference<1>())
+            .def("parent_id", &shm::DepartmentMatcher::parentId,
+                    "Set the id of parent department to match\n\n"
+                    ":param arg2: parent department id\n"
+                    ":type arg2: string", return_internal_reference<1>())
+            .def("parent_label", &shm::DepartmentMatcher::parentLabel,
+                    "Set the label of parent department to match\n\n"
+                    ":param arg2: parent department label\n"
+                    ":type arg2: string", return_internal_reference<1>())
+            .def("is_root", &shm::DepartmentMatcher::isRoot,
+                    "Set the 'root' flag to match\n\n"
+                    ":param arg2: root flag value\n"
+                    ":type arg2: bool", return_internal_reference<1>())
+            .def("is_hidden", &shm::DepartmentMatcher::isHidden,
+                    "Set the 'hidden' flag to match\n\n"
+                    ":param arg2: hidden flag value\n"
+                    ":type arg2: bool", return_internal_reference<1>())
+            .def("child", by_child_department_matcher, "Set the matcher for child department", return_internal_reference<1>())
+            .def("match", matchresult_by_department, "Match the department", return_value_policy<return_by_value>())
+            .def("match", match_by_match_result_and_department, "Match the department")
             ;
     }
 
