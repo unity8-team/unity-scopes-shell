@@ -307,6 +307,38 @@ returned in response.
         next_view = pview.widgets_in_first_column["actions"].trigger("hide", None)
         self.assertEqual(pview, next_view)
 
-
 Using scope settings
 ====================
+
+Settings exported by scopes can be accessed via :meth:`~scope_harness.ResultsView.settings` property and tested using :class:`~scope_harness.SettingsMatcher`.
+The :class:`~scope_harness.SettingsView` object returned by the above method :meth:`~scope_harness.SettingsView.set` method that can be used to modify settings
+(simulate user choices). Note that ``set`` method is loosely-typed (the new value is an object / variant), that means the correct data type needs to be passed
+to it, depending on the type of setting to modify:
+             * for a setting of ``number`` type, pass an integer or float number.
+             * for a setting of ``string`` type, pass a string value.
+             * for a setting of ``list`` type, pass the string value corresponding to one of the supported choices.
+             * for a setting of ``boolean`` type, pass True / False literals.
+
+Changing a setting value refreshes search results.
+
+Here is an example of a test case which modifies a setting value (this test should of course also check the new results after settings change; omitted here).
+
+.. code-block:: python
+
+    def test_settings_change(self):
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        settings.set("location", "Barcelona")
+
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                    .option(
+                        SettingsOptionMatcher("location")
+                            .value("Barcelona")
+                        )
+                    .match(settings)
+                )
+
+
