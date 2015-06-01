@@ -40,6 +40,7 @@ macro(run_tests)
                        ${_test}.cpp 
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
                       )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}

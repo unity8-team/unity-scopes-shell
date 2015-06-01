@@ -37,6 +37,8 @@ add_library(
     matcher/preview-widget-matcher.cpp
     matcher/result-matcher.cpp
     matcher/scope-uri.cpp
+    matcher/settings-matcher.cpp
+    matcher/settings-option-matcher.cpp
     preview/preview-widget.cpp
     preview/preview-widget-list.cpp
     registry/custom-registry.cpp
@@ -48,6 +50,7 @@ add_library(
     results/result.cpp
     view/preview-view.cpp
     view/results-view.cpp
+    view/settings-view.cpp
     scope-harness.cpp
     test-utils.cpp
 )
