@@ -22,6 +22,8 @@ add_library(_scope_harness SHARED
         preview-matchers-py.cpp
         results-view-py.cpp
         result-py.cpp
+        settings-view-py.cpp
+        settings-matchers-py.cpp
         scope-harness-py.cpp
         scope-uri-py.cpp
         registry-py.cpp
