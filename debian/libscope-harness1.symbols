@@ -10,9 +10,9 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::match(std::vector<unity::scopeharness::results::Category, std::allocator<unity::scopeharness::results::Category> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::mode(unity::scopeharness::matcher::CategoryListMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
@@ -21,7 +21,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::CategoryMatcher::components(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::getId() const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::headerLink(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::icon(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Category const&) const@Base" 0.5.4+15.04.20150311.3
@@ -51,9 +51,9 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::~DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::id(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::isHidden(bool)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::isRoot(bool)@Base" 0.5.4+15.04.20150311.3
@@ -132,9 +132,9 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::toString() const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
- (c++|arch=armhf i386)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0replaceme
- (c++|arch=armhf i386)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0replaceme
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::match(std::shared_ptr<unity::scopeharness::view::SettingsView> const&) const@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::mode(unity::scopeharness::matcher::SettingsMatcher::Mode)@Base" 0replaceme
  (c++)"unity::scopeharness::matcher::SettingsMatcher::option(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0replaceme
@@ -153,12 +153,12 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::preview::PreviewWidget::id() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::at(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned long) const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned int) const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned int) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator[](std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned long) const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned int) const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned int) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::~PreviewWidgetList()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::internal::PreviewWidgetListArguments const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
@@ -204,7 +204,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Category::results() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::result(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Category::result(unsigned long) const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::results::Category::result(unsigned int) const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Category::result(unsigned int) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::size() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::title() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::ChildDepartment::~ChildDepartment()@Base" 0.5.4+15.04.20150311.3
@@ -220,7 +220,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::results::Department::allLabel() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Department::children() const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Department::child(unsigned long) const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::results::Department::child(unsigned int) const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Department::child(unsigned int) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Department::~Department()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::internal::DepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
@@ -280,7 +280,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::view::PreviewView::setResultsView(std::shared_ptr<unity::scopeharness::view::ResultsView>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::widgets()@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::widgetsInFirstColumn()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::activeScope() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::altDepartmentId() const@Base" 0.5.4+15.04.20150311.3
@@ -289,7 +289,7 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::view::ResultsView::categories()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=armhf i386)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::customizations() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::departmentId() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::description() const@Base" 0.5.4+15.04.20150311.3
