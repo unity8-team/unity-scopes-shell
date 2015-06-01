@@ -33,7 +33,6 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
-#include <QGSettings>
 #include <QtGui/QDesktopServices>
 #include <QEvent>
 #include <QMutex>
@@ -96,9 +95,6 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     m_categories.reset(new Categories(this));
-
-    m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
-    QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
     setScopesInstance(parent);
 
@@ -245,15 +241,6 @@ void Scope::metadataRefreshed()
     if (response->status() == scopes::ActivationResponse::PerformQuery) {
         executeCannedQuery(response->query(), false);
     }
-}
-
-void Scope::internetFlagChanged(QString const& key)
-{
-    if (key != "remoteContentSearch") {
-        return;
-    }
-
-    invalidateResults();
 }
 
 void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
@@ -717,12 +704,6 @@ void Scope::dispatchSearch()
             meta["session-id"] = uuidToString(m_session_id).toStdString();
         }
         meta["query-id"] = unity::scopes::Variant(m_query_id);
-        if (m_settings) {
-            QVariant remoteSearch(m_settings->get("remote-content-search"));
-            if (remoteSearch.toString() == QString("none")) {
-                meta["no-internet"] = true;
-            }
-        }
         try {
             if (m_settingsModel && m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
