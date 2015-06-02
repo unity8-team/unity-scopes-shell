@@ -116,10 +116,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     std::string const& realFieldName = mappingIt->second;
     try {
         scopes::Variant const& v = result->value(realFieldName);
-        if (v.which() != scopes::Variant::Type::String) {
-            return QVariant();
-        }
-        return QString::fromStdString(v.get_string());
+        return scopeVariantToQVariant(v);
     } catch (...) {
         // value() throws if realFieldName is empty or the result
         // doesn't have a value for it
@@ -241,6 +238,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 }
             }
             return QVariant();
+        case RoleQuickPreviewData:
+            return componentValue(result, "quick-preview-data");
         default:
             return QVariant();
     }

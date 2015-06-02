@@ -51,7 +51,7 @@ find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
 pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.16)
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=6)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
 
 # Standard install paths
 include(GNUInstallDirs)
