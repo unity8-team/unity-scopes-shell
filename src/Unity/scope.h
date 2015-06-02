@@ -160,6 +160,7 @@ public:
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
     void activateUri(QString const& uri);
+    void activateAction(QVariant const& result, QString const& actionId); // FIXME: override
 
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;

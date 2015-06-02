@@ -61,6 +61,7 @@ public:
     void registerCategory(unity::scopes::Category::SCPtr category, QSharedPointer<ResultsModel> model);
     void updateResultCount(QSharedPointer<ResultsModel> resultsModel);
     void clearAll();
+    void updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result);
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components);
 
