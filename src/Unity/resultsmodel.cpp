@@ -107,7 +107,7 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::Result const* result, std::string const& fieldName) const
 {
     auto mappingIt = m_componentMapping.find(fieldName);
     if (mappingIt == m_componentMapping.end()) {
@@ -125,7 +125,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
 }
 
 QVariant
-ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
+ResultsModel::attributesValue(scopes::Result const* result) const
 {
     auto mappingIt = m_componentMapping.find("attributes");
     if (mappingIt == m_componentMapping.end()) {
@@ -179,13 +179,13 @@ ResultsModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::CategorisedResult* result = m_results.at(index.row()).get();
+    scopes::Result* result = m_results.at(index.row()).get();
 
     switch (role) {
         case RoleUri:
             return QString::fromStdString(result->uri());
         case RoleCategoryId:
-            return QString::fromStdString(result->category()->id());
+            return categoryId();
         case RoleDndUri:
             return QString::fromStdString(result->dnd_uri());
         case RoleResult:
