@@ -106,6 +106,17 @@ int ResultsModel::count() const
     return m_results.count();
 }
 
+void ResultsModel::updateResult(unity::scopes::Result const& result, unity::scopes::Result const& updateResult)
+{
+    for (auto res: m_results)
+    {
+        if (result.uri() == res.uri() && result.serialize() == res.serialize())
+        {
+            //TODO update
+        }
+    }
+}
+
 QVariant
 ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
 {
