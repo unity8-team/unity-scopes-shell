@@ -57,7 +57,7 @@ public:
     void setMaxAtrributesCount(int count);
 
     QHash<int, QByteArray> roleNames() const override;
-    void updateResult(unity::scopes::Result const& result, unity::scopes::Result const& updateResult);
+    void updateResult(unity::scopes::Result const& result, unity::scopes::Result const& updatedResult);
 
 private:
     QVariant componentValue(unity::scopes::Result const* result, std::string const& fieldName) const;

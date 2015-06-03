@@ -168,6 +168,24 @@ QHash<int, QByteArray> ResultsModel::roleNames() const
     return roles;
 }
 
+void ResultsModel::updateResult(scopes::Result const& result, scopes::Result const& updatedResult)
+{
+    for (int i = 0; i<m_results.size(); i++)
+    {
+        auto const res = m_results[i];
+        if (result.uri() == res->uri() && result.serialize() == res->serialize())
+        {
+            m_results[i] = std::make_shared<scopes::Result>(updatedResult);
+            auto const idx = index(i, 0);
+            Q_EMIT dataChanged(idx, idx);
+            return;
+        }
+    }
+    qWarning() << "ResultsModel::updateResult - failed to find result with uri '"
+        << QString::fromStdString(result.uri())
+        << "', category '" << categoryId() << "'";
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
