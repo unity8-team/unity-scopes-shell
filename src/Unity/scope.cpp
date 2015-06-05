@@ -196,9 +196,10 @@ bool Scope::event(QEvent* ev)
             case PushEvent::ACTIVATION: {
                 std::shared_ptr<scopes::ActivationResponse> response;
                 std::shared_ptr<scopes::Result> result;
-                pushEvent->collectActivationResponse(response, result);
+                QString categoryId;
+                pushEvent->collectActivationResponse(response, result, categoryId);
                 if (response) {
-                    handleActivation(response, result);
+                    handleActivation(response, result, categoryId);
                 }
                 return true;
             }
@@ -210,7 +211,7 @@ bool Scope::event(QEvent* ev)
     return QObject::event(ev);
 }
 
-void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result)
+void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
@@ -229,7 +230,7 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
             executeCannedQuery(response->query(), true);
             break;
         case scopes::ActivationResponse::UpdateResult:
-            m_categories->updateResult(*result, "", response->updated_result()); //TODO cat id
+            m_categories->updateResult(*result, categoryId, response->updated_result());
         default:
             break;
     }
@@ -1198,12 +1199,12 @@ void Scope::activate(QVariant const& result_var)
 }
 
 // called for in-card (result) actions.
-void Scope::activateAction(QVariant const& result_var, QString const& actionId)
+void Scope::activateAction(QVariant const& result_var, QString const& categoryId, QString const& actionId)
 {
     try {
         cancelActivation();
         std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
-        scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
+        scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
         m_activationController->setListener(listener);
 
         auto proxy = proxy_for_result(result);
