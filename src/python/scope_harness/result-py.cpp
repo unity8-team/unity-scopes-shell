@@ -43,5 +43,7 @@ void export_result()
         .def("long_press", &shr::Result::longPress, "Activates the result, as if user long-pressed it. "
              "Returns an instance of PreviewView (if result was previewed) or None "
              " (if result's uri was a canned scope query)")
+        .def("tap_action", &shr::Result::tapAction, "Activates result action. "
+             "Returns the ResultsView where affected result may potentially be updated.")
         ;
 }
