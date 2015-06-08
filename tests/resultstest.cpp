@@ -917,13 +917,13 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("result-action");
 
-
         // activate action1
         {
             auto view = resultsView->category("cat1").result("test:result-action").tapAction("action1");
             QVERIFY(bool(view));
             auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
             QVERIFY(bool(nextView));
+            QCOMPARE(resultsView, nextView);
 
             // check that mock scope updated the result by inserting 'actionId' in it
             QVERIFY_MATCHRESULT(
@@ -936,7 +936,7 @@ private Q_SLOTS:
                                 .property("actionId", sc::Variant("action1"))
                             )
                     )
-                    .match(nextView->categories())
+                    .match(resultsView->categories())
             );
         }
 
@@ -946,6 +946,7 @@ private Q_SLOTS:
             QVERIFY(bool(view));
             auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
             QVERIFY(bool(nextView));
+            QCOMPARE(resultsView, nextView);
 
             // check that mock scope updated the result
             QVERIFY_MATCHRESULT(
@@ -958,7 +959,7 @@ private Q_SLOTS:
                                 .property("actionId", sc::Variant("action2"))
                             )
                     )
-                    .match(nextView->categories())
+                    .match(resultsView->categories())
             );
         }
     }
