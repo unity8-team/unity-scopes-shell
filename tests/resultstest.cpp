@@ -917,35 +917,50 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope");
         resultsView->setQuery("result-action");
 
-        QVERIFY_MATCHRESULT(
-            shm::CategoryListMatcher()
-                .mode(shm::CategoryListMatcher::Mode::starts_with)
-                .category(shm::CategoryMatcher("cat1")
-                    .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(shm::ResultMatcher("test:result-action"))
-                )
-                .match(resultsView->categories())
-        );
 
-        auto view = resultsView->category("cat1").result("test:result-action").tapAction("action1");
-        QVERIFY(bool(view));
-        auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
-        QVERIFY(bool(nextView));
+        // activate action1
+        {
+            auto view = resultsView->category("cat1").result("test:result-action").tapAction("action1");
+            QVERIFY(bool(view));
+            auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
+            QVERIFY(bool(nextView));
 
-        QCOMPARE(nextView->scopeId(), string("mock-scope"));
+            // check that mock scope updated the result by inserting 'actionId' in it
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .mode(shm::CategoryListMatcher::Mode::starts_with)
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::starts_with)
+                        .result(
+                            shm::ResultMatcher("test:result-action")
+                                .property("actionId", sc::Variant("action1"))
+                            )
+                    )
+                    .match(nextView->categories())
+            );
+        }
 
-        QVERIFY_MATCHRESULT(
-            shm::CategoryListMatcher()
-                .mode(shm::CategoryListMatcher::Mode::starts_with)
-                .category(shm::CategoryMatcher("cat1")
-                    .mode(shm::CategoryMatcher::Mode::starts_with)
-                    .result(
-                        shm::ResultMatcher("test:result-action")
-                            .property("actionId", sc::Variant("action1"))
-                        )
-                )
-                .match(nextView->categories())
-        );
+        // activate action2
+        {
+            auto view = resultsView->category("cat1").result("test:result-action").tapAction("action2");
+            QVERIFY(bool(view));
+            auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
+            QVERIFY(bool(nextView));
+
+            // check that mock scope updated the result
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .mode(shm::CategoryListMatcher::Mode::starts_with)
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::starts_with)
+                        .result(
+                            shm::ResultMatcher("test:result-action")
+                                .property("actionId", sc::Variant("action2"))
+                            )
+                    )
+                    .match(nextView->categories())
+            );
+        }
     }
 
     void testScopeResultWithScopeUri()

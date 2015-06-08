@@ -90,14 +90,19 @@ public:
         connect(m_scope.data(), SIGNAL(updateResultRequested()), SLOT(updateResultRequested()));
     }
 
-    view::AbstractView::SPtr activate() const
+    view::AbstractView::SPtr activate(QString const& actionId = QString::null) const
     {
         auto result = m_resultsModel->data(m_index,
                 ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
         TestUtils::throwIfNot(bool(result), "Couldn't get result");
 
         QSignalSpy spy(this, SIGNAL(activated(int, const QVariant&)));
-        m_scope->activate(QVariant::fromValue(result));
+        if (actionId.isNull()) {
+            m_scope->activate(QVariant::fromValue(result));
+        } else {
+            m_scope->activateAction(QVariant::fromValue(result), m_resultsModel->categoryId(), actionId);
+        }
+
         if (spy.empty())
         {
             TestUtils::throwIfNot(spy.wait(), "Scope activation signal failed to emit");
@@ -391,10 +396,7 @@ view::AbstractView::SPtr Result::tapAction(std::string const &actionId) const
         scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
         if (result)
         {
-            p->m_scope->activateAction(result_var, p->m_resultsModel->categoryId(), QString::fromStdString(actionId));
-            auto view = p->m_resultsView.lock();
-            //view->waitForResultsChange();
-            return view;
+            return p->activate(QString::fromStdString(actionId));
         }
     }
     throw std::domain_error("Tap failed for action '" + actionId + "': invalid result");

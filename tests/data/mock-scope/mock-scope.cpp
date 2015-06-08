@@ -152,6 +152,20 @@ public:
             CategorisedResult res(cat);
             res.set_uri("test:result-action");
             res.set_title("result for: \"" + query_ + "\"");
+
+            // Add result actions
+            VariantBuilder builder;
+            builder.add_tuple({
+                    {"id", Variant("action1")},
+                    {"icon", Variant("icon1")},
+                    {"label", Variant("Action1")},
+            });
+            builder.add_tuple({
+                    {"id", Variant("action2")},
+                    {"icon", Variant("icon2")},
+                    {"label", Variant("Action2")},
+            });
+            res["social_attributes"] = builder.end(); // TODO: verify with shell
             reply->push(res);
         }
         else if (query_ == "expandable-widget")
@@ -435,7 +449,6 @@ public:
     {
         if (status_ == ActivationResponse::Status::UpdateResult) {
             Result updatedRes(result());
-            cout << "activate action!!!\n";
             updatedRes["actionId"] = Variant(action_id_);
             return ActivationResponse(updatedRes);
         }
