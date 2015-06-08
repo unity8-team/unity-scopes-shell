@@ -62,7 +62,8 @@ public:
         goto_uri,
         preview_requested,
         goto_scope,
-        open_scope
+        open_scope,
+        update_result
     };
 
     QSharedPointer<ss::ResultsModelInterface> m_resultsModel;
@@ -86,6 +87,7 @@ public:
         connect(m_scope.data(), SIGNAL(previewRequested(QVariant const&)), SLOT(previewRequested(QVariant const&)));
         connect(m_scope.data(), SIGNAL(gotoScope(QString const&)), SLOT(gotoScope(QString const&)));
         connect(m_scope.data(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)), SLOT(openScope(unity::shell::scopes::ScopeInterface*)));
+        connect(m_scope.data(), SIGNAL(updateResultRequested()), SLOT(updateResultRequested()));
     }
 
     view::AbstractView::SPtr activate() const
@@ -178,6 +180,12 @@ public:
                     qDebug() << "open_scope" << parameter;
                     break;
                 }
+            case _Priv::ActivationResponse::update_result:
+                {
+                    qDebug() << "update_result";
+                    view = resultsView;
+                    break;
+                }
         }
 
         return view;
@@ -217,6 +225,11 @@ public Q_SLOTS:
     void openScope(unity::shell::scopes::ScopeInterface* scope)
     {
         Q_EMIT activated(ActivationResponse::open_scope, QVariant::fromValue(scope));
+    }
+
+    void updateResultRequested()
+    {
+        Q_EMIT activated(ActivationResponse::update_result);
     }
 
 Q_SIGNALS:
@@ -367,6 +380,24 @@ view::AbstractView::SPtr Result::tap() const
         }
     }
     throw std::domain_error("Long press failed: invalid result");
+}
+
+view::AbstractView::SPtr Result::tapAction(std::string const &actionId) const
+{
+    auto result_var = p->m_resultsModel->data(p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
+
+    if (result_var.canConvert<std::shared_ptr<scopes::Result>>())
+    {
+        scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
+        if (result)
+        {
+            p->m_scope->activateAction(result_var, p->m_resultsModel->categoryId(), QString::fromStdString(actionId));
+            auto view = p->m_resultsView.lock();
+            //view->waitForResultsChange();
+            return view;
+        }
+    }
+    throw std::domain_error("Tap failed for action '" + actionId + "': invalid result");
 }
 
 view::AbstractView::SPtr Result::longPress() const

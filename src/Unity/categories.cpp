@@ -512,7 +512,7 @@ void Categories::updateResult(unity::scopes::Result const& result, QString const
 {
     for (auto catData: m_categories) {
         if (catData->categoryId() == categoryId) {
-            //TODO update
+            catData->resultsModel()->updateResult(result, updated_result);
             break;
         }
     }

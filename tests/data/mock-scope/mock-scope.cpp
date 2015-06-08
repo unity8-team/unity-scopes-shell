@@ -145,6 +145,15 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "result-action")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:result-action");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
         else if (query_ == "expandable-widget")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
@@ -402,6 +411,13 @@ public:
     {
     }
 
+    MyActivation(Result const& result, ActionMetadata const& metadata, ActivationResponse::Status status, std::string const& action_id) :
+        ActivationQueryBase(result, metadata),
+        status_(status),
+        action_id_(action_id)
+    {
+    }
+
     ~MyActivation() noexcept
     {
     }
@@ -417,7 +433,13 @@ public:
 
     virtual ActivationResponse activate() override
     {
-        if (status_ == ActivationResponse::Status::PerformQuery) {
+        if (status_ == ActivationResponse::Status::UpdateResult) {
+            Result updatedRes(result());
+            cout << "activate action!!!\n";
+            updatedRes["actionId"] = Variant(action_id_);
+            return ActivationResponse(updatedRes);
+        }
+        else if (status_ == ActivationResponse::Status::PerformQuery) {
             auto resp = ActivationResponse(CannedQuery(result()["scope-id"].get_string()));
             return resp;
         } else {
@@ -430,6 +452,7 @@ public:
 private:
     Variant extra_data_;
     ActivationResponse::Status status_;
+    std::string action_id_;
 };
 
 class MyScope : public ScopeBase
@@ -470,6 +493,11 @@ public:
             return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::PerformQuery));
         }
         return ActivationQueryBase::UPtr(new MyActivation(result, meta));
+    }
+
+    ActivationQueryBase::UPtr activate_result_action(Result const& result, ActionMetadata const& meta, std::string const& action_id) override
+    {
+        return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::UpdateResult, action_id));
     }
 };
 

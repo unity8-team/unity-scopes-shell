@@ -175,6 +175,7 @@ void ResultsModel::updateResult(scopes::Result const& result, scopes::Result con
         auto const res = m_results[i];
         if (result.uri() == res->uri() && result.serialize() == res->serialize())
         {
+            qDebug() << "Updated result with uri '" << QString::fromStdString(res->uri()) << "'";
             m_results[i] = std::make_shared<scopes::Result>(updatedResult);
             auto const idx = index(i, 0);
             Q_EMIT dataChanged(idx, idx);

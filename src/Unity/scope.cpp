@@ -231,6 +231,7 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
             break;
         case scopes::ActivationResponse::UpdateResult:
             m_categories->updateResult(*result, categoryId, response->updated_result());
+            Q_EMIT updateResultRequested();
         default:
             break;
     }
