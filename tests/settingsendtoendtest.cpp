@@ -23,6 +23,10 @@
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/matcher/settings-matcher.h>
 #include <scope-harness/matcher/settings-option-matcher.h>
+#include <scope-harness/matcher/category-matcher.h>
+#include <scope-harness/matcher/category-list-matcher.h>
+#include <scope-harness/matcher/result-matcher.h>
+
 #include <scope-harness/view/settings-view.h>
 #include <scope-harness/test-utils.h>
 
@@ -313,6 +317,24 @@ private Q_SLOTS:
                     .match(settings)
                 );
 
+        settings->set("distanceUnit", sc::Variant("Miles"));
+        resultsView->setQuery("settings-change");
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::by_id)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
+                    .result(shm::ResultMatcher("test:uri")
+                        .title("result for: \"settings-change\"")
+                        .property("setting-distanceUnit", sc::Variant(1))
+                    )
+                )
+                .match(resultsView->categories())
+        );
+
         settings->set("distanceUnit", sc::Variant("Kilometers"));
 
         QVERIFY_MATCHRESULT(
@@ -324,6 +346,21 @@ private Q_SLOTS:
                         )
                     .match(settings)
                 );
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::by_id)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::by_uri)
+                    .result(shm::ResultMatcher("test:uri")
+                        .title("result for: \"settings-change\"")
+                        .property("setting-distanceUnit", sc::Variant(0))
+                    )
+                )
+                .match(resultsView->categories())
+        );
     }
 
     void testChildScopes()
