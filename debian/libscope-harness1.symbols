@@ -131,24 +131,24 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::toString() const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0replaceme
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0replaceme
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0replaceme
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsMatcher::match(std::shared_ptr<unity::scopeharness::view::SettingsView> const&) const@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsMatcher::mode(unity::scopeharness::matcher::SettingsMatcher::Mode)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsMatcher::option(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsMatcher::SettingsMatcher()@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::defaultValue(unity::scopes::Variant const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayName(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayValues(std::vector<unity::scopes::Variant, std::allocator<unity::scopes::Variant> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::getId() const@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::view::SettingsView::Option const&) const@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::operator=(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::optionType(unity::scopeharness::view::SettingsView::OptionType)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0replaceme
- (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::value(unity::scopes::Variant const&)@Base" 0replaceme
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.10.20150601
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.10.20150601
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.10.20150601
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::match(std::shared_ptr<unity::scopeharness::view::SettingsView> const&) const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::mode(unity::scopeharness::matcher::SettingsMatcher::Mode)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::option(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::SettingsMatcher()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::defaultValue(unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayName(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayValues(std::vector<unity::scopes::Variant, std::allocator<unity::scopes::Variant> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::getId() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::view::SettingsView::Option const&) const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::operator=(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::optionType(unity::scopeharness::view::SettingsView::OptionType)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::value(unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
  (c++)"unity::scopeharness::preview::PreviewWidget::data() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidget::id() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::at(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
@@ -309,16 +309,16 @@ libscope-harness.so.1 libscope-harness1 #MINVER#
  (c++)"unity::scopeharness::view::ResultsView::setActiveScope(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::setPreviewView(std::shared_ptr<unity::scopeharness::view::PreviewView>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::setQuery(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::settings() const@Base" 0replaceme
+ (c++)"unity::scopeharness::view::ResultsView::settings() const@Base" 0.5.4+15.10.20150601
  (c++)"unity::scopeharness::view::ResultsView::shortcut() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::status() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::ResultsView::waitForResultsChange()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::SettingsView::count() const@Base" 0replaceme
- (c++)"unity::scopeharness::view::SettingsView::Option::~Option()@Base" 0replaceme
- (c++)"unity::scopeharness::view::SettingsView::options() const@Base" 0replaceme
- (c++)"unity::scopeharness::view::SettingsView::set(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0replaceme
- (c++)"unity::scopeharness::view::SettingsView::~SettingsView()@Base" 0replaceme
- (c++)"unity::scopeharness::view::SettingsView::SettingsView(unity::scopeharness::internal::SettingsViewArguments const&)@Base" 0replaceme
+ (c++)"unity::scopeharness::view::SettingsView::count() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::Option::~Option()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::options() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::set(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::~SettingsView()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::SettingsView(unity::scopeharness::internal::SettingsViewArguments const&)@Base" 0.5.4+15.10.20150601
  (c++)"vtable for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"vtable for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"vtable for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3

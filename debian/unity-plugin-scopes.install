@@ -1,2 +1,3 @@
 usr/lib/*/pkgconfig/unity-plugin-scopes.pc
 usr/lib/*/unity8/*
+usr/share/locale
