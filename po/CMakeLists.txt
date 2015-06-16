@@ -1,10 +1,10 @@
 intltool_update_potfile(
-  ALL
-  GETTEXT_PACKAGE ${GETTEXT_PACKAGE}
+    KEYWORDS "_" "_:1,2" "N_" "N_:1,2"
+    GETTEXT_PACKAGE ${GETTEXT_PACKAGE}
+    COPYRIGHT_HOLDER "Canonical Ltd."
 )
 
 intltool_install_translations(
-  ALL
-  GETTEXT_PACKAGE ${GETTEXT_PACKAGE}
+    ALL
+    GETTEXT_PACKAGE ${GETTEXT_PACKAGE}
 )
-
