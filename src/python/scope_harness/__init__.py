@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-The scope_harness module provides python bindings for scope-harness C++ library.
+""" Scope harness Python bindings.
+
 It makes testing scopes easy with classes that help writing high-level
 assertions about expected results, categories etc.
 
@@ -25,46 +25,50 @@ the standard unittest framework (by inheriting from ScopeHarnessTestCase, based 
 but there no obligation to use it - the only functionality that ScopeHarnessTestCase provides is a
 helper assertMatchResult method, that can easily be replaced with a custom implementation.
 
-from scope_harness import *
-from scope_harness.testing import ScopeHarnessTestCase
-import unittest
+.. code-block:: python
 
-class MyScopeTest(ScopeHarnessTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.harness = ScopeHarness.new_from_scope_list(Parameters([
-            "myscope/myscope.ini"
-            ]))
+    from scope_harness import *
+    from scope_harness.testing import ScopeHarnessTestCase
+    import unittest
 
-    def setUp(self):
-        self.view = self.harness.results_view
-        self.view.active_scope = 'myscope'
+    class MyScopeTest(ScopeHarnessTestCase):
+        @classmethod
+        def setUpClass(cls):
+            cls.harness = ScopeHarness.new_from_scope_list(Parameters([
+                "myscope/myscope.ini"
+                ]))
 
-    def test_surfacing_results(self):
-        self.view.browse_department('')
-        self.view.search_query = ''
+        def setUp(self):
+            self.view = self.harness.results_view
+            self.view.active_scope = 'myscope'
 
-        # Check first results of first two categories (out of 3 expected categories)
-        self.assertMatchResult(CategoryListMatcher()
-            .has_exactly(3)
-            .mode(CategoryListMatcherMode.BY_ID)
-            .category(CategoryMatcher("mycat1")
-                    .has_at_least(1)
-                    .mode(CategoryMatcherMode.BY_URI)
-                    .result(ResultMatcher("http://myscopeuri1")
-                    .title('Result 1')
-            ))
-            .category(CategoryMatcher("mycat2")
-                      .has_at_least(1)
-                      .mode(CategoryMatcherMode.STARTS_WITH)
-                      .result(ResultMatcher("http://myscopeuri2")
-                      .properties({'myboolattribute': True, 'mystringattribute': 'a'})
-                      .title('Result 2')
-            ))
-            .match(self.view.categories))
+        def test_surfacing_results(self):
+            self.view.browse_department('')
+            self.view.search_query = ''
+
+            # Check first results of first two categories (out of 3 expected categories)
+            self.assertMatchResult(CategoryListMatcher()
+                .has_exactly(3)
+                .mode(CategoryListMatcherMode.BY_ID)
+                .category(CategoryMatcher("mycat1")
+                        .has_at_least(1)
+                        .mode(CategoryMatcherMode.BY_URI)
+                        .result(ResultMatcher("http://myscopeuri1")
+                        .title('Result 1')
+                ))
+                .category(CategoryMatcher("mycat2")
+                        .has_at_least(1)
+                        .mode(CategoryMatcherMode.STARTS_WITH)
+                        .result(ResultMatcher("http://myscopeuri2")
+                        .properties({'myboolattribute': True, 'mystringattribute': 'a'})
+                        .title('Result 2')
+                ))
+                .match(self.view.categories))
+
 """
 
 # FIXME: it would be really nice to include the list of classes from _scope_harness in the scope of the above docstring,
 # cause the classes *are* imported and visible in the current scope.
 
 from ._scope_harness import *
+__all__ = ['_scope_harness']

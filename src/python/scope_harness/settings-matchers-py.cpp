@@ -36,7 +36,7 @@ static shm::SettingsOptionMatcher& display_values_wrapper(shm::SettingsOptionMat
 
 void export_settings_matchers()
 {
-    enum_<shm::SettingsMatcher::Mode>("SettingsMatcherMode")
+    enum_<shm::SettingsMatcher::Mode>("SettingsMatcherMode", "Match mode for settings")
         .value("ALL", shm::SettingsMatcher::Mode::all)
         .value("BY_ID", shm::SettingsMatcher::Mode::by_id)
         .value("STARTS_WITH", shm::SettingsMatcher::Mode::starts_with)

@@ -48,8 +48,16 @@ void export_category()
         .add_property("results", &getResultsList)
         .add_property("empty", &shr::Category::empty)
         .def("result", result_by_uri, return_value_policy<return_by_value>(),
-            "Get a Result instance by its uri. Throws RuntimeError if uri doesn't exist.")
+            "Get a Result instance by its uri.\n\n"
+            ":param arg2: uri\n"
+            ":type arg2: string\n"
+            ":returns: instance of Result\n"
+            ":raises: ValueError if uri doesn't exist")
         .def("result", result_by_index, return_value_policy<return_by_value>(),
-             "Get a Result instance by index. Throws RuntimeError if index is out of range.")
+             "Get a Result instance by index.\n\n"
+             ":param arg2: index\n"
+             ":type arg2: int\n"
+             ":returns: instance of Result\n"
+             ":raises: ValueError if index is invalid")
         ;
 }

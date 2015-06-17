@@ -40,6 +40,12 @@ void export_settings_matchers();
 
 BOOST_PYTHON_MODULE(_scope_harness)
 {
+    // override the name to get rid of the "internal" _scope_harness namespece which, even
+    // when imported in the __init__.py, leaves traces in __module__ attribute of every class
+    // and appears in sphinx-generated docs.
+    // see http://stackoverflow.com/questions/9436198/python-import-and-change-canonical-names-in-the-current-module
+    scope().attr("__name__") = "scope_harness";
+
     // enable custom docstring, disable auto-generated docstring including c++ signatures
     docstring_options local_docstring_options(true, true, false);
 
@@ -59,4 +65,5 @@ BOOST_PYTHON_MODULE(_scope_harness)
     export_preview_matchers();
     export_settings_view();
     export_settings_matchers();
+    export_scope_uri();
 }

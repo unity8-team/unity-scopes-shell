@@ -36,12 +36,20 @@ void export_result()
         .add_property("attributes", &shr::Result::attributes)
         .add_property("summary", &shr::Result::summary)
         .add_property("background", &shr::Result::background)
-        .def("__getitem__", &shr::Result::value, return_internal_reference<1>())
+        .def("__getitem__", &shr::Result::value, return_internal_reference<1>(),
+                "Get result attribute by name.\n\n"
+                ":param arg2: attribute name\n"
+                ":type arg2: string\n"
+                ":returns: attribute value\n"
+                ":raises: ValueError if not found"
+                )
         .def("tap", &shr::Result::tap, "Activates the result, as if user tapped it. "
              "Returns an instance of PreviewView (if result was previewed) or ResultsView "
-             " (if result's uri was a canned scope query, resulting in a new search)")
+             " (if result's uri was a canned scope query, resulting in a new search)\n\n"
+             ":returns: instance of PreviewView or ResultsView")
         .def("long_press", &shr::Result::longPress, "Activates the result, as if user long-pressed it. "
              "Returns an instance of PreviewView (if result was previewed) or None "
-             " (if result's uri was a canned scope query)")
+             " (if result's uri was a canned scope query)\n\n"
+             ":returns: PreviewView or None")
         ;
 }
