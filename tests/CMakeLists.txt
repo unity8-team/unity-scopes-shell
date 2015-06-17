@@ -1,4 +1,3 @@
-pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
 pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1>=0.2 REQUIRED)
 
