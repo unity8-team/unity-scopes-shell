@@ -30,7 +30,9 @@
 do {\
     auto result = (statement);\
     QVERIFY(!result.success());\
-    QCOMPARE(QString::fromStdString(result.concat_failures().c_str()), QString::fromStdString(errormsg));\
+    const QRegExp r(QString::fromStdString(errormsg));\
+    QVERIFY2(r.exactMatch(QString::fromStdString(result.concat_failures().c_str())),\
+            std::string("Failed to match: '\n" + result.concat_failures() + "\nagainst regexp '\n" + errormsg + "\n'").c_str());\
 } while (0)
 
 
@@ -237,8 +239,8 @@ private Q_SLOTS:
                         .displayValues(sc::VariantArray {sc::Variant("Kilometers"), sc::Variant("Parsecs")})
                     )
                     .match(settings),
-                    "Failed expectations:\nOption with ID 'age' has 'value' == '23.0' but expected "
-                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '[\"Kilometers\",\"Miles\"]' but expected '[\"Kilometers\",\"Parsecs\"]'\n"
+                    "Failed expectations:\nOption with ID 'age' has 'value' == '23(.0)?' but expected "
+                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '\\[\"Kilometers\",\"Miles\"\\]' but expected '\\[\"Kilometers\",\"Parsecs\"\\]'\n"
        );
     }
 

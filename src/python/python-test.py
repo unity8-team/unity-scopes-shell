@@ -28,6 +28,7 @@ from scope_harness import Parameters, DepartmentMatcher, ChildDepartmentMatcher
 from scope_harness.testing import ScopeHarnessTestCase
 import unittest
 import sys
+import re
 
 # first argument is the directory of test scopes
 TEST_DATA_DIR = sys.argv[1]
@@ -222,7 +223,7 @@ class SettingsTest(ScopeHarnessTestCase):
 
     def assertMatchResultFails(self, match_result, msg):
         self.assertFalse(match_result.success)
-        self.assertEqual(match_result.concat_failures, msg)
+        self.assertTrue(re.match(msg, match_result.concat_failures), msg="Failed to match '%s' against regexp '%s'" % (match_result.concat_failures, msg))
 
     def test_basic(self):
         self.view.active_scope = 'mock-scope'
@@ -400,8 +401,8 @@ class SettingsTest(ScopeHarnessTestCase):
                         .display_values(["Kilometers", "Parsecs"])
                     )
                     .match(settings),
-                    "Failed expectations:\nOption with ID 'age' has 'value' == '23.0' but expected "
-                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '[\"Kilometers\",\"Miles\"]' but expected '[\"Kilometers\",\"Parsecs\"]'\n"
+                    "Failed expectations:\nOption with ID 'age' has 'value' == '23(.0)?' but expected "
+                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '\\[\"Kilometers\",\"Miles\"\\]' but expected '\\[\"Kilometers\",\"Parsecs\"\\]'\n"
                 )
 
     def test_value_set_failure(self):
