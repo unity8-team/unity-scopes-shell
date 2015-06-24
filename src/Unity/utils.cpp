@@ -73,6 +73,8 @@ scopes::Variant qVariantToScopeVariant(QVariant const& variant)
             return scopes::Variant(variant.toBool());
         case QMetaType::Int:
             return scopes::Variant(variant.toInt());
+        case QMetaType::UInt:
+            return scopes::Variant(static_cast<int64_t>(variant.toUInt()));
         case QMetaType::Double:
             return scopes::Variant(variant.toDouble());
         case QMetaType::QString:

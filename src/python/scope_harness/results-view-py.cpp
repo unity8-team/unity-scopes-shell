@@ -73,6 +73,7 @@ void export_results_view()
         .add_property("alt_department_id", &shv::ResultsView::altDepartmentId)
         .add_property("has_departments", &shv::ResultsView::hasDepartments)
         .add_property("has_alt_departments", &shv::ResultsView::hasAltDepartments)
+        .add_property("settings", &shv::ResultsView::settings)
         .def("browse_department", &shv::ResultsView::browseDepartment,
              "Go to a specific department by id. Returns Department instance.", return_value_policy<return_by_value>())
         .def("browse_alt_department", &shv::ResultsView::browseAltDepartment,

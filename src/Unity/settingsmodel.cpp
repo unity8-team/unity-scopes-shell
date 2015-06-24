@@ -325,6 +325,11 @@ void SettingsModel::settings_timeout()
     else if (m_data_by_id.contains(setting_id))
     {
         m_settings->setValue(setting_id, value);
+        m_settings->sync(); // make sure the change to setting value is synced to fs
+    }
+    else
+    {
+        qWarning() << "No such setting:" << setting_id;
     }
 
     Q_EMIT settingsChanged();

@@ -50,7 +50,7 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.16)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.19)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
 
 # Standard install paths
@@ -102,3 +102,4 @@ add_subdirectory(tests)
 add_subdirectory(data)
 add_subdirectory(tools)
 add_subdirectory(po)
+add_subdirectory(docs)

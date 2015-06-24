@@ -1,4 +1,4 @@
-# German translation for unity-scopes-shell
+# Russian translation for unity-scopes-shell
 # Copyright (c) 2015 Rosetta Contributors and Canonical Ltd 2015
 # This file is distributed under the same license as the unity-scopes-shell package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: unity-scopes-shell\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2015-05-29 08:44+0000\n"
-"PO-Revision-Date: 2015-05-28 19:56+0000\n"
-"Last-Translator: Daniel Kessel <Unknown>\n"
-"Language-Team: German <de@li.org>\n"
+"PO-Revision-Date: 2015-05-29 05:37+0000\n"
+"Last-Translator: ☠Jay ZDLin☠ <Unknown>\n"
+"Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
