@@ -102,6 +102,7 @@ private Q_SLOTS:
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
     void purgeScopesToDelete();
+    void scopeRegistryChanged();
 
 private:
     void createUserAgentString();
@@ -125,6 +126,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
+    QTimer m_registryRefreshTimer;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;
