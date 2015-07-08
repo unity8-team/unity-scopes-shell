@@ -1193,6 +1193,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
+    // No preview for scope:// uris and for special camera-app card in video aggregator scope (if no videos are available).
     if (result->uri().find("scope://") == 0 || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
         return nullptr;
     }
