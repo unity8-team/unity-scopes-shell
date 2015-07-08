@@ -1111,7 +1111,7 @@ void Scope::setFavorite(const bool value)
     }
 }
 
-void Scope::activate(QVariant const& result_var)
+void Scope::activate(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
@@ -1157,8 +1157,12 @@ void Scope::activate(QVariant const& result_var)
     }
 
     if (result->direct_activation()) {
-        activateUri(QString::fromStdString(result->uri()));
-    } else {
+        if (result->uri().find("scope://") == 0 || id() == "clickscope" || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
+            activateUri(QString::fromStdString(result->uri()));
+        } else {
+            Q_EMIT previewRequested(result_var);
+        }
+    } else { // intercept activation flag set
         try {
             cancelActivation();
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
@@ -1176,7 +1180,7 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var)
+unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1186,6 +1190,10 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
         qWarning("preview(): received null result");
+        return nullptr;
+    }
+
+    if (result->uri().find("scope://") == 0 || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
         return nullptr;
     }
 
