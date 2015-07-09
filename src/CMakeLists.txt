@@ -1,10 +1,4 @@
 
-# Dependencies
-pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
-pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
-
 include_directories(
     ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
 )

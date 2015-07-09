@@ -5,6 +5,24 @@ unity-scopes-shell (0.5.5-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Pawel Stolowski <pawel.stolowski@canonical.com>  Wed, 08 Jul 2015 08:35:37 +0000
 
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * Resync trunk.
+
+  [ Marcus Tomlinson ]
+  * Clean out redundant pkg_check_modules calls in multiple
+    CMakeLists.txt files
+
+  [ Pawel Stolowski ]
+  * Cherry-picked the workaround for delayed processing of scoperegistry
+    changes from RTM. (LP: #1446499)
+  * Fix for test failure caused by changes in jsoncpp formatting of
+    floats. Use regular expressions to matched error strings when
+    testing for expected failures.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 07 Jul 2015 04:20:10 +0000
+
 unity-scopes-shell (0.5.4+15.10.20150617.2-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]

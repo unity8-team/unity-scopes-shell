@@ -1,6 +1,4 @@
 
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
-
 include_directories(
     ${Unity-qml_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/src/Unity
