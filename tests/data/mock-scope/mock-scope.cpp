@@ -31,10 +31,11 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(CannedQuery const& query, SearchMetadata const& metadata) :
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata, VariantMap const& settings) :
         SearchQueryBase(query, metadata),
         query_(query.query_string()),
-        department_id_(query.department_id())
+        department_id_(query.department_id()),
+        settings_(settings)
     {
     }
 
@@ -267,6 +268,16 @@ public:
             res.set_dnd_uri("test:dnd_uri");
             reply->push(res);
         }
+        else if (query_ == "settings-change")
+        {
+            auto cat = reply->register_category("cat1", "Category 1", "");
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            res["setting-distanceUnit"] = settings_["distanceUnit"];
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -286,6 +297,7 @@ public:
 private:
     string query_;
     string department_id_;
+    VariantMap settings_;
 };
 
 class MyPreview : public PreviewQueryBase
@@ -473,7 +485,7 @@ class MyScope : public ScopeBase
 public:
     virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
-        SearchQueryBase::UPtr query(new MyQuery(q, metadata));
+        SearchQueryBase::UPtr query(new MyQuery(q, metadata, settings()));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }

@@ -33,6 +33,14 @@ void export_preview_widget()
         .add_property("id", &shp::PreviewWidget::id)
         .add_property("type", &shp::PreviewWidget::type)
         .add_property("data", &shp::PreviewWidget::data)
-        .def("trigger", &shp::PreviewWidget::trigger)
+        .def("trigger", &shp::PreviewWidget::trigger,
+                "Trigger preview action.\n\n"
+                ":param arg2: action identifier\n"
+                ":type arg2: string\n"
+                ":param arg3: dictionary holding additional action data, typically the value of ``data`` property.\n"
+                ":type arg3: dict\n"
+                ":returns: instance of PreviewView or ResultsView.\n"
+                ":raises: ValueError if action couldn't be executed"
+                )
         ;
 }

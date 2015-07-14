@@ -50,8 +50,12 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.18)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.19)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
+
+pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
+pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
+pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
 
 # Standard install paths
 include(GNUInstallDirs)
@@ -102,3 +106,4 @@ add_subdirectory(tests)
 add_subdirectory(data)
 add_subdirectory(tools)
 add_subdirectory(po)
+add_subdirectory(docs)

@@ -1,348 +1,328 @@
 libscope-harness.so.1 libscope-harness1 #MINVER#
- (c++)"unity::scopeharness::ScopeHarness::resultsView()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::ScopeHarness::newFromSystem()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::ScopeHarness::newFromScopeList(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::ScopeHarness::newFromPreExistingConfig(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::ScopeHarness::ScopeHarness(std::shared_ptr<unity::scopeharness::registry::Registry>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::throwIfNot(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::performSearch(QSharedPointer<unity::shell::scopes::ScopeInterface>, QString const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::refreshSearch(QSharedPointer<scopes_ng::Scope>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::getFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::getFavoriteScopes()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::checkedFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&, bool&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::setFavouriteScopes(QStringList const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::waitForResultsChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::previewForFirstResult(QSharedPointer<scopes_ng::Scope>, QString const&, QScopedPointer<scopes_ng::PreviewStack, QScopedPointerDeleter<scopes_ng::PreviewStack> >&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::throwIf(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::setColumnCount(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::setResultsView(std::shared_ptr<unity::scopeharness::view::ResultsView>)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::widgetsInFirstColumn()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::preview(std::shared_ptr<unity::shell::scopes::PreviewStackInterface>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::refresh()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::widgets()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::PreviewView()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::categories()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::forceRefresh()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::setActiveScope(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::setPreviewView(std::shared_ptr<unity::scopeharness::view::PreviewView>)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::browseDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::browseAltDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::overrideCategoryJson(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::waitForResultsChange()@Base" 0.5.4+15.04.20150311.3
- _ZN5unity12scopeharness4view11ResultsView8categoryERKSs@Base 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::setQuery(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::ResultsView(unity::scopeharness::internal::ResultsViewArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::~ResultsView()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::failure(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::MatchResult()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::operator=(unity::scopeharness::matcher::MatchResult&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::operator=(unity::scopeharness::matcher::MatchResult const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::attributes(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::background(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::art(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::dndUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::emblem(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::mascot(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::any_uri()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::summary(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::property(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::subtitle(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::operator=(unity::scopeharness::matcher::ResultMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::operator=(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::widget(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::widget(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::~PreviewMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::components(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::headerLink(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::icon(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::mode(unity::scopeharness::matcher::CategoryMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::result(unity::scopeharness::matcher::ResultMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::result(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::renderer(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentLabel(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::id(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::mode(unity::scopeharness::matcher::DepartmentMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::isRoot(bool)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::allLabel(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::isHidden(bool)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentId(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::~DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::registry::SystemRegistry@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::view::AbstractView@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::view::PreviewView@Base" 0.5.4+15.04.20150311.3
+ (c++)"typeinfo for unity::scopeharness::view::ResultsView@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryListMatcher::CategoryListMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryListMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryListMatcher::match(std::vector<unity::scopeharness::results::Category, std::allocator<unity::scopeharness::results::Category> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::CategoryListMatcher::mode(unity::scopeharness::matcher::CategoryListMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::category(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::CategoryListMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::~PreviewColumnMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::type(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::~PreviewWidgetMatcher()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::hasChildren(bool)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::isActive(bool)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::CategoryMatcher(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::components(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::getId() const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::CategoryMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::headerLink(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::icon(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Category const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::match(unity::scopeharness::results::Category const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::mode(unity::scopeharness::matcher::CategoryMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::operator=(unity::scopeharness::matcher::CategoryMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::renderer(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::result(unity::scopeharness::matcher::ResultMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::result(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::CategoryMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::~ChildDepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::ChildDepartmentMatcher(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::getId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::hasChildren(bool)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::isActive(bool)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::ChildDepartment const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::match(unity::scopeharness::results::ChildDepartment const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::operator=(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::operator=(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::department(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::~ScopeUri()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::trigger(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::internal::PreviewWidgetArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::internal::PreviewWidgetArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::~PreviewWidget()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::internal::PreviewWidgetListArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::internal::PreviewWidgetListArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::~PreviewWidgetList()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::internal::DepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::internal::DepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::~Department()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::internal::ChildDepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::internal::ChildDepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::~ChildDepartment()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::internal::ResultArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::internal::ResultArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::operator=(unity::scopeharness::results::Result&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::operator=(unity::scopeharness::results::Result const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::internal::CategoryArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::internal::CategoryArguments const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeOemScopes()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeClickScopes()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeRemoteScopes()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeSystemScopes()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::start()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::CustomRegistry(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::CustomRegistry::~CustomRegistry()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::SystemRegistry::start()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::SystemRegistry::SystemRegistry()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::SystemRegistry::~SystemRegistry()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::PreExistingRegistry::start()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::PreExistingRegistry::PreExistingRegistry(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::registry::PreExistingRegistry::~PreExistingRegistry()@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::columnCount() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::searchHint() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::activeScope() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::description() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::displayName() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::departmentId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::customizations() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::hasDepartments() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::altDepartmentId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::hasAltDepartments() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::query() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::status() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::queryId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::scopeId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::iconHint() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::shortcut() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::ResultsView::sessionId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::concat_failures() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::success() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::MatchResult::failures() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::match(unity::scopeharness::results::Result const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Result const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ResultMatcher::getUri() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::match(unity::scopeharness::preview::PreviewWidgetList const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::preview::PreviewWidgetList const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::getId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::match(unity::scopeharness::results::Category const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Category const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::DepartmentMatcher::match(unity::scopeharness::results::Department const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::allLabel(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::child(unity::scopeharness::matcher::ChildDepartmentMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::~DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::DepartmentMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::DepartmentMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::id(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::isHidden(bool)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::isRoot(bool)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::DepartmentMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Department const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::CategoryListMatcher::match(std::vector<unity::scopeharness::results::Category, std::allocator<unity::scopeharness::results::Category> > const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::match(unity::scopeharness::results::Department const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::mode(unity::scopeharness::matcher::DepartmentMatcher::Mode)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentId(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::DepartmentMatcher::parentLabel(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::concat_failures() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::failures() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::failure(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::MatchResult()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::MatchResult(unity::scopeharness::matcher::MatchResult const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::operator=(unity::scopeharness::matcher::MatchResult&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::operator=(unity::scopeharness::matcher::MatchResult const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::MatchResult::success() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::column(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::match(std::vector<unity::scopeharness::preview::PreviewWidgetList, std::allocator<unity::scopeharness::preview::PreviewWidgetList> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::match(unity::scopeharness::matcher::MatchResult&, std::vector<unity::scopeharness::preview::PreviewWidgetList, std::allocator<unity::scopeharness::preview::PreviewWidgetList> > const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::match(unity::scopeharness::preview::PreviewWidget const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::operator=(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::~PreviewColumnMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewColumnMatcher::PreviewColumnMatcher(unity::scopeharness::matcher::PreviewColumnMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::preview::PreviewWidgetList const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::match(unity::scopeharness::preview::PreviewWidgetList const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::operator=(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::~PreviewMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::PreviewMatcher(unity::scopeharness::matcher::PreviewMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::widget(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewMatcher::widget(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::data(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::preview::PreviewWidget const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::getId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::match(unity::scopeharness::results::ChildDepartment const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::matcher::ChildDepartmentMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::ChildDepartment const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::match(unity::scopeharness::preview::PreviewWidget const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::operator=(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::~PreviewWidgetMatcher()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::PreviewWidgetMatcher(unity::scopeharness::matcher::PreviewWidgetMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::PreviewWidgetMatcher::type(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::any_uri()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::art(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::attributes(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::background(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::dndUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::emblem(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::getUri() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::mascot(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::results::Result const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::match(unity::scopeharness::results::Result const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::operator=(unity::scopeharness::matcher::ResultMatcher&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::operator=(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::property(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ResultMatcher const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::ResultMatcher(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::subtitle(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::summary(unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ResultMatcher::title(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::department(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::operator=(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::query(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::~ScopeUri()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::matcher::ScopeUri::ScopeUri(unity::scopeharness::matcher::ScopeUri const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::matcher::ScopeUri::toString() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::id() const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned long)@Base" 0.5.4+15.10.20150601
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasAtLeast(unsigned int)@Base" 0.5.4+15.10.20150601
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned long)@Base" 0.5.4+15.10.20150601
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::matcher::SettingsMatcher::hasExactly(unsigned int)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::match(std::shared_ptr<unity::scopeharness::view::SettingsView> const&) const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::mode(unity::scopeharness::matcher::SettingsMatcher::Mode)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::option(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsMatcher::SettingsMatcher()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::defaultValue(unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayName(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::displayValues(std::vector<unity::scopes::Variant, std::allocator<unity::scopes::Variant> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::getId() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::match(unity::scopeharness::matcher::MatchResult&, unity::scopeharness::view::SettingsView::Option const&) const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::operator=(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::optionType(unity::scopeharness::view::SettingsView::OptionType)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::SettingsOptionMatcher(unity::scopeharness::matcher::SettingsOptionMatcher const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::matcher::SettingsOptionMatcher::value(unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
  (c++)"unity::scopeharness::preview::PreviewWidget::data() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidget::type() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::id() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::at(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned long) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::at(unsigned int) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::preview::PreviewWidgetList::size() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::preview::PreviewWidgetList::operator[](std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::operator=(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned long) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::preview::PreviewWidgetList::operator[](unsigned int) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::parentLabel() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::id() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::size() const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Department::child(unsigned long) const@Base" 0.5.4+15.04.20150311.3
- (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Department::child(unsigned int) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::label() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::isRoot() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::loaded() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::allLabel() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::children() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::isHidden() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Department::parentId() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::hasChildren() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::id() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::label() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::ChildDepartment::isActive() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::attributes() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::background() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::art() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::tap() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::uri() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::title() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::value(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::emblem() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::mascot() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::dnd_uri() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::summary() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::subtitle() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::longPress() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Result::operator[](std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::~PreviewWidgetList()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::internal::PreviewWidgetListArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::PreviewWidgetList(unity::scopeharness::preview::PreviewWidgetList const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidgetList::size() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::operator=(unity::scopeharness::preview::PreviewWidget const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::~PreviewWidget()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::internal::PreviewWidgetArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::PreviewWidget(unity::scopeharness::preview::PreviewWidget const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::trigger(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::preview::PreviewWidget::type() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::~CustomRegistry()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::CustomRegistry(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeClickScopes()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeOemScopes()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeRemoteScopes()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::includeSystemScopes()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::operator=(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::Parameters::Parameters(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::CustomRegistry::start()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::PreExistingRegistry::~PreExistingRegistry()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::PreExistingRegistry::PreExistingRegistry(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::PreExistingRegistry::start()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::SystemRegistry::start()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::SystemRegistry::~SystemRegistry()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::registry::SystemRegistry::SystemRegistry()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::internal::CategoryArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::Category(unity::scopeharness::results::Category const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::components() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::headerLink() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::id() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::icon() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::size() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::empty() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::title() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::headerLink() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::icon() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::id() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::operator=(unity::scopeharness::results::Category const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::renderer() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::results() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Category::result(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Category::result(unsigned long) const@Base" 0.5.4+15.04.20150311.3
  (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Category::result(unsigned int) const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::results() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::results::Category::renderer() const@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::view::PreviewView@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::view::ResultsView@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::view::AbstractView@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::registry::SystemRegistry@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
- (c++)"typeinfo for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3
- (c++)"vtable for unity::scopeharness::view::PreviewView@Base" 0.5.4+15.04.20150311.3
- (c++)"vtable for unity::scopeharness::view::ResultsView@Base" 0.5.4+15.04.20150311.3
- (c++)"vtable for unity::scopeharness::view::AbstractView@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::size() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Category::title() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::~ChildDepartment()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::internal::ChildDepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::ChildDepartment(unity::scopeharness::results::ChildDepartment const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::hasChildren() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::id() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::isActive() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::label() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::ChildDepartment::operator=(unity::scopeharness::results::ChildDepartment const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::allLabel() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::children() const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::results::Department::child(unsigned long) const@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::results::Department::child(unsigned int) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::~Department()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::internal::DepartmentArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::Department(unity::scopeharness::results::Department const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::id() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::isHidden() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::isRoot() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::label() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::loaded() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::operator=(unity::scopeharness::results::Department const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::parentId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::parentLabel() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Department::size() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::art() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::attributes() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::background() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::dnd_uri() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::emblem() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::longPress() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::mascot() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::operator[](std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::operator=(unity::scopeharness::results::Result&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::operator=(unity::scopeharness::results::Result const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::internal::ResultArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result&&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::Result(unity::scopeharness::results::Result const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::subtitle() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::summary() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::tap() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::title() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::uri() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::value(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::ScopeHarness::newFromPreExistingConfig(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::ScopeHarness::newFromScopeList(unity::scopeharness::registry::CustomRegistry::Parameters const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::ScopeHarness::newFromSystem()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::ScopeHarness::resultsView()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::ScopeHarness::ScopeHarness(std::shared_ptr<unity::scopeharness::registry::Registry>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::checkedFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&, bool&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::getFavoriteScopes()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::getFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::performSearch(QSharedPointer<unity::shell::scopes::ScopeInterface>, QString const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::previewForFirstResult(QSharedPointer<scopes_ng::Scope>, QString const&, QScopedPointer<scopes_ng::PreviewStack, QScopedPointerDeleter<scopes_ng::PreviewStack> >&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::refreshSearch(QSharedPointer<scopes_ng::Scope>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::setFavouriteScopes(QStringList const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::throwIf(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::throwIfNot(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::waitForResultsChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::columnCount() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::preview(std::shared_ptr<unity::shell::scopes::PreviewStackInterface>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::PreviewView()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::refresh()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::setColumnCount(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::setResultsView(std::shared_ptr<unity::scopeharness::view::ResultsView>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::widgets()@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::PreviewView::widgetsInColumn(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::PreviewView::widgetsInFirstColumn()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::activeScope() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::altDepartmentId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::browseAltDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::browseDepartment(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::categories()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::category(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=amd64 arm64 ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned long)@Base" 0.5.4+15.04.20150311.3
+ (c++|arch=!amd64 !arm64 !ppc64el)"unity::scopeharness::view::ResultsView::category(unsigned int)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::customizations() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::departmentId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::description() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::displayName() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::forceRefresh()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::hasAltDepartments() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::hasDepartments() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::iconHint() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::overrideCategoryJson(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::query() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::queryId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::~ResultsView()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::ResultsView(unity::scopeharness::internal::ResultsViewArguments const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::scopeId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::searchHint() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::sessionId() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::setActiveScope(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::setPreviewView(std::shared_ptr<unity::scopeharness::view::PreviewView>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::setQuery(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::settings() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::ResultsView::shortcut() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::status() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::ResultsView::waitForResultsChange()@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::view::SettingsView::count() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::Option::~Option()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::options() const@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::set(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unity::scopes::Variant const&)@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::~SettingsView()@Base" 0.5.4+15.10.20150601
+ (c++)"unity::scopeharness::view::SettingsView::SettingsView(unity::scopeharness::internal::SettingsViewArguments const&)@Base" 0.5.4+15.10.20150601
  (c++)"vtable for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
- (c++)"vtable for unity::scopeharness::registry::SystemRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"vtable for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"vtable for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3
+ (c++)"vtable for unity::scopeharness::registry::SystemRegistry@Base" 0.5.4+15.04.20150311.3
+ (c++)"vtable for unity::scopeharness::view::AbstractView@Base" 0.5.4+15.04.20150311.3
+ (c++)"vtable for unity::scopeharness::view::PreviewView@Base" 0.5.4+15.04.20150311.3
+ (c++)"vtable for unity::scopeharness::view::ResultsView@Base" 0.5.4+15.04.20150311.3

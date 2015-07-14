@@ -43,8 +43,6 @@
 #include "department.h"
 #include "locationservice.h"
 
-class QGSettings;
-
 namespace scopes_ng
 {
 
@@ -188,7 +186,6 @@ private Q_SLOTS:
     void typingFinished();
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
-    void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
 
 protected:
@@ -249,7 +246,6 @@ private:
     unity::scopes::FilterState m_filterState;
     unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
-    QGSettings* m_settings;
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;

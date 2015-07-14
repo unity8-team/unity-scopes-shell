@@ -1,0 +1,140 @@
+#! /usr/bin/env python3
+
+#
+# Copyright (C) 2014 Canonical Ltd
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Authored by: Michi Henning <michi.henning@canonical.com>
+#
+
+import os
+import re
+import subprocess
+
+def check_locale():
+    # Check that we have the en_US locale installed, so we can guarantee a defined human-readable
+    # sort order. (LC_ALL=C sorts in surprising ways for a human.)
+    p = subprocess.Popen(['locale -a'], shell=True, stdout=subprocess.PIPE)
+    locale_regex = re.compile(r'en_US\.utf8')
+    found = False
+    for line in p.stdout:
+        mo = locale_regex.match(line.decode('utf-8'))
+        if (mo):
+            found = True
+            break
+    if not found:
+        raise Exception('en_US.utf8 locale not found. Run "sudo apt-get install language-pack-en"')
+
+
+def compare_syms(old_file, new_file):
+    # Following the first line, lines in the original symbol file look
+    # like this (note leading single space in each line):
+    #
+    #  (c++|arch=amd64)"unity::scopes::SomeObj::SomeObj(unity::scopes::SomeObj const&)@Base" 0.6.6+14.10.20140916
+    #  (c++)"unity::scopes::C::C(unity::scopes::internal::C const&)@Base" 0.6.6+14.10.20140916
+    #
+    # So lines contain:
+    #
+    # - space
+    # - (c++) or (c++|tag=val...)
+    # - "
+    # - demangled symbol name
+    # - "
+    # - space
+    # - version
+    #
+    # old_regex matches this, remembering the tags, the symbol, and the version
+    #
+    old_regex = re.compile(r'^ (\(.*\))"(.*)" (.*)$')
+
+    old_syms = {}                                   # Dictionary containing symbol -> ( tag, version )
+    with open(old_file, encoding='utf=8') as file:
+        line = file.readline()                      # Get first line, which is the library name and version
+        version_regex = re.compile(r'.*#MINVER#$')  # Sanity check
+        mo = version_regex.match(line)
+        if not mo:
+            raise Exception('Expected #MINVER# on line 1: ' + old_file + ': ' + line)
+
+        for line in file:
+            mo = old_regex.match(line)
+            if mo:
+                old_syms[mo.group(2)] = ( mo.group(1), mo.group(3) )
+            else:
+                raise Exception('Invalid input line in ' + old_file + ': ' + line)
+
+    # Following the first line, lines in the symbol file created by dpkg-buildpkg look
+    # like this (note leading single whitespace in each line):
+    #
+    #  _ZTv0_n24_N5unity6scopes11SearchReplyD0Ev@Base 0.4.0+14.04.20140312.1
+    #  _ZTv0_n24_N5unity6scopes11SearchReplyD1Ev@Base 0.4.0+14.04.20140312.1
+    #
+    # So lines contain:
+    #
+    # - space
+    # - mangled symbol name
+    # - space
+    # - version
+    #
+    # new_regex matches this.
+    #
+    new_regex = re.compile(r'^ (.*) .+$')
+
+    # Run the new symbols file through "c++filt | sort | uniq". We need
+    # the sort | uniq because, otherwise, we end up with duplicate demangled symbols.
+    try:
+        with open(new_file) as infile, open('new_symbols', 'w') as outfile:
+            p = subprocess.Popen(['c++filt | LC_ALL=en_US.UTF-8 sort | uniq'], shell=True, stdin=infile, stdout=subprocess.PIPE)
+
+            # For each symbol, if it is in the old dictionary, output the tags from the original
+            # symbol file, followed by the symbol and version. Otherwise, use "(c++)" as the tag
+            # and add " 0replaceme", so the new symbol will be accepted.
+            line = p.stdout.readline().decode('utf-8')
+            outfile.write(line)                         # Write library name and version
+            for line in p.stdout:
+                mo = new_regex.match(line.decode('utf-8'))
+                if (mo):
+                    sym = mo.group(1)
+                    try:
+                        tag, version = old_syms[sym]
+                    except KeyError:
+                        tag = '(c++)'
+                        version = '0replaceme'
+                    outfile.write(' {}"{}" {}\n'.format(tag, sym, version))
+                else:
+                    raise Exception('Cannot parse demangled line: ' + line.decode("utf-8"))
+    except FileNotFoundError:
+        # One or more of the new files may not exist. dpkg-buildpackage
+        # leaves a symbol file behind only if it found a difference.
+        return
+
+    # Write the diff into /tmp/symbols.diff
+    with open('/tmp/symbols.diff', 'a') as outfile:
+        subprocess.call(['diff', '-u', old_file, 'new_symbols'], stdout=outfile)
+
+FILES = [
+            ('./debian/libscope-harness1.symbols',
+             './debian/libscope-harness1/DEBIAN/symbols'),
+        ]
+
+def run():
+    check_locale()
+    try:
+        os.unlink('/tmp/symbols.diff')
+    except FileNotFoundError:
+        pass
+    for old_file, new_file in FILES:
+        compare_syms(old_file, new_file)
+
+if __name__ == '__main__':
+    run()
