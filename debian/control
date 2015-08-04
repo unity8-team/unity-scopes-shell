@@ -49,7 +49,7 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-7,
           unity-scopes-impl-8,
 Breaks: unity8-private (<< 7.84),
-        unity8 (<< 8.02)
+        unity8 (<< 8.11)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell
