@@ -1,4 +1,4 @@
-unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu1) wily; urgency=medium
+unity-scopes-shell (0.5.4+15.04.20150707-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]
   * Resync trunk.
