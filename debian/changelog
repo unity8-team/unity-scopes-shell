@@ -1,9 +1,13 @@
-unity-scopes-shell (0.5.5-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.5.5+15.04.20150810.1-0ubuntu1) vivid; urgency=medium
 
+  [ Pawel Stolowski ]
   * Implemented activation/preview special casing previously present in
     the shell and fixed handling of intercept_activation flag.
 
- -- Pawel Stolowski <pawel.stolowski@canonical.com>  Wed, 08 Jul 2015 08:35:37 +0000
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 10 Aug 2015 12:02:40 +0000
 
 unity-scopes-shell (0.5.4+15.04.20150707-0ubuntu1) vivid; urgency=medium
 
