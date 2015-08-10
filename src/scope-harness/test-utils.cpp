@@ -143,7 +143,7 @@ bool TestUtils::previewForFirstResult(ng::Scope::Ptr scope, QString const& searc
     unity::scopes::Result::SPtr result;
     if (!getFirstResult(scope->categories(), result))
         return false;
-    preview_stack.reset(static_cast<ng::PreviewStack*>(scope->preview(QVariant::fromValue(result))));
+    preview_stack.reset(static_cast<ng::PreviewStack*>(scope->preview(QVariant::fromValue(result), ""))); //FIXME
 
     return true;
 }
