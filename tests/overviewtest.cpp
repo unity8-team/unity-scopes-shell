@@ -137,21 +137,10 @@ private Q_SLOTS:
         auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
         QVERIFY(result != nullptr);
 
-        // and try to preview it
-        QScopedPointer<PreviewStack> preview_stack(static_cast<PreviewStack*>(m_scope->preview(QVariant::fromValue(result))));
-        QCOMPARE(preview_stack->rowCount(), 1);
-        QCOMPARE(preview_stack->widgetColumnCount(), 1);
-        auto preview_var = preview_stack->data(preview_stack->index(0), PreviewStack::RolePreviewModel);
-        auto preview_model = preview_stack->getPreviewModel(0);
-        QCOMPARE(preview_model, preview_var.value<scopes_ng::PreviewModel*>());
-        QCOMPARE(preview_model->widgetColumnCount(), 1);
-        QTRY_COMPARE(preview_model->loaded(), true);
-
-        auto preview_widgets = preview_model->data(preview_model->index(0), PreviewModel::RoleColumnModel).value<scopes_ng::PreviewWidgetModel*>();
-        QVERIFY(!preview_widgets->roleNames().isEmpty());
-        QCOMPARE(preview_widgets->rowCount(), 2);
+        // preview not available for the overview scope
+        QScopedPointer<PreviewStack> preview_stack(static_cast<PreviewStack*>(m_scope->preview(QVariant::fromValue(result), results->categoryId())));
+        QVERIFY(preview_stack == nullptr);
     }
-
 };
 
 QTEST_GUILESS_MAIN(OverviewTest)
