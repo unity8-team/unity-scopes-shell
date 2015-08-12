@@ -47,6 +47,7 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-4,
           unity-scopes-impl-6,
           unity-scopes-impl-7,
+          unity-scopes-impl-8,
 Breaks: unity8-private (<< 7.84),
         unity8 (<< 8.11)
 Replaces: unity8-private (<< 7.84)
