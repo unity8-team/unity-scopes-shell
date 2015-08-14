@@ -214,8 +214,31 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 
 void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets)
 {
-    if (widgets.empty()) return;
+    processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
+        m_previewWidgets.append(widgetData);
+        addWidgetToColumnModel(widgetData);
+    });
+}
 
+void PreviewModel::updateWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets)
+{
+    processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
+        for (int i = 0; i<m_previewWidgets.size(); i++) {
+                if (m_previewWidgets.at(i)->id == widgetData->id) {
+                    m_previewWidgets.replace(i, widgetData);
+
+                    // Update widget with that id in all models
+                    for (auto model: m_previewWidgetModels) {
+                        model->updateWidget(widgetData);
+                    }
+                    break;
+                }
+        }
+    });
+}
+
+void PreviewModel::processWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets, std::function<void(QSharedPointer<PreviewWidgetData>)> const& processFunc)
+{
     for (auto it = widgets.begin(); it != widgets.end(); ++it) {
         scopes::PreviewWidget const& widget = *it;
         QString id(QString::fromStdString(widget.id()));
@@ -276,9 +299,8 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
                 m_dataToWidgetMap.insert(attr_it.value(), preview_data);
             }
             QSharedPointer<PreviewWidgetData> widgetData(preview_data);
-            m_previewWidgets.append(widgetData);
 
-            addWidgetToColumnModel(widgetData);
+            processFunc(widgetData);
         }
     }
 }
