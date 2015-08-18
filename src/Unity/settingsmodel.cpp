@@ -214,6 +214,12 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
+        if (!scopes_metadata.contains(id)) {
+            // if a child scope was just added to the registry, then scopes_metadata may not contain it yet because of the
+            // scope registry refresh delay on scope add/removal.
+            qWarning() << "SettingsModel::update_child_scopes(): no scope with id '" + id + "'";
+            continue;
+        }
         QString displayName = QString::fromStdString(_("Display results from %1")).arg(QString(scopes_metadata[id]->display_name().c_str()));
 
         QSharedPointer<QTimer> timer(new QTimer());
