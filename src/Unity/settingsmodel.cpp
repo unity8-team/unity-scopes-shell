@@ -191,6 +191,8 @@ QVariant SettingsModel::value(const QString& id) const
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
 {
+    qDebug() << "SettingsModel::update_child_scopes()";
+
     if (!scopes_metadata.contains(m_scopeId) ||
         !scopes_metadata[m_scopeId]->is_aggregator())
     {
@@ -210,6 +212,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
     bool reset = m_requireChildScopesRefresh;
     if (reset) {
+        qDebug() << "SettingsModel::update_child_scopes(): resetting settings model";
         beginResetModel();
     }
 
