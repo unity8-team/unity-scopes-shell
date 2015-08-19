@@ -249,6 +249,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
     if (reset) {
         endResetModel();
+        Q_EMIT countChanged();
     }
 }
 
