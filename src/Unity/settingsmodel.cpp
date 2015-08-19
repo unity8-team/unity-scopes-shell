@@ -32,7 +32,8 @@ namespace sc = unity::scopes;
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
         int settingsTimeout)
-        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout)
+        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout),
+          m_requireChildScopesRefresh(false)
 {
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
@@ -211,6 +212,8 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
 
+    m_requireChildScopesRefresh = false;
+
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
@@ -218,6 +221,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
             // if a child scope was just added to the registry, then scopes_metadata may not contain it yet because of the
             // scope registry refresh delay on scope add/removal.
             qWarning() << "SettingsModel::update_child_scopes(): no scope with id '" + id + "'";
+            m_requireChildScopesRefresh = true;
             continue;
         }
         QString displayName = QString::fromStdString(_("Display results from %1")).arg(QString(scopes_metadata[id]->display_name().c_str()));
@@ -294,6 +298,11 @@ int SettingsModel::rowCount(const QModelIndex&) const
 int SettingsModel::count() const
 {
     return m_data.size() + m_child_scopes_data.size();
+}
+
+bool SettingsModel::require_child_scopes_refresh() const
+{
+    return m_requireChildScopesRefresh;
 }
 
 void SettingsModel::settings_timeout()

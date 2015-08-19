@@ -377,7 +377,7 @@ void Scope::flushUpdates(bool finalize)
         bool containsDepartments = m_rootDepartment.get() != nullptr;
         // design decision - no navigation when doing searches
         containsDepartments &= m_searchQuery.isEmpty();
-        
+
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -860,6 +860,24 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
         m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
     }
     return m_settingsModel.data();
+}
+
+bool Scope::require_child_scopes_refresh() const
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        return m_settingsModel->require_child_scopes_refresh();
+    }
+    return false;
+}
+
+void Scope::update_child_scopes()
+{
+    qDebug() << "Scope::update_child_scopes()";
+    if (m_settingsModel && m_scopesInstance)
+    {
+        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+    }
 }
 
 /*

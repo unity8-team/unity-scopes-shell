@@ -576,6 +576,9 @@ void Scopes::scopeRegistryChanged()
     refreshScopeMetadata();
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
         scope->invalidateResults();
+        if (scope->require_child_scopes_refresh()) {
+            scope->update_child_scopes();
+        }
     }
 }
 
