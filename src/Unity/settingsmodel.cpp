@@ -32,7 +32,8 @@ namespace sc = unity::scopes;
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
         int settingsTimeout)
-        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout)
+        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout),
+          m_requireChildScopesRefresh(false)
 {
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
@@ -190,6 +191,8 @@ QVariant SettingsModel::value(const QString& id) const
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
 {
+    qDebug() << "SettingsModel::update_child_scopes()";
+
     if (!scopes_metadata.contains(m_scopeId) ||
         !scopes_metadata[m_scopeId]->is_aggregator())
     {
@@ -207,6 +210,17 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
+    const bool reset = m_requireChildScopesRefresh;
+    if (reset) {
+        // Reset the settings model to fix LP: #1484299, where a new child scope just finished installing
+        // while settings view is created (and we crash); since this is really a corner case, just
+        // resetting the model is fine.
+        qDebug() << "SettingsModel::update_child_scopes(): resetting settings model";
+        beginResetModel();
+    }
+
+    m_requireChildScopesRefresh = false;
+
     m_child_scopes_data.clear();
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
@@ -216,8 +230,9 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         QString id = child_scope.id.c_str();
         if (!scopes_metadata.contains(id)) {
             // if a child scope was just added to the registry, then scopes_metadata may not contain it yet because of the
-            // scope registry refresh delay on scope add/removal.
+            // scope registry refresh delay on scope add/removal (see LP: #1484299).
             qWarning() << "SettingsModel::update_child_scopes(): no scope with id '" + id + "'";
+            m_requireChildScopesRefresh = true;
             continue;
         }
         QString displayName = QString::fromStdString(_("Display results from %1")).arg(QString(scopes_metadata[id]->display_name().c_str()));
@@ -236,6 +251,11 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
         m_child_scopes_data << setting;
         m_child_scopes_data_by_id[id] = setting;
+    }
+
+    if (reset) {
+        endResetModel();
+        Q_EMIT countChanged();
     }
 }
 
@@ -294,6 +314,11 @@ int SettingsModel::rowCount(const QModelIndex&) const
 int SettingsModel::count() const
 {
     return m_data.size() + m_child_scopes_data.size();
+}
+
+bool SettingsModel::require_child_scopes_refresh() const
+{
+    return m_requireChildScopesRefresh;
 }
 
 void SettingsModel::settings_timeout()
