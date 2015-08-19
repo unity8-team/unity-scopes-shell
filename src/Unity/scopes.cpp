@@ -580,6 +580,13 @@ void Scopes::scopeRegistryChanged()
             scope->update_child_scopes();
         }
     }
+
+    Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
+        scope->invalidateResults();
+        if (scope->require_child_scopes_refresh()) {
+            scope->update_child_scopes();
+        }
+    }
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const
