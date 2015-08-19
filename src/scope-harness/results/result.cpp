@@ -237,7 +237,7 @@ Result::Result(const internal::ResultArguments& arguments) :
 
 Result::Result(Result&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 Result::Result(const Result& other) :
@@ -264,7 +264,7 @@ Result& Result::operator=(const Result& other)
 
 Result& Result::operator=(Result&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

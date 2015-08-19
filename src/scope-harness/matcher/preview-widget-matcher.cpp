@@ -92,7 +92,7 @@ PreviewWidgetMatcher::PreviewWidgetMatcher(const PreviewWidgetMatcher& other) :
 
 PreviewWidgetMatcher::PreviewWidgetMatcher(PreviewWidgetMatcher&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 PreviewWidgetMatcher& PreviewWidgetMatcher::operator=(const PreviewWidgetMatcher& other)
@@ -105,7 +105,7 @@ PreviewWidgetMatcher& PreviewWidgetMatcher::operator=(const PreviewWidgetMatcher
 
 PreviewWidgetMatcher& PreviewWidgetMatcher::operator=(PreviewWidgetMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
@@ -127,7 +127,7 @@ PreviewWidgetMatcher& PreviewWidgetMatcher::data(const sc::Variant& data)
 
 PreviewWidgetMatcher& PreviewWidgetMatcher::data(sc::Variant&& data)
 {
-    p->m_data = move(data);
+    p->m_data = std::move(data);
     return *this;
 }
 

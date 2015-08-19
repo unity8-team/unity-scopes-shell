@@ -186,7 +186,7 @@ ResultMatcher& ResultMatcher::operator=(const ResultMatcher& other)
 
 ResultMatcher& ResultMatcher::operator=(ResultMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

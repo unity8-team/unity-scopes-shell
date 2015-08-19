@@ -50,7 +50,7 @@ PreviewMatcher::PreviewMatcher(const PreviewMatcher& other) :
 
 PreviewMatcher::PreviewMatcher(PreviewMatcher&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 PreviewMatcher& PreviewMatcher::operator=(const PreviewMatcher& other)
@@ -61,7 +61,7 @@ PreviewMatcher& PreviewMatcher::operator=(const PreviewMatcher& other)
 
 PreviewMatcher& PreviewMatcher::operator=(PreviewMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
