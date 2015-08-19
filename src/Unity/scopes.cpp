@@ -541,6 +541,18 @@ void Scopes::refreshFinished()
 
     Q_EMIT metadataRefreshed();
 
+    Q_FOREACH(Scope::Ptr scope, m_scopes) {
+        if (scope->require_child_scopes_refresh()) {
+            scope->update_child_scopes();
+        }
+    }
+
+    Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
+        if (scope->require_child_scopes_refresh()) {
+            scope->update_child_scopes();
+        }
+    }
+
     m_listThread = nullptr;
 }
 
@@ -576,16 +588,10 @@ void Scopes::scopeRegistryChanged()
     refreshScopeMetadata();
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
         scope->invalidateResults();
-        if (scope->require_child_scopes_refresh()) {
-            scope->update_child_scopes();
-        }
     }
 
     Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
         scope->invalidateResults();
-        if (scope->require_child_scopes_refresh()) {
-            scope->update_child_scopes();
-        }
     }
 }
 
