@@ -210,24 +210,27 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
-    bool reset = m_requireChildScopesRefresh;
+    const bool reset = m_requireChildScopesRefresh;
     if (reset) {
+        // Reset the settings model to fix LP: #1484299, where a new child scope just finished installing
+        // while settings view is created (and we crash); since this is really a corner case, just
+        // resetting the model is fine.
         qDebug() << "SettingsModel::update_child_scopes(): resetting settings model";
         beginResetModel();
     }
 
+    m_requireChildScopesRefresh = false;
+
     m_child_scopes_data.clear();
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
-
-    m_requireChildScopesRefresh = false;
 
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
         if (!scopes_metadata.contains(id)) {
             // if a child scope was just added to the registry, then scopes_metadata may not contain it yet because of the
-            // scope registry refresh delay on scope add/removal.
+            // scope registry refresh delay on scope add/removal (see LP: #1484299).
             qWarning() << "SettingsModel::update_child_scopes(): no scope with id '" + id + "'";
             m_requireChildScopesRefresh = true;
             continue;
