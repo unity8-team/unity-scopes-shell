@@ -208,6 +208,11 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
+    bool reset = m_requireChildScopesRefresh;
+    if (reset) {
+        beginResetModel();
+    }
+
     m_child_scopes_data.clear();
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
@@ -240,6 +245,10 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
         m_child_scopes_data << setting;
         m_child_scopes_data_by_id[id] = setting;
+    }
+
+    if (reset) {
+        endResetModel();
     }
 }
 
