@@ -231,6 +231,11 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
 
 void Scope::metadataRefreshed()
 {
+    // refresh Settings view if needed
+    if (require_child_scopes_refresh()) {
+        update_child_scopes();
+    }
+
     std::shared_ptr<scopes::ActivationResponse> response;
     response.swap(m_delayedActivation);
 
