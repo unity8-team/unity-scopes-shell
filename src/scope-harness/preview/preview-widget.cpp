@@ -81,7 +81,7 @@ PreviewWidget::PreviewWidget(const PreviewWidget& other) :
 
 PreviewWidget::PreviewWidget(PreviewWidget&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
@@ -97,7 +97,7 @@ PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
 
 PreviewWidget& PreviewWidget::operator=(PreviewWidget&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
