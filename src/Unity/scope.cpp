@@ -878,7 +878,6 @@ bool Scope::require_child_scopes_refresh() const
 
 void Scope::update_child_scopes()
 {
-    qDebug() << "Scope::update_child_scopes()";
     if (m_settingsModel && m_scopesInstance)
     {
         m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
