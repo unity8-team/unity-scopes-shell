@@ -62,7 +62,7 @@ ChildDepartment::ChildDepartment(const ChildDepartment& other) :
 
 ChildDepartment::ChildDepartment(ChildDepartment&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 ChildDepartment& ChildDepartment::operator=(const ChildDepartment& other)
@@ -74,7 +74,7 @@ ChildDepartment& ChildDepartment::operator=(const ChildDepartment& other)
 
 ChildDepartment& ChildDepartment::operator=(ChildDepartment&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

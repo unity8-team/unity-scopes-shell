@@ -58,7 +58,7 @@ Category::Category(const internal::CategoryArguments& arguments) :
 Category::Category(Category&& other) :
         p(new _Priv)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 Category::Category(const Category& other) :
@@ -77,7 +77,7 @@ Category& Category::operator=(const Category& other)
 
 Category& Category::operator=(Category&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
