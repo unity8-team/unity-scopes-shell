@@ -191,8 +191,6 @@ QVariant SettingsModel::value(const QString& id) const
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
 {
-    qDebug() << "SettingsModel::update_child_scopes()";
-
     if (!scopes_metadata.contains(m_scopeId) ||
         !scopes_metadata[m_scopeId]->is_aggregator())
     {
@@ -215,7 +213,6 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         // Reset the settings model to fix LP: #1484299, where a new child scope just finished installing
         // while settings view is created (and we crash); since this is really a corner case, just
         // resetting the model is fine.
-        qDebug() << "SettingsModel::update_child_scopes(): resetting settings model";
         beginResetModel();
     }
 
