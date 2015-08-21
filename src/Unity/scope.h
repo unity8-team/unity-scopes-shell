@@ -128,6 +128,8 @@ public:
     unity::shell::scopes::ScopeInterface::Status status() const override;
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
+    bool require_child_scopes_refresh() const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
