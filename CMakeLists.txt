@@ -50,7 +50,7 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.20)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.1)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
 
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
