@@ -115,6 +115,14 @@ void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
     dispatchPreview();
 }
 
+void PreviewStack::update(unity::scopes::PreviewWidgetList const& widgets)
+{
+    if (m_activePreview == nullptr) {
+        return;
+    }
+    m_activePreview->updateWidgetDefinitions(widgets);
+}
+
 void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 {
     // TODO: figure out if the result can produce a preview without sending a request to the scope
@@ -187,7 +195,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                 }
             }
 
-            if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
+            if ((widgetData->type == QLatin1String("actions") || widgetData->type == QLatin1String("icon-actions")) && data.contains("uri")) {
                 if (m_associatedScope) {
                     m_associatedScope->activateUri(data.value("uri").toString());
                     return;
@@ -272,6 +280,11 @@ int PreviewStack::widgetColumnCount() const
 int PreviewStack::rowCount(const QModelIndex&) const
 {
     return m_previews.size();
+}
+
+unity::scopes::Result::SPtr PreviewStack::previewedResult() const
+{
+    return m_previewedResult;
 }
 
 unity::shell::scopes::PreviewModelInterface* PreviewStack::getPreviewModel(int index) const

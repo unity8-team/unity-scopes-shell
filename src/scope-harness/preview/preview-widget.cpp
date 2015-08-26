@@ -134,7 +134,7 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
 
     QVariant widgetData;
 
-    if (type() == "actions" &&
+    if ((type() == "actions" || type() == "icon-actions") &&
             v.which() == sc::Variant::Dict &&
             v.get_dict()["actions"].which() == sc::Variant::Array)
     {

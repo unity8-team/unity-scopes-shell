@@ -224,6 +224,9 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
          case scopes::ActivationResponse::PerformQuery:
             executeCannedQuery(response->query(), true);
             break;
+        case scopes::ActivationResponse::UpdatePreview:
+            handlePreviewUpdate(result, response->updated_widgets());
+            break;
         default:
             break;
     }
@@ -255,6 +258,22 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
         m_queryUserData.reset(nullptr);
     }
     setSearchQueryString(QString::fromStdString(query.query_string()));
+}
+
+void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
+{
+    for (auto stack: m_previewStacks) {
+        auto previewedResult = stack->previewedResult();
+
+        if (result == nullptr) {
+            qWarning() << "handlePreviewUpdate: result is null";
+            return;
+        }
+        if (previewedResult != nullptr && *result == *previewedResult) {
+            stack->update(widgets);
+            break;
+        }
+    }
 }
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
@@ -377,7 +396,7 @@ void Scope::flushUpdates(bool finalize)
         bool containsDepartments = m_rootDepartment.get() != nullptr;
         // design decision - no navigation when doing searches
         containsDepartments &= m_searchQuery.isEmpty();
-        
+
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -951,6 +970,17 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_inverseDepartments.erase(it);
 }
 
+void Scope::previewStackDestroyed(QObject *obj)
+{
+    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    {
+        if (*it == obj) {
+            m_previewStacks.erase(it);
+            break;
+        }
+    }
+}
+
 void Scope::performQuery(QString const& cannedQuery)
 {
     try {
@@ -1231,6 +1261,8 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
+    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
+    m_previewStacks.append(stack);
     stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;
