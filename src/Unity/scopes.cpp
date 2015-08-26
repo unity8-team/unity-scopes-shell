@@ -577,6 +577,10 @@ void Scopes::scopeRegistryChanged()
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
         scope->invalidateResults();
     }
+
+    Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
+        scope->invalidateResults();
+    }
 }
 
 QVariant Scopes::data(const QModelIndex& index, int role) const

@@ -234,6 +234,11 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
 
 void Scope::metadataRefreshed()
 {
+    // refresh Settings view if needed
+    if (require_child_scopes_refresh()) {
+        update_child_scopes();
+    }
+
     std::shared_ptr<scopes::ActivationResponse> response;
     response.swap(m_delayedActivation);
 
@@ -879,6 +884,23 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
         m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
     }
     return m_settingsModel.data();
+}
+
+bool Scope::require_child_scopes_refresh() const
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        return m_settingsModel->require_child_scopes_refresh();
+    }
+    return false;
+}
+
+void Scope::update_child_scopes()
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+    }
 }
 
 /*
