@@ -140,7 +140,6 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     }
 
     m_rootDepartment = rootDepartment;
-    m_sortOrderFilter = sortOrderFilter;
     m_receivedFilters = filters;
     m_receivedFilterState = filterState;
 
@@ -405,8 +404,6 @@ void Scope::flushUpdates(bool finalize)
     if (finalize || m_rootDepartment.get() != nullptr)
     {
         bool containsDepartments = m_rootDepartment.get() != nullptr;
-        // design decision - no navigation when doing searches
-        containsDepartments &= m_searchQuery.isEmpty();
 
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
@@ -420,56 +417,7 @@ void Scope::flushUpdates(bool finalize)
         }
     }
 
-    // process the alt navigation (sort order filter)
-    QString currentAltNav(m_currentAltNavigationId);
-
-    if (m_sortOrderFilter && m_sortOrderFilter != m_lastSortOrderFilter) {
-        // build the nodes
-        m_altNavTree.reset(new DepartmentNode);
-        m_altNavTree->initializeForFilter(m_sortOrderFilter);
-
-        if (m_sortOrderFilter->has_active_option(m_receivedFilterState)) {
-            auto active_options = m_sortOrderFilter->active_options(m_receivedFilterState);
-            scopes::FilterOption::SCPtr active_option = *active_options.begin();
-            if (active_option) {
-                currentAltNav = QString::fromStdString(active_option->id());
-            }
-        }
-    }
-
-    m_lastSortOrderFilter = m_sortOrderFilter;
-
-    //
-    // only consider resetting alt nav id if we are in final flushUpdates
-    // or received alt nav filter already. We don't know if we should reset it
-    // until query finishes because filter may still arrive.
-    if (finalize || m_sortOrderFilter.get() != nullptr)
-    {
-        bool containsAltNav = m_sortOrderFilter.get() != nullptr;
-        // design decision - no navigation when doing searches
-        containsAltNav &= m_searchQuery.isEmpty();
-
-        if (containsAltNav != m_hasAltNavigation) {
-            m_hasAltNavigation = containsAltNav;
-            Q_EMIT hasAltNavigationChanged();
-        }
-
-        if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
-            qDebug() << "Resetting alt nav id";
-            m_currentAltNavigationId = "";
-            Q_EMIT currentAltNavigationIdChanged();
-        }
-
-        if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
-            m_currentAltNavigationId = currentAltNav;
-            Q_EMIT currentAltNavigationIdChanged();
-
-            // update the alt navigation models
-            updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
-        }
-    }
-
-    // process other filters
+    // process filters
     if (finalize || m_receivedFilters.size() > 0)
     {
         qDebug() << "Processing filters";
@@ -946,51 +894,29 @@ unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& n
 
 unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& navId)
 {
-    if (!m_altNavTree) return nullptr;
-
-    DepartmentNode* node = m_altNavTree->findNodeById(navId);
-    if (!node) return nullptr;
-
-    Department* navModel = new Department;
-    navModel->setScopeId(this->id());
-    navModel->loadFromDepartmentNode(node);
-    navModel->markSubdepartmentActive(m_currentAltNavigationId);
-
-    // sharing m_inverseDepartments with getNavigation
-    m_altNavModels.insert(navId, navModel);
-    m_inverseDepartments.insert(navModel, navId);
-    QObject::connect(navModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
-
-    return navModel;
+    // FIXME: remove
+    qWarning() << "Scope::getAltNavigation() is obsolete";
+    return nullptr;
 }
 
-QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, QString const& primaryFilterId, QString const& primaryOptionId)
+QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, unity::scopes::FilterState const& filterState)
 {
     scopes::CannedQuery q(scopeId.toStdString());
     q.set_query_string(searchQuery.toStdString());
     q.set_department_id(departmentId.toStdString());
-
-    if (!primaryFilterId.isEmpty() && !primaryOptionId.isEmpty()) {
-        scopes::FilterState filter_state;
-        scopes::OptionSelectorFilter::update_state(filter_state, primaryFilterId.toStdString(), primaryOptionId.toStdString(), true);
-        q.set_filter_state(filter_state);
-    }
-
+    q.set_filter_state(filterState);
     return QString::fromStdString(q.to_uri());
 }
 
 void Scope::setNavigationState(QString const& navId, bool altNavigation)
 {
     QString primaryFilterId;
-    if (m_sortOrderFilter) {
-        primaryFilterId = QString::fromStdString(m_sortOrderFilter->id());
-    }
     if (!altNavigation) {
         // switch current department id
-        performQuery(buildQuery(id(), m_searchQuery, navId, primaryFilterId, m_currentAltNavigationId));
+        performQuery(buildQuery(id(), m_searchQuery, navId, m_filterState));
     } else {
-        // switch current primary filter
-        performQuery(buildQuery(id(), m_searchQuery, m_currentNavigationId, primaryFilterId, navId));
+        //FIXME: remove
+        qWarning() << "Scope::setNavigationState(): alt navigation is obsolete";
     }
 }
 
@@ -1002,7 +928,6 @@ void Scope::departmentModelDestroyed(QObject* obj)
     if (it == m_inverseDepartments.end()) return;
 
     m_departmentModels.remove(it.value(), navigation);
-    m_altNavModels.remove(it.value(), navigation);
     m_inverseDepartments.erase(it);
 }
 
@@ -1070,12 +995,18 @@ QString Scope::currentAltNavigationId() const
 
 bool Scope::hasAltNavigation() const
 {
-    return m_hasAltNavigation;
+    // FIXME: remove
+    return false;
 }
 
 QVariantMap Scope::customizations() const
 {
     return m_customizations;
+}
+
+int Scope::activeFiltersCount() const
+{
+    return 0;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
@@ -1113,11 +1044,6 @@ void Scope::setSearchQueryString(const QString& search_query)
             ++m_query_id;
         }
         m_searchQuery = search_query;
-
-        // atm only empty query can have a filter state
-        if (!m_searchQuery.isEmpty()) {
-            m_filterState = scopes::FilterState();
-        }
 
         // only use typing delay if scope is active, otherwise apply immediately
         if (m_isActive) {
@@ -1434,6 +1360,18 @@ bool Scope::initialQueryDone() const
 unity::shell::scopes::FiltersInterface* Scope::filters() const
 {
     return m_filters.data();
+}
+
+unity::shell::scopes::FilterBaseInterface* Scope::primaryNavigationFilter() const
+{
+    // TODO
+    return nullptr;
+}
+
+QString Scope::navigationBrickLabel() const
+{
+    // TODO
+    return "";
 }
 
 void Scope::filterStateChanged()
