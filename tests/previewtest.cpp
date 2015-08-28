@@ -280,6 +280,92 @@ private Q_SLOTS:
         QVERIFY(bool(previewView2));
     }
 
+    void testPreviewUpdateViaAction()
+    {
+        m_resultsView->setQuery("update-preview");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        sc::VariantMap vm;
+        {
+            sc::VariantMap action1;
+            action1["id"] = "dosomething1";
+            action1["label"] = "Do something 1";
+            sc::VariantMap action2;
+            action2["id"] = "dosomething2";
+            action2["label"] = "Do something 2";
+            sc::VariantArray actions({sc::Variant(action1), sc::Variant(action2)});
+            vm["actions"] = actions;
+        }
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("icon-actions")
+                    .type("icon-actions")
+                    .data(sc::Variant(vm)))
+            )
+            .match(previewView->widgets())
+        );
+
+        auto sameView = previewView->widgetsInFirstColumn().at("icon-actions").trigger("dosomething1", sc::Variant());
+        QCOMPARE(abstractView, sameView);
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        {
+            sc::VariantMap action1;
+            action1["id"] = "dosomething1";
+            action1["label"] = "Did something 1"; // label of action 1 changed
+            sc::VariantMap action2;
+            action2["id"] = "dosomething2";
+            action2["label"] = "Do something 2";
+            sc::VariantArray actions({sc::Variant(action1), sc::Variant(action2)});
+            vm["actions"] = actions;
+        }
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("icon-actions")
+                    .type("icon-actions")
+                    .data(sc::Variant(vm)))
+            )
+            .match(previewView2->widgets())
+        );
+    }
+
+    void testPreviewActionRequestingSearch()
+    {
+        m_resultsView->setQuery("query");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        auto resView = previewView->widgetsInFirstColumn().at("actions").trigger("query",
+                previewView->widgetsInFirstColumn().at("actions").data());
+        // action with canned query uri should trigger a search
+        auto resultsView2 = dynamic_pointer_cast<shv::ResultsView>(resView);
+        QVERIFY(bool(resultsView2));
+        QCOMPARE(m_resultsView, resultsView2);
+    }
+
     void testPreviewReplacingPreview()
     {
         m_resultsView->setQuery("layout");

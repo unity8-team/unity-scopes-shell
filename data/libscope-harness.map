@@ -63,6 +63,8 @@ global:
         unity::scopeharness::matcher::PreviewWidgetMatcher::[!_]*;
         unity::scopeharness::matcher::ResultMatcher::[!_]*;
         unity::scopeharness::matcher::ScopeUri::[!_]*;
+        unity::scopeharness::matcher::SettingsMatcher::[!_]*;
+        unity::scopeharness::matcher::SettingsOptionMatcher::[!_]*;
         unity::scopeharness::preview::PreviewWidget::[!_]*;
         unity::scopeharness::preview::PreviewWidgetList::[!_]*;
         unity::scopeharness::registry::CustomRegistry::[!_]*;
@@ -75,6 +77,7 @@ global:
         unity::scopeharness::view::AbstractView::[!_]*;
         unity::scopeharness::view::PreviewView::[!_]*;
         unity::scopeharness::view::ResultsView::[!_]*;
+        unity::scopeharness::view::SettingsView::[!_]*;
     };
 local:
     *;

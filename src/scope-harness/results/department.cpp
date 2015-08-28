@@ -70,7 +70,7 @@ Department::Department(const Department& other) :
 
 Department::Department(Department&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 Department& Department::operator=(const Department& other)
@@ -82,7 +82,7 @@ Department& Department::operator=(const Department& other)
 
 Department& Department::operator=(Department&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

@@ -31,10 +31,11 @@ using namespace unity::scopes;
 class MyQuery : public SearchQueryBase
 {
 public:
-    MyQuery(CannedQuery const& query, SearchMetadata const& metadata) :
+    MyQuery(CannedQuery const& query, SearchMetadata const& metadata, VariantMap const& settings) :
         SearchQueryBase(query, metadata),
         query_(query.query_string()),
-        department_id_(query.department_id())
+        department_id_(query.department_id()),
+        settings_(settings)
     {
     }
 
@@ -136,6 +137,23 @@ public:
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
+        else if (query_ == "query")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("test:query");
+            res.set_title("result for: \"" + query_ + "\"");
+            reply->push(res);
+        }
+        else if (query_ == "update-preview")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("update-preview");
+            reply->push(res);
+        }
         else if (query_ == "expandable-widget")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
@@ -235,6 +253,16 @@ public:
             res.set_dnd_uri("test:dnd_uri");
             reply->push(res);
         }
+        else if (query_ == "settings-change")
+        {
+            auto cat = reply->register_category("cat1", "Category 1", "");
+            CategorisedResult res(cat);
+            res.set_uri("test:uri");
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            res["setting-distanceUnit"] = settings_["distanceUnit"];
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -254,6 +282,7 @@ public:
 private:
     string query_;
     string department_id_;
+    VariantMap settings_;
 };
 
 class MyPreview : public PreviewQueryBase
@@ -317,6 +346,31 @@ public:
             reply->push(widgets);
             return;
         }
+        else if (result().uri().find("query") != std::string::npos)
+        {
+            PreviewWidget w1("actions", "actions");
+
+            VariantBuilder builder;
+            auto uri = CannedQuery("mock-scope").to_uri();
+            builder.add_tuple({
+                {"id", Variant("nothing")},
+                {"label", Variant("Do nothing")}
+            });
+            builder.add_tuple({
+                {"id", Variant("query")},
+                {"label", Variant("Search")},
+                {"uri", Variant(uri)}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"actions"});
+
+            reply->register_layout({l1});
+            PreviewWidgetList widgets({w1});
+            reply->push(widgets);
+            return;
+        }
         else if (result().uri().find("expandable-widget") != std::string::npos)
         {
             PreviewWidget w1("exp", "expandable");
@@ -335,6 +389,29 @@ public:
             PreviewWidgetList widgets({w1, w4});
             reply->push(widgets);
             reply->push("src", Variant("bar.png"));
+            return;
+        }
+        else if (result().uri().find("update-preview") != std::string::npos)
+        {
+            PreviewWidget w1("icon-actions", "icon-actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("dosomething1")},
+                {"label", Variant("Do something 1")}
+            });
+            builder.add_tuple({
+                {"id", Variant("dosomething2")},
+                {"label", Variant("Do something 2")}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"icon-actions"});
+
+            reply->register_layout({l1});
+            PreviewWidgetList widgets({w1});
+            reply->push(widgets);
             return;
         }
 
@@ -398,12 +475,33 @@ private:
     ActivationResponse::Status status_;
 };
 
+
+class UpdatePreviewWidgets : public ActivationQueryBase
+{
+public:
+    UpdatePreviewWidgets(Result const& result, ActionMetadata const& metadata, PreviewWidgetList const &widgets)
+        : ActivationQueryBase(result, metadata),
+          widgets_(widgets)
+    {
+    }
+
+    virtual ActivationResponse activate() override
+    {
+        ActivationResponse resp(widgets_);
+        return resp;
+    }
+
+private:
+    PreviewWidgetList widgets_;
+    Variant extra_data_;
+};
+
 class MyScope : public ScopeBase
 {
 public:
     virtual SearchQueryBase::UPtr search(CannedQuery const& q, SearchMetadata const& metadata) override
     {
-        SearchQueryBase::UPtr query(new MyQuery(q, metadata));
+        SearchQueryBase::UPtr query(new MyQuery(q, metadata, settings()));
         cout << "scope-A: created query: \"" << q.query_string() << "\"" << endl;
         return query;
     }
@@ -417,6 +515,7 @@ public:
 
     virtual ActivationQueryBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
     {
+        cout << "scope-A: called perform_action: " << widget_id << ", " << action_id << endl;
         if (widget_id == "actions" && action_id == "hide")
         {
             return ActivationQueryBase::UPtr(new MyActivation(result, meta));
@@ -426,6 +525,24 @@ public:
             MyActivation* response = new MyActivation(result, meta, ActivationResponse::ShowPreview);
             response->setExtraData(meta.scope_data());
             return ActivationQueryBase::UPtr(response);
+        }
+        else if (widget_id == "icon-actions" && action_id == "dosomething1")
+        {
+            PreviewWidget w1("icon-actions", "icon-actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("dosomething1")},
+                {"label", Variant("Did something 1")}
+            });
+            builder.add_tuple({
+                {"id", Variant("dosomething2")},
+                {"label", Variant("Do something 2")}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            PreviewWidgetList widgets({w1});
+            return ActivationQueryBase::UPtr(new UpdatePreviewWidgets(result, meta, widgets));
         }
         return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::NotHandled));
     }

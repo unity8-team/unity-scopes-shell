@@ -2,19 +2,21 @@ Source: unity-scopes-shell
 Priority: optional
 Section: libs
 Build-Depends: cmake,
+               cmake-extras (>= 0.4),
                debhelper (>= 9),
                dh-python,
                libboost-python-dev,
                libboost-regex-dev,
-               libunity-api-dev (>= 7.97),
-               libunity-scopes-dev (>= 0.6.16~),
+               libunity-api-dev (>= 7.100),
+               libunity-scopes-dev (>= 1.0.1~),
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
                libubuntu-location-service-dev (>= 2.0.1),
                pkg-config,
-               python3-all-dev,
+               python3-dev,
                python-tornado,
+               python3-sphinx,
                qt5-default,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
@@ -44,8 +46,9 @@ Provides: unity-scopes-impl,
           unity-scopes-impl-1,
           unity-scopes-impl-4,
           unity-scopes-impl-6,
+          unity-scopes-impl-7,
 Breaks: unity8-private (<< 7.84),
-        unity8 (<< 8.02)
+        unity8 (<< 8.11)
 Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell

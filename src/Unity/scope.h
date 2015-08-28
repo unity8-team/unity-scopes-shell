@@ -44,8 +44,6 @@
 #include "department.h"
 #include "locationservice.h"
 
-class QGSettings;
-
 namespace scopes_ng
 {
 
@@ -133,6 +131,8 @@ public:
     unity::shell::scopes::SettingsModelInterface* settings() const override;
     unity::shell::scopes::FiltersInterface* filters() const override;
 
+    bool require_child_scopes_refresh() const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
@@ -150,8 +150,8 @@ public:
     void setActive(const bool) override;
     void setFavorite(const bool) override;
 
-    Q_INVOKABLE void activate(QVariant const& result) override;
-    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
+    Q_INVOKABLE void activate(QVariant const& result, QString const& categoryId) override;
+    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result, QString const& categoryId) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
@@ -174,6 +174,7 @@ public:
     Scope::Ptr findTempScope(QString const& id) const;
 
     bool loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name);
+    void setSearchQueryString(const QString& search_query);
 
 public Q_SLOTS:
     void invalidateResults();
@@ -188,9 +189,9 @@ private Q_SLOTS:
     void typingFinished();
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
-    void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
     void filterStateChanged();
+    void previewStackDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
@@ -214,6 +215,7 @@ private:
     void processSearchChunk(PushEvent* pushEvent);
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
+    void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
@@ -252,7 +254,7 @@ private:
     unity::shell::scopes::ScopeInterface::Status m_status;
     QList<unity::scopes::FilterBase::SCPtr> m_receivedFilters;
     QScopedPointer<Filters> m_filters;
-    QGSettings* m_settings;
+
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;
@@ -268,6 +270,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
+    QList<PreviewStack*> m_previewStacks;
 };
 
 } // namespace scopes_ng

@@ -21,12 +21,14 @@ This is a test of scope harness python bindings against mock scopes.
 The test cases here replicate some of the cases of the original C++ tests.
 """
 
-from scope_harness import ScopeHarness, CategoryMatcher, CategoryMatcherMode, CategoryListMatcher
+from scope_harness import ScopeHarness, CategoryMatcher, CategoryMatcherMode, CategoryListMatcher, SettingsMatcher, SettingsOptionMatcher
+from scope_harness import SettingsMatcherMode, SettingsOptionType
 from scope_harness import CategoryListMatcherMode, ResultMatcher, PreviewMatcher, PreviewWidgetMatcher, PreviewColumnMatcher, PreviewView
 from scope_harness import Parameters, DepartmentMatcher, ChildDepartmentMatcher
 from scope_harness.testing import ScopeHarnessTestCase
 import unittest
 import sys
+import re
 
 # first argument is the directory of test scopes
 TEST_DATA_DIR = sys.argv[1]
@@ -208,6 +210,225 @@ class DepartmentsTest(ScopeHarnessTestCase):
     def test_child_department(self):
         self.view.active_scope = 'mock-scope-departments'
         departments = self.view.browse_department('books')
+
+class SettingsTest(ScopeHarnessTestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.harness = ScopeHarness.new_from_scope_list(Parameters([
+                    TEST_DATA_DIR + "/mock-scope-departments/mock-scope-departments.ini",
+                    TEST_DATA_DIR + "/mock-scope-double-nav/mock-scope-double-nav.ini",
+                    TEST_DATA_DIR + "/mock-scope/mock-scope.ini"
+            ]))
+        cls.view = cls.harness.results_view
+
+    def assertMatchResultFails(self, match_result, msg):
+        self.assertFalse(match_result.success)
+        self.assertTrue(re.match(msg, match_result.concat_failures), msg="Failed to match '%s' against regexp '%s'" % (match_result.concat_failures, msg))
+
+    def test_basic(self):
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+        self.assertEqual(len(settings), 5)
+
+        self.assertMatchResult(SettingsMatcher()
+                .mode(SettingsMatcherMode.ALL)
+                .has_at_least(1)
+                .has_exactly(5)
+                .option(SettingsOptionMatcher("location")
+                    .display_name("Location")
+                    .option_type(SettingsOptionType.STRING)
+                    .value("London")
+                    .default_value("London")
+                    )
+                .option(SettingsOptionMatcher("distanceUnit")
+                    .display_name("Distance Unit")
+                    .option_type(SettingsOptionType.LIST)
+                    .display_values(["Kilometers", "Miles"])
+                    .value("Miles")
+                    .default_value("Miles")
+                    )
+                .option(SettingsOptionMatcher("age")
+                    .display_name("Age")
+                    .option_type(SettingsOptionType.NUMBER)
+                    .value(23)
+                    .default_value(23)
+                    )
+                .option(SettingsOptionMatcher("enabled")
+                    .display_name("Enabled")
+                    .option_type(SettingsOptionType.BOOLEAN)
+                    .value(True)
+                    .default_value(True)
+                    )
+                .option(SettingsOptionMatcher("color")
+                    .display_name("Color")
+                    .option_type(SettingsOptionType.STRING)
+                    .value(None)
+                    .default_value(None)
+                    )
+                .match(settings))
+
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.STARTS_WITH)
+                    .has_at_least(1)
+                    .option(
+                        SettingsOptionMatcher("location")
+                            .display_name("Location")
+                            .option_type(SettingsOptionType.STRING)
+                            .value("London")
+                            .default_value("London")
+                        )
+                    .match(settings)
+                )
+
+    def test_option(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+        self.assertEqual(len(settings), 5)
+
+        option = settings.options[0]
+        self.assertEqual(option.id, 'location')
+        self.assertEqual(option.option_type, SettingsOptionType.STRING)
+        self.assertEqual(option.display_name, 'Location')
+        self.assertEqual(option.value, 'London')
+        self.assertEqual(option.default_value, 'London')
+
+        option = settings.options[1]
+        self.assertEqual(option.display_values, ["Kilometers", "Miles"])
+
+    def test_settings_change(self):
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        settings.set("location", "Barcelona")
+
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                    .option(
+                        SettingsOptionMatcher("location")
+                            .value("Barcelona")
+                            .default_value("London")
+                        )
+                    .match(settings)
+                )
+
+        settings.set("distanceUnit", "Kilometers");
+
+        self.assertMatchResult(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                    .option(
+                        SettingsOptionMatcher("distanceUnit")
+                            .value("Kilometers")
+                            .default_value("Miles")
+                        )
+                    .match(settings)
+                )
+
+    def test_basic_failures(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        self.assertMatchResultFails(
+                SettingsMatcher()
+                    .has_at_least(6)
+                    .match(settings),
+                    "Failed expectations:\nExpected at least 6 options\n")
+
+        self.assertMatchResultFails(
+                SettingsMatcher()
+                    .has_exactly(2)
+                    .match(settings),
+                    "Failed expectations:\nExpected exactly 2 options\n")
+
+    def test_type_check_failures(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        self.assertMatchResultFails(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                        .option(
+                            SettingsOptionMatcher("age")
+                                .option_type(SettingsOptionType.STRING)
+                        )
+                        .option(
+                            SettingsOptionMatcher("distanceUnit")
+                                .option_type(SettingsOptionType.BOOLEAN)
+                        )
+                        .option(
+                            SettingsOptionMatcher("location")
+                                .option_type(SettingsOptionType.NUMBER)
+                        )
+                        .option(
+                            SettingsOptionMatcher("color")
+                                .option_type(SettingsOptionType.LIST)
+                        )
+                        .match(settings),
+                        "Failed expectations:\nOption ID age is of type number, expected string\nOption ID distanceUnit is of type list, expected boolean\nOption ID"
+                        " location is of type string, expected number\nOption ID color is of type string, expected list\n")
+
+    def test_value_check_failures(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        self.assertMatchResultFails(
+                SettingsMatcher()
+                    .mode(SettingsMatcherMode.BY_ID)
+                    .option(
+                        SettingsOptionMatcher("age")
+                            .value("xyz")
+                    )
+                    .option(
+                        SettingsOptionMatcher("distanceUnit")
+                        .display_values(["Kilometers", "Parsecs"])
+                    )
+                    .match(settings),
+                    "Failed expectations:\nOption with ID 'age' has 'value' == '23(.0)?' but expected "
+                    "'\"xyz\"'\nOption with ID 'distanceUnit' has 'displayValues' == '\\[\"Kilometers\",\"Miles\"\\]' but expected '\\[\"Kilometers\",\"Parsecs\"\\]'\n"
+                )
+
+    def test_value_set_failure(self):
+        """
+            Note: this test checks actual logic of scopes harness framework and shouldn't be replicated in
+            tests of real scopes.
+        """
+        self.view.active_scope = 'mock-scope'
+        settings = self.view.settings
+
+        exception_thrown = False
+        try:
+            settings.set("distanceUnit", "foo")
+        except ValueError as err:
+            exception_thrown = True
+            self.assertEqual(str(err), "Failed to update settings option with ID 'distanceUnit': no such value 'foo'")
+
+        self.assertTrue(exception_thrown)
+
+        exception_thrown = False
+        try:
+            settings.set("xyz", "abc")
+        except ValueError as err:
+            exception_thrown = True
+            self.assertEqual(str(err), "Setting update failed. No such option: 'xyz'")
+        self.assertTrue(exception_thrown)
 
 if __name__ == '__main__':
     unittest.main(argv = sys.argv[:1])

@@ -125,6 +125,10 @@ Scopes::Scopes(QObject *parent)
     }
 
     m_overviewScope = OverviewScope::newInstance(this);
+
+    m_registryRefreshTimer.setSingleShot(true);
+    connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
+
     m_locationService.reset(new UbuntuLocationService());
 
     createUserAgentString();
@@ -549,10 +553,7 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         invalidateScopeResults("videoaggregator");
     } else if (scopeName == "scopes") {
         // emitted when smart-scopes proxy or scope registry discovers new scopes
-        refreshScopeMetadata();
-        Q_FOREACH(Scope::Ptr scope, m_scopes) {
-            scope->invalidateResults();
-        }
+        m_registryRefreshTimer.start(5000);
         return;
     }
 
@@ -566,6 +567,19 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         scope->invalidateResults();
     } else {
         qWarning() << "invalidateScopeResults: no such scope '" << scopeName << "'";
+    }
+}
+
+void Scopes::scopeRegistryChanged()
+{
+    qDebug() << "Refreshing scope metadata";
+    refreshScopeMetadata();
+    Q_FOREACH(Scope::Ptr scope, m_scopes) {
+        scope->invalidateResults();
+    }
+
+    Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
+        scope->invalidateResults();
     }
 }
 

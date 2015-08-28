@@ -61,6 +61,19 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
     endInsertRows();
 }
 
+void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& updatedWidget)
+{
+    for (int i = 0; i<m_previewWidgets.count(); i++) {
+        auto widget = m_previewWidgets.at(i);
+        if (updatedWidget->id == widget->id) {
+            m_previewWidgets.replace(i, updatedWidget);
+            const QModelIndex idx = createIndex(i, 0);
+            Q_EMIT dataChanged(idx, idx);
+            break;
+        }
+    }
+}
+
 void PreviewWidgetModel::adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
 {
     beginResetModel();

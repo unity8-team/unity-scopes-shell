@@ -33,7 +33,6 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
-#include <QGSettings>
 #include <QtGui/QDesktopServices>
 #include <QEvent>
 #include <QMutex>
@@ -100,9 +99,6 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 
     QQmlEngine::setObjectOwnership(m_filters.data(), QQmlEngine::CppOwnership);
     connect(m_filters.data(), SIGNAL(filterStateChanged()), this, SLOT(filterStateChanged()));
-
-    m_settings = QGSettings::isSchemaInstalled("com.canonical.Unity.Lenses") ? new QGSettings("com.canonical.Unity.Lenses", QByteArray(), this) : nullptr;
-    QObject::connect(m_settings, &QGSettings::changed, this, &Scope::internetFlagChanged);
 
     setScopesInstance(parent);
 
@@ -234,6 +230,9 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
          case scopes::ActivationResponse::PerformQuery:
             executeCannedQuery(response->query(), true);
             break;
+        case scopes::ActivationResponse::UpdatePreview:
+            handlePreviewUpdate(result, response->updated_widgets());
+            break;
         default:
             break;
     }
@@ -241,6 +240,11 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
 
 void Scope::metadataRefreshed()
 {
+    // refresh Settings view if needed
+    if (require_child_scopes_refresh()) {
+        update_child_scopes();
+    }
+
     std::shared_ptr<scopes::ActivationResponse> response;
     response.swap(m_delayedActivation);
 
@@ -251,15 +255,6 @@ void Scope::metadataRefreshed()
     if (response->status() == scopes::ActivationResponse::PerformQuery) {
         executeCannedQuery(response->query(), false);
     }
-}
-
-void Scope::internetFlagChanged(QString const& key)
-{
-    if (key != "remoteContentSearch") {
-        return;
-    }
-
-    invalidateResults();
 }
 
 void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
@@ -273,7 +268,23 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
     {
         m_queryUserData.reset(nullptr);
     }
-    setSearchQuery(QString::fromStdString(query.query_string()));
+    setSearchQueryString(QString::fromStdString(query.query_string()));
+}
+
+void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
+{
+    for (auto stack: m_previewStacks) {
+        auto previewedResult = stack->previewedResult();
+
+        if (result == nullptr) {
+            qWarning() << "handlePreviewUpdate: result is null";
+            return;
+        }
+        if (previewedResult != nullptr && *result == *previewedResult) {
+            stack->update(widgets);
+            break;
+        }
+    }
 }
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
@@ -304,6 +315,8 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
         }
         if (scope != this) {
             Q_EMIT gotoScope(scopeId);
+        } else {
+            Q_EMIT showDash();
         }
     } else {
         // create temp dash page
@@ -736,12 +749,6 @@ void Scope::dispatchSearch()
             meta["session-id"] = uuidToString(m_session_id).toStdString();
         }
         meta["query-id"] = unity::scopes::Variant(m_query_id);
-        if (m_settings) {
-            QVariant remoteSearch(m_settings->get("remote-content-search"));
-            if (remoteSearch.toString() == QString("none")) {
-                meta["no-internet"] = true;
-            }
-        }
         try {
             if (m_settingsModel && m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
@@ -900,6 +907,23 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
     return m_settingsModel.data();
 }
 
+bool Scope::require_child_scopes_refresh() const
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        return m_settingsModel->require_child_scopes_refresh();
+    }
+    return false;
+}
+
+void Scope::update_child_scopes()
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+    }
+}
+
 unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& navId)
 {
     if (!m_departmentTree) return nullptr;
@@ -982,6 +1006,17 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_inverseDepartments.erase(it);
 }
 
+void Scope::previewStackDestroyed(QObject *obj)
+{
+    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    {
+        if (*it == obj) {
+            m_previewStacks.erase(it);
+            break;
+        }
+    }
+}
+
 void Scope::performQuery(QString const& cannedQuery)
 {
     try {
@@ -1044,6 +1079,16 @@ QVariantMap Scope::customizations() const
 }
 
 void Scope::setSearchQuery(const QString& search_query)
+{
+    // this method is called by the shell when user types in search string,
+    // it needs to reset canned query user data.
+    if (m_searchQuery.isNull() || search_query != m_searchQuery) {
+        m_queryUserData.reset(nullptr);
+    }
+    setSearchQueryString(search_query);
+}
+
+void Scope::setSearchQueryString(const QString& search_query)
 {
     /* Checking for m_searchQuery.isNull() which returns true only when the string
        has never been set is necessary because when search_query is the empty
@@ -1132,7 +1177,7 @@ void Scope::setFavorite(const bool value)
     }
 }
 
-void Scope::activate(QVariant const& result_var)
+void Scope::activate(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
@@ -1178,8 +1223,12 @@ void Scope::activate(QVariant const& result_var)
     }
 
     if (result->direct_activation()) {
-        activateUri(QString::fromStdString(result->uri()));
-    } else {
+        if (result->uri().find("scope://") == 0 || id() == "clickscope" || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
+            activateUri(QString::fromStdString(result->uri()));
+        } else {
+            Q_EMIT previewRequested(result_var);
+        }
+    } else { // intercept activation flag set
         try {
             cancelActivation();
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
@@ -1197,7 +1246,7 @@ void Scope::activate(QVariant const& result_var)
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var)
+unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1207,6 +1256,11 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
     if (!result) {
         qWarning("preview(): received null result");
+        return nullptr;
+    }
+
+    // No preview for scope:// uris and for special camera-app card in video aggregator scope (if no videos are available).
+    if (result->uri().find("scope://") == 0 || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
         return nullptr;
     }
 
@@ -1243,6 +1297,8 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
+    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
+    m_previewStacks.append(stack);
     stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;

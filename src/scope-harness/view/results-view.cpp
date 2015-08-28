@@ -26,6 +26,7 @@
 #include <scope-harness/internal/department-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/internal/results-view-arguments.h>
+#include <scope-harness/internal/settings-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
@@ -149,6 +150,8 @@ struct ResultsView::_Priv
     weak_ptr<PreviewView> m_previewView;
 
     ng::Scope::Ptr m_active_scope;
+
+    shared_ptr<SettingsView> m_settings;
 };
 
 ResultsView::ResultsView(const internal::ResultsViewArguments& arguments) :
@@ -419,6 +422,16 @@ sc::Variant ResultsView::customizations() const
 {
     p->checkActiveScope();
     return ng::qVariantToScopeVariant(p->m_active_scope->customizations());
+}
+
+SettingsView::SPtr ResultsView::settings() const
+{
+    p->checkActiveScope();
+    if (!p->m_settings)
+    {
+        p->m_settings = std::shared_ptr<SettingsView>(new SettingsView(internal::SettingsViewArguments { p->m_active_scope }));
+    }
+    return p->m_settings;
 }
 
 string ResultsView::sessionId() const

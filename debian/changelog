@@ -1,3 +1,125 @@
+unity-scopes-shell (0.5.5+15.10.20150826-0ubuntu1) wily; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Implemented activation/preview special casing previously present in
+    the shell and fixed handling of intercept_activation flag.
+  * Fix crash when aggregator's settings view is opened shortly after a
+    new child scope was installed. Fix invalidating of results in temp
+    scopes. (LP: #1484299)
+  * Support in-place updates for preview widgets.
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 26 Aug 2015 09:00:19 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu4) wily; urgency=medium
+
+  * Replace build-dependency on python3-all-dev with python3-dev, since 
+    this should never need to build for more than one version of python 
+    at a time.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 02 Aug 2015 11:09:27 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~ppa1) wily; urgency=medium
+
+  * GCC 5 fixes from
+    https://code.launchpad.net/~unity-api-team/unity-scopes-shell/gcc-5/+merge/266227
+  * Update symbols file. Package needs an soname bump later.
+
+ -- Matthias Klose <doko@ubuntu.com>  Fri, 31 Jul 2015 14:03:48 +0200
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~gcc5.2) wily; urgency=medium
+
+  * Build for unity-scopes-api 1.0.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue, 28 Jul 2015 13:35:22 +0200
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~gcc5.1) wily; urgency=medium
+
+  * No-change test rebuild for g++5 ABI transition
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 24 Jul 2015 17:08:13 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu2) wily; urgency=medium
+
+  * No-change rebuild for python3.5 transition
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Thu, 23 Jul 2015 19:50:25 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * Resync trunk.
+
+  [ Marcus Tomlinson ]
+  * Clean out redundant pkg_check_modules calls in multiple
+    CMakeLists.txt files
+
+  [ Pawel Stolowski ]
+  * Cherry-picked the workaround for delayed processing of scoperegistry
+    changes from RTM. (LP: #1446499)
+  * Fix for test failure caused by changes in jsoncpp formatting of
+    floats. Use regular expressions to matched error strings when
+    testing for expected failures.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 07 Jul 2015 04:20:10 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150617.2-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+  * Resync trunk. added: po/ca.po po/da.po po/it.po po/nl.po po/sl.po
+
+  [ Pawel Stolowski ]
+  * Fix some issues with scope harness settings handling: sync QSettings
+    object to write changes immediately to fs. wait for search to finish
+    when settings change (shell plugin starts search implicitly when
+    settings model changes). better test that also checks if scope sees
+    the new setting value.
+  * Tutorial and more API documentation. Use Sphinx to generate docs and
+    add them to python3-scope-harness deb.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 17 Jun 2015 16:30:51 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150601-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * debian/libscope-harness1.symbols: update to released version.
+
+  [ Pawel Stolowski ]
+  * Don't pass the old privacy setting flag down to scopes. (LP:
+    #1422700)
+  * Fix 'Display results from' string. Remove custom copy of
+    FindIntltool macro and use cmake-extras instead. Include
+    translations in the deb file.
+  * Provide python bindings for settings test harness.
+  * Scope harness: added support for settings. Fixed broken symbols line
+    of the initial harness commit, added new symbols (and sorted all the
+    symbols). Added helper tool for generating symbols taken from unity-
+    scopes-api. added: src/scope-harness/internal/settings-view-
+    arguments.h src/scope-harness/matcher/settings-matcher.cpp
+    src/scope-harness/matcher/settings-matcher.h src/scope-
+    harness/matcher/settings-option-matcher.cpp src/scope-
+    harness/matcher/settings-option-matcher.h src/scope-
+    harness/view/settings-view.cpp src/scope-harness/view/settings-
+    view.h tools/symbol_diff
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 01 Jun 2015 15:54:02 +0000
+
+unity-scopes-shell (0.5.4+15.04.20150429-0ubuntu1) vivid; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Pawel Stolowski ]
+  * Emit showDash() signal if canned query is executed for current
+    scope. (LP: #1335761)
+  * Reset user data set with previously executed canned query when shell
+    calls setSearchQuery() (i.e.user typed a new search). (LP: #1449928)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 29 Apr 2015 11:44:18 +0000
+
 unity-scopes-shell (0.5.4+15.04.20150410.2-0ubuntu1) vivid; urgency=medium
 
   [ CI Train Bot ]
