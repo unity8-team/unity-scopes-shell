@@ -1251,6 +1251,11 @@ void Scope::invalidateResults()
     }
 }
 
+void Scope::resetPrimaryNavigationTag()
+{
+    // TODO
+}
+
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
     if (m_scopesInstance) {
@@ -1370,9 +1375,12 @@ unity::shell::scopes::FilterBaseInterface* Scope::primaryNavigationFilter() cons
     return nullptr;
 }
 
-QString Scope::navigationBrickLabel() const
+QString Scope::primaryNavigationTag() const
 {
-    // TODO
+    auto filter = m_filters->primaryFilter();
+    if (filter) {
+        //TODO
+    }
     return "";
 }
 

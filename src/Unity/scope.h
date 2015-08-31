@@ -131,7 +131,7 @@ public:
     unity::shell::scopes::SettingsModelInterface* settings() const override;
     unity::shell::scopes::FiltersInterface* filters() const override;
     unity::shell::scopes::FilterBaseInterface* primaryNavigationFilter() const override;
-    QString navigationBrickLabel() const override;
+    QString primaryNavigationTag() const override;
     int activeFiltersCount() const override;
 
     bool require_child_scopes_refresh() const;
@@ -162,6 +162,7 @@ public:
     Q_INVOKABLE void setNavigationState(QString const& navId, bool altNavigation) override;
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
     Q_INVOKABLE void refresh() override;
+    Q_INVOKABLE void resetPrimaryNavigationTag() override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
