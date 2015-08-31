@@ -97,6 +97,8 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     m_categories.reset(new Categories(this));
     m_filters.reset(new Filters(this));
 
+    connect(m_filters.data(), SIGNAL(primaryFilterChanged()), this, SIGNAL(primaryNavigationFilterChanged()));
+
     QQmlEngine::setObjectOwnership(m_filters.data(), QQmlEngine::CppOwnership);
     connect(m_filters.data(), SIGNAL(filterStateChanged()), this, SLOT(filterStateChanged()));
 

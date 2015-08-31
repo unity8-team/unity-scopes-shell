@@ -54,14 +54,17 @@ public:
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState);
 
     unity::scopes::FilterState filterState() const;
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
 
 Q_SIGNALS:
     void filterStateChanged();
+    void primaryFilterChanged();
 
 private:
     static unity::shell::scopes::FiltersInterface::FilterType getFilterType(unity::scopes::FilterBase::SCPtr const& filter);
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
     QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> m_primaryFilter;
     unity::scopes::FilterState::SPtr m_filterState;
 };
 
