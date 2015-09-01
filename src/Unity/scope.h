@@ -217,6 +217,7 @@ private:
     void setCurrentNavigationId(QString const& id);
     void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
+    void processPrimaryNavigationTag();
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
     void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
@@ -232,7 +233,7 @@ private:
     QString m_noResultsHint;
     QString m_formFactor;
     QString m_currentNavigationId;
-    QString m_currentAltNavigationId;
+    QString m_primaryNavigationTag;
     QVariantMap m_customizations;
     std::unique_ptr<unity::scopes::Variant> m_queryUserData;
     bool m_isActive;
@@ -240,7 +241,6 @@ private:
     bool m_resultsDirty;
     bool m_delayedClear;
     bool m_hasNavigation;
-    bool m_hasAltNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
 

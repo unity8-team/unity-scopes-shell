@@ -107,4 +107,9 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
     m_options->update(optselfilter->options(), optselfilter->active_options(*m_filterState));
 }
 
+QString OptionSelectorFilter::filterTag() const
+{
+    return ""; //TODO
+}
+
 }

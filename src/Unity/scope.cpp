@@ -86,7 +86,6 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_resultsDirty(false)
     , m_delayedClear(false)
     , m_hasNavigation(false)
-    , m_hasAltNavigation(false)
     , m_favorite(false)
     , m_initialQueryDone(false)
     , m_searchController(new CollectionController)
@@ -98,6 +97,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     m_filters.reset(new Filters(this));
 
     connect(m_filters.data(), SIGNAL(primaryFilterChanged()), this, SIGNAL(primaryNavigationFilterChanged()));
+    connect(m_filters.data(), SIGNAL(primaryNavigationTagChanged()), this, SIGNAL(primaryNavigationTagChanged()));
 
     QQmlEngine::setObjectOwnership(m_filters.data(), QQmlEngine::CppOwnership);
     connect(m_filters.data(), SIGNAL(filterStateChanged()), this, SLOT(filterStateChanged()));
@@ -427,6 +427,7 @@ void Scope::flushUpdates(bool finalize)
 
         if (containsFilters) {
             m_filters->update(m_receivedFilters, m_receivedFilterState);
+            processPrimaryNavigationTag();
         }
         else
         {
@@ -992,7 +993,8 @@ bool Scope::hasNavigation() const
 
 QString Scope::currentAltNavigationId() const
 {
-    return m_currentAltNavigationId;
+    // FIXME: remove
+    return "";
 }
 
 bool Scope::hasAltNavigation() const
@@ -1253,7 +1255,10 @@ void Scope::invalidateResults()
 
 void Scope::resetPrimaryNavigationTag()
 {
-    // TODO
+    m_filterState = unity::scopes::FilterState();
+    m_primaryNavigationTag.clear();
+    Q_EMIT primaryNavigationTagChanged();
+    invalidateResults();
 }
 
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
@@ -1371,17 +1376,12 @@ unity::shell::scopes::FiltersInterface* Scope::filters() const
 
 unity::shell::scopes::FilterBaseInterface* Scope::primaryNavigationFilter() const
 {
-    // TODO
-    return nullptr;
+    return m_filters->primaryFilter().data();
 }
 
 QString Scope::primaryNavigationTag() const
 {
-    auto filter = m_filters->primaryFilter();
-    if (filter) {
-        //TODO
-    }
-    return "";
+    return m_primaryNavigationTag;
 }
 
 void Scope::filterStateChanged()
@@ -1389,6 +1389,30 @@ void Scope::filterStateChanged()
     qDebug() << "Filters changed";
     m_filterState = m_filters->filterState();
     invalidateResults();
+    processPrimaryNavigationTag();
+}
+
+void Scope::processPrimaryNavigationTag()
+{
+    QString tag;
+    // has departments?
+    if (m_rootDepartment) {
+        auto it = m_departmentModels.constFind(m_currentNavigationId);
+        if (it != m_departmentModels.constEnd()) {
+            tag = it.value()->label();
+        } else {
+            qCritical() << "Scope::processPrimaryNavigationTag(): no department model for '" << m_currentNavigationId << "'";
+        }
+    } else {
+        auto pf = m_filters->primaryFilter();
+        if (pf) {
+            tag = pf->filterTag();
+        }
+    }
+    qDebug() << "Scope::processPrimaryNavigationTag(): tag is '" << tag << "'";
+    if (m_primaryNavigationTag != tag) {
+        Q_EMIT primaryNavigationTagChanged();
+    }
 }
 
 } // namespace scopes_ng
