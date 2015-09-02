@@ -1,3 +1,12 @@
+unity-scopes-shell (0.5.5+15.04.20150821-0ubuntu1) vivid; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Fix crash when aggregator's settings view is opened shortly after a
+    new child scope was installed. Fix invalidating of results in temp
+    scopes. (LP: #1484299)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Fri, 21 Aug 2015 07:19:39 +0000
+
 unity-scopes-shell (0.5.5+15.04.20150810.1-0ubuntu1) vivid; urgency=medium
 
   [ Pawel Stolowski ]
