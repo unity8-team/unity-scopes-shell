@@ -1137,7 +1137,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
 {
     // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
     // is called - see LP: #1410191
-    auto self = m_scopesInstance->findTempScope(id());
+    auto self = findTempScope(id());
     Q_UNUSED(self);
 
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
@@ -1211,7 +1211,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
 {
     // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
     // is called - see LP: #1410191
-    auto self = m_scopesInstance->findTempScope(id());
+    auto self = findTempScope(id());
     Q_UNUSED(self);
 
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {

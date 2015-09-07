@@ -151,6 +151,13 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 
 void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
+    // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
+    // is called - see LP: #1410191
+    Scope::Ptr self;
+    if (m_associatedScope) {
+        self = m_associatedScope->findTempScope(m_associatedScope->id());
+    }
+
     PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
     if (previewModel != nullptr) {
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
