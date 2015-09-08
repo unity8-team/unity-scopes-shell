@@ -32,6 +32,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QUuid>
+#include <QPointer>
 
 #include <unity/scopes/ActionMetadata.h>
 #include <unity/scopes/Scope.h>
@@ -153,10 +154,11 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
 {
     // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
     // is called - see LP: #1410191
-    Scope::Ptr self;
+    Scope::Ptr selfScope;
     if (m_associatedScope) {
-        self = m_associatedScope->findTempScope(m_associatedScope->id());
+        selfScope = m_associatedScope->findTempScope(m_associatedScope->id());
     }
+    QPointer<PreviewStack> self(this);
 
     PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
     if (previewModel != nullptr) {
@@ -176,6 +178,10 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                                                                      details.value("service_name").toString(),
                                                                      details.value("service_type").toString(),
                                                                      details.value("provider_name").toString());
+                    if (!self) {
+                        return;
+                    }
+
                     int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
                     if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                     {
