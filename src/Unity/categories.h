@@ -34,7 +34,7 @@
 namespace scopes_ng
 {
 
-struct CategoryData;
+class CategoryData;
 
 class Q_DECL_EXPORT Categories : public unity::shell::scopes::CategoriesInterface
 {
@@ -58,8 +58,8 @@ public:
     Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
     QSharedPointer<ResultsModel> lookupCategory(std::string const& category_id);
-    void registerCategory(unity::scopes::Category::SCPtr category, QSharedPointer<ResultsModel> model);
-    void updateResultCount(QSharedPointer<ResultsModel> resultsModel);
+    void registerCategory(const unity::scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> model);
+    void updateResultCount(const QSharedPointer<ResultsModel>& resultsModel);
     void clearAll();
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components);

@@ -84,7 +84,7 @@ void OverviewScope::metadataChanged()
 
 QString OverviewScope::id() const
 {
-    return QString("scopes");
+    return QStringLiteral("scopes");
 }
 
 scopes::ScopeProxy OverviewScope::proxy_for_result(scopes::Result::SPtr const& result) const

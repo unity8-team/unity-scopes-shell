@@ -28,7 +28,7 @@
 namespace scopes_ng
 {
 
-class ScopesCategoryData;
+struct ScopesCategoryData;
 class OverviewResultsModel;
 
 class Q_DECL_EXPORT OverviewCategories : public scopes_ng::Categories
