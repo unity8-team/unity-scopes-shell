@@ -25,6 +25,7 @@
 #include "previewmodel.h"
 #include "scope.h"
 #include "utils.h"
+#include "logintoaccount.h"
 
 // Qt
 #include <QLocale>
@@ -152,18 +153,49 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 
 void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
-    // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
-    // is called - see LP: #1410191
-    Scope::Ptr selfScope;
-    if (m_associatedScope) {
-        selfScope = m_associatedScope->findTempScope(m_associatedScope->id());
-    }
-    QPointer<PreviewStack> self(this);
+    auto action = [this, widgetId, actionId, data]() {
+        try {
+            auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
+            QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
+            scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+            metadata.set_scope_data(qVariantToScopeVariant(data));
+
+            if (m_lastActivation) {
+                m_lastActivation->invalidate();
+            }
+            std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
+            m_lastActivation = listener;
+
+            // should be always coming from active preview
+            if (m_activePreview) {
+                m_activePreview->setProcessingAction(true);
+            }
+
+            // FIXME: don't block
+            proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
+        } catch (...) {
+            qWarning("Caught an error from perform_action()");
+        }
+    };
 
     PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
     if (previewModel != nullptr) {
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
         if (widgetData != nullptr) {
+
+            QString wtype = widgetData->type;
+            auto uriAction = [this, wtype, data, action]() {
+                if (wtype == QLatin1String("actions") && data.contains("uri")) {
+                    if (m_associatedScope) {
+                        m_associatedScope->activateUri(data.value("uri").toString());
+                        return;
+                    }
+                }
+                action();
+            };
 
             if (m_associatedScope && widgetData->data.contains("online_account_details"))
             {
@@ -174,67 +206,39 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                     details.contains("login_passed_action") &&
                     details.contains("login_failed_action"))
                 {
-                    bool success = m_associatedScope->loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
-                                                                     details.value("service_name").toString(),
-                                                                     details.value("service_type").toString(),
-                                                                     details.value("provider_name").toString());
-                    if (!self) {
-                        return;
-                    }
-
-                    int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
-                    if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
-                    {
-                        scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
-                        switch (action_code)
+                    LoginToAccount *login = new LoginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
+                                                               details.value("service_name").toString(),
+                                                               details.value("service_type").toString(),
+                                                               details.value("provider_name").toString(),
+                                                               details.value("login_passed_action").toInt(),
+                                                               details.value("login_failed_action").toInt(),
+                                                               this);
+                    connect(login, &LoginToAccount::finished, [this, uriAction](bool, int action_code_index) {
+                        if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                         {
-                            case scopes::OnlineAccountClient::DoNothing:
-                                return;
-                            case scopes::OnlineAccountClient::InvalidateResults:
-                                m_associatedScope->invalidateResults();
-                                return;
-                            default:
-                                break;
+                            scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                            switch (action_code)
+                            {
+                                case scopes::OnlineAccountClient::DoNothing:
+                                    return;
+                                case scopes::OnlineAccountClient::InvalidateResults:
+                                    m_associatedScope->invalidateResults();
+                                    return;
+                                default:
+                                    break;
+                            }
                         }
-                    }
+                        uriAction();
+                    });
                 }
-            }
-
-            if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
-                if (m_associatedScope) {
-                    m_associatedScope->activateUri(data.value("uri").toString());
-                    return;
-                }
+            } else {
+                uriAction();
             }
         } else {
             qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
         }
-    }
-
-    try {
-        auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
-
-        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
-        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
-        metadata.set_scope_data(qVariantToScopeVariant(data));
-
-        if (m_lastActivation) {
-            m_lastActivation->invalidate();
-        }
-        std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
-        m_lastActivation = listener;
-
-        // should be always coming from active preview
-        if (m_activePreview) {
-            m_activePreview->setProcessingAction(true);
-        }
-
-        // FIXME: don't block
-        proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
-    } catch (std::exception& e) {
-        qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
-    } catch (...) {
-        qWarning("Caught an error from perform_action()");
+    } else {
+        action();
     }
 }
 
