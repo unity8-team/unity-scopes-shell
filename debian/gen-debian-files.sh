@@ -30,7 +30,7 @@ set -e  # Fail if any command fails.
 }
 dir=./debian
 
-# Set soversions depending on whether we are running on vivid or wily and later.
+# Use correct symbols file depending on the distro version
 
 distro=$(lsb_release -c -s)
 echo "gen-debian-files: detected distribution: $distro"
