@@ -45,14 +45,14 @@ if [ "$distro" = "vivid" ]
 then
     infile="${dir}/libscope-harness.symbols.in"
     outfile="${dir}"/libscope-harness${harness_so_ver}.symbols
-    cat "${infile}" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g>" > ${outfile}"
+    cat "${infile}" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" > "${outfile}"
 else
     harness_so_ver=$(expr $major + 1)
     infile="${dir}"/shlibs.in
     outfile="${dir}"/shlibs
     cat "$infile" | sed -e "s/HARNESS_SO_VERSION@/${harness_so_ver}/g" \
-        -e "s/HARNESS_MAJORMINOR/${harness_major_minor}/g" >"$outfile"
+        -e "s/HARNESS_MAJORMINOR/${harness_major_minor}/g" > "$outfile"
 fi
 
-cat "${dir}/control.in" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/" > "${dir}/control"
+cat "${dir}/control.in" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" > "${dir}/control"
 cp "${dir}/libscope-harness.install.in" "${dir}/libscope-harness${harness_so_ver}.install"
