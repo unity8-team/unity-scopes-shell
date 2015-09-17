@@ -53,7 +53,7 @@ Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell
 
-Package: libscope-harness2
+Package: libscope-harness1
 Section: libdevel
 Architecture: any
 Multi-Arch: same
@@ -69,7 +69,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         libscope-harness2 (= ${binary:Version})
+         libscope-harness1 (= ${binary:Version})
 Description: Test harness for Unity scopes
  Drive Unity scopes with a simple synchronous API. Make assertions
  about results. Development files.

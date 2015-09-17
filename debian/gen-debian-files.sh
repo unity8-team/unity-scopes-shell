@@ -17,9 +17,11 @@
 # Authored by: Pawel Stolowski <pawel.stolowski@canonical.com>
 
 #
-# This script is called from debian/rules and copies the correct variant of
-# libunity-scopeharness1.symbols for either vivid (gcc 4.9) or wily (gcc5),
-# to allow for a single source tree and dual landings.
+# This script is called from debian/rules and sets:
+# - symbols file for vivid
+# - shlibs for wily
+# - control file and libscope-harness .install file
+# to allow for a single source tree and dual landings for vivid/wily.
 #
 
 set -e  # Fail if any command fails.
@@ -30,29 +32,27 @@ set -e  # Fail if any command fails.
 }
 dir=./debian
 
-# Use correct symbols file depending on the distro version
-
 distro=$(lsb_release -c -s)
 echo "gen-debian-files: detected distribution: $distro"
 
-harness_so_ver=2
+harness_full_version=$(cat "${dir}"/HARNESS_VERSION)
+major=$(echo $harness_full_version | cut -d'.' -f1)
+minor=$(echo $harness_full_version | cut -d'.' -f2)
+harness_major_minor="${major}.${minor}"
+
+harness_so_ver=$major
 if [ "$distro" = "vivid" ]
 then
-    harness_so_ver=1
+    infile="${dir}libscope-harness.symbols"
+    outfile="${dir}"/libscope-harness${harness_so_ver}.symbols
+    cp "${infile}" "${outfile}"
+else
+    harness_so_ver=$(expr $major + 1)
+    infile="${dir}"/shlibs.in
+    outfile="${dir}"/shlibs
+    cat "$infile" | sed -e "s/HARNESS_SO_VERSION@/${harness_so_ver}/g" \
+        -e "s/HARNESS_MAJORMINOR/${harness_major_minor}/g" >"$outfile"
 fi
 
-harness_symbols_file="libscope-harness1.symbols"
-in_harness_symbols_file="${harness_symbols_file}-wily"
-if [ -f "${dir}/${harness_symbols_file}-${distro}" ]
-then
-    in_harness_symbols_file="${harness_symbols_file}-${distro}"
-fi
-
-# create symbols file
-cp "${dir}/${in_harness_symbols_file}" "${dir}/${harness_symbols_file}"
-
-# create control file
-cat "${dir}/control.in" | sed -e "s/@SCOPE_HARNESS_SOVERSION@/${harness_so_ver}/" > "${dir}/control"
-
-# create scope harness .install file
+cat "${dir}/control.in" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/" > "${dir}/control"
 cp "${dir}/libscope-harness.install.in" "${dir}/libscope-harness${harness_so_ver}.install"
