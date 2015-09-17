@@ -35,6 +35,12 @@ dir=./debian
 distro=$(lsb_release -c -s)
 echo "gen-debian-files: detected distribution: $distro"
 
+harness_so_ver=2
+if [ "$distro" = "vivid" ]
+then
+    harness_so_ver=1
+fi
+
 harness_symbols_file="libscope-harness1.symbols"
 in_harness_symbols_file="${harness_symbols_file}-wily"
 if [ -f "${dir}/${harness_symbols_file}-${distro}" ]
@@ -42,4 +48,11 @@ then
     in_harness_symbols_file="${harness_symbols_file}-${distro}"
 fi
 
+# create symbols file
 cp "${dir}/${in_harness_symbols_file}" "${dir}/${harness_symbols_file}"
+
+# create control file
+cat "${dir}/control.in" | sed -e "s/@SCOPE_HARNESS_SOVERSION@/${harness_so_ver}/" > "${dir}/control"
+
+# create scope harness .install file
+cp "${dir}/libscope-harness.install.in" "${dir}/libscope-harness${harness_so_ver}.install"

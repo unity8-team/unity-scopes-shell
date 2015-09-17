@@ -50,7 +50,7 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.1)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.0)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
 
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
@@ -78,6 +78,13 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "
     option(Werror "Treat warnings as errors" ON)
 else()
     option(Werror "Treat warnings as errors" OFF)
+endif()
+
+# Check the distribution we are building for, set scope harness so version accordingly
+execute_process(COMMAND lsb_release -c -s OUTPUT_VARIABLE DISTRIBUTION OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(HARNESS_SO_VERSION "2")
+if(${DISTRIBUTION} MATCHES "vivid")
+    set(HARNESS_SO_VERSION "1")
 endif()
 
 if (Werror)
