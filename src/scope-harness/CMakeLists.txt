@@ -1,5 +1,3 @@
-set(API_VERSION 1)
-
 set(SYMBOL_MAP "${CMAKE_SOURCE_DIR}/data/libscope-harness.map")
 
 _pkgconfig_invoke(libunity-scopes SCOPESLIB SCOPERUNNER_BIN "" --variable=scoperunner_bin )
@@ -68,7 +66,7 @@ qt5_use_modules(
 set_target_properties(
     scope-harness
     PROPERTIES
-    VERSION ${API_VERSION}.0.0
+    VERSION ${HARNESS_FULL_VERSION}
     SOVERSION ${HARNESS_SO_VERSION}
     LINK_FLAGS "-Wl,--version-script,${SYMBOL_MAP}"
     LINK_DEPENDS "${SYMBOL_MAP}"
