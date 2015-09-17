@@ -4,6 +4,7 @@ Section: libs
 Build-Depends: cmake,
                cmake-extras (>= 0.4),
                debhelper (>= 9),
+               lsb-release,
                dh-python,
                libboost-python-dev,
                libboost-regex-dev,
