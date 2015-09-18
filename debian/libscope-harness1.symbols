@@ -1,4 +1,4 @@
-libscope-harness.so.1 libscope-harness1 #MINVER#
+libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #MINVER#
  (c++)"typeinfo for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"typeinfo for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"typeinfo for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3
