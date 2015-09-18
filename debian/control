@@ -7,7 +7,6 @@
 Source: unity-scopes-shell
 Section: libs
 Build-Depends: debhelper (>= 9),
-               dh-python,
                lsb-release,
 Standards-Version: 3.9.5
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
