@@ -118,7 +118,7 @@ CategoryListMatcher& CategoryListMatcher::mode(CategoryListMatcher::Mode mode)
 
 CategoryListMatcher& CategoryListMatcher::category(CategoryMatcher&& categoryMatcher)
 {
-    p->m_categories.emplace_back(move(categoryMatcher));
+    p->m_categories.emplace_back(std::move(categoryMatcher));
     return *this;
 }
 

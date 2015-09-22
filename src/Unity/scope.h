@@ -187,6 +187,7 @@ private Q_SLOTS:
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
+    void previewStackDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
@@ -210,6 +211,7 @@ private:
     void processSearchChunk(PushEvent* pushEvent);
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
+    void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
@@ -261,6 +263,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
+    QList<PreviewStack*> m_previewStacks;
 };
 
 } // namespace scopes_ng

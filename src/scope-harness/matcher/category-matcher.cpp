@@ -180,7 +180,7 @@ CategoryMatcher::CategoryMatcher(const CategoryMatcher& other) :
 
 CategoryMatcher::CategoryMatcher(CategoryMatcher&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
@@ -199,7 +199,7 @@ CategoryMatcher& CategoryMatcher::operator=(const CategoryMatcher& other)
 
 CategoryMatcher& CategoryMatcher::operator=(CategoryMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
@@ -253,7 +253,7 @@ CategoryMatcher& CategoryMatcher::result(const ResultMatcher& resultMatcher)
 
 CategoryMatcher& CategoryMatcher::result(ResultMatcher&& resultMatcher)
 {
-    p->m_results.emplace_back(move(resultMatcher));
+    p->m_results.emplace_back(std::move(resultMatcher));
     return *this;
 }
 

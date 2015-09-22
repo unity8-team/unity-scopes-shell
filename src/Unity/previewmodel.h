@@ -78,11 +78,15 @@ public:
     void clearAll();
     PreviewWidgetData* getWidgetData(QString const& widgetId) const;
 
+    void updateWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
+
 private:
+    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
+    void processWidgetDefinitions(unity::scopes::PreviewWidgetList const&, std::function<void(QSharedPointer<PreviewWidgetData>)> const& processFunc);
     void processPreviewChunk(PushEvent* pushEvent);
     void setColumnLayouts(unity::scopes::ColumnLayoutList const&);
-    void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
     void updatePreviewData(QHash<QString, QVariant> const&);
+    PreviewWidgetModel* createExpandableWidgetModel(unity::scopes::PreviewWidget const&, PreviewWidgetData &);
     void addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const&);
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
 

@@ -1,24 +1,53 @@
-unity-scopes-shell (0.5.5+15.04.20150821-0ubuntu1) vivid; urgency=medium
-
-  [ Pawel Stolowski ]
-  * Fix crash when aggregator's settings view is opened shortly after a
-    new child scope was installed. Fix invalidating of results in temp
-    scopes. (LP: #1484299)
-
- -- CI Train Bot <ci-train-bot@canonical.com>  Fri, 21 Aug 2015 07:19:39 +0000
-
-unity-scopes-shell (0.5.5+15.04.20150810.1-0ubuntu1) vivid; urgency=medium
+unity-scopes-shell (0.5.5+15.10.20150826-0ubuntu1) wily; urgency=medium
 
   [ Pawel Stolowski ]
   * Implemented activation/preview special casing previously present in
     the shell and fixed handling of intercept_activation flag.
+  * Fix crash when aggregator's settings view is opened shortly after a
+    new child scope was installed. Fix invalidating of results in temp
+    scopes. (LP: #1484299)
+  * Support in-place updates for preview widgets.
 
   [ CI Train Bot ]
   * New rebuild forced.
 
- -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 10 Aug 2015 12:02:40 +0000
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 26 Aug 2015 09:00:19 +0000
 
-unity-scopes-shell (0.5.4+15.04.20150707-0ubuntu1) vivid; urgency=medium
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu4) wily; urgency=medium
+
+  * Replace build-dependency on python3-all-dev with python3-dev, since 
+    this should never need to build for more than one version of python 
+    at a time.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 02 Aug 2015 11:09:27 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~ppa1) wily; urgency=medium
+
+  * GCC 5 fixes from
+    https://code.launchpad.net/~unity-api-team/unity-scopes-shell/gcc-5/+merge/266227
+  * Update symbols file. Package needs an soname bump later.
+
+ -- Matthias Klose <doko@ubuntu.com>  Fri, 31 Jul 2015 14:03:48 +0200
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~gcc5.2) wily; urgency=medium
+
+  * Build for unity-scopes-api 1.0.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue, 28 Jul 2015 13:35:22 +0200
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu3~gcc5.1) wily; urgency=medium
+
+  * No-change test rebuild for g++5 ABI transition
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 24 Jul 2015 17:08:13 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu2) wily; urgency=medium
+
+  * No-change rebuild for python3.5 transition
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Thu, 23 Jul 2015 19:50:25 +0000
+
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
   * Resync trunk.
