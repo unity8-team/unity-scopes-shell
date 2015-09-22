@@ -81,7 +81,7 @@ PreviewWidget::PreviewWidget(const PreviewWidget& other) :
 
 PreviewWidget::PreviewWidget(PreviewWidget&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
@@ -97,7 +97,7 @@ PreviewWidget& PreviewWidget::operator=(const PreviewWidget& other)
 
 PreviewWidget& PreviewWidget::operator=(PreviewWidget&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
@@ -134,7 +134,7 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
 
     QVariant widgetData;
 
-    if (type() == "actions" &&
+    if ((type() == "actions" || type() == "icon-actions") &&
             v.which() == sc::Variant::Dict &&
             v.get_dict()["actions"].which() == sc::Variant::Array)
     {

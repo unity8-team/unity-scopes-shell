@@ -224,6 +224,9 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
          case scopes::ActivationResponse::PerformQuery:
             executeCannedQuery(response->query(), true);
             break;
+        case scopes::ActivationResponse::UpdatePreview:
+            handlePreviewUpdate(result, response->updated_widgets());
+            break;
         default:
             break;
     }
@@ -260,6 +263,21 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
         m_queryUserData.reset(nullptr);
     }
     setSearchQueryString(QString::fromStdString(query.query_string()));
+}
+
+void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
+{
+    for (auto stack: m_previewStacks) {
+        auto previewedResult = stack->previewedResult();
+
+        if (result == nullptr) {
+            qWarning() << "handlePreviewUpdate: result is null";
+            return;
+        }
+        if (previewedResult != nullptr && *result == *previewedResult) {
+            stack->update(widgets);
+        }
+    }
 }
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
@@ -975,6 +993,17 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_inverseDepartments.erase(it);
 }
 
+void Scope::previewStackDestroyed(QObject *obj)
+{
+    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    {
+        if (*it == obj) {
+            m_previewStacks.erase(it);
+            break;
+        }
+    }
+}
+
 void Scope::performQuery(QString const& cannedQuery)
 {
     try {
@@ -1181,7 +1210,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
     }
 
     if (result->direct_activation()) {
-        if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+        if (result->uri().find("scope://") == 0 || id() == "clickscope" || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
             activateUri(QString::fromStdString(result->uri()));
         } else {
             Q_EMIT previewRequested(result_var);
@@ -1218,7 +1247,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     // No preview for scope:// uris and for special camera-app card in video aggregator scope (if no videos are available).
-    if (result->uri().find("scope://") == 0 || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+    if (result->uri().find("scope://") == 0 || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
         return nullptr;
     }
 
@@ -1255,6 +1284,8 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
+    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
+    m_previewStacks.append(stack);
     stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;

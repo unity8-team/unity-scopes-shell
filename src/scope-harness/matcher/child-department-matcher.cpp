@@ -88,7 +88,7 @@ ChildDepartmentMatcher::ChildDepartmentMatcher(const ChildDepartmentMatcher& oth
 
 ChildDepartmentMatcher::ChildDepartmentMatcher(ChildDepartmentMatcher&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 ChildDepartmentMatcher& ChildDepartmentMatcher::operator=(const ChildDepartmentMatcher& other)
@@ -102,7 +102,7 @@ ChildDepartmentMatcher& ChildDepartmentMatcher::operator=(const ChildDepartmentM
 
 ChildDepartmentMatcher& ChildDepartmentMatcher::operator=(ChildDepartmentMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
