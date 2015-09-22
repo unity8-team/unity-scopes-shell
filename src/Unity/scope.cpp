@@ -1210,7 +1210,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
     }
 
     if (result->direct_activation()) {
-        if (result->uri().find("scope://") == 0 || id() == "clickscope" || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
+        if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
             activateUri(QString::fromStdString(result->uri()));
         } else {
             Q_EMIT previewRequested(result_var);
@@ -1247,7 +1247,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     // No preview for scope:// uris and for special camera-app card in video aggregator scope (if no videos are available).
-    if (result->uri().find("scope://") == 0 || (id() == "videoaggregator" && categoryId == "myvideos-getstarted")) {
+    if (result->uri().find("scope://") == 0 || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
         return nullptr;
     }
 

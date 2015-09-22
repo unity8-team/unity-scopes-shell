@@ -195,7 +195,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                 }
             }
 
-            if ((widgetData->type == QLatin1String("actions") || widgetData->type == QLatin1String("icon-actions")) && data.contains("uri")) {
+            if ((widgetData->type == QLatin1String("actions") || widgetData->type == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
                 if (m_associatedScope) {
                     m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
                     return;
