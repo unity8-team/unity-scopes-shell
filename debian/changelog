@@ -13,26 +13,6 @@ unity-scopes-shell (0.5.5+15.10.20150826-0ubuntu1) wily; urgency=medium
 
  -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 26 Aug 2015 09:00:19 +0000
 
-unity-scopes-shell (0.5.5+15.04.20150821-0ubuntu1) vivid; urgency=medium
-
-  [ Pawel Stolowski ]
-  * Fix crash when aggregator's settings view is opened shortly after a
-    new child scope was installed. Fix invalidating of results in temp
-    scopes. (LP: #1484299)
-
- -- CI Train Bot <ci-train-bot@canonical.com>  Fri, 21 Aug 2015 07:19:39 +0000
-
-unity-scopes-shell (0.5.5+15.04.20150810.1-0ubuntu1) vivid; urgency=medium
-
-  [ Pawel Stolowski ]
-  * Implemented activation/preview special casing previously present in
-    the shell and fixed handling of intercept_activation flag.
-
-  [ CI Train Bot ]
-  * New rebuild forced.
-
- -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 10 Aug 2015 12:02:40 +0000
-
 unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu4) wily; urgency=medium
 
   * Replace build-dependency on python3-all-dev with python3-dev, since 
@@ -67,7 +47,7 @@ unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu2) wily; urgency=medium
 
  -- Steve Langasek <steve.langasek@ubuntu.com>  Thu, 23 Jul 2015 19:50:25 +0000
 
-unity-scopes-shell (0.5.4+15.04.20150707-0ubuntu1) vivid; urgency=medium
+unity-scopes-shell (0.5.4+15.10.20150707-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
   * Resync trunk.
