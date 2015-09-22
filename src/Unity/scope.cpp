@@ -276,7 +276,6 @@ void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity
         }
         if (previewedResult != nullptr && *result == *previewedResult) {
             stack->update(widgets);
-            break;
         }
     }
 }
