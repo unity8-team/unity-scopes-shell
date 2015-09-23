@@ -70,7 +70,7 @@ bool PreviewModel::event(QEvent* ev)
         }
     }
 
-    return false;
+    return unity::shell::scopes::PreviewModelInterface::event(ev);
 }
 
 void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
