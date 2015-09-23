@@ -238,6 +238,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                         uriAction();
                     });
                     login->loginToAccount();
+                    return; // main execution ends here
                 }
             } else {
                 uriAction();
