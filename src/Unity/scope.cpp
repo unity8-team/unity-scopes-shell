@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "scopes.h"
 #include "settingsmodel.h"
+#include "logintoaccount.h"
 
 // Qt
 #include <QUrl>
@@ -1182,6 +1183,31 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
         return;
     }
 
+    auto const activateResult = [this, result, categoryId, result_var]() {
+        if (result->direct_activation()) {
+            if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+                activateUri(QString::fromStdString(result->uri()));
+            } else {
+                Q_EMIT previewRequested(result_var);
+            }
+        } else { // intercept activation flag set
+            try {
+                cancelActivation();
+                scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
+                m_activationController->setListener(listener);
+
+                auto proxy = proxy_for_result(result);
+                unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+                scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
+                m_activationController->setController(controller);
+            } catch (std::exception& e) {
+                qWarning("Caught an error from activate(): %s", e.what());
+            } catch (...) {
+                qWarning("Caught an error from activate()");
+            }
+        }
+    };
+
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
@@ -1191,50 +1217,35 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
             details.contains(QStringLiteral("login_passed_action")) &&
             details.contains(QStringLiteral("login_failed_action")))
         {
-            bool success = loginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
-                                          details.value(QStringLiteral("service_name")).toString(),
-                                          details.value(QStringLiteral("service_type")).toString(),
-                                          details.value(QStringLiteral("provider_name")).toString());
-
-            int action_code_index = success ? details.value(QStringLiteral("login_passed_action")).toInt() : details.value(QStringLiteral("login_failed_action")).toInt();
-            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
-            {
-                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
-                switch (action_code)
+            LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : id(),
+                                                       details.value(QStringLiteral("service_name")).toString(),
+                                                       details.value(QStringLiteral("service_type")).toString(),
+                                                       details.value(QStringLiteral("provider_name")).toString(),
+                                                       details.value(QStringLiteral("login_passed_action")).toInt(),
+                                                       details.value(QStringLiteral("login_failed_action")).toInt(),
+                                                       this);
+            connect(login, &LoginToAccount::finished, [this, activateResult](bool, int action_code_index) {
+                if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {
-                    case scopes::OnlineAccountClient::DoNothing:
-                        return;
-                    case scopes::OnlineAccountClient::InvalidateResults:
-                        invalidateResults();
-                        return;
-                    default:
-                        break;
+                    scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                    switch (action_code)
+                    {
+                        case scopes::OnlineAccountClient::DoNothing:
+                            return;
+                        case scopes::OnlineAccountClient::InvalidateResults:
+                            invalidateResults();
+                            return;
+                        default:
+                            break;
+                    }
                 }
-            }
+                activateResult();
+            });
+            login->loginToAccount();
+            return; // state it explicitly that main exectuion returns here
         }
-    }
-
-    if (result->direct_activation()) {
-        if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
-            activateUri(QString::fromStdString(result->uri()));
-        } else {
-            Q_EMIT previewRequested(result_var);
-        }
-    } else { // intercept activation flag set
-        try {
-            cancelActivation();
-            scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
-            m_activationController->setListener(listener);
-
-            auto proxy = proxy_for_result(result);
-            unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
-            scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
-            m_activationController->setController(controller);
-        } catch (std::exception& e) {
-            qWarning("Caught an error from activate(): %s", e.what());
-        } catch (...) {
-            qWarning("Caught an error from activate()");
-        }
+    } else {
+        activateResult();
     }
 }
 
