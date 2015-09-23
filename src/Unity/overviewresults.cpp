@@ -168,7 +168,7 @@ bool OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
             }
             if (!childNames.empty())
             {
-                m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(", ");
+                m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(QStringLiteral(", "));
             }
         }
         ///!===
@@ -200,12 +200,12 @@ bool OverviewResultsModel::updateChildScopes(const unity::scopes::ScopeMetadata:
         }
         if (!childNames.empty())
         {
-            m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(", ");
+            m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = childNames.join(QStringLiteral(", "));
         }
     }
     else
     {
-        m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = "";
+        m_childScopes[QString::fromStdString(scopeMetadata->scope_id())] = QLatin1String("");
     }
     return true;
 }

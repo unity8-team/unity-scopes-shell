@@ -38,45 +38,45 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
 
-    m_settings.reset(new QSettings(databaseDir.filePath("settings.ini"), QSettings::IniFormat));
+    m_settings.reset(new QSettings(databaseDir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat));
     m_settings->setIniCodec("UTF-8");
 
     for (const auto &it : settingsDefinitions.toList())
     {
         QVariantMap data = it.toMap();
-        QString id = data["id"].toString();
-        QString displayName = data["displayName"].toString();
+        QString id = data[QStringLiteral("id")].toString();
+        QString displayName = data[QStringLiteral("displayName")].toString();
         QVariantMap properties;
         QVariant defaultValue;
-        if (data.contains("displayValues"))
+        if (data.contains(QStringLiteral("displayValues")))
         {
-            properties["values"] = data["displayValues"].toList();
+            properties[QStringLiteral("values")] = data[QStringLiteral("displayValues")].toList();
         }
-        QString type = data["type"].toString();
+        QString type = data[QStringLiteral("type")].toString();
 
         QVariant::Type variantType = QVariant::Invalid;
 
-        if(type == "boolean")
+        if(type == QLatin1String("boolean"))
         {
             variantType = QVariant::Bool;
         }
-        else if(type == "list")
+        else if(type == QLatin1String("list"))
         {
             variantType = QVariant::UInt;
         }
-        else if(type == "number")
+        else if(type == QLatin1String("number"))
         {
             variantType = QVariant::Double;
         }
-        else if(type == "string")
+        else if(type == QLatin1String("string"))
         {
             variantType = QVariant::String;
         }
 
-        if(data.contains("defaultValue"))
+        if(data.contains(QStringLiteral("defaultValue")))
         {
-            defaultValue = data["defaultValue"];
-            properties["defaultValue"] = defaultValue;
+            defaultValue = data[QStringLiteral("defaultValue")];
+            properties[QStringLiteral("defaultValue")] = defaultValue;
         }
 
         QSharedPointer<QTimer> timer(new QTimer());
@@ -244,7 +244,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         m_child_scopes_timers[id] = timer;
 
         QSharedPointer<Data> setting(
-                new Data(id, displayName, "boolean", QVariantMap(), QVariant(), QVariant::Bool));
+                new Data(id, displayName, QStringLiteral("boolean"), QVariantMap(), QVariant(), QVariant::Bool));
 
         m_child_scopes_data << setting;
         m_child_scopes_data_by_id[id] = setting;
