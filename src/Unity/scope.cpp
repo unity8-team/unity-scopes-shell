@@ -1224,6 +1224,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                                                        details.value(QStringLiteral("login_passed_action")).toInt(),
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
+            connect(login, SIGNAL(searchInProgress(bool)), this, SLOT(setSearchInProgress(bool)));
             connect(login, &LoginToAccount::finished, [this, login, activateResult](bool, int action_code_index) {
                 if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {
@@ -1289,7 +1290,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
                                                        details.value(QStringLiteral("login_passed_action")).toInt(),
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
-
+            connect(login, SIGNAL(searchInProgress(bool)), this, SLOT(setSearchInProgress(bool)));
             connect(login, &LoginToAccount::finished, [this, login](bool, int action_code_index) {
                 if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {

@@ -220,6 +220,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                                                                details.value(QStringLiteral("login_passed_action")).toInt(),
                                                                details.value(QStringLiteral("login_failed_action")).toInt(),
                                                                this);
+                    connect(login, SIGNAL(searchInProgress(bool)), m_associatedScope, SLOT(setSearchInProgress(bool)));
                     connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
                         if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                         {

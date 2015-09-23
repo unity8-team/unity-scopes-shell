@@ -175,6 +175,7 @@ public:
 public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
+    void setSearchInProgress(bool searchInProgress);
 
 Q_SIGNALS:
     void resultsDirtyChanged();
@@ -191,7 +192,6 @@ private Q_SLOTS:
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
 
-    void setSearchInProgress(bool searchInProgress);
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
 

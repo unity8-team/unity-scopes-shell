@@ -75,14 +75,14 @@ void LoginToAccount::loginToAccount()
     future_watcher.setFuture(service_enabled_future);
 
     // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
-    //setSearchInProgress(true);
+    Q_EMIT searchInProgress(true);
 
     QEventLoop loop;
     connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
     loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
 
     // Unset SearchInProgress to stop the loading bar animation.
-    //setSearchInProgress(false);
+    Q_EMIT searchInProgress(false);
 
     bool service_enabled = service_enabled_future.result();
 
@@ -102,4 +102,3 @@ void LoginToAccount::loginToAccount()
         Q_EMIT finished(true, m_login_passed_action);
     }
 }
-

@@ -34,6 +34,7 @@ public:
 
 Q_SIGNALS:
     void finished(bool, int);
+    void searchInProgress(bool);
 
 private Q_SLOTS:
     void onSetupFinished();
