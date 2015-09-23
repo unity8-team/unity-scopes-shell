@@ -220,7 +220,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                                                                details.value(QStringLiteral("login_passed_action")).toInt(),
                                                                details.value(QStringLiteral("login_failed_action")).toInt(),
                                                                this);
-                    connect(login, &LoginToAccount::finished, [this, uriAction](bool, int action_code_index) {
+                    connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
                         if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                         {
                             scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -236,6 +236,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                             }
                         }
                         uriAction();
+                        login->deleteLater();
                     });
                     login->loginToAccount();
                     return; // main execution ends here

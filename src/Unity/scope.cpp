@@ -1224,7 +1224,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                                                        details.value(QStringLiteral("login_passed_action")).toInt(),
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
-            connect(login, &LoginToAccount::finished, [this, activateResult](bool, int action_code_index) {
+            connect(login, &LoginToAccount::finished, [this, login, activateResult](bool, int action_code_index) {
                 if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {
                     scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -1240,6 +1240,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                     }
                 }
                 activateResult();
+                login->deleteLater();
             });
             login->loginToAccount();
             return; // main exectuion ends here
@@ -1289,7 +1290,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
 
-            connect(login, &LoginToAccount::finished, [this](bool, int action_code_index) {
+            connect(login, &LoginToAccount::finished, [this, login](bool, int action_code_index) {
                 if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {
                     scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -1304,6 +1305,7 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
                             break;
                     }
                 }
+                login->deleteLater();
             });
             login->loginToAccount();
             return nullptr; // main execution ends here
@@ -1374,70 +1376,6 @@ void Scope::activateUri(QString const& uri)
             QDesktopServices::openUrl(url);
         }
     }
-}
-
-bool Scope::loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name)
-{
-    // Set the UNITY_SCOPES_OA_UI_POLICY environment variable here so that OnlineAccountClient knows we're
-    // calling it from the shell (hence it will use the default UI policy when talking to libsignon).
-    setenv("UNITY_SCOPES_OA_UI_POLICY", "1", 0);
-
-    QFuture<bool> service_enabled_future = QtConcurrent::run([&]
-    {
-        // Check if at least one account has the specified service enabled
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-        auto service_statuses = oa_client.get_service_statuses();
-        for (auto const& status : service_statuses)
-        {
-            if (status.service_enabled)
-            {
-                return true;
-            }
-        }
-        return false;
-    });
-    QFutureWatcher<bool> future_watcher;
-    future_watcher.setFuture(service_enabled_future);
-
-    // Set SearchInProgress so that the loading bar animates while we waiting for the token to be issued.
-    setSearchInProgress(true);
-
-    QEventLoop loop;
-    connect(&future_watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
-    loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
-
-    // Unset SearchInProgress to stop the loading bar animation.
-    setSearchInProgress(false);
-
-    bool service_enabled = service_enabled_future.result();
-
-    // Start the signon UI if no enabled services were found
-    if (!service_enabled)
-    {
-        OnlineAccountsClient::Setup setup;
-        setup.setApplicationId(scope_id.isEmpty() ? id() : scope_id);
-        setup.setServiceTypeId(service_type);
-        setup.setProviderId(provider_name);
-        setup.exec();
-
-        QEventLoop loop;
-        connect(&setup, &OnlineAccountsClient::Setup::finished, &loop, &QEventLoop::quit);
-        loop.exec(QEventLoop::ProcessEventsFlag::ExcludeUserInputEvents);
-
-        // Check again whether the service was successfully enabled
-        scopes::OnlineAccountClient oa_client(service_name.toStdString(), service_type.toStdString(), provider_name.toStdString());
-        auto service_statuses = oa_client.get_service_statuses();
-        for (auto const& status : service_statuses)
-        {
-            if (status.service_enabled)
-            {
-                service_enabled = true;
-                break;
-            }
-        }
-    }
-
-    return service_enabled;
 }
 
 bool Scope::initialQueryDone() const

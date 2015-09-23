@@ -170,7 +170,6 @@ public:
 
     Scope::Ptr findTempScope(QString const& id) const;
 
-    bool loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name);
     void setSearchQueryString(const QString& search_query);
 
 public Q_SLOTS:
