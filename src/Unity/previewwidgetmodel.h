@@ -48,6 +48,7 @@ public:
 
     void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);
     void addWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
+    void updateWidget(QSharedPointer<PreviewWidgetData> const&);
     void adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
     bool widgetChanged(PreviewWidgetData*);
 

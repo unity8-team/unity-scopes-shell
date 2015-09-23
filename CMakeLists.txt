@@ -50,7 +50,7 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.19)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.1)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=8)
 
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
@@ -80,6 +80,22 @@ else()
     option(Werror "Treat warnings as errors" OFF)
 endif()
 
+# Check the distribution we are building for, set scope harness version and so accordingly
+execute_process(COMMAND lsb_release -c -s OUTPUT_VARIABLE DISTRIBUTION OUTPUT_STRIP_TRAILING_WHITESPACE)
+file(READ debian/HARNESS_VERSION HARNESS_FULL_VERSION)
+string(STRIP ${HARNESS_FULL_VERSION} HARNESS_FULL_VERSION)
+
+# Parse out the three components.
+STRING(REGEX MATCHALL "[0-9]+" full_version_components ${HARNESS_FULL_VERSION})
+LIST(GET full_version_components 0 HARNESS_MAJOR)
+LIST(GET full_version_components 1 HARNESS_MINOR)
+LIST(GET full_version_components 2 HARNESS_MICRO)
+
+set(HARNESS_SO_VERSION ${HARNESS_MAJOR})
+if(NOT ${DISTRIBUTION} MATCHES "vivid")
+    math(EXPR HARNESS_SO_VERSION "${HARNESS_SO_VERSION} + 1")
+endif()
+
 if (Werror)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 endif()
@@ -97,7 +113,7 @@ include(CTest)
 enable_testing()
 ADD_CUSTOM_TARGET(
     check
-    ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure 
+    ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure
 )
 
 # add subdirectories to build
