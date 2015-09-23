@@ -1242,7 +1242,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                 activateResult();
             });
             login->loginToAccount();
-            return; // state it explicitly that main exectuion returns here
+            return; // main exectuion ends here
         }
     } else {
         activateResult();
@@ -1281,26 +1281,32 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
             details.contains(QStringLiteral("login_passed_action")) &&
             details.contains(QStringLiteral("login_failed_action")))
         {
-            bool success = loginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
-                                          details.value(QStringLiteral("service_name")).toString(),
-                                          details.value(QStringLiteral("service_type")).toString(),
-                                          details.value(QStringLiteral("provider_name")).toString());
+            LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : id(),
+                                                       details.value(QStringLiteral("service_name")).toString(),
+                                                       details.value(QStringLiteral("service_type")).toString(),
+                                                       details.value(QStringLiteral("provider_name")).toString(),
+                                                       details.value(QStringLiteral("login_passed_action")).toInt(),
+                                                       details.value(QStringLiteral("login_failed_action")).toInt(),
+                                                       this);
 
-            int action_code_index = success ? details.value(QStringLiteral("login_passed_action")).toInt() : details.value(QStringLiteral("login_failed_action")).toInt();
-            if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
-            {
-                scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
-                switch (action_code)
+            connect(login, &LoginToAccount::finished, [this](bool, int action_code_index) {
+                if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                 {
-                    case scopes::OnlineAccountClient::DoNothing:
-                        return nullptr;
-                    case scopes::OnlineAccountClient::InvalidateResults:
-                        invalidateResults();
-                        return nullptr;
-                    default:
-                        break;
+                    scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                    switch (action_code)
+                    {
+                        case scopes::OnlineAccountClient::DoNothing:
+                            return;
+                        case scopes::OnlineAccountClient::InvalidateResults:
+                            invalidateResults();
+                            return;
+                        default:
+                            break;
+                    }
                 }
-            }
+            });
+            login->loginToAccount();
+            return nullptr; // main execution ends here
         }
     }
 
