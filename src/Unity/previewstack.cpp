@@ -74,7 +74,7 @@ bool PreviewStack::event(QEvent* ev)
         }
     }
 
-    return false;
+    return unity::shell::scopes::PreviewStackInterface::event(ev);
 }
 
 void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
