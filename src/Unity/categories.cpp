@@ -52,7 +52,7 @@ public:
     CategoryData(CategoryData const& other) = delete;
 
     // constructor for special (shell-overriden) categories
-    CategoryData(QString const& id, QString const& title, QString const& icon, QString rawTemplate, QObject* countObject):
+    CategoryData(QString const& id, QString const& title, QString const& icon, QString const& rawTemplate, QObject* countObject):
         m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
     {
         parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
@@ -127,7 +127,7 @@ public:
         for (auto it = components_dict.begin(); it != components_dict.end(); ++it) {
             if (it.value().isObject() == false) continue;
             QJsonObject component_dict(it.value().toObject());
-            QString fieldName(component_dict.value("field").toString());
+            QString fieldName(component_dict.value(QStringLiteral("field")).toString());
             if (fieldName.isEmpty()) continue;
             result[it.key()] = fieldName;
         }
@@ -138,13 +138,13 @@ public:
     int getMaxAttributes() const
     {
         QJsonObject components_obj = m_components.toObject();
-        QJsonObject attrs_obj = components_obj.value("attributes").toObject();
-        QJsonValue max_count_val = attrs_obj.value("max-count");
+        QJsonObject attrs_obj = components_obj.value(QStringLiteral("attributes")).toObject();
+        QJsonValue max_count_val = attrs_obj.value(QStringLiteral("max-count"));
 
         return max_count_val.toInt(2);
     }
 
-    QVector<int> updateAttributes(scopes::Category::SCPtr category)
+    QVector<int> updateAttributes(const scopes::Category::SCPtr& category)
     {
         QVector<int> roles;
 
@@ -186,7 +186,7 @@ public:
         return roles;
     }
 
-    void setResultsModel(QSharedPointer<ResultsModel> model)
+    void setResultsModel(const QSharedPointer<ResultsModel>& model)
     {
         m_resultsModel = model;
     }
@@ -230,10 +230,10 @@ public:
 
         QJsonObject category_root = mergeOverrides(*DEFAULTS, category_doc.object()).toObject();
         // fixup parts we mangle
-        QJsonValueRef templateRef = category_root["template"];
+        QJsonValueRef templateRef = category_root[QStringLiteral("template")];
         QJsonObject templateObj(templateRef.toObject());
-        if (templateObj.contains("card-background")) {
-            QJsonValueRef cardBackgroundRef = templateObj["card-background"];
+        if (templateObj.contains(QStringLiteral("card-background"))) {
+            QJsonValueRef cardBackgroundRef = templateObj[QStringLiteral("card-background")];
             if (cardBackgroundRef.isString()) {
                 QString background(cardBackgroundRef.toString());
                 cardBackgroundRef = QJsonValue::fromVariant(backgroundUriToVariant(background));
@@ -241,8 +241,8 @@ public:
             }
         }
         // FIXME: validate the merged json
-        *renderer = category_root.value(QString("template"));
-        *components = category_root.value(QString("components"));
+        *renderer = category_root.value(QStringLiteral("template"));
+        *components = category_root.value(QStringLiteral("components"));
 
         return true;
     }
@@ -284,7 +284,7 @@ private:
         } else if (overrideVal.isString() && (defaultVal.isNull() || defaultVal.isObject())) {
             // special case the expansion of "art": "icon" -> "art": {"field": "icon"}
             QJsonObject resultObj(defaultVal.toObject());
-            resultObj.insert("field", overrideVal);
+            resultObj.insert(QStringLiteral("field"), overrideVal);
             return resultObj;
         } else if (defaultVal.isNull() && overrideVal.isObject()) {
             return overrideVal;
@@ -345,7 +345,7 @@ int Categories::getFirstEmptyCategoryIndex() const
     return m_categories.size();
 }
 
-void Categories::registerCategory(scopes::Category::SCPtr category, QSharedPointer<ResultsModel> resultsModel)
+void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel)
 {
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
@@ -405,7 +405,7 @@ void Categories::registerCategory(scopes::Category::SCPtr category, QSharedPoint
     }
 }
 
-void Categories::updateResultCount(QSharedPointer<ResultsModel> resultsModel)
+void Categories::updateResultCount(const QSharedPointer<ResultsModel>& resultsModel)
 {
     int idx = -1;
     for (int i = 0; i < m_categories.count(); i++) {
