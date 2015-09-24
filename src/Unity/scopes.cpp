@@ -170,44 +170,10 @@ int Scopes::count() const
 
 void Scopes::createUserAgentString()
 {
-    QProcess *dpkg = new QProcess(this);
-    connect(dpkg, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dpkgFinished()));
-    connect(dpkg, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
-    dpkg->start(QStringLiteral("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8"), QIODevice::ReadOnly);
-}
-
-void Scopes::dpkgFinished()
-{
-    QProcess *dpkg = qobject_cast<QProcess *>(sender());
-    if (dpkg) {
-        while (dpkg->canReadLine()) {
-            const QString line = dpkg->readLine();
-            const QStringList lineParts = line.split(QRegExp(QStringLiteral("\\s+")), QString::SkipEmptyParts);
-            QString key;
-            if (lineParts.size() == 2) {
-                if (lineParts.at(0).startsWith(QStringLiteral("libunity-scopes"))) {
-                    key = QStringLiteral("scopes-api");
-                }
-                else if (lineParts.at(0).startsWith(QStringLiteral("unity-plugin-scopes"))) {
-                    key = QStringLiteral("plugin");
-                }
-                else if (lineParts.at(0).startsWith(QStringLiteral("unity8"))) {
-                    key = QStringLiteral("unity8");
-                }
-                if (!key.isEmpty()) {
-                    m_versions.push_back(qMakePair(key, lineParts.at(1)));
-                } else {
-                    qWarning() << "Unexpected dpkg-query output:" << line;
-                }
-            }
-        }
-        dpkg->deleteLater();
-
-        QProcess *lsb_release = new QProcess(this);
-        connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
-        connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
-        lsb_release->start(QStringLiteral("lsb_release -r"), QIODevice::ReadOnly);
-    }
+    QProcess *lsb_release = new QProcess(this);
+    connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
+    connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
+    lsb_release->start(QStringLiteral("lsb_release -r"), QIODevice::ReadOnly);
 }
 
 void Scopes::lsbReleaseFinished()
@@ -220,25 +186,25 @@ void Scopes::lsbReleaseFinished()
             m_versions.push_back(qMakePair(QStringLiteral("release"), parts.at(1)));
         }
         lsb_release->deleteLater();
-
-        QFile buildFile(QStringLiteral("/etc/ubuntu-build"));
-        if (buildFile.open(QIODevice::ReadOnly)) {
-            QTextStream str(&buildFile);
-            QString bld;
-            str >> bld;
-            m_versions.push_back(qMakePair(QStringLiteral("build"), bld));
-        }
-
-        const QString partnerId = readPartnerId();
-        if (!partnerId.isEmpty()) {
-            m_versions.push_back(qMakePair(QStringLiteral("partner"), partnerId));
-        }
-
-        QUrlQuery q;
-        q.setQueryItems(m_versions);
-        m_versions.clear();
-        m_userAgent = q.toString();
     }
+
+    QFile buildFile(QStringLiteral("/etc/ubuntu-build"));
+    if (buildFile.open(QIODevice::ReadOnly)) {
+        QTextStream str(&buildFile);
+        QString bld;
+        str >> bld;
+        m_versions.push_back(qMakePair(QStringLiteral("build"), bld));
+    }
+
+    const QString partnerId = readPartnerId();
+    if (!partnerId.isEmpty()) {
+        m_versions.push_back(qMakePair(QStringLiteral("partner"), partnerId));
+    }
+
+    QUrlQuery q;
+    q.setQueryItems(m_versions);
+    m_versions.clear();
+    m_userAgent = q.toString();
 
     qDebug() << "User agent string:" << m_userAgent;
     initPopulateScopes();

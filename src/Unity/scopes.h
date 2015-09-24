@@ -98,7 +98,6 @@ private Q_SLOTS:
     void prepopulateNextScopes();
 
     void initPopulateScopes();
-    void dpkgFinished();
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
     void purgeScopesToDelete();
