@@ -188,6 +188,23 @@ void Scopes::lsbReleaseFinished()
         lsb_release->deleteLater();
     }
 
+    // map package version to a simple name we send to SSS
+    const QMap<QString, QString> versions({
+        {QStringLiteral("unity-plugin-scopes"), QStringLiteral("plugin")},
+        {QStringLiteral("unity8"), QStringLiteral("unity8")},
+        {QStringLiteral("libunity-scopes1.0"), QStringLiteral("scopes-api")}});
+
+    // determine versions of unity8, unity-plugin-scopes and libunity-scopes1.0
+    for (QMap<QString, QString>::const_iterator pkg = versions.constBegin(); pkg != versions.constEnd(); pkg++) {
+        QFile versionFile("/var/lib/" + pkg.key() + "/version");
+        if (versionFile.open(QIODevice::ReadOnly)) {
+            QTextStream str(&versionFile);
+            QString ver;
+            str >> ver;
+            m_versions.push_back(qMakePair(pkg.value(), ver));
+        }
+    }
+
     QFile buildFile(QStringLiteral("/etc/ubuntu-build"));
     if (buildFile.open(QIODevice::ReadOnly)) {
         QTextStream str(&buildFile);
