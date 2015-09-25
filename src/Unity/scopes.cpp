@@ -202,6 +202,8 @@ void Scopes::lsbReleaseFinished()
             QString ver;
             str >> ver;
             m_versions.push_back(qMakePair(pkg.value(), ver));
+        } else {
+            qWarning() << "Couldn't determine the version of" << pkg.key();
         }
     }
 
