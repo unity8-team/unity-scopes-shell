@@ -55,8 +55,8 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
     m_isFilter = treeNode->isFilter();
 
     DepartmentNode* parentNode = treeNode->parent();
-    m_parentNavigationId = parentNode ? parentNode->id() : "";
-    m_parentLabel = parentNode ? parentNode->label() : "";
+    m_parentNavigationId = parentNode ? parentNode->id() : QLatin1String("");
+    m_parentLabel = parentNode ? parentNode->label() : QLatin1String("");
 
     beginResetModel();
 
@@ -65,6 +65,7 @@ void Department::loadFromDepartmentNode(DepartmentNode* treeNode)
         QSharedPointer<SubdepartmentData> subdept(new SubdepartmentData);
         subdept->id = node->id();
         subdept->label = node->label();
+        subdept->allLabel = node->allLabel();
         subdept->hasChildren = node->hasSubdepartments();
         subdept->isActive = false;
         m_subdepartments.append(subdept);
@@ -122,6 +123,7 @@ QVariant Department::data(const QModelIndex& index, int role) const
     switch (role) {
         case RoleNavigationId: return data->id;
         case RoleLabel: return data->label;
+        case RoleAllLabel: return data->allLabel;
         case RoleHasChildren: return data->hasChildren;
         case RoleIsActive: return data->isActive;
         default: return QVariant();

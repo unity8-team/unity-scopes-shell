@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Copyright (C) 2015 Canonical Ltd
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Authored by: Pawel Stolowski <pawel.stolowski@canonical.com>
+
+#
+# This script is called from debian/rules and sets:
+# - symbols file for vivid
+# - shlibs for wily
+# - control file and libscope-harness .install file
+# to allow for a single source tree and dual landings for vivid/wily.
+#
+
+set -e  # Fail if any command fails.
+
+[ $# -ne 0 ] && {
+    echo "usage: $(basename $0)" >&2
+    exit 1
+}
+dir=./debian
+
+distro=$(lsb_release -c -s)
+echo "gen-debian-files: detected distribution: $distro"
+
+harness_full_version=$(cat "${dir}"/HARNESS_VERSION)
+major=$(echo $harness_full_version | cut -d'.' -f1)
+minor=$(echo $harness_full_version | cut -d'.' -f2)
+harness_major_minor="${major}.${minor}"
+
+harness_so_ver=$major
+if [ "$distro" = "vivid" ]
+then
+    infile="${dir}/libscope-harness.symbols.in"
+    outfile="${dir}"/libscope-harness${harness_so_ver}.symbols
+    cat "${infile}" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" > "${outfile}"
+else
+    harness_so_ver=$(expr $major + 1)
+    infile="${dir}"/shlibs.in
+    outfile="${dir}"/shlibs
+    cat "$infile" | sed -e "s/HARNESS_SO_VERSION@/${harness_so_ver}/g" \
+        -e "s/HARNESS_MAJORMINOR/${harness_major_minor}/g" > "$outfile"
+fi
+
+cat "${dir}/control.in" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" > "${dir}/control"
+cp "${dir}/libscope-harness.install.in" "${dir}/libscope-harness${harness_so_ver}.install"

@@ -116,7 +116,7 @@ Scopes::Scopes(QObject *parent)
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
             SLOT(invalidateScopeResults(const QString &)), Qt::QueuedConnection);
 
-    QDBusConnection::sessionBus().connect(QString(), QString("/com/canonical/unity/scopes"), QString("com.canonical.unity.scopes"), QString("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
+    QDBusConnection::sessionBus().connect(QString(), QStringLiteral("/com/canonical/unity/scopes"), QStringLiteral("com.canonical.unity.scopes"), QStringLiteral("InvalidateResults"), this, SLOT(invalidateScopeResults(QString)));
 
     m_dashSettings = QGSettings::isSchemaInstalled("com.canonical.Unity.Dash") ? new QGSettings("com.canonical.Unity.Dash", QByteArray(), this) : nullptr;
     if (m_dashSettings)
@@ -173,7 +173,7 @@ void Scopes::createUserAgentString()
     QProcess *dpkg = new QProcess(this);
     connect(dpkg, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(dpkgFinished()));
     connect(dpkg, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
-    dpkg->start("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8", QIODevice::ReadOnly);
+    dpkg->start(QStringLiteral("dpkg-query -W libunity-scopes3 unity-plugin-scopes unity8"), QIODevice::ReadOnly);
 }
 
 void Scopes::dpkgFinished()
@@ -182,17 +182,17 @@ void Scopes::dpkgFinished()
     if (dpkg) {
         while (dpkg->canReadLine()) {
             const QString line = dpkg->readLine();
-            const QStringList lineParts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+            const QStringList lineParts = line.split(QRegExp(QStringLiteral("\\s+")), QString::SkipEmptyParts);
             QString key;
             if (lineParts.size() == 2) {
-                if (lineParts.at(0).startsWith("libunity-scopes")) {
-                    key = "scopes-api";
+                if (lineParts.at(0).startsWith(QStringLiteral("libunity-scopes"))) {
+                    key = QStringLiteral("scopes-api");
                 }
-                else if (lineParts.at(0).startsWith("unity-plugin-scopes")) {
-                    key = "plugin";
+                else if (lineParts.at(0).startsWith(QStringLiteral("unity-plugin-scopes"))) {
+                    key = QStringLiteral("plugin");
                 }
-                else if (lineParts.at(0).startsWith("unity8")) {
-                    key = "unity8";
+                else if (lineParts.at(0).startsWith(QStringLiteral("unity8"))) {
+                    key = QStringLiteral("unity8");
                 }
                 if (!key.isEmpty()) {
                     m_versions.push_back(qMakePair(key, lineParts.at(1)));
@@ -206,7 +206,7 @@ void Scopes::dpkgFinished()
         QProcess *lsb_release = new QProcess(this);
         connect(lsb_release, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(lsbReleaseFinished()));
         connect(lsb_release, SIGNAL(error(QProcess::ProcessError)), this, SLOT(initPopulateScopes()));
-        lsb_release->start("lsb_release -r", QIODevice::ReadOnly);
+        lsb_release->start(QStringLiteral("lsb_release -r"), QIODevice::ReadOnly);
     }
 }
 
@@ -215,23 +215,23 @@ void Scopes::lsbReleaseFinished()
     QProcess *lsb_release = qobject_cast<QProcess *>(sender());
     if (lsb_release) {
         const QString out = lsb_release->readAllStandardOutput();
-        const QStringList parts = out.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        const QStringList parts = out.split(QRegExp(QStringLiteral("\\s+")), QString::SkipEmptyParts);
         if (parts.size() == 2) {
-            m_versions.push_back(qMakePair(QString("release"), parts.at(1)));
+            m_versions.push_back(qMakePair(QStringLiteral("release"), parts.at(1)));
         }
         lsb_release->deleteLater();
 
-        QFile buildFile("/etc/ubuntu-build");
+        QFile buildFile(QStringLiteral("/etc/ubuntu-build"));
         if (buildFile.open(QIODevice::ReadOnly)) {
             QTextStream str(&buildFile);
             QString bld;
             str >> bld;
-            m_versions.push_back(qMakePair(QString("build"), bld));
+            m_versions.push_back(qMakePair(QStringLiteral("build"), bld));
         }
 
         const QString partnerId = readPartnerId();
         if (!partnerId.isEmpty()) {
-            m_versions.push_back(qMakePair(QString("partner"), partnerId));
+            m_versions.push_back(qMakePair(QStringLiteral("partner"), partnerId));
         }
 
         QUrlQuery q;
@@ -248,7 +248,7 @@ QString Scopes::readPartnerId()
 {
     // read /custom/partner-id value if present
     QString partnerId;
-    QFile partnerIdFile(PARTNER_ID_FILE);
+    QFile partnerIdFile(QStringLiteral(PARTNER_ID_FILE));
     if (partnerIdFile.exists())
     {
         if (partnerIdFile.open(QIODevice::ReadOnly))
@@ -258,7 +258,7 @@ QString Scopes::readPartnerId()
         }
         else
         {
-            qWarning() << "Cannot open" << QString(PARTNER_ID_FILE) << "for reading";
+            qWarning() << "Cannot open" << QStringLiteral(PARTNER_ID_FILE) << "for reading";
         }
     }
     return partnerId;
@@ -382,7 +382,7 @@ void Scopes::prepopulateNextScopes()
                 auto scope = *(it++);
                 if (!scope->initialQueryDone()) {
                     qDebug() << "Pre-populating scope" << scope->id();
-                    scope->setSearchQuery("");
+                    scope->setSearchQuery(QLatin1String(""));
                     // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
                     scope->dispatchSearch();
                 }
@@ -406,7 +406,7 @@ void Scopes::processFavoriteScopes()
     if (m_dashSettings) {
         QStringList newFavorites;
         QMap<QString, int> favScopesLut;
-        for (auto const& fv: m_dashSettings->get("favoriteScopes").toList())
+        for (auto const& fv: m_dashSettings->get(QStringLiteral("favoriteScopes")).toList())
         {
             int pos = 0;
             try
@@ -513,7 +513,7 @@ void Scopes::processFavoriteScopes()
 
 void Scopes::dashSettingsChanged(QString const& key)
 {
-    if (key != "favoriteScopes") {
+    if (key != QLatin1String("favoriteScopes")) {
         return;
     }
 
@@ -547,11 +547,11 @@ void Scopes::refreshFinished()
 void Scopes::invalidateScopeResults(QString const& scopeName)
 {
     // HACK! mediascanner invalidates local media scopes, but those are aggregated, so let's "forward" the call
-    if (scopeName == "mediascanner-music") {
-        invalidateScopeResults("musicaggregator");
-    } else if (scopeName == "mediascanner-video") {
-        invalidateScopeResults("videoaggregator");
-    } else if (scopeName == "scopes") {
+    if (scopeName == QLatin1String("mediascanner-music")) {
+        invalidateScopeResults(QStringLiteral("musicaggregator"));
+    } else if (scopeName == QLatin1String("mediascanner-video")) {
+        invalidateScopeResults(QStringLiteral("videoaggregator"));
+    } else if (scopeName == QLatin1String("scopes")) {
         // emitted when smart-scopes proxy or scope registry discovers new scopes
         m_registryRefreshTimer.start(5000);
         return;
@@ -643,7 +643,7 @@ QStringList Scopes::getFavoriteIds() const
 
 void Scopes::setFavorite(QString const& scopeId, bool value)
 {
-    if (scopeId == CLICK_SCOPE_ID && !value)
+    if (scopeId == QStringLiteral(CLICK_SCOPE_ID) && !value)
     {
         qWarning() << "Cannot unfavorite" << scopeId;
         return;
@@ -673,7 +673,7 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
         if (changed) {
             // update gsettings entry
             // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
-            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+            m_dashSettings->set(QStringLiteral("favoriteScopes"), QVariant(cannedQueries));
         }
     }
 }
@@ -726,7 +726,7 @@ void Scopes::moveFavoriteTo(QString const& scopeId, int index)
             cannedQueries.insert(index, query);
             // update gsettings entry
             // note: this will trigger notification, so that new favorites are processed by processFavoriteScopes
-            m_dashSettings->set("favoriteScopes", QVariant(cannedQueries));
+            m_dashSettings->set(QStringLiteral("favoriteScopes"), QVariant(cannedQueries));
         }
     }
 }
