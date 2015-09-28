@@ -40,6 +40,7 @@ struct SubdepartmentData
 {
     QString id;
     QString label;
+    QString allLabel;
     bool hasChildren;
     bool isActive;
 };
