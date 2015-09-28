@@ -1167,11 +1167,6 @@ void Scope::setFavorite(const bool value)
 
 void Scope::activate(QVariant const& result_var, QString const& categoryId)
 {
-    // Keep reference to self if we're a temp scope, or otherwise we will crash in loginToAccount() if closeScope()
-    // is called - see LP: #1410191
-    auto self = findTempScope(id());
-    Q_UNUSED(self);
-
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
         return;
