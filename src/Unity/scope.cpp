@@ -1264,45 +1264,6 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
-    if (result->contains("online_account_details"))
-    {
-        QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains(QStringLiteral("service_name")) &&
-            details.contains(QStringLiteral("service_type")) &&
-            details.contains(QStringLiteral("provider_name")) &&
-            details.contains(QStringLiteral("login_passed_action")) &&
-            details.contains(QStringLiteral("login_failed_action")))
-        {
-            LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : id(),
-                                                       details.value(QStringLiteral("service_name")).toString(),
-                                                       details.value(QStringLiteral("service_type")).toString(),
-                                                       details.value(QStringLiteral("provider_name")).toString(),
-                                                       details.value(QStringLiteral("login_passed_action")).toInt(),
-                                                       details.value(QStringLiteral("login_failed_action")).toInt(),
-                                                       this);
-            connect(login, SIGNAL(searchInProgress(bool)), this, SLOT(setSearchInProgress(bool)));
-            connect(login, &LoginToAccount::finished, [this, login](bool, int action_code_index) {
-                if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
-                {
-                    scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
-                    switch (action_code)
-                    {
-                        case scopes::OnlineAccountClient::DoNothing:
-                            return;
-                        case scopes::OnlineAccountClient::InvalidateResults:
-                            invalidateResults();
-                            return;
-                        default:
-                            break;
-                    }
-                }
-                login->deleteLater();
-            });
-            login->loginToAccount();
-            return nullptr; // main execution ends here
-        }
-    }
-
     PreviewStack* stack = new PreviewStack(nullptr);
     QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
     m_previewStacks.append(stack);
