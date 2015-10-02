@@ -192,7 +192,7 @@ void Scopes::lsbReleaseFinished()
     const QMap<QString, QString> versions({
         {QStringLiteral("unity-plugin-scopes"), QStringLiteral("plugin")},
         {QStringLiteral("unity8"), QStringLiteral("unity8")},
-        {QStringLiteral("libunity-scopes1.0"), QStringLiteral("scopes-api")}});
+        {QStringLiteral("libunity-scopes"), QStringLiteral("scopes-api")}});
 
     // determine versions of unity8, unity-plugin-scopes and libunity-scopes1.0
     for (QMap<QString, QString>::const_iterator pkg = versions.constBegin(); pkg != versions.constEnd(); pkg++) {

@@ -13,4 +13,4 @@ install(
 )
 
 add_custom_target(pkgversion ALL COMMAND dpkg-parsechangelog -l${CMAKE_SOURCE_DIR}/debian/changelog --show-field version > ${CMAKE_CURRENT_BINARY_DIR}/version)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version DESTINATION /var/lib/unity-plugin-scopes)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/unity-plugin-scopes)
