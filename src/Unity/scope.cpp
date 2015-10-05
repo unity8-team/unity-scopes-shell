@@ -192,9 +192,10 @@ bool Scope::event(QEvent* ev)
             case PushEvent::ACTIVATION: {
                 std::shared_ptr<scopes::ActivationResponse> response;
                 std::shared_ptr<scopes::Result> result;
-                pushEvent->collectActivationResponse(response, result);
+                QString categoryId;
+                pushEvent->collectActivationResponse(response, result, categoryId);
                 if (response) {
-                    handleActivation(response, result);
+                    handleActivation(response, result, categoryId);
                 }
                 return true;
             }
@@ -206,7 +207,7 @@ bool Scope::event(QEvent* ev)
     return QObject::event(ev);
 }
 
-void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result)
+void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
@@ -221,9 +222,12 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
         case scopes::ActivationResponse::ShowPreview:
             Q_EMIT previewRequested(QVariant::fromValue(result));
             break;
-         case scopes::ActivationResponse::PerformQuery:
+        case scopes::ActivationResponse::PerformQuery:
             executeCannedQuery(response->query(), true);
             break;
+        case scopes::ActivationResponse::UpdateResult:
+            m_categories->updateResult(*result, categoryId, response->updated_result());
+            Q_EMIT updateResultRequested();
         case scopes::ActivationResponse::UpdatePreview:
             handlePreviewUpdate(result, response->updated_widgets());
             break;
@@ -1230,6 +1234,28 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
         } catch (...) {
             qWarning("Caught an error from activate()");
         }
+    }
+}
+
+// called for in-card (result) actions.
+void Scope::activateAction(QVariant const& result_var, QString const& categoryId, QString const& actionId)
+{
+    try {
+        cancelActivation();
+        std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+        scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
+        m_activationController->setListener(listener);
+
+        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri());
+
+        auto proxy = proxy_for_result(result);
+        unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        scopes::QueryCtrlProxy controller = proxy->activate_result_action(*(result.get()), metadata, actionId.toStdString(), listener);
+        m_activationController->setController(controller);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from activate_result_action(): %s", e.what());
+    } catch (...) {
+        qWarning("Caught an error from activate_result_action()");
     }
 }
 

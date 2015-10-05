@@ -107,7 +107,7 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::Result const* result, std::string const& fieldName) const
 {
     auto mappingIt = m_componentMapping.find(fieldName);
     if (mappingIt == m_componentMapping.end()) {
@@ -116,10 +116,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     std::string const& realFieldName = mappingIt->second;
     try {
         scopes::Variant const& v = result->value(realFieldName);
-        if (v.which() != scopes::Variant::Type::String) {
-            return QVariant();
-        }
-        return QString::fromStdString(v.get_string());
+        return scopeVariantToQVariant(v);
     } catch (...) {
         // value() throws if realFieldName is empty or the result
         // doesn't have a value for it
@@ -128,7 +125,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
 }
 
 QVariant
-ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
+ResultsModel::attributesValue(scopes::Result const* result) const
 {
     auto mappingIt = m_componentMapping.find("attributes");
     if (mappingIt == m_componentMapping.end()) {
@@ -171,6 +168,25 @@ QHash<int, QByteArray> ResultsModel::roleNames() const
     return roles;
 }
 
+void ResultsModel::updateResult(scopes::Result const& result, scopes::Result const& updatedResult)
+{
+    for (int i = 0; i<m_results.size(); i++)
+    {
+        auto const res = m_results[i];
+        if (result.uri() == res->uri() && result.serialize() == res->serialize())
+        {
+            qDebug() << "Updated result with uri '" << QString::fromStdString(res->uri()) << "'";
+            m_results[i] = std::make_shared<scopes::Result>(updatedResult);
+            auto const idx = index(i, 0);
+            Q_EMIT dataChanged(idx, idx);
+            return;
+        }
+    }
+    qWarning() << "ResultsModel::updateResult - failed to find result with uri '"
+        << QString::fromStdString(result.uri())
+        << "', category '" << categoryId() << "'";
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
@@ -182,13 +198,13 @@ ResultsModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::CategorisedResult* result = m_results.at(index.row()).get();
+    scopes::Result* result = m_results.at(index.row()).get();
 
     switch (role) {
         case RoleUri:
             return QString::fromStdString(result->uri());
         case RoleCategoryId:
-            return QString::fromStdString(result->category()->id());
+            return categoryId();
         case RoleDndUri:
             return QString::fromStdString(result->dnd_uri());
         case RoleResult:
@@ -241,6 +257,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 }
             }
             return QVariant();
+        case RoleQuickPreviewData:
+            return componentValue(result, "quick-preview-data");
         default:
             return QVariant();
     }

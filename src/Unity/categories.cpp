@@ -508,6 +508,16 @@ void Categories::countChanged()
     }
 }
 
+void Categories::updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result)
+{
+    for (auto catData: m_categories) {
+        if (catData->categoryId() == categoryId) {
+            catData->resultsModel()->updateResult(result, updated_result);
+            break;
+        }
+    }
+}
+
 QVariant
 Categories::data(const QModelIndex& index, int role) const
 {

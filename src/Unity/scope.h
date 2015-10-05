@@ -158,8 +158,9 @@ public:
     Q_INVOKABLE void refresh() override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
-    void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
+    void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&, QString const& categoryId="");
     void activateUri(QString const& uri);
+    void activateAction(QVariant const& result, QString const& categoryId, QString const& actionId) override;
 
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
@@ -181,6 +182,7 @@ Q_SIGNALS:
     void resultsDirtyChanged();
     void favoriteChanged(bool);
     void activationFailed(QString const& id);
+    void updateResultRequested();
 
 private Q_SLOTS:
     void typingFinished();
