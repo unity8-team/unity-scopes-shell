@@ -228,6 +228,7 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
         case scopes::ActivationResponse::UpdateResult:
             m_categories->updateResult(*result, categoryId, response->updated_result());
             Q_EMIT updateResultRequested();
+            break;
         case scopes::ActivationResponse::UpdatePreview:
             handlePreviewUpdate(result, response->updated_widgets());
             break;
