@@ -218,8 +218,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 // FIXME: figure out a better way and get rid of this, it's an awful hack
                 QVariantHash result_meta;
                 if (result->contains("artist") && result->contains("album")) {
-                    result_meta["artist"] = scopeVariantToQVariant(result->value("artist"));
-                    result_meta["album"] = scopeVariantToQVariant(result->value("album"));
+                    result_meta[QStringLiteral("artist")] = scopeVariantToQVariant(result->value("artist"));
+                    result_meta[QStringLiteral("album")] = scopeVariantToQVariant(result->value("album"));
                 }
                 QString thumbnailerUri(uriToThumbnailerProviderString(uri, result_meta));
                 if (!thumbnailerUri.isNull()) {

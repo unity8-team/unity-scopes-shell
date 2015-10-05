@@ -36,7 +36,7 @@ class Q_DECL_EXPORT UbuntuLocationService : public LocationService
 public:
     class TokenImpl;
 
-    UbuntuLocationService(GeoIp::Ptr geoIp = GeoIp::Ptr(new GeoIp));
+    UbuntuLocationService(const GeoIp::Ptr& geoIp = GeoIp::Ptr(new GeoIp));
 
     virtual ~UbuntuLocationService();
 

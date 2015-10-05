@@ -81,7 +81,7 @@ ScopeUri::ScopeUri(const ScopeUri& other) :
 
 ScopeUri::ScopeUri(ScopeUri&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 ScopeUri& ScopeUri::operator=(const ScopeUri& other)
@@ -94,7 +94,7 @@ ScopeUri& ScopeUri::operator=(const ScopeUri& other)
 
 ScopeUri& ScopeUri::operator=(ScopeUri&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

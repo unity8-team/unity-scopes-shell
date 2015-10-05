@@ -70,7 +70,7 @@ bool PreviewModel::event(QEvent* ev)
         }
     }
 
-    return false;
+    return unity::shell::scopes::PreviewModelInterface::event(ev);
 }
 
 void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
@@ -200,9 +200,11 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
         int numColumns = layout.number_of_columns();
         // build the list
         QList<QStringList> widgetsPerColumn;
+        widgetsPerColumn.reserve(numColumns);
         for (int i = 0; i < numColumns; i++) {
             std::vector<std::string> widgetArr(layout.column(i));
             QStringList widgets;
+            widgets.reserve(widgetArr.size());
             for (std::size_t j = 0; j < widgetArr.size(); j++) {
                 widgets.append(QString::fromStdString(widgetArr[j]));
             }
@@ -214,8 +216,31 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 
 void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets)
 {
-    if (widgets.empty()) return;
+    processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
+        m_previewWidgets.append(widgetData);
+        addWidgetToColumnModel(widgetData);
+    });
+}
 
+void PreviewModel::updateWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets)
+{
+    processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
+        for (int i = 0; i<m_previewWidgets.size(); i++) {
+                if (m_previewWidgets.at(i)->id == widgetData->id) {
+                    m_previewWidgets.replace(i, widgetData);
+
+                    // Update widget with that id in all models
+                    for (auto model: m_previewWidgetModels) {
+                        model->updateWidget(widgetData);
+                    }
+                    break;
+                }
+        }
+    });
+}
+
+void PreviewModel::processWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets, std::function<void(QSharedPointer<PreviewWidgetData>)> const& processFunc)
+{
     for (auto it = widgets.begin(); it != widgets.end(); ++it) {
         scopes::PreviewWidget const& widget = *it;
         QString id(QString::fromStdString(widget.id()));
@@ -236,7 +261,7 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
 
         if (!widget_type.isEmpty()) {
             QList<QSharedPointer<PreviewWidgetData>> collapsedWidgets; // only used if type == 'expandable'
-            if (widget_type == "expandable") {
+            if (widget_type == QLatin1String("expandable")) {
                 QList<QSharedPointer<PreviewWidgetData>> widgetData;
                 for (auto const w: widget.widgets())
                 {
@@ -265,7 +290,7 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
 
                 PreviewWidgetModel* submodel = new PreviewWidgetModel(this);
                 submodel->addWidgets(widgetData);
-                attributes["widgets"] = QVariant::fromValue(submodel); // insert model of this sub-widget into the outer widget's attributes
+                attributes[QStringLiteral("widgets")] = QVariant::fromValue(submodel); // insert model of this sub-widget into the outer widget's attributes
             }
 
             auto preview_data = new PreviewWidgetData(id, widget_type, components, attributes);
@@ -276,9 +301,8 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
                 m_dataToWidgetMap.insert(attr_it.value(), preview_data);
             }
             QSharedPointer<PreviewWidgetData> widgetData(preview_data);
-            m_previewWidgets.append(widgetData);
 
-            addWidgetToColumnModel(widgetData);
+            processFunc(widgetData);
         }
     }
 }
@@ -358,8 +382,8 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
                 }
             }
         } else { // check if it's expandable widget
-            if (widget->type == "expandable") {
-                auto const widgetsModelIt = widget->data.find("widgets");
+            if (widget->type == QLatin1String("expandable")) {
+                auto const widgetsModelIt = widget->data.find(QStringLiteral("widgets"));
                 if (widgetsModelIt!= widget->data.end() && widgetsModelIt.value().canConvert<PreviewWidgetModel*>()) {
                     for (auto it = widget->collapsedWidgets.begin(); it != widget->collapsedWidgets.end(); it++) {
                         auto subwidget = *it;

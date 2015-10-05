@@ -52,7 +52,7 @@ PreviewColumnMatcher::PreviewColumnMatcher(const PreviewColumnMatcher& other) :
 
 PreviewColumnMatcher::PreviewColumnMatcher(PreviewColumnMatcher&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 PreviewColumnMatcher& PreviewColumnMatcher::operator=(const PreviewColumnMatcher& other)
@@ -63,7 +63,7 @@ PreviewColumnMatcher& PreviewColumnMatcher::operator=(const PreviewColumnMatcher
 
 PreviewColumnMatcher& PreviewColumnMatcher::operator=(PreviewColumnMatcher&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

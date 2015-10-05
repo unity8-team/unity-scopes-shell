@@ -30,16 +30,16 @@
 QString uriToThumbnailerProviderString(QString const &uri, QVariantHash const &metadata)
 {
     if (uri.startsWith(QLatin1String("file:///")) || uri.startsWith(QLatin1String("album://"))) {
-        bool isAlbum = metadata.contains("album") && metadata.contains("artist");
+        bool isAlbum = metadata.contains(QStringLiteral("album")) && metadata.contains(QStringLiteral("artist"));
         QString thumbnailerUri;
         if (isAlbum) {
-            thumbnailerUri = BASE_ALBUMART_URI;
+            thumbnailerUri = QStringLiteral(BASE_ALBUMART_URI);
             QUrlQuery query;
-            query.addQueryItem(QStringLiteral("artist"), metadata["artist"].toString());
-            query.addQueryItem(QStringLiteral("album"), metadata["album"].toString());
+            query.addQueryItem(QStringLiteral("artist"), metadata[QStringLiteral("artist")].toString());
+            query.addQueryItem(QStringLiteral("album"), metadata[QStringLiteral("album")].toString());
             thumbnailerUri.append(query.toString());
         } else {
-            thumbnailerUri = BASE_THUMBNAILER_URI;
+            thumbnailerUri = QStringLiteral(BASE_THUMBNAILER_URI);
             thumbnailerUri.append(uri.midRef(7));
         }
         return thumbnailerUri;

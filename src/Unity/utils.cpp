@@ -51,6 +51,7 @@ QVariant scopeVariantToQVariant(scopes::Variant const& variant)
         case scopes::Variant::Type::Array: {
             scopes::VariantArray arr(variant.get_array());
             QVariantList result_list;
+            result_list.reserve(arr.size());
             for (size_t i = 0; i < arr.size(); i++) {
                 result_list.append(scopeVariantToQVariant(arr[i]));
             }
@@ -90,6 +91,7 @@ scopes::Variant qVariantToScopeVariant(QVariant const& variant)
         case QMetaType::QVariantList: {
             QVariantList l(variant.toList());
             scopes::VariantArray arr;
+            arr.reserve(l.size());
             for (int i = 0; i < l.size(); i++) {
                 arr.push_back(qVariantToScopeVariant(l[i]));
             }
@@ -107,18 +109,19 @@ QVariant backgroundUriToVariant(QString const& uri)
         QVariantList elements;
         elements.append(uri.mid(9));
         QVariantMap m;
-        m["type"] = QString("color");
-        m["elements"] = elements;
+        m[QStringLiteral("type")] = QStringLiteral("color");
+        m[QStringLiteral("elements")] = elements;
         return m;
     } else if (uri.startsWith(QLatin1String("gradient:///"))) {
-        QStringList parts = uri.mid(12).split("/", QString::SkipEmptyParts);
+        QStringList parts = uri.mid(12).split(QStringLiteral("/"), QString::SkipEmptyParts);
         QVariantList elements;
+        elements.reserve(parts.size());
         for (int i = 0; i < parts.size(); i++) {
             elements.append(parts[i]);
         }
         QVariantMap m;
-        m["type"] = QString("gradient");
-        m["elements"] = elements;
+        m[QStringLiteral("type")] = QStringLiteral("gradient");
+        m[QStringLiteral("elements")] = elements;
         return m;
     } else {
         return QVariant(uri);
@@ -129,7 +132,7 @@ Q_DECL_EXPORT QString uuidToString(QUuid const& uuid)
 {
     // workaround: use mid to get rid of curly braces; see https://bugreports.qt-project.org/browse/QTBUG-885
     auto const uuid_str = uuid.toString();
-    if (uuid_str.startsWith("{")) {
+    if (uuid_str.startsWith(QStringLiteral("{"))) {
         return uuid_str.mid(1, 36);
     }
     return uuid_str;

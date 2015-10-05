@@ -32,50 +32,51 @@ namespace sc = unity::scopes;
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
         int settingsTimeout)
-        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout)
+        : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout),
+          m_requireChildScopesRefresh(false)
 {
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
 
-    m_settings.reset(new QSettings(databaseDir.filePath("settings.ini"), QSettings::IniFormat));
+    m_settings.reset(new QSettings(databaseDir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat));
     m_settings->setIniCodec("UTF-8");
 
     for (const auto &it : settingsDefinitions.toList())
     {
         QVariantMap data = it.toMap();
-        QString id = data["id"].toString();
-        QString displayName = data["displayName"].toString();
+        QString id = data[QStringLiteral("id")].toString();
+        QString displayName = data[QStringLiteral("displayName")].toString();
         QVariantMap properties;
         QVariant defaultValue;
-        if (data.contains("displayValues"))
+        if (data.contains(QStringLiteral("displayValues")))
         {
-            properties["values"] = data["displayValues"].toList();
+            properties[QStringLiteral("values")] = data[QStringLiteral("displayValues")].toList();
         }
-        QString type = data["type"].toString();
+        QString type = data[QStringLiteral("type")].toString();
 
         QVariant::Type variantType = QVariant::Invalid;
 
-        if(type == "boolean")
+        if(type == QLatin1String("boolean"))
         {
             variantType = QVariant::Bool;
         }
-        else if(type == "list")
+        else if(type == QLatin1String("list"))
         {
             variantType = QVariant::UInt;
         }
-        else if(type == "number")
+        else if(type == QLatin1String("number"))
         {
             variantType = QVariant::Double;
         }
-        else if(type == "string")
+        else if(type == QLatin1String("string"))
         {
             variantType = QVariant::String;
         }
 
-        if(data.contains("defaultValue"))
+        if(data.contains(QStringLiteral("defaultValue")))
         {
-            defaultValue = data["defaultValue"];
-            properties["defaultValue"] = defaultValue;
+            defaultValue = data[QStringLiteral("defaultValue")];
+            properties[QStringLiteral("defaultValue")] = defaultValue;
         }
 
         QSharedPointer<QTimer> timer(new QTimer());
@@ -207,6 +208,16 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         return;
     }
 
+    const bool reset = m_requireChildScopesRefresh;
+    if (reset) {
+        // Reset the settings model to fix LP: #1484299, where a new child scope just finished installing
+        // while settings view is created (and we crash); since this is really a corner case, just
+        // resetting the model is fine.
+        beginResetModel();
+    }
+
+    m_requireChildScopesRefresh = false;
+
     m_child_scopes_data.clear();
     m_child_scopes_data_by_id.clear();
     m_child_scopes_timers.clear();
@@ -214,6 +225,13 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
     for (sc::ChildScope const& child_scope : m_child_scopes)
     {
         QString id = child_scope.id.c_str();
+        if (!scopes_metadata.contains(id)) {
+            // if a child scope was just added to the registry, then scopes_metadata may not contain it yet because of the
+            // scope registry refresh delay on scope add/removal (see LP: #1484299).
+            qWarning() << "SettingsModel::update_child_scopes(): no scope with id '" + id + "'";
+            m_requireChildScopesRefresh = true;
+            continue;
+        }
         QString displayName = QString::fromStdString(_("Display results from %1")).arg(QString(scopes_metadata[id]->display_name().c_str()));
 
         QSharedPointer<QTimer> timer(new QTimer());
@@ -226,10 +244,15 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         m_child_scopes_timers[id] = timer;
 
         QSharedPointer<Data> setting(
-                new Data(id, displayName, "boolean", QVariantMap(), QVariant(), QVariant::Bool));
+                new Data(id, displayName, QStringLiteral("boolean"), QVariantMap(), QVariant(), QVariant::Bool));
 
         m_child_scopes_data << setting;
         m_child_scopes_data_by_id[id] = setting;
+    }
+
+    if (reset) {
+        endResetModel();
+        Q_EMIT countChanged();
     }
 }
 
@@ -288,6 +311,11 @@ int SettingsModel::rowCount(const QModelIndex&) const
 int SettingsModel::count() const
 {
     return m_data.size() + m_child_scopes_data.size();
+}
+
+bool SettingsModel::require_child_scopes_refresh() const
+{
+    return m_requireChildScopesRefresh;
 }
 
 void SettingsModel::settings_timeout()

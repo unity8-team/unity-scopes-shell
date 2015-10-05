@@ -80,7 +80,7 @@ Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 
 Scope::Scope(scopes_ng::Scopes* parent) :
       m_query_id(0)
-    , m_formFactor("phone")
+    , m_formFactor(QStringLiteral("phone"))
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
@@ -228,6 +228,9 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
         case scopes::ActivationResponse::UpdateResult:
             m_categories->updateResult(*result, categoryId, response->updated_result());
             Q_EMIT updateResultRequested();
+        case scopes::ActivationResponse::UpdatePreview:
+            handlePreviewUpdate(result, response->updated_widgets());
+            break;
         default:
             break;
     }
@@ -235,6 +238,11 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
 
 void Scope::metadataRefreshed()
 {
+    // refresh Settings view if needed
+    if (require_child_scopes_refresh()) {
+        update_child_scopes();
+    }
+
     std::shared_ptr<scopes::ActivationResponse> response;
     response.swap(m_delayedActivation);
 
@@ -259,6 +267,21 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
         m_queryUserData.reset(nullptr);
     }
     setSearchQueryString(QString::fromStdString(query.query_string()));
+}
+
+void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
+{
+    for (auto stack: m_previewStacks) {
+        auto previewedResult = stack->previewedResult();
+
+        if (result == nullptr) {
+            qWarning() << "handlePreviewUpdate: result is null";
+            return;
+        }
+        if (previewedResult != nullptr && *result == *previewedResult) {
+            stack->update(widgets);
+        }
+    }
 }
 
 void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation)
@@ -381,7 +404,7 @@ void Scope::flushUpdates(bool finalize)
         bool containsDepartments = m_rootDepartment.get() != nullptr;
         // design decision - no navigation when doing searches
         containsDepartments &= m_searchQuery.isEmpty();
-        
+
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -389,7 +412,7 @@ void Scope::flushUpdates(bool finalize)
 
         if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
             qDebug() << "Resetting current nav id";
-            m_currentNavigationId = "";
+            m_currentNavigationId = QLatin1String("");
             Q_EMIT currentNavigationIdChanged();
         }
     }
@@ -430,7 +453,7 @@ void Scope::flushUpdates(bool finalize)
 
         if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
             qDebug() << "Resetting alt nav id";
-            m_currentAltNavigationId = "";
+            m_currentAltNavigationId = QLatin1String("");
             Q_EMIT currentAltNavigationIdChanged();
         }
 
@@ -480,7 +503,9 @@ scopes::Department::SCPtr Scope::findUpdateNode(DepartmentNode* node, scopes::De
 
     // are all the children in our cache?
     QStringList cachedChildrenIds;
-    Q_FOREACH(DepartmentNode* child, node->childNodes()) {
+    const auto childNodes = node->childNodes();
+    cachedChildrenIds.reserve(childNodes.count());
+    Q_FOREACH(DepartmentNode* child, childNodes) {
         cachedChildrenIds << child->id();
     }
 
@@ -545,7 +570,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     if (result_set.count() == 0) return;
 
     // this will keep the list of categories in order
-    QList<scopes::Category::SCPtr> categories;
+    QVector<scopes::Category::SCPtr> categories;
 
     // split the result_set by category_id
     QMap<std::string, QList<std::shared_ptr<scopes::CategorisedResult>>> category_results;
@@ -711,7 +736,7 @@ void Scope::dispatchSearch()
         try {
             if (m_settingsModel && m_scopeMetadata && m_scopeMetadata->location_data_needed())
             {
-                QVariant locationEnabled = m_settingsModel->value("internal.location");
+                QVariant locationEnabled = m_settingsModel->value(QStringLiteral("internal.location"));
                 if (locationEnabled.type() == QVariant::Bool && locationEnabled.toBool())
                 {
                     meta.set_location(m_locationService->location());
@@ -764,7 +789,7 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
         }
         else
         {
-            shareDir = QDir::home().filePath(".config/unity-scopes");
+            shareDir = QDir::home().filePath(QStringLiteral(".config/unity-scopes"));
         }
 
         m_settingsModel.reset(
@@ -866,6 +891,23 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
     return m_settingsModel.data();
 }
 
+bool Scope::require_child_scopes_refresh() const
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        return m_settingsModel->require_child_scopes_refresh();
+    }
+    return false;
+}
+
+void Scope::update_child_scopes()
+{
+    if (m_settingsModel && m_scopesInstance)
+    {
+        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+    }
+}
+
 /*
 Filters* Scope::filters() const
 {
@@ -953,6 +995,17 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_departmentModels.remove(it.value(), navigation);
     m_altNavModels.remove(it.value(), navigation);
     m_inverseDepartments.erase(it);
+}
+
+void Scope::previewStackDestroyed(QObject *obj)
+{
+    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    {
+        if (*it == obj) {
+            m_previewStacks.erase(it);
+            break;
+        }
+    }
 }
 
 void Scope::performQuery(QString const& cannedQuery)
@@ -1115,7 +1168,7 @@ void Scope::setFavorite(const bool value)
     }
 }
 
-void Scope::activate(QVariant const& result_var)
+void Scope::activate(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot activate, unable to convert %s to Result", result_var.typeName());
@@ -1131,18 +1184,18 @@ void Scope::activate(QVariant const& result_var)
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("service_name") &&
-            details.contains("service_type") &&
-            details.contains("provider_name") &&
-            details.contains("login_passed_action") &&
-            details.contains("login_failed_action"))
+        if (details.contains(QStringLiteral("service_name")) &&
+            details.contains(QStringLiteral("service_type")) &&
+            details.contains(QStringLiteral("provider_name")) &&
+            details.contains(QStringLiteral("login_passed_action")) &&
+            details.contains(QStringLiteral("login_failed_action")))
         {
-            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
-                                          details.value("service_name").toString(),
-                                          details.value("service_type").toString(),
-                                          details.value("provider_name").toString());
+            bool success = loginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                          details.value(QStringLiteral("service_name")).toString(),
+                                          details.value(QStringLiteral("service_type")).toString(),
+                                          details.value(QStringLiteral("provider_name")).toString());
 
-            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            int action_code_index = success ? details.value(QStringLiteral("login_passed_action")).toInt() : details.value(QStringLiteral("login_failed_action")).toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
                 scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -1161,8 +1214,12 @@ void Scope::activate(QVariant const& result_var)
     }
 
     if (result->direct_activation()) {
-        activateUri(QString::fromStdString(result->uri()));
-    } else {
+        if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+            activateUri(QString::fromStdString(result->uri()));
+        } else {
+            Q_EMIT previewRequested(result_var);
+        }
+    } else { // intercept activation flag set
         try {
             cancelActivation();
             scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
@@ -1202,7 +1259,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var)
+unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1215,21 +1272,26 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
+    // No preview for scope:// uris and for special camera-app card in video aggregator scope (if no videos are available).
+    if (result->uri().find("scope://") == 0 || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+        return nullptr;
+    }
+
     if (result->contains("online_account_details"))
     {
         QVariantMap details = scopeVariantToQVariant(result->value("online_account_details")).toMap();
-        if (details.contains("service_name") &&
-            details.contains("service_type") &&
-            details.contains("provider_name") &&
-            details.contains("login_passed_action") &&
-            details.contains("login_failed_action"))
+        if (details.contains(QStringLiteral("service_name")) &&
+            details.contains(QStringLiteral("service_type")) &&
+            details.contains(QStringLiteral("provider_name")) &&
+            details.contains(QStringLiteral("login_passed_action")) &&
+            details.contains(QStringLiteral("login_failed_action")))
         {
-            bool success = loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
-                                          details.value("service_name").toString(),
-                                          details.value("service_type").toString(),
-                                          details.value("provider_name").toString());
+            bool success = loginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                          details.value(QStringLiteral("service_name")).toString(),
+                                          details.value(QStringLiteral("service_type")).toString(),
+                                          details.value(QStringLiteral("provider_name")).toString());
 
-            int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+            int action_code_index = success ? details.value(QStringLiteral("login_passed_action")).toInt() : details.value(QStringLiteral("login_failed_action")).toInt();
             if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
             {
                 scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -1248,6 +1310,8 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
     }
 
     PreviewStack* stack = new PreviewStack(nullptr);
+    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
+    m_previewStacks.append(stack);
     stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
     stack->loadForResult(result);
     return stack;

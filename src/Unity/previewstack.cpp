@@ -74,7 +74,7 @@ bool PreviewStack::event(QEvent* ev)
         }
     }
 
-    return false;
+    return unity::shell::scopes::PreviewStackInterface::event(ev);
 }
 
 void PreviewStack::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
@@ -115,6 +115,14 @@ void PreviewStack::loadForResult(scopes::Result::SPtr const& result)
     dispatchPreview();
 }
 
+void PreviewStack::update(unity::scopes::PreviewWidgetList const& widgets)
+{
+    if (m_activePreview == nullptr) {
+        return;
+    }
+    m_activePreview->updateWidgetDefinitions(widgets);
+}
+
 void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
 {
     // TODO: figure out if the result can produce a preview without sending a request to the scope
@@ -122,7 +130,7 @@ void PreviewStack::dispatchPreview(scopes::Variant const& extra_data)
     try {
         auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
 
-        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
@@ -156,20 +164,20 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
         PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
         if (widgetData != nullptr) {
 
-            if (m_associatedScope && widgetData->data.contains("online_account_details"))
+            if (m_associatedScope && widgetData->data.contains(QStringLiteral("online_account_details")))
             {
-                QVariantMap details = widgetData->data.value("online_account_details").toMap();
-                if (details.contains("service_name") &&
-                    details.contains("service_type") &&
-                    details.contains("provider_name") &&
-                    details.contains("login_passed_action") &&
-                    details.contains("login_failed_action"))
+                QVariantMap details = widgetData->data.value(QStringLiteral("online_account_details")).toMap();
+                if (details.contains(QStringLiteral("service_name")) &&
+                    details.contains(QStringLiteral("service_type")) &&
+                    details.contains(QStringLiteral("provider_name")) &&
+                    details.contains(QStringLiteral("login_passed_action")) &&
+                    details.contains(QStringLiteral("login_failed_action")))
                 {
-                    bool success = m_associatedScope->loginToAccount(details.contains("scope_id") ? details.value("scope_id").toString() : "",
-                                                                     details.value("service_name").toString(),
-                                                                     details.value("service_type").toString(),
-                                                                     details.value("provider_name").toString());
-                    int action_code_index = success ? details.value("login_passed_action").toInt() : details.value("login_failed_action").toInt();
+                    bool success = m_associatedScope->loginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                                                     details.value(QStringLiteral("service_name")).toString(),
+                                                                     details.value(QStringLiteral("service_type")).toString(),
+                                                                     details.value(QStringLiteral("provider_name")).toString());
+                    int action_code_index = success ? details.value(QStringLiteral("login_passed_action")).toInt() : details.value(QStringLiteral("login_failed_action")).toInt();
                     if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
                     {
                         scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
@@ -187,9 +195,9 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
                 }
             }
 
-            if (widgetData->type == QLatin1String("actions") && data.contains("uri")) {
+            if ((widgetData->type == QLatin1String("actions") || widgetData->type == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
                 if (m_associatedScope) {
-                    m_associatedScope->activateUri(data.value("uri").toString());
+                    m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
                     return;
                 }
             }
@@ -201,7 +209,7 @@ void PreviewStack::widgetTriggered(QString const& widgetId, QString const& actio
     try {
         auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
 
-        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : "phone");
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
         metadata.set_scope_data(qVariantToScopeVariant(data));
 
@@ -273,6 +281,11 @@ int PreviewStack::widgetColumnCount() const
 int PreviewStack::rowCount(const QModelIndex&) const
 {
     return m_previews.size();
+}
+
+unity::scopes::Result::SPtr PreviewStack::previewedResult() const
+{
+    return m_previewedResult;
 }
 
 unity::shell::scopes::PreviewModelInterface* PreviewStack::getPreviewModel(int index) const

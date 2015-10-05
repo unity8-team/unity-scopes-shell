@@ -274,7 +274,7 @@ private:
     QString m_categoryId;
 };
 
-PushEvent::PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector):
+PushEvent::PushEvent(Type event_type, const std::shared_ptr<CollectorBase>& collector):
     QEvent(PushEvent::eventType),
     m_eventType(event_type),
     m_collector(collector)

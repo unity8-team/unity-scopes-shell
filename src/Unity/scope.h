@@ -128,6 +128,8 @@ public:
     unity::shell::scopes::ScopeInterface::Status status() const override;
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
+    bool require_child_scopes_refresh() const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
@@ -145,8 +147,8 @@ public:
     void setActive(const bool) override;
     void setFavorite(const bool) override;
 
-    Q_INVOKABLE void activate(QVariant const& result) override;
-    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
+    Q_INVOKABLE void activate(QVariant const& result, QString const& categoryId) override;
+    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result, QString const& categoryId) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
@@ -187,6 +189,7 @@ private Q_SLOTS:
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
+    void previewStackDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
@@ -210,6 +213,7 @@ private:
     void processSearchChunk(PushEvent* pushEvent);
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
+    void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
@@ -261,6 +265,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
+    QList<PreviewStack*> m_previewStacks;
 };
 
 } // namespace scopes_ng

@@ -81,6 +81,8 @@ public:
 
     void update_child_scopes(QMap<QString, unity::scopes::ScopeMetadata::SPtr> const& scopes_metadata);
 
+    bool require_child_scopes_refresh() const;
+
 Q_SIGNALS:
     void settingsChanged();
 
@@ -101,6 +103,7 @@ protected:
     QMap<QString, QSharedPointer<Data>> m_child_scopes_data_by_id;
     unity::scopes::ChildScopeList m_child_scopes;
     QMap<QString, QSharedPointer<QTimer>> m_child_scopes_timers;
+    bool m_requireChildScopesRefresh;
 };
 
 }

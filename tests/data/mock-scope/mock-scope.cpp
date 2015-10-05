@@ -151,6 +151,7 @@ public:
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
+
             res.set_uri("test:result-action");
             res.set_title("result for: \"" + query_ + "\"");
 
@@ -167,6 +168,14 @@ public:
                     {"label", Variant("Action2")},
             });
             res["social_attributes"] = builder.end(); // TODO: verify with shell
+            reply->push(res);
+        }
+        else if (query_ == "update-preview")
+        {
+            CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
+            auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
+            CategorisedResult res(cat);
+            res.set_uri("update-preview");
             reply->push(res);
         }
         else if (query_ == "expandable-widget")
@@ -406,6 +415,29 @@ public:
             reply->push("src", Variant("bar.png"));
             return;
         }
+        else if (result().uri().find("update-preview") != std::string::npos)
+        {
+            PreviewWidget w1("icon-actions", "icon-actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("dosomething1")},
+                {"label", Variant("Do something 1")}
+            });
+            builder.add_tuple({
+                {"id", Variant("dosomething2")},
+                {"label", Variant("Do something 2")}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"icon-actions"});
+
+            reply->register_layout({l1});
+            PreviewWidgetList widgets({w1});
+            reply->push(widgets);
+            return;
+        }
 
         PreviewWidgetList widgets;
         PreviewWidget w1(R"({"id": "hdr", "type": "header", "components": {"title": "title", "subtitle": "uri", "attribute-1": "extra-data", "session-id": "session-id-val"}})");
@@ -480,6 +512,27 @@ private:
     std::string action_id_;
 };
 
+
+class UpdatePreviewWidgets : public ActivationQueryBase
+{
+public:
+    UpdatePreviewWidgets(Result const& result, ActionMetadata const& metadata, PreviewWidgetList const &widgets)
+        : ActivationQueryBase(result, metadata),
+          widgets_(widgets)
+    {
+    }
+
+    virtual ActivationResponse activate() override
+    {
+        ActivationResponse resp(widgets_);
+        return resp;
+    }
+
+private:
+    PreviewWidgetList widgets_;
+    Variant extra_data_;
+};
+
 class MyScope : public ScopeBase
 {
 public:
@@ -499,6 +552,7 @@ public:
 
     virtual ActivationQueryBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
     {
+        cout << "scope-A: called perform_action: " << widget_id << ", " << action_id << endl;
         if (widget_id == "actions" && action_id == "hide")
         {
             return ActivationQueryBase::UPtr(new MyActivation(result, meta));
@@ -508,6 +562,24 @@ public:
             MyActivation* response = new MyActivation(result, meta, ActivationResponse::ShowPreview);
             response->setExtraData(meta.scope_data());
             return ActivationQueryBase::UPtr(response);
+        }
+        else if (widget_id == "icon-actions" && action_id == "dosomething1")
+        {
+            PreviewWidget w1("icon-actions", "icon-actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("dosomething1")},
+                {"label", Variant("Did something 1")}
+            });
+            builder.add_tuple({
+                {"id", Variant("dosomething2")},
+                {"label", Variant("Do something 2")}
+            });
+            w1.add_attribute_value("actions", builder.end());
+
+            PreviewWidgetList widgets({w1});
+            return ActivationQueryBase::UPtr(new UpdatePreviewWidgets(result, meta, widgets));
         }
         return ActivationQueryBase::UPtr(new MyActivation(result, meta, ActivationResponse::NotHandled));
     }

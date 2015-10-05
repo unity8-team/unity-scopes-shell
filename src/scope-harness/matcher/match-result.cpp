@@ -43,7 +43,7 @@ MatchResult::MatchResult() :
 
 MatchResult::MatchResult(MatchResult&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 MatchResult::MatchResult(const MatchResult& other) :
@@ -61,7 +61,7 @@ MatchResult& MatchResult::operator=(const MatchResult& other)
 
 MatchResult& MatchResult::operator=(MatchResult&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
