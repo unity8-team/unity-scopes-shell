@@ -45,6 +45,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
+    void addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 
     /* getters */

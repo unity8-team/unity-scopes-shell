@@ -23,7 +23,9 @@
 // local
 #include "utils.h"
 #include "iconutils.h"
+#include "resultsmap.h"
 
+#include <map>
 #include <QDebug>
 
 namespace scopes_ng {
@@ -70,10 +72,58 @@ void ResultsModel::setMaxAtrributesCount(int count)
     m_maxAttributes = count;
 }
 
+void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
+{
+    if (results.count() == 0) return;
+
+    const int oldCount = m_results.count();
+
+    ResultsMap newResultsMap(results);
+
+    int row = 0;
+    // iterate over old (i.e. currently visible) results
+    for (auto it = m_results.begin(); it != m_results.end(); it++) {
+        int newPos = newResultsMap.find(*it);
+        bool haveNow = (newPos >= 0);
+        if (haveNow) {
+            if (row != newPos) {
+                // move row
+                beginMoveRows(QModelIndex(), row, row, QModelIndex(), newPos + (newPos > row ? 1 : 0));
+                m_results.move(row, newPos);
+                endMoveRows();
+            }
+            ++row;
+        } else {
+            // delete row
+            beginRemoveRows(QModelIndex(), row, row);
+            it = m_results.erase(it);
+            endRemoveRows();
+        }
+    }
+
+    ResultsMap oldResultsMap(m_results);
+
+    // iterate over new results
+    for (int i = 0; i<results.count(); i++) {
+        int oldPos = oldResultsMap.find(results[i]);
+        bool hadBefore = (oldPos >= 0);
+        if (!hadBefore) {
+            // insert row
+            beginInsertRows(QModelIndex(), row, row);
+            m_results.append(results[i]);
+            endInsertRows();
+        }
+    }
+
+    if (oldCount != m_results.count()) {
+        Q_EMIT countChanged();
+    }
+}
+
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
     if (results.count() == 0) return;
-    
+
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
     Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
         m_results.append(result);

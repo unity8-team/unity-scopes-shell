@@ -346,8 +346,7 @@ void Scope::typingFinished()
 void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
-        // TODO: here we could do resultset diffs
-        m_categories->clearAll();
+        //m_categories->clearAll();
         m_delayedClear = false;
     }
 
@@ -593,7 +592,7 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
         } else {
             // FIXME: only update when we know it's necessary
             m_categories->registerCategory(category, QSharedPointer<ResultsModel>());
-            category_model->addResults(category_results[category->id()]);
+            category_model->addUpdateResults(category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }
     }
