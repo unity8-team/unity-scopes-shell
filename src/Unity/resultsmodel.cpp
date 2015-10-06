@@ -74,25 +74,25 @@ void ResultsModel::setMaxAtrributesCount(int count)
 
 void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
-    if (results.count() == 0) return;
-
     const int oldCount = m_results.count();
 
     ResultsMap newResultsMap(results);
 
     int row = 0;
     // iterate over old (i.e. currently visible) results
-    for (auto it = m_results.begin(); it != m_results.end(); it++) {
+    for (auto it = m_results.begin(); it != m_results.end(); ) {
         int newPos = newResultsMap.find(*it);
         bool haveNow = (newPos >= 0);
         if (haveNow) {
             if (row != newPos) {
                 // move row
                 beginMoveRows(QModelIndex(), row, row, QModelIndex(), newPos + (newPos > row ? 1 : 0));
-                m_results.move(row, newPos);
+                m_results.move(row, newPos); // FIXME!!!! invalidates iterator
+                qWarning() << "MOVE";
                 endMoveRows();
             }
             ++row;
+            ++it;
         } else {
             // delete row
             beginRemoveRows(QModelIndex(), row, row);
@@ -104,13 +104,13 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     ResultsMap oldResultsMap(m_results);
 
     // iterate over new results
-    for (int i = 0; i<results.count(); i++) {
-        int oldPos = oldResultsMap.find(results[i]);
+    for (row = 0; row<results.count(); row++) {
+        int oldPos = oldResultsMap.find(results[row]);
         bool hadBefore = (oldPos >= 0);
         if (!hadBefore) {
             // insert row
             beginInsertRows(QModelIndex(), row, row);
-            m_results.append(results[i]);
+            m_results.append(results[row]);
             endInsertRows();
         }
     }

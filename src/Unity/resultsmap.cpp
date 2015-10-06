@@ -18,12 +18,15 @@
  */
 
 #include "resultsmap.h"
+#include <cassert>
 
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results)
 {
     int pos = 0;
     for (auto result: results) {
-        m_results.insert({result->uri(), { result, pos++} });
+        assert(result);
+        const ResultPos rpos { result, pos++ };
+        m_results.insert({result->uri(), rpos });
     }
 }
 
@@ -31,14 +34,19 @@ ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> 
 {
     int pos = 0;
     for (auto result: results) {
-        m_results.insert({result->uri(), { std::dynamic_pointer_cast<unity::scopes::Result>(result), pos++} });
+        std::shared_ptr<unity::scopes::Result> res = result;
+        assert(res);
+        const ResultPos rpos { res, pos++ };
+        m_results.insert({result->uri(), rpos });
     }
 }
 
 int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
 {
+    assert(result);
     auto it = m_results.find(result->uri());
     if (it != m_results.end()) {
+        assert(it->second.result);
         while (it != m_results.end() && it->second.result->uri() == result->uri())
         {
             if (*(it->second.result) == *result) {
