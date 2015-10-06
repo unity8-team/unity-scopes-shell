@@ -347,7 +347,7 @@ void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
         m_categories->markNewSearch();
-        //m_categories->clearAll();
+        m_categoryCount = 0;
         m_delayedClear = false;
     }
 
@@ -593,10 +593,10 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
             category_model.reset(new ResultsModel(m_categories.data()));
             category_model->setCategoryId(QString::fromStdString(category->id()));
             category_model->addResults(category_results[category->id()]);
-            m_categories->registerCategory(category, category_model);
+            m_categories->registerCategory(category, category_model, m_categoryCount++);
         } else {
             // FIXME: only update when we know it's necessary
-            m_categories->registerCategory(category, QSharedPointer<ResultsModel>());
+            m_categories->registerCategory(category, QSharedPointer<ResultsModel>(), m_categoryCount++);
             category_model->addUpdateResults(category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }

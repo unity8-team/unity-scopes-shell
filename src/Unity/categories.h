@@ -58,7 +58,7 @@ public:
     Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
     QSharedPointer<ResultsModel> lookupCategory(std::string const& category_id);
-    void registerCategory(const unity::scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> model);
+    void registerCategory(const unity::scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> model, int categoryIndex);
     void updateResultCount(const QSharedPointer<ResultsModel>& resultsModel);
     void clearAll();
     void markNewSearch();

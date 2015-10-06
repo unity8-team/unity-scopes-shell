@@ -237,6 +237,7 @@ private:
     bool m_hasAltNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
+    int m_categoryCount;
 
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;

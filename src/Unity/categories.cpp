@@ -345,11 +345,11 @@ int Categories::getFirstEmptyCategoryIndex() const
     return m_categories.size();
 }
 
-void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel)
+void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel, int categoryIndex)
 {
     // do we already have a category with this id?
     int index = getCategoryIndex(QString::fromStdString(category->id()));
-    int emptyIndex = getFirstEmptyCategoryIndex();
+    int emptyIndex = categoryIndex; //getFirstEmptyCategoryIndex();
     if (index >= 0) {
         // re-registering an existing category will move it after the first non-empty category
         if (emptyIndex < index) {
