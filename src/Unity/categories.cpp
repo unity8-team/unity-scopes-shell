@@ -441,6 +441,28 @@ void Categories::clearAll()
     dataChanged(changeStart, changeEnd, roles);
 }
 
+void Categories::markNewSearch()
+{
+    for (auto model: m_categoryResults) {
+        model->markNewSearch();
+    }
+}
+
+void Categories::purgeResults()
+{
+    QVector<int> roles;
+    roles.append(RoleCount);
+
+    for (auto it = m_categoryResults.begin(); it != m_categoryResults.end(); it++) {
+        auto model = it.value();
+        if (model->needsPurging()) {
+            model->clearResults();
+
+            QModelIndex idx(index(getCategoryIndex(QString::fromStdString(it.key()))));
+            Q_EMIT dataChanged(idx, idx, roles);
+        }
+    }
+}
 
 bool Categories::parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
 {

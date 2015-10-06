@@ -59,6 +59,8 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
     void updateResult(unity::scopes::Result const& result, unity::scopes::Result const& updatedResult);
+    void markNewSearch();
+    bool needsPurging() const;
 
 private:
     QVariant componentValue(unity::scopes::Result const* result, std::string const& fieldName) const;
@@ -68,6 +70,7 @@ private:
     QList<std::shared_ptr<unity::scopes::Result>> m_results;
     QString m_categoryId;
     int m_maxAttributes;
+    bool m_purge;
 };
 
 } // namespace scopes_ng

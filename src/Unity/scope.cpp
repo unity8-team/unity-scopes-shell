@@ -346,6 +346,7 @@ void Scope::typingFinished()
 void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
+        m_categories->markNewSearch();
         //m_categories->clearAll();
         m_delayedClear = false;
     }
@@ -358,6 +359,10 @@ void Scope::flushUpdates(bool finalize)
         setStatus(Status::Okay);
     }
     processResultSet(m_cachedResults); // clears the result list
+
+    if (finalize) {
+        m_categories->purgeResults(); // remove results for categories which were not present in new resultset
+    }
 
     // process departments
     if (m_rootDepartment && m_rootDepartment != m_lastRootDepartment) {

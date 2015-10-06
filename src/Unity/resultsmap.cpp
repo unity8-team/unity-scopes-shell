@@ -22,12 +22,7 @@
 
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results)
 {
-    int pos = 0;
-    for (auto result: results) {
-        assert(result);
-        const ResultPos rpos { result, pos++ };
-        m_results.insert({result->uri(), rpos });
-    }
+    rebuild(results);
 }
 
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results)
@@ -37,6 +32,17 @@ ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> 
         std::shared_ptr<unity::scopes::Result> res = result;
         assert(res);
         const ResultPos rpos { res, pos++ };
+        m_results.insert({result->uri(), rpos });
+    }
+}
+
+void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results)
+{
+    m_results.clear();
+    int pos = 0;
+    for (auto result: results) {
+        assert(result);
+        const ResultPos rpos { result, pos++ };
         m_results.insert({result->uri(), rpos });
     }
 }

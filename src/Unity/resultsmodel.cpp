@@ -35,6 +35,7 @@ using namespace unity;
 ResultsModel::ResultsModel(QObject* parent)
  : unity::shell::scopes::ResultsModelInterface(parent)
  , m_maxAttributes(2)
+ , m_purge(true)
 {
 }
 
@@ -74,43 +75,52 @@ void ResultsModel::setMaxAtrributesCount(int count)
 
 void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
+    if (results.count() == 0) {
+        return;
+    }
+
+    m_purge = false;
+
     const int oldCount = m_results.count();
 
     ResultsMap newResultsMap(results);
 
     int row = 0;
-    // iterate over old (i.e. currently visible) results
+    // iterate over old (i.e. currently visible) results, remove results which are no longer present in new set
     for (auto it = m_results.begin(); it != m_results.end(); ) {
         int newPos = newResultsMap.find(*it);
         bool haveNow = (newPos >= 0);
-        if (haveNow) {
-            if (row != newPos) {
-                // move row
-                beginMoveRows(QModelIndex(), row, row, QModelIndex(), newPos + (newPos > row ? 1 : 0));
-                m_results.move(row, newPos); // FIXME!!!! invalidates iterator
-                qWarning() << "MOVE";
-                endMoveRows();
-            }
-            ++row;
-            ++it;
-        } else {
+        if (!haveNow) {
             // delete row
             beginRemoveRows(QModelIndex(), row, row);
             it = m_results.erase(it);
             endRemoveRows();
+        } else {
+            ++it;
+            ++row;
         }
     }
 
     ResultsMap oldResultsMap(m_results);
 
     // iterate over new results
-    for (row = 0; row<results.count(); row++) {
+    for (row = 0; row<results.count(); ++row) {
         int oldPos = oldResultsMap.find(results[row]);
         bool hadBefore = (oldPos >= 0);
-        if (!hadBefore) {
+        if (hadBefore) {
+            if (row != oldPos) {
+                // move row
+                beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
+                m_results.move(oldPos, row);
+                oldResultsMap.rebuild(m_results);
+                endMoveRows();
+            }
+        } else {
             // insert row
             beginInsertRows(QModelIndex(), row, row);
-            m_results.append(results[row]);
+            //m_results.append(results[row]);
+            m_results.insert(row, results[row]);
+            oldResultsMap.rebuild(m_results);
             endInsertRows();
         }
     }
@@ -122,7 +132,11 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
-    if (results.count() == 0) return;
+    if (results.count() == 0) {
+        return;
+    }
+
+    m_purge = false;
 
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
     Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
@@ -312,6 +326,16 @@ ResultsModel::data(const QModelIndex& index, int role) const
         default:
             return QVariant();
     }
+}
+
+void ResultsModel::markNewSearch()
+{
+    m_purge = true;
+}
+
+bool ResultsModel::needsPurging() const
+{
+    return m_purge;
 }
 
 } // namespace scopes_ng
