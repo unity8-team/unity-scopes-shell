@@ -359,6 +359,8 @@ void Scope::flushUpdates(bool finalize)
         setStatus(Status::Okay);
     }
 
+    // if no results have been received so far (and we're not in the finalizing step of search), then
+    // don't process the results as this will inevitably make the dash empty.
     if (m_cachedResults.empty() && !finalize) {
         return;
     }
