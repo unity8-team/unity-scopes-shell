@@ -358,6 +358,11 @@ void Scope::flushUpdates(bool finalize)
     if (m_status != Status::Okay) {
         setStatus(Status::Okay);
     }
+
+    if (m_cachedResults.empty() && !finalize) {
+        return;
+    }
+
     processResultSet(m_cachedResults); // clears the result list
 
     if (finalize) {
