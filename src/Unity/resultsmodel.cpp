@@ -118,7 +118,6 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
         } else {
             // insert row
             beginInsertRows(QModelIndex(), row, row);
-            //m_results.append(results[row]);
             m_results.insert(row, results[row]);
             oldResultsMap.rebuild(m_results);
             endInsertRows();

@@ -366,6 +366,8 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
+    qDebug() << "flushUpdates: #results =" << m_cachedResults.count();
+
     processResultSet(m_cachedResults); // clears the result list
 
     if (finalize) {
@@ -628,6 +630,7 @@ void Scope::invalidateLastSearch()
         m_aggregatorTimer.stop();
     }
     m_cachedResults.clear();
+    m_category_results.clear();
 }
 
 void Scope::startTtlTimer()
