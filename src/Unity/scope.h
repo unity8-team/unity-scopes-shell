@@ -239,6 +239,7 @@ private:
     bool m_initialQueryDone;
     int m_categoryCount;
 
+    QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;
     unity::scopes::ScopeProxy m_proxy;

@@ -68,7 +68,7 @@ using namespace unity;
 
 const int AGGREGATION_TIMEOUT = 110;
 const int TYPING_TIMEOUT = 300;
-const int CLEAR_TIMEOUT = 240;
+const int CLEAR_TIMEOUT = 500;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
@@ -346,9 +346,10 @@ void Scope::typingFinished()
 void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedClear) {
+        m_delayedClear = false;
+        m_category_results.clear();
         m_categories->markNewSearch();
         m_categoryCount = 0;
-        m_delayedClear = false;
     }
 
     if (m_clearTimer.isActive()) {
@@ -368,6 +369,7 @@ void Scope::flushUpdates(bool finalize)
     processResultSet(m_cachedResults); // clears the result list
 
     if (finalize) {
+        m_category_results.clear();
         m_categories->purgeResults(); // remove results for categories which were not present in new resultset
     }
 
@@ -585,13 +587,12 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     QVector<scopes::Category::SCPtr> categories;
 
     // split the result_set by category_id
-    QMap<std::string, QList<std::shared_ptr<scopes::CategorisedResult>>> category_results;
     while (!result_set.empty()) {
         auto result = result_set.takeFirst();
-        if (!category_results.contains(result->category()->id())) {
+        if (!m_category_results.contains(result->category()->id())) {
             categories.append(result->category());
         }
-        category_results[result->category()->id()].append(std::move(result));
+        m_category_results[result->category()->id()].append(std::move(result));
     }
 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
@@ -599,12 +600,12 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
         if (category_model == nullptr) {
             category_model.reset(new ResultsModel(m_categories.data()));
             category_model->setCategoryId(QString::fromStdString(category->id()));
-            category_model->addResults(category_results[category->id()]);
+            category_model->addResults(m_category_results[category->id()]);
             m_categories->registerCategory(category, category_model, m_categoryCount++);
         } else {
             // FIXME: only update when we know it's necessary
             m_categories->registerCategory(category, QSharedPointer<ResultsModel>(), m_categoryCount++);
-            category_model->addUpdateResults(category_results[category->id()]);
+            category_model->addUpdateResults(m_category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }
     }
