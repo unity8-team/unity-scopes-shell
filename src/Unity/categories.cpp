@@ -297,7 +297,8 @@ private:
 QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
-    : unity::shell::scopes::CategoriesInterface(parent)
+    : unity::shell::scopes::CategoriesInterface(parent),
+    m_categoryIndex(0)
 {
 }
 
@@ -331,25 +332,16 @@ int Categories::getCategoryIndex(QString const& categoryId) const
     return -1;
 }
 
-int Categories::getFirstEmptyCategoryIndex() const
-{
-    for (int i = 0; i < m_categories.size(); i++) {
-        if (m_categories[i]->isSpecial()) {
-            continue;
-        }
-        if (m_categories[i]->resultsModelCount() == 0) {
-            return i;
-        }
-    }
-
-    return m_categories.size();
-}
-
-void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel, int categoryIndex)
+void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel)
 {
     // do we already have a category with this id?
+    if (m_registeredCategories.find(category->id()) != m_registeredCategories.end()) {
+        return;
+    }
+    m_registeredCategories.insert(category->id());
+
     int index = getCategoryIndex(QString::fromStdString(category->id()));
-    int emptyIndex = categoryIndex; //getFirstEmptyCategoryIndex();
+    int emptyIndex = m_categoryIndex++;
     if (index >= 0) {
         // re-registering an existing category will move it after the first non-empty category
         if (emptyIndex < index) {
@@ -372,8 +364,9 @@ void Categories::registerCategory(const scopes::Category::SCPtr& category, QShar
             m_categories.insert(emptyIndex, catData);
             endInsertRows();
         } else {
-            QSharedPointer<CategoryData> catData = m_categories[index];
+            // the category has already been registered for current search,
             // check if any attributes of the category changed
+            QSharedPointer<CategoryData> catData = m_categories[index];
             QVector<int> changedRoles(catData->updateAttributes(category));
 
             if (changedRoles.size() > 0) {
@@ -443,6 +436,8 @@ void Categories::clearAll()
 
 void Categories::markNewSearch()
 {
+    m_categoryIndex = 0;
+    m_registeredCategories.clear();
     for (auto model: m_categoryResults) {
         model->markNewSearch();
     }
