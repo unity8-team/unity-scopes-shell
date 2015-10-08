@@ -347,8 +347,6 @@ void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedSearchProcessing) {
         m_delayedSearchProcessing = false;
-        m_category_results.clear();
-        m_categories->markNewSearch();
     }
 
     if (m_searchProcessingDelayTimer.isActive()) {
@@ -711,6 +709,9 @@ void Scope::dispatchSearch()
 
     invalidateLastSearch();
     m_delayedSearchProcessing = true;
+    m_category_results.clear();
+    m_categories->markNewSearch();
+
     m_searchProcessingDelayTimer.start(SEARCH_PROCESSING_DELAY);
     /* There are a few objects associated with searches:
      * 1) SearchResultReceiver    2) ResultCollector    3) PushEvent
