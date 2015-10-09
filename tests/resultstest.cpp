@@ -101,7 +101,8 @@ private Q_SLOTS:
             shr::CustomRegistry::Parameters({
                 TEST_DATA_DIR "mock-scope/mock-scope.ini",
                 TEST_DATA_DIR "mock-scope-info/mock-scope-info.ini",
-                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini"
+                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini",
+                TEST_DATA_DIR "mock-scope-manyresults/mock-scope-manyresults.ini"
             })
         );
     }
@@ -990,6 +991,78 @@ private Q_SLOTS:
         // NoLocationData and NoInternet (Status::NoInternet takes priority)
         resultsView->setQuery("no_location_no_internet");
         QCOMPARE(resultsView->status(), ss::ScopeInterface::Status::NoInternet);
+    }
+
+    void testResultsModelChanges()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+        resultsView->setQuery("search1");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("uri0"))
+                    .result(shm::ResultMatcher("uri1"))
+                    .result(shm::ResultMatcher("uri2"))
+                    .result(shm::ResultMatcher("uri3"))
+                    .result(shm::ResultMatcher("uri4"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search2");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(2)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("uri3"))
+                    .result(shm::ResultMatcher("uri4"))
+                    .result(shm::ResultMatcher("uri5"))
+                    .result(shm::ResultMatcher("uri6"))
+                    .result(shm::ResultMatcher("uri7"))
+                )
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("uri3"))
+                    .result(shm::ResultMatcher("uri4"))
+                    .result(shm::ResultMatcher("uri5"))
+                    .result(shm::ResultMatcher("uri6"))
+                    .result(shm::ResultMatcher("uri7"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search3");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(2)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("uri7"))
+                    .result(shm::ResultMatcher("uri6"))
+                    .result(shm::ResultMatcher("uri5"))
+                    .result(shm::ResultMatcher("uri4"))
+                    .result(shm::ResultMatcher("uri3"))
+                )
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("uri7"))
+                    .result(shm::ResultMatcher("uri6"))
+                    .result(shm::ResultMatcher("uri5"))
+                    .result(shm::ResultMatcher("uri4"))
+                    .result(shm::ResultMatcher("uri3"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search4");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("uri5"))
+                )
+                .match(resultsView->categories())
+        );
+
     }
 
 };
