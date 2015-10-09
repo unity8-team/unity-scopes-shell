@@ -44,19 +44,12 @@ namespace scopes_ng {
 class CategoryData
 {
 public:
-    CategoryData(scopes::Category::SCPtr const& category): m_isSpecial(false)
+    CategoryData(scopes::Category::SCPtr const& category)
     {
         setCategory(category);
     }
 
     CategoryData(CategoryData const& other) = delete;
-
-    // constructor for special (shell-overriden) categories
-    CategoryData(QString const& id, QString const& title, QString const& icon, QString const& rawTemplate, QObject* countObject):
-        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
-    {
-        parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
-    }
 
     void setCategory(scopes::Category::SCPtr const& category)
     {
@@ -209,11 +202,6 @@ public:
         return 0;
     }
 
-    bool isSpecial() const
-    {
-        return m_isSpecial;
-    }
-
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
         // lazy init of the defaults
@@ -258,7 +246,6 @@ private:
     QJsonValue m_components;
     QSharedPointer<ResultsModel> m_resultsModel;
     QPointer<QObject> m_countObject;
-    bool m_isSpecial;
 
     static QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
     {
@@ -487,25 +474,6 @@ bool Categories::overrideCategoryJson(QString const& categoryId, QString const& 
     }
 
     return false;
-}
-
-void Categories::addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject)
-{
-    int index = getCategoryIndex(categoryId);
-    if (index >= 0) {
-        qWarning("ERROR! Category with id \"%s\" already exists!", categoryId.toStdString().c_str());
-    } else {
-        QSharedPointer<CategoryData> catData(new CategoryData(categoryId, name, icon, rawTemplate, countObject));
-        // prepend the category
-        beginInsertRows(QModelIndex(), 0, 0);
-        m_categories.prepend(catData);
-        endInsertRows();
-
-        if (countObject) {
-            m_countObjects[countObject] = categoryId;
-            QObject::connect(countObject, SIGNAL(countChanged()), this, SLOT(countChanged()));
-        }
-    }
 }
 
 void Categories::countChanged()

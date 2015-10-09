@@ -56,7 +56,6 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json) override;
-    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
     QSharedPointer<ResultsModel> lookupCategory(std::string const& category_id);
     void registerCategory(const unity::scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> model);
