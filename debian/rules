@@ -19,7 +19,7 @@ export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 	dh $@ --with python3 --parallel --fail-missing
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DCMAKE_INSTALL_LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH)
+	dh_auto_configure -- -DCMAKE_INSTALL_LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) -DCMAKE_INSTALL_LOCALSTATEDIR=/var
 
 override_dh_auto_clean:
 	/bin/sh $(CURDIR)/debian/gen-debian-files.sh
