@@ -573,41 +573,6 @@ private Q_SLOTS:
         );
     }
 
-// FIXME Add code to harness to test special categories
-//    void testSpecialCategory()
-//    {
-//        auto resultsView = m_harness->resultsView();
-//        resultsView->setActiveScope("mock-scope");
-//        resultsView->setQuery("");
-//
-//        auto categories = resultsView->raw_categories();
-//        QString rawTemplate(R"({"schema-version": 1, "template": {"category-layout": "special"}})");
-//        CountObject* countObject = new CountObject(categories);
-//        categories->addSpecialCategory("special", "Special", "", rawTemplate, countObject);
-//
-//        // should have 2 categories now
-//        QCOMPARE(categories->rowCount(), 2);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 0);
-//        countObject->setCount(1);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 1);
-//
-//        qRegisterMetaType<QVector<int>>();
-//        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
-//
-//        countObject->setCountAsync(13);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 1);
-//        QTRY_COMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 13);
-//
-//        // expecting a few dataChanged signals, count should have changed
-//        bool countChanged = false;
-//        while (!spy.empty() && !countChanged) {
-//            QList<QVariant> arguments = spy.takeFirst();
-//            auto roles = arguments.at(2).value<QVector<int>>();
-//            countChanged |= roles.contains(ss::CategoriesInterface::Roles::RoleCount);
-//        }
-//        QCOMPARE(countChanged, true);
-//    }
-
     void testCategoryWithRating()
     {
         auto resultsView = m_harness->resultsView();
