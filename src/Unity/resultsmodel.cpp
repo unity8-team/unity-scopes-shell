@@ -105,8 +105,8 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
     // iterate over new results
     for (row = 0; row<results.count(); ++row) {
-        int oldPos = oldResultsMap.find(results[row]);
-        bool hadBefore = (oldPos >= 0);
+        const int oldPos = oldResultsMap.find(results[row]);
+        const bool hadBefore = (oldPos >= 0);
         if (hadBefore) {
             if (row != oldPos) {
                 // move row

@@ -20,6 +20,7 @@
 #include <unity-scopes.h>
 
 #include <iostream>
+#include <thread>
 
 #define EXPORT __attribute__ ((visibility ("default")))
 
@@ -79,6 +80,7 @@ public:
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
             }
         }
         else if (query_ == "search3")
@@ -98,9 +100,9 @@ public:
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
             }
         }
-
         else if (query_ == "search4")
         {
             // one result with uri 5 in cat2

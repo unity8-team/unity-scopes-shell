@@ -363,7 +363,7 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
-    qDebug() << "flushUpdates: #results =" << m_cachedResults.count();
+    qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
 
     processResultSet(m_cachedResults); // clears the result list
 
@@ -590,7 +590,8 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     // is requested, so that addUpdateResults() can properly update affected models.
     while (!result_set.empty()) {
         auto result = result_set.takeFirst();
-        if (!m_category_results.contains(result->category()->id())) {
+        //if (!m_category_results.contains(result->category()->id())) {
+        if (!categories.contains(result->category())) {
             categories.append(result->category());
         }
         m_category_results[result->category()->id()].append(std::move(result));

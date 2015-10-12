@@ -1062,9 +1062,7 @@ private Q_SLOTS:
                 )
                 .match(resultsView->categories())
         );
-
     }
-
 };
 
 QTEST_GUILESS_MAIN(ResultsTest)
