@@ -58,7 +58,7 @@ public:
             // five results with uris 0..4 in a single category cat1
             for (int i = 0; i<5; i++) {
                 CategorisedResult res(cat1);
-                res.set_uri("uri" + std::to_string(i));
+                res.set_uri("cat1_uri" + std::to_string(i));
                 res.set_title("result " + std::to_string(i) + " for: \"" + query_ + "\"");
                 reply->push(res);
             }
@@ -71,13 +71,13 @@ public:
             for (int i = 0; i<5; i++) {
                 {
                     CategorisedResult res(cat1);
-                    res.set_uri("uri" + std::to_string(start + i));
+                    res.set_uri("cat1_uri" + std::to_string(start + i));
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
                 {
                     CategorisedResult res(cat2);
-                    res.set_uri("uri" + std::to_string(start + i));
+                    res.set_uri("cat2_uri" + std::to_string(start + i));
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
@@ -91,13 +91,13 @@ public:
             for (int i = 4; i>=0; i--) {
                 {
                     CategorisedResult res(cat1);
-                    res.set_uri("uri" + std::to_string(start + i));
+                    res.set_uri("cat1_uri" + std::to_string(start + i));
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
                 {
                     CategorisedResult res(cat2);
-                    res.set_uri("uri" + std::to_string(start + i));
+                    res.set_uri("cat2_uri" + std::to_string(start + i));
                     res.set_title("result " + std::to_string(start + i) + " for: \"" + query_ + "\"");
                     reply->push(res);
                 }
@@ -109,7 +109,7 @@ public:
             // one result with uri 5 in cat2
             {
                 CategorisedResult res(cat2);
-                res.set_uri("uri5");
+                res.set_uri("cat2_uri5");
                 res.set_title("result5 for: \"" + query_ + "\"");
                 reply->push(res);
             }
