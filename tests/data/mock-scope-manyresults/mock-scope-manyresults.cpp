@@ -62,6 +62,7 @@ public:
                 res.set_title("result " + std::to_string(i) + " for: \"" + query_ + "\"");
                 reply->push(res);
             }
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
         else if (query_ == "search2")
         {
