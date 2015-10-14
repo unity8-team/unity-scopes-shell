@@ -896,13 +896,6 @@ unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& n
     return navModel;
 }
 
-unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& navId)
-{
-    // FIXME: remove
-    qWarning() << "Scope::getAltNavigation() is obsolete";
-    return nullptr;
-}
-
 QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, unity::scopes::FilterState const& filterState)
 {
     scopes::CannedQuery q(scopeId.toStdString());
@@ -912,16 +905,11 @@ QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QS
     return QString::fromStdString(q.to_uri());
 }
 
-void Scope::setNavigationState(QString const& navId, bool altNavigation)
+void Scope::setNavigationState(QString const& navId)
 {
     QString primaryFilterId;
-    if (!altNavigation) {
-        // switch current department id
-        performQuery(buildQuery(id(), m_searchQuery, navId, m_filterState));
-    } else {
-        //FIXME: remove
-        qWarning() << "Scope::setNavigationState(): alt navigation is obsolete";
-    }
+    // switch current department id
+    performQuery(buildQuery(id(), m_searchQuery, navId, m_filterState));
 }
 
 void Scope::departmentModelDestroyed(QObject* obj)
@@ -990,18 +978,6 @@ QString Scope::currentNavigationId() const
 bool Scope::hasNavigation() const
 {
     return m_hasNavigation;
-}
-
-QString Scope::currentAltNavigationId() const
-{
-    // FIXME: remove
-    return "";
-}
-
-bool Scope::hasAltNavigation() const
-{
-    // FIXME: remove
-    return false;
 }
 
 QVariantMap Scope::customizations() const

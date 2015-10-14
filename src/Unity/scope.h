@@ -142,8 +142,6 @@ public:
     bool isActive() const override;
     QString currentNavigationId() const override;
     bool hasNavigation() const override;
-    QString currentAltNavigationId() const override;
-    bool hasAltNavigation() const override;
     QVariantMap customizations() const override;
 
     /* setters */
@@ -158,8 +156,7 @@ public:
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
-    Q_INVOKABLE unity::shell::scopes::NavigationInterface* getAltNavigation(QString const& id) override;
-    Q_INVOKABLE void setNavigationState(QString const& navId, bool altNavigation) override;
+    Q_INVOKABLE void setNavigationState(QString const& navId) override;
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
     Q_INVOKABLE void refresh() override;
     Q_INVOKABLE void resetPrimaryNavigationTag() override;
