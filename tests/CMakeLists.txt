@@ -63,7 +63,6 @@ run_tests(
     filterstest
     filtersendtoendtest
     optionselectorfiltertest
-    departmentstest
     favoritestest
     locationtest
     overviewtest
