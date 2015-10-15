@@ -1388,6 +1388,7 @@ void Scope::processPrimaryNavigationTag()
     }
     qDebug() << "Scope::processPrimaryNavigationTag(): tag is '" << tag << "'";
     if (m_primaryNavigationTag != tag) {
+        m_primaryNavigationTag = tag;
         Q_EMIT primaryNavigationTagChanged();
     }
 }
