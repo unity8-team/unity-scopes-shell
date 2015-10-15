@@ -416,6 +416,7 @@ void Scope::flushUpdates(bool finalize)
             m_currentNavigationId = QLatin1String("");
             Q_EMIT currentNavigationIdChanged();
         }
+        processPrimaryNavigationTag();
     }
 
     // process filters
