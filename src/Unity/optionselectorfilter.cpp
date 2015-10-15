@@ -109,7 +109,18 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
 
 QString OptionSelectorFilter::filterTag() const
 {
-    return ""; //TODO
+    if (m_filterState) {
+        auto selected = m_filter->active_options(*m_filterState);
+        if (selected.size() > 0) {
+            // TODO: what about multi-selection?
+            for (auto opt: m_filter->options()) {
+                if (selected.find(opt) != selected.end()) {
+                    return QString::fromStdString(opt->label()); // TODO: i18n
+                }
+            }
+        }
+    }
+    return "";
 }
 
 }
