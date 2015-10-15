@@ -908,7 +908,6 @@ QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QS
 
 void Scope::setNavigationState(QString const& navId)
 {
-    QString primaryFilterId;
     // switch current department id
     performQuery(buildQuery(id(), m_searchQuery, navId, m_filterState));
 }
@@ -1235,6 +1234,7 @@ void Scope::resetPrimaryNavigationTag()
 {
     m_filterState = unity::scopes::FilterState();
     m_primaryNavigationTag.clear();
+    m_currentNavigationId = "";
     Q_EMIT primaryNavigationTagChanged();
     invalidateResults();
 }
