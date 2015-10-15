@@ -1377,7 +1377,7 @@ void Scope::processPrimaryNavigationTag()
     if (m_rootDepartment) {
         auto it = m_departmentModels.constFind(m_currentNavigationId);
         if (it != m_departmentModels.constEnd()) {
-            tag = it.value()->label();
+            tag = (m_currentNavigationId == "" ? "" : it.value()->label());
         } else {
             qCritical() << "Scope::processPrimaryNavigationTag(): no department model for '" << m_currentNavigationId << "'";
         }
