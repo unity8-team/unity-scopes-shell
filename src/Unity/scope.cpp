@@ -396,15 +396,14 @@ void Scope::flushUpdates(bool finalize)
     }
 
     m_lastRootDepartment = m_rootDepartment;
+    bool containsDepartments = (m_rootDepartment.get() != nullptr);
 
     //
     // only consider resetting current department id if we are in final flushUpdates
     // or received departments already. We don't know if we should reset it
     // until query finishes because departments may still arrive.
-    if (finalize || m_rootDepartment.get() != nullptr)
+    if (finalize || containsDepartments)
     {
-        bool containsDepartments = m_rootDepartment.get() != nullptr;
-
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -425,7 +424,7 @@ void Scope::flushUpdates(bool finalize)
         bool containsFilters = (m_receivedFilters.size() > 0);
 
         if (containsFilters) {
-            m_filters->update(m_receivedFilters, m_receivedFilterState);
+            m_filters->update(m_receivedFilters, m_receivedFilterState, containsDepartments);
             processPrimaryNavigationTag();
         }
         else

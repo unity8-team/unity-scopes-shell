@@ -73,12 +73,12 @@ void Filters::clear()
     }
 }
 
-void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState)
+void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)
 {
     m_filterState.reset(new unity::scopes::FilterState(filterState));
 
     // Primary filter needs to be handled separately and not inserted into the main filters model,
-    bool hasPrimaryFilter = false;
+    bool hasPrimaryFilter = containsDepartments;
     QList<unity::scopes::FilterBase::SCPtr> inFilters;
     for (auto f: filters) {
         // we can only have one primary filter
