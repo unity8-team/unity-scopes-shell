@@ -648,6 +648,7 @@ void Scope::setCurrentNavigationId(QString const& id)
     if (m_currentNavigationId != id) {
         qDebug() << "Setting current nav id:" <<  this->id() << id;
         m_currentNavigationId = id;
+        processPrimaryNavigationTag();
         Q_EMIT currentNavigationIdChanged();
     }
 }
@@ -1365,8 +1366,8 @@ void Scope::filterStateChanged()
 {
     qDebug() << "Filters changed";
     m_filterState = m_filters->filterState();
-    invalidateResults();
     processPrimaryNavigationTag();
+    invalidateResults();
 }
 
 void Scope::processPrimaryNavigationTag()
