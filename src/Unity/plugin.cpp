@@ -33,6 +33,9 @@
 #include "previewmodel.h"
 #include "previewwidgetmodel.h"
 #include "settingsmodel.h"
+#include <unity/shell/scopes/FiltersInterface.h>
+#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
+#include <unity/shell/scopes/OptionSelectorOptionsInterface.h>
 
 void UnityPlugin::registerTypes(const char *uri)
 {
@@ -48,6 +51,9 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterUncreatableType<unity::shell::scopes::PreviewModelInterface>(uri, 0, 2, "PreviewModel", QStringLiteral("Can't create new PreviewModel in QML. Get them from PreviewStack instance."));
     qmlRegisterUncreatableType<scopes_ng::PreviewWidgetModel>(uri, 0, 2, "PreviewWidgetModel", QStringLiteral("Can't create new PreviewWidgetModel in QML. Get them from PreviewModel instance."));
     qmlRegisterUncreatableType<unity::shell::scopes::PreviewStackInterface>(uri, 0, 2, "PreviewStack", QStringLiteral("Can't create new PreviewStack in QML. Get them from Scope instance."));
+    qmlRegisterUncreatableType<unity::shell::scopes::FiltersInterface>(uri, 0, 2, "Filters", "Can't create Filters object in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::FilterBaseInterface>(uri, 0, 2, "Filter", "Can't create Filter object in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::OptionSelectorOptionsInterface>(uri, 0, 2, "OptionSelectorOptions", "Can't create Filters object in QML. Get them from OptionSelector instance.");
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
