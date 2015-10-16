@@ -59,7 +59,7 @@ void DepartmentNode::initializeForDepartment(scopes::Department::SCPtr const& de
 void DepartmentNode::initializeForFilter(scopes::OptionSelectorFilter::SCPtr const& filter)
 {
     auto children = filter->options();
-    m_id = QString(""); // this is root (which we shouldn't show really)
+    m_id = QLatin1String(""); // this is root (which we shouldn't show really)
     m_filterId = QString::fromStdString(filter->id());
     m_label = QString::fromStdString(filter->label());
     m_allLabel = QString();

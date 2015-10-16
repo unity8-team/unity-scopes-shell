@@ -69,7 +69,7 @@ public:
 
     typedef QSharedPointer<GeoIp> Ptr;
 
-    GeoIp(const QUrl& url = QUrl("http://geoip.ubuntu.com/lookup"));
+    GeoIp(const QUrl& url = QUrl(QStringLiteral("http://geoip.ubuntu.com/lookup")));
 
     ~GeoIp() = default;
 

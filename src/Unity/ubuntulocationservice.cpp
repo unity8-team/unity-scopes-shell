@@ -60,7 +60,7 @@ namespace
     {
 
     public:
-        DBusThread(dbus::Bus::Ptr bus) :
+        DBusThread(const dbus::Bus::Ptr& bus) :
                 m_bus(bus)
         {
         }
@@ -107,7 +107,7 @@ public:
     {
     }
 
-    void init(GeoIp::Ptr geoIp)
+    void init(const GeoIp::Ptr& geoIp)
     {
         m_geoIp = geoIp;
         m_geoIp->whollyMoveThread(thread());
@@ -279,7 +279,7 @@ public:
     GeoIp::Result m_result;
 };
 
-UbuntuLocationService::UbuntuLocationService(GeoIp::Ptr geoIp) :
+UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
         p(new Priv())
 {
     p->moveToThread(&m_thread);
