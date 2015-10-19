@@ -66,9 +66,8 @@ namespace scopes_ng
 
 using namespace unity;
 
-const int AGGREGATION_TIMEOUT = 110;
 const int TYPING_TIMEOUT = 300;
-const int SEARCH_PROCESSING_DELAY = 500;
+const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
@@ -108,8 +107,6 @@ Scope::Scope(scopes_ng::Scopes* parent) :
         m_typingTimer.setInterval(TYPING_TIMEOUT);
     }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
-    m_aggregatorTimer.setSingleShot(true);
-    QObject::connect(&m_aggregatorTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_searchProcessingDelayTimer.setSingleShot(true);
     QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
@@ -145,14 +142,14 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     }
 
     if (status == CollectorBase::Status::INCOMPLETE) {
-        if (!m_aggregatorTimer.isActive()) {
+        if (!m_searchProcessingDelayTimer.isActive()) {
             // the longer we've been waiting for the results, the shorter the timeout
             qint64 inProgressMs = pushEvent->msecsSinceStart();
             double mult = 1.0 / std::max(1, static_cast<int>((inProgressMs / 150) + 1));
-            m_aggregatorTimer.start(AGGREGATION_TIMEOUT * mult);
+            m_searchProcessingDelayTimer.start(SEARCH_PROCESSING_DELAY * mult);
         }
     } else { // status in [FINISHED, ERROR]
-        m_aggregatorTimer.stop();
+        m_searchProcessingDelayTimer.stop();
 
         flushUpdates(true);
 
@@ -347,10 +344,6 @@ void Scope::flushUpdates(bool finalize)
 {
     if (m_delayedSearchProcessing) {
         m_delayedSearchProcessing = false;
-    }
-
-    if (m_searchProcessingDelayTimer.isActive()) {
-        m_searchProcessingDelayTimer.stop();
     }
 
     if (m_status != Status::Okay) {
@@ -625,8 +618,8 @@ scopes::ScopeProxy Scope::proxy_for_result(scopes::Result::SPtr const& result) c
 void Scope::invalidateLastSearch()
 {
     m_searchController->invalidate();
-    if (m_aggregatorTimer.isActive()) {
-        m_aggregatorTimer.stop();
+    if (m_searchProcessingDelayTimer.isActive()) {
+        m_searchProcessingDelayTimer.stop();
     }
     m_cachedResults.clear();
     m_category_results.clear();

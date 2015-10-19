@@ -255,7 +255,6 @@ private:
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;
     QTimer m_typingTimer;
-    QTimer m_aggregatorTimer;
     QTimer m_searchProcessingDelayTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
