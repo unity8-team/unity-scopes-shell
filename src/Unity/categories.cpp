@@ -38,6 +38,8 @@ using namespace unity;
 
 namespace scopes_ng {
 
+const int MAX_NUMBER_OF_CATEGORIES = 32; // when reached, any excess categories which have no results will be removed
+
 // FIXME: this should be in a common place
 #define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0 }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null, "overlay-color":null }, "resources":{}})"
 
@@ -402,6 +404,26 @@ void Categories::registerCategory(const scopes::Category::SCPtr& category, QShar
         m_categoryResults[category->id()] = resultsModel;
 
         endInsertRows();
+    }
+
+    if (m_categories.count() >= MAX_NUMBER_OF_CATEGORIES) {
+        // we register one category at a time, so there can be one excess category at most
+        const int index = m_categories.count() - 1;
+        auto it = m_categories.begin() + index;
+        if ((*it)->resultsModelCount() == 0) {
+            qDebug() << "Purging unused category:" << (*it)->categoryId();
+            beginRemoveRows(QModelIndex(), index, index);
+            m_categoryResults.remove((*it)->categoryId().toStdString());
+            for (auto kv = m_countObjects.begin(); kv != m_countObjects.end(); ++kv) {
+                if (kv.value() == (*it)->categoryId()) {
+                    kv.key()->deleteLater();
+                    //m_countObjects.erase(kv);
+                    break;
+                }
+            }
+            m_categories.erase(it);
+            endRemoveRows();
+        }
     }
 }
 
