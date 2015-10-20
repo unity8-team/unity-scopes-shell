@@ -420,7 +420,7 @@ void Scope::flushUpdates(bool finalize)
     // process filters
     if (finalize || m_receivedFilters.size() > 0)
     {
-        qDebug() << "Processing" << m_receivedFilters.size() << "filters"
+        qDebug() << "Processing" << m_receivedFilters.size() << "filters";
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
