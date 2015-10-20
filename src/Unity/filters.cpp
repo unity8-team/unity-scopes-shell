@@ -82,7 +82,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
     QList<unity::scopes::FilterBase::SCPtr> inFilters;
     for (auto f: filters) {
         // we can only have one primary filter
-        if ((f->display_hints() && unity::scopes::FilterBase::DisplayHints::Primary) && !hasPrimaryFilter) {
+        if ((f->display_hints() & unity::scopes::FilterBase::DisplayHints::Primary) && !hasPrimaryFilter) {
             hasPrimaryFilter = true;
             //
             const bool hadSamePrimaryFilterBefore = m_primaryFilter && m_primaryFilter->filterId() == QString::fromStdString(f->id()) && m_primaryFilter->filterType() == getFilterType(f);
