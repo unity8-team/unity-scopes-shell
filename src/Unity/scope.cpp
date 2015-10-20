@@ -1348,6 +1348,9 @@ bool Scope::initialQueryDone() const
 
 unity::shell::scopes::FiltersInterface* Scope::filters() const
 {
+    if (m_filters && m_filters->rowCount() == 0) {
+        return nullptr;
+    }
     return m_filters.data();
 }
 
