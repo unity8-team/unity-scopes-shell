@@ -66,7 +66,7 @@ namespace scopes_ng
 
 using namespace unity;
 
-const int TYPING_TIMEOUT = 300;
+const int TYPING_TIMEOUT = 700;
 const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
@@ -583,7 +583,6 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     // is requested, so that addUpdateResults() can properly update affected models.
     while (!result_set.empty()) {
         auto result = result_set.takeFirst();
-        //if (!m_category_results.contains(result->category()->id())) {
         if (!categories.contains(result->category())) {
             categories.append(result->category());
         }
