@@ -417,7 +417,7 @@ void Categories::registerCategory(const scopes::Category::SCPtr& category, QShar
             for (auto kv = m_countObjects.begin(); kv != m_countObjects.end(); ++kv) {
                 if (kv.value() == (*it)->categoryId()) {
                     kv.key()->deleteLater();
-                    //m_countObjects.erase(kv);
+                    m_countObjects.erase(kv);
                     break;
                 }
             }
