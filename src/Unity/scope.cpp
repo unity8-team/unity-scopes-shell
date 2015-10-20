@@ -414,7 +414,7 @@ void Scope::flushUpdates(bool finalize)
             m_currentNavigationId = QLatin1String("");
             Q_EMIT currentNavigationIdChanged();
         }
-        processPrimaryNavigationTag();
+        processPrimaryNavigationTag(m_currentNavigationId);
     }
 
     // process filters
@@ -425,7 +425,7 @@ void Scope::flushUpdates(bool finalize)
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
             m_filters->update(m_receivedFilters, m_receivedFilterState, containsDepartments);
-            processPrimaryNavigationTag();
+            processPrimaryNavigationTag(m_currentNavigationId);
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();
             }
@@ -654,8 +654,8 @@ void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
         qDebug() << "Setting current nav id:" <<  this->id() << id;
+        processPrimaryNavigationTag(id);
         m_currentNavigationId = id;
-        processPrimaryNavigationTag();
         Q_EMIT currentNavigationIdChanged();
     }
 }
@@ -1376,20 +1376,30 @@ void Scope::filterStateChanged()
 {
     qDebug() << "Filters changed";
     m_filterState = m_filters->filterState();
-    processPrimaryNavigationTag();
+    processPrimaryNavigationTag(m_currentNavigationId);
     invalidateResults();
 }
 
-void Scope::processPrimaryNavigationTag()
+void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
 {
     QString tag;
     // has departments?
     if (m_rootDepartment) {
-        auto it = m_departmentModels.constFind(m_currentNavigationId);
+        auto it = m_departmentModels.constFind(targetDepartmentId);
         if (it != m_departmentModels.constEnd()) {
-            tag = (m_currentNavigationId == "" ? "" : it.value()->label());
+            tag = (targetDepartmentId == "" ? "" : it.value()->label());
         } else {
-            qCritical() << "Scope::processPrimaryNavigationTag(): no department model for '" << m_currentNavigationId << "'";
+            it = m_departmentModels.constFind(m_currentNavigationId);
+            if (it != m_departmentModels.constEnd()) {
+                auto subDept = (*it)->findSubdepartment(targetDepartmentId);
+                if (subDept) {
+                    tag = subDept->label;
+                } else {
+                    qWarning() << "Scope::processPrimaryNavigationTag(): no subdepartment '" << targetDepartmentId << "'";
+                }
+            } else {
+                qWarning() << "Scope::processPrimaryNavigationTag(): no department model for '" << m_currentNavigationId << "'";
+            }
         }
     } else {
         auto pf = m_filters->primaryFilter();

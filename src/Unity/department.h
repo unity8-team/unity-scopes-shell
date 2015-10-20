@@ -68,6 +68,8 @@ public:
     bool hidden() const override;
     int count() const override;
 
+    QSharedPointer<SubdepartmentData> findSubdepartment(const QString &id) const;
+
 Q_SIGNALS:
 
 private:

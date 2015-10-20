@@ -130,6 +130,16 @@ QVariant Department::data(const QModelIndex& index, int role) const
     }
 }
 
+QSharedPointer<SubdepartmentData> Department::findSubdepartment(const QString &id) const
+{
+    for (auto sub: m_subdepartments) {
+        if (sub->id == id) {
+            return sub;
+        }
+    }
+    return QSharedPointer<SubdepartmentData>();
+}
+
 int Department::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

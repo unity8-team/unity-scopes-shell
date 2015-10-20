@@ -214,7 +214,7 @@ private:
     void setCurrentNavigationId(QString const& id);
     void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
-    void processPrimaryNavigationTag();
+    void processPrimaryNavigationTag(QString const &targetDepartmentId);
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
     void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
