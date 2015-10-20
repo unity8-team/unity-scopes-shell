@@ -420,7 +420,7 @@ void Scope::flushUpdates(bool finalize)
     // process filters
     if (finalize || m_receivedFilters.size() > 0)
     {
-        qDebug() << "Processing filters";
+        qDebug() << "Processing" << m_receivedFilters.size() << "filters"
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
@@ -429,9 +429,11 @@ void Scope::flushUpdates(bool finalize)
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();
             }
+            qDebug() << "Current number of filters:" << m_filters->rowCount();
         }
         else
         {
+            qDebug() << "Removing all filters";
             m_filters->clear();
             if (haveFiltersAlready) {
                 Q_EMIT filtersChanged();
