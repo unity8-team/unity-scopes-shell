@@ -61,6 +61,7 @@ src/python/scope_harness/preview-widget-py.cpp
 src/python/scope_harness/preview-widget-list-py.cpp
 src/Unity/previewwidgetmodel.cpp
 src/Unity/departmentnode.cpp
+src/Unity/logintoaccount.cpp
 src/Unity/overviewcategories.cpp
 src/Unity/scope.cpp
 src/Unity/overviewscope.cpp
@@ -125,6 +126,7 @@ src/Unity/plugin.h
 src/Unity/department.h
 src/Unity/scope.h
 src/Unity/previewstack.h
+src/Unity/logintoaccount.h
 src/Unity/overviewcategories.h
 src/Unity/locationservice.h
 src/Unity/overviewscope.h
