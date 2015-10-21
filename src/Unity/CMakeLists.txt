@@ -39,6 +39,7 @@ set(QMLPLUGIN_SRC
     ubuntulocationservice.cpp
     utils.cpp
     iconutils.cpp
+    logintoaccount.cpp
     # We need these headers here so moc runs and we get the moc-stuff
     # compiled in, otherwise we miss some symbols
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FiltersInterface.h
