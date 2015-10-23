@@ -42,6 +42,7 @@ public:
     bool multiSelect() const override;
     unity::shell::scopes::OptionSelectorOptionsInterface* options() const override;
     void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+    bool isActive() const override;
     QString filterTag() const override;
 
 Q_SIGNALS:

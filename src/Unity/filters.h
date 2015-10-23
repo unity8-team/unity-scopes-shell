@@ -37,6 +37,7 @@ class FilterUpdateInterface
 {
     public:
         virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) = 0;
+        virtual bool isActive() const = 0;
 };
 
 class Q_DECL_EXPORT Filters :
@@ -55,6 +56,7 @@ public:
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
+    int activeFiltersCount() const;
 
 Q_SIGNALS:
     void filterStateChanged();

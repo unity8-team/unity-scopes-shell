@@ -1302,12 +1302,7 @@ void Scope::filterStateChanged()
 
 void Scope::processActiveFiltersCount()
 {
-    int count = 0;
-    for (auto f: m_receivedFilters) {
-        if (m_filterState.has_filter(f->id())) {
-            ++count;
-        }
-    }
+    int count = m_filters->activeFiltersCount();
     if (count != m_activeFiltersCount) {
         m_activeFiltersCount = count;
         Q_EMIT activeFiltersCountChanged();

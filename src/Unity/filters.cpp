@@ -177,4 +177,16 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::primaryFilter
     return m_primaryFilter;
 }
 
+int Filters::activeFiltersCount() const
+{
+    int count = 0;
+    for (auto filter: m_filters) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(filter.data());
+        if (shellFilter->isActive()) {
+            ++count;
+        }
+    }
+    return count;
+}
+
 }
