@@ -82,6 +82,7 @@ Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 Scope::Scope(scopes_ng::Scopes* parent) :
       m_query_id(0)
     , m_formFactor(QStringLiteral("phone"))
+    , m_activeFiltersCount(0)
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
@@ -995,7 +996,7 @@ QVariantMap Scope::customizations() const
 
 int Scope::activeFiltersCount() const
 {
-    return 0;
+    return m_activeFiltersCount;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
@@ -1294,7 +1295,23 @@ void Scope::filterStateChanged()
     qDebug() << "Filters changed";
     m_filterState = m_filters->filterState();
     processPrimaryNavigationTag(m_currentNavigationId);
+    processActiveFiltersCount();
     invalidateResults();
+}
+
+void Scope::processActiveFiltersCount()
+{
+    int count = 0;
+    for (auto f: m_receivedFilters) {
+        if (m_filterState.has_filter(f->id())) {
+            ++count;
+        }
+    }
+    if (count != m_activeFiltersCount) {
+        m_activeFiltersCount = count;
+        Q_EMIT activeFiltersCountChanged();
+    }
+    qDebug() << "active filters count:" << m_activeFiltersCount;
 }
 
 void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)

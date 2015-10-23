@@ -214,6 +214,7 @@ private:
     void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
     void processPrimaryNavigationTag(QString const &targetDepartmentId);
+    void processActiveFiltersCount();
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
     void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
@@ -232,6 +233,7 @@ private:
     QString m_primaryNavigationTag;
     QVariantMap m_customizations;
     std::unique_ptr<unity::scopes::Variant> m_queryUserData;
+    int m_activeFiltersCount;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
