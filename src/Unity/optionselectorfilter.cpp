@@ -69,9 +69,11 @@ void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
                 m_filter->update_state(*m_filterState, opt, checked);
                 m_options->update(m_filter->options(), m_filter->active_options(*m_filterState));
                 Q_EMIT filterStateChanged();
-                break;
+                return;
             }
         }
+        qDebug() << "Removing filter state for filter" << QString::fromStdString(m_filter->id());
+        m_filterState->remove(m_filter->id());
     }
 }
 

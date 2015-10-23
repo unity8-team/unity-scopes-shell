@@ -1225,6 +1225,7 @@ void Scope::resetPrimaryNavigationTag()
     m_primaryNavigationTag.clear();
     m_currentNavigationId = "";
     Q_EMIT primaryNavigationTagChanged();
+    Q_EMIT activeFiltersCountChanged();
     invalidateResults();
 }
 
