@@ -189,6 +189,7 @@ int Filters::activeFiltersCount() const
     for (auto filter: m_filters) {
         auto shellFilter = dynamic_cast<FilterUpdateInterface*>(filter.data());
         if (shellFilter->isActive()) {
+            qDebug() << "activeFiltersCount: filter" << filter->filterId() << "is active";
             ++count;
         }
     }

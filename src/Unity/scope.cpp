@@ -1222,12 +1222,12 @@ void Scope::invalidateResults()
 void Scope::resetPrimaryNavigationTag()
 {
     m_filterState = unity::scopes::FilterState();
+    m_filters->resetState();
+
     m_primaryNavigationTag.clear();
     m_currentNavigationId = "";
-    m_activeFiltersCount = 0;
-    m_filters->resetState();
+    processActiveFiltersCount();
     Q_EMIT primaryNavigationTagChanged();
-    Q_EMIT activeFiltersCountChanged();
     invalidateResults();
 }
 
