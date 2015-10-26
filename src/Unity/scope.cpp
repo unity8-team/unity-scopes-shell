@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2015 Canonical, Ltd.
  *
  * Authors:
  *  Michal Hruby <michal.hruby@canonical.com>
+ *  Pawel Stolowski <pawel.stolowski@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1302,9 +1303,11 @@ void Scope::filterStateChanged()
     invalidateResults();
 }
 
+//
+// Iterate over all filters to calculate the number of active ones.
 void Scope::processActiveFiltersCount()
 {
-    int count = m_filters->activeFiltersCount();
+    const int count = m_filters->activeFiltersCount();
     if (count != m_activeFiltersCount) {
         m_activeFiltersCount = count;
         Q_EMIT activeFiltersCountChanged();
@@ -1312,6 +1315,11 @@ void Scope::processActiveFiltersCount()
     qDebug() << "active filters count:" << m_activeFiltersCount;
 }
 
+//
+// Determine primary navigation tag (the "brick" in search bar) from
+// current department (if departments are present) or primary navigation
+// filter (if scopes doesn't have departments but has filters and one of
+// them has 'Primary' flag set.
 void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
 {
     QString tag;
