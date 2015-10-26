@@ -56,6 +56,7 @@ public:
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
+    void resetState();
     int activeFiltersCount() const;
 
 Q_SIGNALS:

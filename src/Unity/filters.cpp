@@ -69,8 +69,14 @@ void Filters::clear()
     {
         beginResetModel();
         m_filters.clear();
+        resetState();
         endResetModel();
     }
+}
+
+void Filters::resetState()
+{
+    m_filterState.reset();
 }
 
 void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)

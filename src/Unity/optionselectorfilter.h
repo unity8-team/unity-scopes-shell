@@ -56,7 +56,7 @@ private:
     bool m_multiSelect;
     QString m_label;
     QScopedPointer<OptionSelectorOptions> m_options;
-    unity::scopes::FilterState::SPtr m_filterState;
+    std::weak_ptr<unity::scopes::FilterState> m_filterState;
     unity::scopes::OptionSelectorFilter::SCPtr m_filter;
 };
 
