@@ -91,7 +91,7 @@ CustomRegistry::Parameters::Parameters(const Parameters& other) :
 
 CustomRegistry::Parameters::Parameters(Parameters&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
 }
 
 CustomRegistry::Parameters& CustomRegistry::Parameters::operator=(const Parameters& other)
@@ -106,7 +106,7 @@ CustomRegistry::Parameters& CustomRegistry::Parameters::operator=(const Paramete
 
 CustomRegistry::Parameters& CustomRegistry::Parameters::operator=(Parameters&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 

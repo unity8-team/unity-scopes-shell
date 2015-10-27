@@ -3,10 +3,6 @@ include(Plugins)
 
 include(QtWithObjectTarget)
 
-# Dependencies
-pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
-
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -44,6 +40,7 @@ set(QMLPLUGIN_SRC
     ubuntulocationservice.cpp
     utils.cpp
     iconutils.cpp
+    logintoaccount.cpp
     # We need these headers here so moc runs and we get the moc-stuff
     # compiled in, otherwise we miss some symbols
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FiltersInterface.h

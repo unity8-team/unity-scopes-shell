@@ -54,7 +54,7 @@ public:
     explicit Scopes(QObject *parent = 0);
     ~Scopes();
 
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Q_INVOKABLE int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     Q_INVOKABLE unity::shell::scopes::ScopeInterface* getScope(int row) const override;
@@ -98,10 +98,10 @@ private Q_SLOTS:
     void prepopulateNextScopes();
 
     void initPopulateScopes();
-    void dpkgFinished();
     void lsbReleaseFinished();
     void completeDiscoveryFinished();
     void purgeScopesToDelete();
+    void scopeRegistryChanged();
 
 private:
     void createUserAgentString();
@@ -125,6 +125,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
+    QTimer m_registryRefreshTimer;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

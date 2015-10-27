@@ -95,7 +95,7 @@ public:
         TestUtils::throwIfNot(bool(result), "Couldn't get result");
 
         QSignalSpy spy(this, SIGNAL(activated(int, const QVariant&)));
-        m_scope->activate(QVariant::fromValue(result));
+        m_scope->activate(QVariant::fromValue(result), m_resultsModel->categoryId());
         if (spy.empty())
         {
             TestUtils::throwIfNot(spy.wait(), "Scope activation signal failed to emit");
@@ -131,7 +131,7 @@ public:
                     auto result = m_resultsModel->data(
                             m_index, ss::ResultsModelInterface::Roles::RoleResult);
                     shared_ptr<ss::PreviewStackInterface> preview(
-                            m_scope->preview(result));
+                            m_scope->preview(result, m_resultsModel->categoryId()));
                     previewView->preview(preview);
                     view = previewView;
                     break;
@@ -155,7 +155,7 @@ public:
                                 m_index,
                                 ss::ResultsModelInterface::Roles::RoleResult);
                         shared_ptr<ss::PreviewStackInterface> preview(
-                                m_scope->preview(result));
+                                m_scope->preview(result, m_resultsModel->categoryId()));
                         previewView->preview(preview);
                         view = previewView;
                     }
@@ -237,7 +237,7 @@ Result::Result(const internal::ResultArguments& arguments) :
 
 Result::Result(Result&& other)
 {
-    *this = move(other);
+    *this = std::move(other);
 }
 
 Result::Result(const Result& other) :
@@ -264,7 +264,7 @@ Result& Result::operator=(const Result& other)
 
 Result& Result::operator=(Result&& other)
 {
-    p = move(other.p);
+    p = std::move(other.p);
     return *this;
 }
 
@@ -361,7 +361,7 @@ view::AbstractView::SPtr Result::tap() const
             }
 
             auto previewView = p->m_previewView.lock();
-            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var));
+            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
             previewView->preview(preview);
             return previewView;
         }
@@ -385,7 +385,7 @@ view::AbstractView::SPtr Result::longPress() const
                 return nullptr; // nothing happens for scope:// uris
             }
             auto previewView = p->m_previewView.lock();
-            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var));
+            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
             previewView->preview(preview);
             return previewView;
         }

@@ -23,6 +23,8 @@
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/results/category.h>
 #include <scope-harness/results/department.h>
+#include <scope-harness/preview/preview-widget.h>
+#include <scope-harness/view/settings-view.h>
 
 #include <string>
 
@@ -125,8 +127,11 @@ public:
 
     results::Department browseAltDepartment(const std::string& id = std::string());
 
+    SettingsView::SPtr settings() const;
+
 protected:
     friend ScopeHarness;
+    friend preview::PreviewWidget;
 
     void setPreviewView(std::shared_ptr<PreviewView> previewView);
 

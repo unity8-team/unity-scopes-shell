@@ -26,6 +26,7 @@
 #include <scope-harness/internal/department-arguments.h>
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/internal/results-view-arguments.h>
+#include <scope-harness/internal/settings-view-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
@@ -95,42 +96,28 @@ struct ResultsView::_Priv
 
     results::Department browseDepartment(const string& id, bool altNavigation)
     {
+        if (altNavigation) {
+            throw std::domain_error("ResultsView::browseAltDepartment(): altNavigation is deprecated");
+        }
+
         checkActiveScope();
 
         QSharedPointer<ss::NavigationInterface> navigationModel;
-        if (altNavigation)
-        {
-            navigationModel.reset(m_active_scope->getAltNavigation(QString::fromStdString(id)));
-        }
-        else
-        {
-            navigationModel.reset(m_active_scope->getNavigation(QString::fromStdString(id)));
-        }
+        navigationModel.reset(m_active_scope->getNavigation(QString::fromStdString(id)));
         TestUtils::throwIfNot(bool(navigationModel), "Unknown department: '" + id + "'");
 
         QSignalSpy spy(navigationModel.data(), SIGNAL(loadedChanged()));
 
         bool shouldUpdate = false;
 
-        if (altNavigation)
+        if (m_active_scope->currentNavigationId().toStdString() != id)
         {
-            if (m_active_scope->currentAltNavigationId().toStdString() != id)
-            {
-                shouldUpdate = true;
-            }
-        }
-        else
-        {
-            if (m_active_scope->currentNavigationId().toStdString() != id)
-            {
-                shouldUpdate = true;
-            }
+            shouldUpdate = true;
         }
 
         if (shouldUpdate)
         {
-            m_active_scope->setNavigationState(QString::fromStdString(id),
-                                               altNavigation);
+            m_active_scope->setNavigationState(QString::fromStdString(id));
             TestUtils::waitForSearchFinish(m_active_scope);
         }
 
@@ -149,6 +136,8 @@ struct ResultsView::_Priv
     weak_ptr<PreviewView> m_previewView;
 
     ng::Scope::Ptr m_active_scope;
+
+    shared_ptr<SettingsView> m_settings;
 };
 
 ResultsView::ResultsView(const internal::ResultsViewArguments& arguments) :
@@ -285,9 +274,7 @@ bool ResultsView::hasDepartments() const
 
 bool ResultsView::hasAltDepartments() const
 {
-    p->checkActiveScope();
-
-    return p->m_active_scope->hasAltNavigation();
+    throw std::domain_error("ResultsView::hasAltDepartments() is deprecated");
 }
 
 string ResultsView::departmentId() const
@@ -299,9 +286,7 @@ string ResultsView::departmentId() const
 
 string ResultsView::altDepartmentId() const
 {
-    p->checkActiveScope();
-
-    return p->m_active_scope->currentAltNavigationId().toStdString();
+    throw std::domain_error("ResultsView::altDepartmentId() is deprecated");
 }
 
 results::Department ResultsView::browseDepartment(const string& id)
@@ -311,7 +296,7 @@ results::Department ResultsView::browseDepartment(const string& id)
 
 results::Department ResultsView::browseAltDepartment(const string& id)
 {
-    return p->browseDepartment(id, true);
+    throw std::domain_error("ResultsView::browseAltDepartment() is deprecated");
 }
 
 bool ResultsView::overrideCategoryJson(string const& categoryId, string const& json)
@@ -419,6 +404,16 @@ sc::Variant ResultsView::customizations() const
 {
     p->checkActiveScope();
     return ng::qVariantToScopeVariant(p->m_active_scope->customizations());
+}
+
+SettingsView::SPtr ResultsView::settings() const
+{
+    p->checkActiveScope();
+    if (!p->m_settings)
+    {
+        p->m_settings = std::shared_ptr<SettingsView>(new SettingsView(internal::SettingsViewArguments { p->m_active_scope }));
+    }
+    return p->m_settings;
 }
 
 string ResultsView::sessionId() const

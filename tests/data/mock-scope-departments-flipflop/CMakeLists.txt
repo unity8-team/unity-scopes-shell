@@ -1,5 +1,3 @@
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.0)
-
 set(SCOPES_BIN_DIR ${SCOPESLIB_LIBDIR})
 
 include_directories(${SCOPESLIB_INCLUDE_DIRS})

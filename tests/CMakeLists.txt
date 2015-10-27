@@ -1,6 +1,3 @@
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=7)
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=0.6.2)
-pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(QTDBUSTEST REQUIRED libqtdbustest-1>=0.2 REQUIRED)
 pkg_check_modules(QTDBUSMOCK REQUIRED libqtdbusmock-1>=0.2 REQUIRED)
 
@@ -37,12 +34,13 @@ macro(run_tests)
         add_test(NAME test${CLASSNAME}${_test} COMMAND ${testCommand})
         add_custom_target(${_test} ${testCommand})
         add_executable(${_test}Exec
-                       ${_test}.cpp 
+                       ${_test}.cpp
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterBaseInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorFilterInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorOptionsInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
                       )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
@@ -65,7 +63,6 @@ run_tests(
     filterstest
     filtersendtoendtest
     optionselectorfiltertest
-    departmentstest
     favoritestest
     locationtest
     overviewtest

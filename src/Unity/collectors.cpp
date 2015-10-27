@@ -279,7 +279,7 @@ private:
     std::shared_ptr<scopes::Result> m_result;
 };
 
-PushEvent::PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector):
+PushEvent::PushEvent(Type event_type, const std::shared_ptr<CollectorBase>& collector):
     QEvent(PushEvent::eventType),
     m_eventType(event_type),
     m_collector(collector)

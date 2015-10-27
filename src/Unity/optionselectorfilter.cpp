@@ -59,19 +59,21 @@ bool OptionSelectorFilter::multiSelect() const
 
 void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
 {
-    if (m_filterState)
+    if (auto state = m_filterState.lock())
     {
         auto const optid = id.toStdString();
         for (auto const opt: m_filter->options())
         {
             if (opt->id() == optid)
             {
-                m_filter->update_state(*m_filterState, opt, checked);
-                m_options->update(m_filter->options(), m_filter->active_options(*m_filterState));
+                m_filter->update_state(*state, opt, checked);
+                m_options->update(m_filter->options(), m_filter->active_options(*state));
                 Q_EMIT filterStateChanged();
-                break;
+                return;
             }
         }
+        qDebug() << "Removing filter state for filter" << QString::fromStdString(m_filter->id());
+        state->remove(m_filter->id());
     }
 }
 
@@ -104,7 +106,31 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
         Q_EMIT labelChanged(m_label);
     }
 
-    m_options->update(optselfilter->options(), optselfilter->active_options(*m_filterState));
+    m_options->update(optselfilter->options(), optselfilter->active_options(*filterState));
+}
+
+bool OptionSelectorFilter::isActive() const
+{
+    if (auto state = m_filterState.lock()) {
+        return m_filter->has_active_option(*state);
+    }
+    return false;
+}
+
+QString OptionSelectorFilter::filterTag() const
+{
+    if (auto state = m_filterState.lock()) {
+        auto selected = m_filter->active_options(*state);
+        if (selected.size() > 0) {
+            // TODO: what about multi-selection?
+            for (auto opt: m_filter->options()) {
+                if (selected.find(opt) != selected.end()) {
+                    return QString::fromStdString(opt->label()); // TODO: i18n
+                }
+            }
+        }
+    }
+    return "";
 }
 
 }

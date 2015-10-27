@@ -57,10 +57,13 @@ public:
     Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* getPreviewModel(int index) const override;
 
     void loadForResult(unity::scopes::Result::SPtr const&);
+    void update(unity::scopes::PreviewWidgetList const&);
 
     void setWidgetColumnCount(int columnCount) override;
     int widgetColumnCount() const override;
     void setAssociatedScope(scopes_ng::Scope*, QUuid const&, QString const&);
+    scopes_ng::Scope* associatedScope() const;
+    unity::scopes::Result::SPtr previewedResult() const;
 
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);

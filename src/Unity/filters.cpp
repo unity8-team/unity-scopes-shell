@@ -71,15 +71,56 @@ void Filters::clear()
     {
         beginResetModel();
         m_filters.clear();
+        resetState();
         endResetModel();
     }
 }
 
-void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState)
+void Filters::resetState()
+{
+    m_filterState.reset();
+}
+
+//
+// Update current filters model and primary filter pointer with filters coming from scope.
+void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)
 {
     m_filterState.reset(new unity::scopes::FilterState(filterState));
 
-    syncModel(filters, m_filters,
+    // Primary filter needs to be handled separately and not inserted into the main filters model,
+    bool hasPrimaryFilter = containsDepartments;
+    QList<unity::scopes::FilterBase::SCPtr> inFilters;
+    for (auto f: filters) {
+        // we can only have one primary filter
+        if ((f->display_hints() & unity::scopes::FilterBase::DisplayHints::Primary) && !hasPrimaryFilter) {
+            hasPrimaryFilter = true;
+            //
+            const bool hadSamePrimaryFilterBefore = m_primaryFilter && m_primaryFilter->filterId() == QString::fromStdString(f->id()) && m_primaryFilter->filterType() == getFilterType(f);
+            if (hadSamePrimaryFilterBefore) {
+                auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
+                if (shellFilter) {
+                    shellFilter->update(f, m_filterState);
+                } else {
+                    // this should never happen
+                    qCritical() << "Failed to cast filter" << m_primaryFilter->filterId() << "to FilterUpdateInterface";
+                }
+            } else {
+                // we didn't have primary filter before, or it changed substantially, so recreate it
+                m_primaryFilter = createFilterObject(f);
+                Q_EMIT primaryFilterChanged();
+            }
+        } else {
+            inFilters.append(f);
+        }
+    }
+
+    // Did we have primary filter before but not now?
+    if (!hasPrimaryFilter && m_primaryFilter != nullptr) {
+        m_primaryFilter.reset();
+        Q_EMIT primaryFilterChanged();
+    }
+
+    syncModel(inFilters, m_filters,
             // key function for scopes api filter
             [](const unity::scopes::FilterBase::SCPtr& f) -> QString { return QString::fromStdString(f->id()); },
             // key function for shell api filter
@@ -149,6 +190,24 @@ unity::scopes::FilterState Filters::filterState() const
         return *m_filterState;
     }
     return unity::scopes::FilterState();
+}
+
+QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::primaryFilter() const
+{
+    return m_primaryFilter;
+}
+
+int Filters::activeFiltersCount() const
+{
+    int count = 0;
+    for (auto filter: m_filters) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(filter.data());
+        if (shellFilter->isActive()) {
+            qDebug() << "activeFiltersCount: filter" << filter->filterId() << "is active";
+            ++count;
+        }
+    }
+    return count;
 }
 
 }

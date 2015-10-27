@@ -1,2 +1,4 @@
+var/lib/unity-plugin-scopes/version
 usr/lib/*/pkgconfig/unity-plugin-scopes.pc
 usr/lib/*/unity8/*
+usr/share/locale

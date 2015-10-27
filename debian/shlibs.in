@@ -1,0 +1,1 @@
+libscope-harness @HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ (>= @HARNESS_MAJORMINOR@)

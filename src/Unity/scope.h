@@ -44,8 +44,6 @@
 #include "department.h"
 #include "locationservice.h"
 
-class QGSettings;
-
 namespace scopes_ng
 {
 
@@ -132,15 +130,18 @@ public:
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
     unity::shell::scopes::FiltersInterface* filters() const override;
+    unity::shell::scopes::FilterBaseInterface* primaryNavigationFilter() const override;
+    QString primaryNavigationTag() const override;
+    int activeFiltersCount() const override;
 
+    bool require_child_scopes_refresh() const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
     bool isActive() const override;
     QString currentNavigationId() const override;
     bool hasNavigation() const override;
-    QString currentAltNavigationId() const override;
-    bool hasAltNavigation() const override;
     QVariantMap customizations() const override;
 
     /* setters */
@@ -150,15 +151,15 @@ public:
     void setActive(const bool) override;
     void setFavorite(const bool) override;
 
-    Q_INVOKABLE void activate(QVariant const& result) override;
-    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result) override;
+    Q_INVOKABLE void activate(QVariant const& result, QString const& categoryId) override;
+    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result, QString const& categoryId) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
-    Q_INVOKABLE unity::shell::scopes::NavigationInterface* getAltNavigation(QString const& id) override;
-    Q_INVOKABLE void setNavigationState(QString const& navId, bool altNavigation) override;
+    Q_INVOKABLE void setNavigationState(QString const& navId) override;
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
     Q_INVOKABLE void refresh() override;
+    Q_INVOKABLE void resetPrimaryNavigationTag() override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
@@ -173,11 +174,12 @@ public:
 
     Scope::Ptr findTempScope(QString const& id) const;
 
-    bool loginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name);
+    void setSearchQueryString(const QString& search_query);
 
 public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
+    void setSearchInProgress(bool searchInProgress);
 
 Q_SIGNALS:
     void resultsDirtyChanged();
@@ -188,14 +190,13 @@ private Q_SLOTS:
     void typingFinished();
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
-    void internetFlagChanged(QString const& key);
     void departmentModelDestroyed(QObject* obj);
     void filterStateChanged();
+    void previewStackDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
 
-    void setSearchInProgress(bool searchInProgress);
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
 
@@ -206,14 +207,17 @@ protected:
 
 private:
     static void updateNavigationModels(DepartmentNode* rootNode, QMultiMap<QString, Department*>& navigationModels, QString const& activeNavigation);
-    static QString buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, QString const& primaryFilterId, QString const& primaryOptionId);
+    static QString buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, unity::scopes::FilterState const& filterState);
     void setScopesInstance(Scopes*);
     void startTtlTimer();
     void setCurrentNavigationId(QString const& id);
     void setFilterState(unity::scopes::FilterState const& filterState);
     void processSearchChunk(PushEvent* pushEvent);
+    void processPrimaryNavigationTag(QString const &targetDepartmentId);
+    void processActiveFiltersCount();
     void setCannedQuery(unity::scopes::CannedQuery const& query);
     void executeCannedQuery(unity::scopes::CannedQuery const& query, bool allowDelayedActivation);
+    void handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets);
 
     void processResultSet(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& result_set);
 
@@ -226,15 +230,15 @@ private:
     QString m_noResultsHint;
     QString m_formFactor;
     QString m_currentNavigationId;
-    QString m_currentAltNavigationId;
+    QString m_primaryNavigationTag;
     QVariantMap m_customizations;
     std::unique_ptr<unity::scopes::Variant> m_queryUserData;
+    int m_activeFiltersCount;
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
     bool m_delayedClear;
     bool m_hasNavigation;
-    bool m_hasAltNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
 
@@ -245,29 +249,26 @@ private:
     std::shared_ptr<unity::scopes::ActivationResponse> m_delayedActivation;
     unity::scopes::Department::SCPtr m_rootDepartment;
     unity::scopes::Department::SCPtr m_lastRootDepartment;
-    unity::scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
-    unity::scopes::OptionSelectorFilter::SCPtr m_lastSortOrderFilter;
     unity::scopes::FilterState m_filterState;
     unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
     QList<unity::scopes::FilterBase::SCPtr> m_receivedFilters;
     QScopedPointer<Filters> m_filters;
-    QGSettings* m_settings;
+
     QScopedPointer<SettingsModel> m_settingsModel;
     QSharedPointer<DepartmentNode> m_departmentTree;
-    QSharedPointer<DepartmentNode> m_altNavTree;
     QTimer m_typingTimer;
     QTimer m_aggregatorTimer;
     QTimer m_clearTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QMultiMap<QString, Department*> m_departmentModels;
-    QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
+    QList<PreviewStack*> m_previewStacks;
 };
 
 } // namespace scopes_ng

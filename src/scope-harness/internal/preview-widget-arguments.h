@@ -31,6 +31,7 @@ namespace scopes
 {
     class PreviewWidgetModelInterface;
     class PreviewModelInterface;
+    class PreviewStackInterface;
 }
 }
 namespace scopeharness
@@ -53,6 +54,8 @@ struct PreviewWidgetArguments
     std::shared_ptr<view::ResultsView> resultsView;
 
     std::shared_ptr<view::PreviewView> previewView;
+
+    std::shared_ptr<unity::shell::scopes::PreviewStackInterface> previewStack;
 };
 }
 }

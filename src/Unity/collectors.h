@@ -73,7 +73,7 @@ public:
 
     enum Type { SEARCH, PREVIEW, ACTIVATION };
 
-    PushEvent(Type event_type, std::shared_ptr<CollectorBase> collector);
+    PushEvent(Type event_type, const std::shared_ptr<CollectorBase>& collector);
     Type type();
 
     CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr&
