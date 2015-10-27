@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.5+15.10.20151019-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Pawel Stolowski ]
+  * Refactored log-in handling with online accounts api, chaging it from
+    a method of Scope implementation into a standalone LoginToAccount
+    class. (LP: #1410191)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Mon, 19 Oct 2015 07:13:30 +0000
+
 unity-scopes-shell (0.5.5+15.10.20151009-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
