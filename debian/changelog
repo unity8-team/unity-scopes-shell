@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.6-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Support for audio card (inline music playback).
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Tue, 27 Oct 2015 19:58:22 +0100
+
 unity-scopes-shell (0.5.5+15.10.20151019-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
