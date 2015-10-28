@@ -1,12 +1,12 @@
 include(FindPkgConfig)
 
 # Ubuntu xenial needs python 3.5
-if(${DISTRIBUTION} MATCHES "xenial")
-    find_package(PythonLibs 3.5 REQUIRED)
-    find_package(Boost COMPONENTS python-py35 REQUIRED)
-else()
+if(${DISTRIBUTION} MATCHES "vivid" OR ${DISTRIBUTION} MATCHES "wily")
     find_package(PythonLibs 3.4 REQUIRED)
     find_package(Boost COMPONENTS python-py34 REQUIRED)
+else()
+    find_package(PythonLibs 3.5 REQUIRED)
+    find_package(Boost COMPONENTS python-py35 REQUIRED)
 endif()
 
 include_directories(
