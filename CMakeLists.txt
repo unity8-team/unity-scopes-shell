@@ -106,7 +106,8 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Translation
 set(GETTEXT_PACKAGE "unity-plugin-scopes")
-add_definitions(-DGETTEXT_PACKAGE="{GETTEXT_PACKAGE}")
+add_definitions(-DGETTEXT_PACKAGE="${GETTEXT_PACKAGE}")
+add_definitions(-DLOCALE_DIR="${CMAKE_INSTALL_FULL_DATADIR}/locale")
 
 # Tests
 include(CTest)
