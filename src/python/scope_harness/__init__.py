@@ -71,4 +71,35 @@ helper assertMatchResult method, that can easily be replaced with a custom imple
 # cause the classes *are* imported and visible in the current scope.
 
 from ._scope_harness import *
-__all__ = ['_scope_harness']
+__all__ = ['Category',
+        'CategoryListMatcher',
+        'CategoryListMatcherMode',
+        'CategoryMatcher',
+        'CategoryMatcherMode',
+        'ChildDepartment',
+        'ChildDepartmentMatcher',
+        'CustomRegistry',
+        'Department',
+        'DepartmentMatcher',
+        'DepartmentMatcherMode',
+        'MatchResult',
+        'Parameters',
+        'PreviewColumnMatcher',
+        'PreviewMatcher',
+        'PreviewView',
+        'PreviewWidget',
+        'PreviewWidgetList',
+        'PreviewWidgetMatcher',
+        'Result',
+        'ResultMatcher',
+        'ResultsView',
+        'ScopeHarness',
+        'ScopeUri',
+        'SearchStatus',
+        'SettingsMatcher',
+        'SettingsMatcherMode',
+        'SettingsOption',
+        'SettingsOptionMatcher',
+        'SettingsOptionType',
+        'SettingsView'
+        ]

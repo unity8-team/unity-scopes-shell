@@ -36,10 +36,13 @@
 #include <unity/shell/scopes/FiltersInterface.h>
 #include <unity/shell/scopes/OptionSelectorFilterInterface.h>
 #include <unity/shell/scopes/OptionSelectorOptionsInterface.h>
+#include "localization.h"
 
 void UnityPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(uri == QLatin1String("Unity"));
+
+    init_gettext_domain();
 
     // new Scopes classes
     qmlRegisterType<scopes_ng::Scopes>(uri, 0, 2, "Scopes");
