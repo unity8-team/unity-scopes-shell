@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.6-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Preliminary support for filters.
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 30 Oct 2015 16:17:55 +0100
+
 unity-scopes-shell (0.5.5+16.04.20151029-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
