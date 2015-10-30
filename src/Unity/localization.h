@@ -37,6 +37,9 @@ inline std::string _(const char *__msgid1, const char *__msgid2,
     }
 }
 
+inline void init_gettext_domain()
+{
+    bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
+}
+
 #endif
-
-

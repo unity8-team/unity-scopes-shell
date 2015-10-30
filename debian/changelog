@@ -4,6 +4,30 @@ unity-scopes-shell (0.5.6-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Pawel Stolowski <pawel.stolowski@canonical.com>  Tue, 27 Oct 2015 19:58:22 +0100
 
+unity-scopes-shell (0.5.5+16.04.20151029-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+  * Resync trunk. added: po/sr.po
+
+  [ Pawel Stolowski ]
+  * Properly initialize gettext. (LP: #1474944)
+  * Use python 3.5 on xenial.
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 29 Oct 2015 09:25:54 +0000
+
+unity-scopes-shell (0.5.5+15.10.20151022-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+  * Resync trunk. added: po/zh_CN.po
+
+  [ Pawel Stolowski ]
+  * Fix __all__ list to make import from scope_harness * work.
+  * Remove excess empty categories. (LP: #1507941)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 22 Oct 2015 08:19:56 +0000
+
 unity-scopes-shell (0.5.5+15.10.20151019-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
