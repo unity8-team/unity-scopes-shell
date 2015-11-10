@@ -89,8 +89,13 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
     bool hasPrimaryFilter = containsDepartments;
     QList<unity::scopes::FilterBase::SCPtr> inFilters;
     for (auto f: filters) {
-        // we can only have one primary filter
-        if ((f->display_hints() & unity::scopes::FilterBase::DisplayHints::Primary) && !hasPrimaryFilter) {
+        // we can only have one primary filter. only a single-selection OptionSelectorFilter can be a primary nav.
+        bool wantsToBePrimary = (f->display_hints() & unity::scopes::FilterBase::DisplayHints::Primary);
+        unity::scopes::OptionSelectorFilter::SCPtr optSelFilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(f);
+        if (optSelFilter == nullptr || optSelFilter->multi_select()) {
+            wantsToBePrimary = false;
+        }
+        if (wantsToBePrimary && !hasPrimaryFilter) {
             hasPrimaryFilter = true;
             //
             const bool hadSamePrimaryFilterBefore = m_primaryFilter && m_primaryFilter->filterId() == QString::fromStdString(f->id()) && m_primaryFilter->filterType() == getFilterType(f);
