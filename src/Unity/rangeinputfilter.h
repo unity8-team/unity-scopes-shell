@@ -42,6 +42,8 @@ public:
     void setStartValue(QVariant const& value) override;
     void setEndValue(QVariant const& value) override;
     void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+    bool isActive() const override;
+    QString filterTag() const override;
 
 Q_SIGNALS:
     void filterStateChanged();
@@ -52,7 +54,7 @@ private:
     QString m_unitLabel;
     QVariant m_start;
     QVariant m_end;
-    unity::scopes::FilterState::SPtr m_filterState;
+    std::weak_ptr<unity::scopes::FilterState> m_filterState;
     unity::scopes::experimental::RangeInputFilter::SCPtr m_filter;
 
     static bool compare(QVariant const& v1, QVariant const& v2);

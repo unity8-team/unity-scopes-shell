@@ -55,25 +55,29 @@ QVariant RangeInputFilter::endValue() const
 
 void RangeInputFilter::setStartValue(QVariant const& value)
 {
-    if (!compare(value, m_start)) {
-        m_start = value;
+    if (auto state = m_filterState.lock()) {
+        if (!compare(value, m_start)) {
+            m_start = value;
 
-        m_filter->update_state(*m_filterState, qVariantToScopeVariant(m_start), qVariantToScopeVariant(m_end));
+            m_filter->update_state(*state, qVariantToScopeVariant(m_start), qVariantToScopeVariant(m_end));
 
-        Q_EMIT startValueChanged(m_start);
-        Q_EMIT filterStateChanged();
+            Q_EMIT startValueChanged(m_start);
+            Q_EMIT filterStateChanged();
+        }
     }
 }
 
 void RangeInputFilter::setEndValue(QVariant const& value)
 {
-    if (!compare(value, m_end)) {
-        m_end = value;
+    if (auto state = m_filterState.lock()) {
+        if (!compare(value, m_end)) {
+            m_end = value;
 
-        m_filter->update_state(*m_filterState, qVariantToScopeVariant(m_start), qVariantToScopeVariant(m_end));
+            m_filter->update_state(*state, qVariantToScopeVariant(m_start), qVariantToScopeVariant(m_end));
 
-        Q_EMIT endValueChanged(m_end);
-        Q_EMIT filterStateChanged();
+            Q_EMIT endValueChanged(m_end);
+            Q_EMIT filterStateChanged();
+        }
     }
 }
 
@@ -100,6 +104,19 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
         m_end = end;
         Q_EMIT endValueChanged(m_end);
     }
+}
+
+bool RangeInputFilter::isActive() const
+{
+    if (auto state = m_filterState.lock()) {
+        return (m_filter->has_start_value(*state) || m_filter->has_end_value(*state));
+    }
+    return false;
+}
+
+QString RangeInputFilter::filterTag() const
+{
+    return ""; // range input filter can't be a primary navigation filter
 }
 
 bool RangeInputFilter::compare(QVariant const& v1, QVariant const& v2)
