@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.5+16.04.20151111-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * debian/libscope-harness.symbols.in: update to released version.
+  * Resync trunk.
+
+  [ Pawel Stolowski ]
+  * Apply updates to results model instead of clearing. Removed obsolete
+    code which deals with special categories. (LP: #1238979)
+
+ -- Michael Zanetti <michael.zanetti@canonical.com>  Wed, 11 Nov 2015 09:31:47 +0000
+
 unity-scopes-shell (0.5.5+16.04.20151029-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
