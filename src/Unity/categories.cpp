@@ -46,19 +46,12 @@ const int MAX_NUMBER_OF_CATEGORIES = 32; // when reached, any excess categories 
 class CategoryData
 {
 public:
-    CategoryData(scopes::Category::SCPtr const& category): m_isSpecial(false)
+    CategoryData(scopes::Category::SCPtr const& category)
     {
         setCategory(category);
     }
 
     CategoryData(CategoryData const& other) = delete;
-
-    // constructor for special (shell-overriden) categories
-    CategoryData(QString const& id, QString const& title, QString const& icon, QString const& rawTemplate, QObject* countObject):
-        m_catId(id), m_catTitle(title), m_catIcon(icon), m_rawTemplate(rawTemplate.toStdString()), m_countObject(countObject), m_isSpecial(true)
-    {
-        parseTemplate(m_rawTemplate, &m_rendererTemplate, &m_components);
-    }
 
     void setCategory(scopes::Category::SCPtr const& category)
     {
@@ -211,11 +204,6 @@ public:
         return 0;
     }
 
-    bool isSpecial() const
-    {
-        return m_isSpecial;
-    }
-
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
     {
         // lazy init of the defaults
@@ -260,7 +248,6 @@ private:
     QJsonValue m_components;
     QSharedPointer<ResultsModel> m_resultsModel;
     QPointer<QObject> m_countObject;
-    bool m_isSpecial;
 
     static QJsonValue mergeOverrides(QJsonValue const& defaultVal, QJsonValue const& overrideVal)
     {
@@ -299,7 +286,8 @@ private:
 QJsonValue* CategoryData::DEFAULTS = nullptr;
 
 Categories::Categories(QObject* parent)
-    : unity::shell::scopes::CategoriesInterface(parent)
+    : unity::shell::scopes::CategoriesInterface(parent),
+    m_categoryIndex(0)
 {
 }
 
@@ -333,25 +321,16 @@ int Categories::getCategoryIndex(QString const& categoryId) const
     return -1;
 }
 
-int Categories::getFirstEmptyCategoryIndex() const
-{
-    for (int i = 0; i < m_categories.size(); i++) {
-        if (m_categories[i]->isSpecial()) {
-            continue;
-        }
-        if (m_categories[i]->resultsModelCount() == 0) {
-            return i;
-        }
-    }
-
-    return m_categories.size();
-}
-
 void Categories::registerCategory(const scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> resultsModel)
 {
     // do we already have a category with this id?
+    if (m_registeredCategories.find(category->id()) != m_registeredCategories.end()) {
+        return;
+    }
+    m_registeredCategories.insert(category->id());
+
     int index = getCategoryIndex(QString::fromStdString(category->id()));
-    int emptyIndex = getFirstEmptyCategoryIndex();
+    int emptyIndex = m_categoryIndex++;
     if (index >= 0) {
         // re-registering an existing category will move it after the first non-empty category
         if (emptyIndex < index) {
@@ -374,8 +353,9 @@ void Categories::registerCategory(const scopes::Category::SCPtr& category, QShar
             m_categories.insert(emptyIndex, catData);
             endInsertRows();
         } else {
-            QSharedPointer<CategoryData> catData = m_categories[index];
+            // the category has already been registered for current search,
             // check if any attributes of the category changed
+            QSharedPointer<CategoryData> catData = m_categories[index];
             QVector<int> changedRoles(catData->updateAttributes(category));
 
             if (changedRoles.size() > 0) {
@@ -463,6 +443,30 @@ void Categories::clearAll()
     dataChanged(changeStart, changeEnd, roles);
 }
 
+void Categories::markNewSearch()
+{
+    m_categoryIndex = 0;
+    m_registeredCategories.clear();
+    for (auto model: m_categoryResults) {
+        model->markNewSearch();
+    }
+}
+
+void Categories::purgeResults()
+{
+    QVector<int> roles;
+    roles.append(RoleCount);
+
+    for (auto it = m_categoryResults.begin(); it != m_categoryResults.end(); it++) {
+        auto model = it.value();
+        if (model->needsPurging()) {
+            model->clearResults();
+
+            QModelIndex idx(index(getCategoryIndex(QString::fromStdString(it.key()))));
+            Q_EMIT dataChanged(idx, idx, roles);
+        }
+    }
+}
 
 bool Categories::parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components)
 {
@@ -494,25 +498,6 @@ bool Categories::overrideCategoryJson(QString const& categoryId, QString const& 
     return false;
 }
 
-void Categories::addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject)
-{
-    int index = getCategoryIndex(categoryId);
-    if (index >= 0) {
-        qWarning("ERROR! Category with id \"%s\" already exists!", categoryId.toStdString().c_str());
-    } else {
-        QSharedPointer<CategoryData> catData(new CategoryData(categoryId, name, icon, rawTemplate, countObject));
-        // prepend the category
-        beginInsertRows(QModelIndex(), 0, 0);
-        m_categories.prepend(catData);
-        endInsertRows();
-
-        if (countObject) {
-            m_countObjects[countObject] = categoryId;
-            QObject::connect(countObject, SIGNAL(countChanged()), this, SLOT(countChanged()));
-        }
-    }
-}
-
 void Categories::countChanged()
 {
     QObject* countObject = sender();
@@ -527,6 +512,16 @@ void Categories::countChanged()
 
         QModelIndex changedIndex(index(idx));
         dataChanged(changedIndex, changedIndex, roles);
+    }
+}
+
+void Categories::updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result)
+{
+    for (auto catData: m_categories) {
+        if (catData->categoryId() == categoryId) {
+            catData->resultsModel()->updateResult(result, updated_result);
+            break;
+        }
     }
 }
 

@@ -67,9 +67,8 @@ namespace scopes_ng
 
 using namespace unity;
 
-const int AGGREGATION_TIMEOUT = 110;
-const int TYPING_TIMEOUT = 300;
-const int CLEAR_TIMEOUT = 240;
+const int TYPING_TIMEOUT = 700;
+const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
@@ -85,7 +84,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_isActive(false)
     , m_searchInProgress(false)
     , m_resultsDirty(false)
-    , m_delayedClear(false)
+    , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
     , m_hasAltNavigation(false)
     , m_favorite(false)
@@ -109,10 +108,8 @@ Scope::Scope(scopes_ng::Scopes* parent) :
         m_typingTimer.setInterval(TYPING_TIMEOUT);
     }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
-    m_aggregatorTimer.setSingleShot(true);
-    QObject::connect(&m_aggregatorTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
-    m_clearTimer.setSingleShot(true);
-    QObject::connect(&m_clearTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
+    m_searchProcessingDelayTimer.setSingleShot(true);
+    QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::CoarseTimer);
     QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
@@ -146,14 +143,14 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     }
 
     if (status == CollectorBase::Status::INCOMPLETE) {
-        if (!m_aggregatorTimer.isActive()) {
+        if (!m_searchProcessingDelayTimer.isActive()) {
             // the longer we've been waiting for the results, the shorter the timeout
             qint64 inProgressMs = pushEvent->msecsSinceStart();
             double mult = 1.0 / std::max(1, static_cast<int>((inProgressMs / 150) + 1));
-            m_aggregatorTimer.start(AGGREGATION_TIMEOUT * mult);
+            m_searchProcessingDelayTimer.start(SEARCH_PROCESSING_DELAY * mult);
         }
     } else { // status in [FINISHED, ERROR]
-        m_aggregatorTimer.stop();
+        m_searchProcessingDelayTimer.stop();
 
         flushUpdates(true);
 
@@ -193,9 +190,10 @@ bool Scope::event(QEvent* ev)
             case PushEvent::ACTIVATION: {
                 std::shared_ptr<scopes::ActivationResponse> response;
                 std::shared_ptr<scopes::Result> result;
-                pushEvent->collectActivationResponse(response, result);
+                QString categoryId;
+                pushEvent->collectActivationResponse(response, result, categoryId);
                 if (response) {
-                    handleActivation(response, result);
+                    handleActivation(response, result, categoryId);
                 }
                 return true;
             }
@@ -207,7 +205,7 @@ bool Scope::event(QEvent* ev)
     return QObject::event(ev);
 }
 
-void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result)
+void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
@@ -222,8 +220,12 @@ void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& 
         case scopes::ActivationResponse::ShowPreview:
             Q_EMIT previewRequested(QVariant::fromValue(result));
             break;
-         case scopes::ActivationResponse::PerformQuery:
+        case scopes::ActivationResponse::PerformQuery:
             executeCannedQuery(response->query(), true);
+            break;
+        case scopes::ActivationResponse::UpdateResult:
+            m_categories->updateResult(*result, categoryId, response->updated_result());
+            Q_EMIT updateResultRequested();
             break;
         case scopes::ActivationResponse::UpdatePreview:
             handlePreviewUpdate(result, response->updated_widgets());
@@ -341,20 +343,28 @@ void Scope::typingFinished()
 
 void Scope::flushUpdates(bool finalize)
 {
-    if (m_delayedClear) {
-        // TODO: here we could do resultset diffs
-        m_categories->clearAll();
-        m_delayedClear = false;
-    }
-
-    if (m_clearTimer.isActive()) {
-        m_clearTimer.stop();
+    if (m_delayedSearchProcessing) {
+        m_delayedSearchProcessing = false;
     }
 
     if (m_status != Status::Okay) {
         setStatus(Status::Okay);
     }
+
+    // if no results have been received so far (and we're not in the finalizing step of search), then
+    // don't process the results as this will inevitably make the dash empty.
+    if (m_cachedResults.empty() && !finalize) {
+        return;
+    }
+
+    qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+
     processResultSet(m_cachedResults); // clears the result list
+
+    if (finalize) {
+        m_category_results.clear();
+        m_categories->purgeResults(); // remove results for categories which were not present in new resultset
+    }
 
     // process departments
     if (m_rootDepartment && m_rootDepartment != m_lastRootDepartment) {
@@ -569,14 +579,15 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
     // this will keep the list of categories in order
     QVector<scopes::Category::SCPtr> categories;
 
-    // split the result_set by category_id
-    QMap<std::string, QList<std::shared_ptr<scopes::CategorisedResult>>> category_results;
+    // split the result_set by category_id; note that processResultSet may get called more than once
+    // for single search request, all the contents of m_category_results accumulate until new search
+    // is requested, so that addUpdateResults() can properly update affected models.
     while (!result_set.empty()) {
         auto result = result_set.takeFirst();
-        if (!category_results.contains(result->category()->id())) {
+        if (!categories.contains(result->category())) {
             categories.append(result->category());
         }
-        category_results[result->category()->id()].append(std::move(result));
+        m_category_results[result->category()->id()].append(std::move(result));
     }
 
     Q_FOREACH(scopes::Category::SCPtr const& category, categories) {
@@ -584,12 +595,11 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
         if (category_model == nullptr) {
             category_model.reset(new ResultsModel(m_categories.data()));
             category_model->setCategoryId(QString::fromStdString(category->id()));
-            category_model->addResults(category_results[category->id()]);
+            category_model->addResults(m_category_results[category->id()]);
             m_categories->registerCategory(category, category_model);
         } else {
-            // FIXME: only update when we know it's necessary
             m_categories->registerCategory(category, QSharedPointer<ResultsModel>());
-            category_model->addResults(category_results[category->id()]);
+            category_model->addUpdateResults(m_category_results[category->id()]);
             m_categories->updateResultCount(category_model);
         }
     }
@@ -608,10 +618,11 @@ scopes::ScopeProxy Scope::proxy_for_result(scopes::Result::SPtr const& result) c
 void Scope::invalidateLastSearch()
 {
     m_searchController->invalidate();
-    if (m_aggregatorTimer.isActive()) {
-        m_aggregatorTimer.stop();
+    if (m_searchProcessingDelayTimer.isActive()) {
+        m_searchProcessingDelayTimer.stop();
     }
     m_cachedResults.clear();
+    m_category_results.clear();
 }
 
 void Scope::startTtlTimer()
@@ -691,8 +702,11 @@ void Scope::dispatchSearch()
     m_initialQueryDone = true;
 
     invalidateLastSearch();
-    m_delayedClear = true;
-    m_clearTimer.start(CLEAR_TIMEOUT);
+    m_delayedSearchProcessing = true;
+    m_category_results.clear();
+    m_categories->markNewSearch();
+
+    m_searchProcessingDelayTimer.start(SEARCH_PROCESSING_DELAY);
     /* There are a few objects associated with searches:
      * 1) SearchResultReceiver    2) ResultCollector    3) PushEvent
      *
@@ -1243,6 +1257,28 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
         }
     } else {
         activateResult();
+    }
+}
+
+// called for in-card (result) actions.
+void Scope::activateAction(QVariant const& result_var, QString const& categoryId, QString const& actionId)
+{
+    try {
+        cancelActivation();
+        std::shared_ptr<scopes::Result> result = result_var.value<std::shared_ptr<scopes::Result>>();
+        scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
+        m_activationController->setListener(listener);
+
+        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri());
+
+        auto proxy = proxy_for_result(result);
+        unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        scopes::QueryCtrlProxy controller = proxy->activate_result_action(*(result.get()), metadata, actionId.toStdString(), listener);
+        m_activationController->setController(controller);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from activate_result_action(): %s", e.what());
+    } catch (...) {
+        qWarning("Caught an error from activate_result_action()");
     }
 }
 

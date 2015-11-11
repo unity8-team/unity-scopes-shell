@@ -158,8 +158,9 @@ public:
     Q_INVOKABLE void refresh() override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
-    void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
+    void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&, QString const& categoryId="");
     void activateUri(QString const& uri);
+    void activateAction(QVariant const& result, QString const& categoryId, QString const& actionId) override;
 
     bool resultsDirty() const;
     virtual unity::scopes::ScopeProxy proxy_for_result(unity::scopes::Result::SPtr const& result) const;
@@ -181,6 +182,7 @@ Q_SIGNALS:
     void resultsDirtyChanged();
     void favoriteChanged(bool);
     void activationFailed(QString const& id);
+    void updateResultRequested();
 
 private Q_SLOTS:
     void typingFinished();
@@ -229,12 +231,13 @@ private:
     bool m_isActive;
     bool m_searchInProgress;
     bool m_resultsDirty;
-    bool m_delayedClear;
+    bool m_delayedSearchProcessing;
     bool m_hasNavigation;
     bool m_hasAltNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
 
+    QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;
     std::unique_ptr<CollectionController> m_activationController;
     unity::scopes::ScopeProxy m_proxy;
@@ -251,8 +254,7 @@ private:
     QSharedPointer<DepartmentNode> m_departmentTree;
     QSharedPointer<DepartmentNode> m_altNavTree;
     QTimer m_typingTimer;
-    QTimer m_aggregatorTimer;
-    QTimer m_clearTimer;
+    QTimer m_searchProcessingDelayTimer;
     QTimer m_invalidateTimer;
     QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_cachedResults;
     QMultiMap<QString, Department*> m_departmentModels;

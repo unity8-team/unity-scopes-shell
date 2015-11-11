@@ -51,5 +51,7 @@ void export_result()
              "Returns an instance of PreviewView (if result was previewed) or None "
              " (if result's uri was a canned scope query)\n\n"
              ":returns: PreviewView or None")
+        .def("tap_action", &shr::Result::tapAction, "Activates result action. "
+             "Returns the ResultsView where affected result may potentially be updated.")
         ;
 }
