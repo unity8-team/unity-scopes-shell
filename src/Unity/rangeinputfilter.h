@@ -37,10 +37,24 @@ public:
     RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
-    QVariant startValue() const override;
-    QVariant endValue() const override;
-    void setStartValue(QVariant const& value) override;
-    void setEndValue(QVariant const& value) override;
+    double startValue() const override;
+    double endValue() const override;
+
+    QString startPrefixLabel() const override;
+    QString startPostfixLabel() const override;
+    QString centralLabel() const override;
+    QString endPrefixLabel() const override;
+    QString endPostfixLabel() const override;
+
+    void setStartValue(double value) override;
+    void setEndValue(double value) override;
+
+    Q_INVOKABLE bool hasStartValue() const override;
+    Q_INVOKABLE bool hasEndValue() const override;
+
+    Q_INVOKABLE void eraseStartValue() override;
+    Q_INVOKABLE void eraseEndValue() override;
+
     void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
     bool isActive() const override;
     QString filterTag() const override;
@@ -52,12 +66,12 @@ private:
     QString m_id;
     // TODO labels
     QString m_unitLabel;
-    QVariant m_start;
-    QVariant m_end;
+    unity::scopes::Variant m_start;
+    unity::scopes::Variant m_end;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
     unity::scopes::experimental::RangeInputFilter::SCPtr m_filter;
 
-    static bool compare(QVariant const& v1, QVariant const& v2);
+    static bool compare(unity::scopes::Variant const& v1, unity::scopes::Variant const& v2);
 };
 
 } // namespace scopes_ng

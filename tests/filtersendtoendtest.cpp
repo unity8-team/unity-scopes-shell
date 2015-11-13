@@ -173,10 +173,10 @@ private Q_SLOTS:
         auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
         QVERIFY(f2 != nullptr);
 
-        QVERIFY(f2->startValue().isNull());
-        QVERIFY(f2->endValue().isNull());
+        QCOMPARE(f2->hasStartValue(), false);
+        QCOMPARE(f2->hasEndValue(), false);
 
-        f2->setStartValue(QVariant(111));
+        f2->setStartValue(111.0f);
         TestUtils::waitForSearchFinish(m_scope);
 
         QCOMPARE(filters, m_scope->filters());
@@ -185,7 +185,7 @@ private Q_SLOTS:
         QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - ***"));
 
         QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
-        f2->setEndValue(QVariant(300.5f));
+        f2->setEndValue(300.5f);
         TestUtils::waitForSearchFinish(m_scope);
 
         QCOMPARE(filters, m_scope->filters());
