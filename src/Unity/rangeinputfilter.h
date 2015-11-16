@@ -49,8 +49,8 @@ public:
     void setStartValue(double value) override;
     void setEndValue(double value) override;
 
-    Q_INVOKABLE bool hasStartValue() const override;
-    Q_INVOKABLE bool hasEndValue() const override;
+    bool hasStartValue() const override;
+    bool hasEndValue() const override;
 
     Q_INVOKABLE void eraseStartValue() override;
     Q_INVOKABLE void eraseEndValue() override;
