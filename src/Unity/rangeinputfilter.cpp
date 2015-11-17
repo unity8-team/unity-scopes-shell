@@ -20,6 +20,7 @@
 #include "rangeinputfilter.h"
 #include "utils.h"
 #include <cmath>
+#include <functional>
 #include <QDebug>
 
 using namespace unity::scopes;
@@ -31,6 +32,11 @@ RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter
     : unity::shell::scopes::RangeInputFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
     m_title(QString::fromStdString(filter->title())),
+    m_startPrefixLabel(QString::fromStdString(filter->start_prefix_label())),
+    m_startPostfixLabel(QString::fromStdString(filter->start_postfix_label())),
+    m_centralLabel(QString::fromStdString(filter->central_label())),
+    m_endPrefixLabel(QString::fromStdString(filter->end_prefix_label())),
+    m_endPostfixLabel(QString::fromStdString(filter->end_postfix_label())),
     m_defaultStart(filter->default_start_value()),
     m_defaultEnd(filter->default_end_value()),
     m_filterState(filterState),
@@ -75,6 +81,15 @@ void RangeInputFilter::setEndValue(double value)
     setEndValue(newValue);
 }
 
+void RangeInputFilter::labelChange(std::string const& srcLabel, QString& destLabel, std::function<void()> const& emitLabelChangeSignal)
+{
+    auto const srclbl = QString::fromStdString(srcLabel);
+    if (srclbl != destLabel) {
+        destLabel = srclbl;
+        emitLabelChangeSignal();
+    }
+}
+
 void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
 {
     m_filterState = filterState;
@@ -93,14 +108,11 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
         Q_EMIT titleChanged();
     }
 
-    if (QString::fromStdString(m_filter->start_prefix_label()) != m_startPrefixLabel) {
-        m_startPrefixLabel = QString::fromStdString(m_filter->start_prefix_label());
-        Q_EMIT startPrefixLabelChanged();
-    }
-    if (QString::fromStdString(m_filter->start_postfix_label()) != m_startPostfixLabel) {
-        m_startPrefixLabel = QString::fromStdString(m_filter->start_postfix_label());
-        Q_EMIT startPostfixLabelChanged();
-    }
+    labelChange(m_filter->start_prefix_label(), m_startPrefixLabel, [this]() { Q_EMIT startPrefixLabelChanged(); });
+    labelChange(m_filter->start_postfix_label(), m_startPostfixLabel, [this]() { Q_EMIT startPostfixLabelChanged(); });
+    labelChange(m_filter->central_label(), m_centralLabel, [this]() { Q_EMIT centralLabelChanged(); });
+    labelChange(m_filter->end_prefix_label(), m_endPrefixLabel, [this]() { Q_EMIT endPrefixLabelChanged(); });
+    labelChange(m_filter->end_postfix_label(), m_endPostfixLabel, [this]() { Q_EMIT endPostfixLabelChanged(); });
 
     const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : unity::scopes::Variant::null();
     if (!compare(start, m_start)) {
@@ -136,27 +148,27 @@ QString RangeInputFilter::filterTag() const
 
 QString RangeInputFilter::startPrefixLabel() const
 {
-    return ""; //TODO
+    return m_startPrefixLabel;
 }
 
 QString RangeInputFilter::startPostfixLabel() const
 {
-    return ""; //TODO
+    return m_startPostfixLabel;
 }
 
 QString RangeInputFilter::centralLabel() const
 {
-    return ""; //TODO
+    return m_centralLabel;
 }
 
 QString RangeInputFilter::endPrefixLabel() const
 {
-    return ""; //TODO
+    return m_endPrefixLabel;
 }
 
 QString RangeInputFilter::endPostfixLabel() const
 {
-    return ""; //TODO
+    return m_endPostfixLabel;
 }
 
 bool RangeInputFilter::hasStartValue() const

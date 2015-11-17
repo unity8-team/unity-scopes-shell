@@ -66,14 +66,15 @@ Q_SIGNALS:
 private:
     void setStartValue(unity::scopes::Variant const& value);
     void setEndValue(unity::scopes::Variant const& value);
+    static void labelChange(std::string const& srcLabel, QString& destLabel, std::function<void()> const& emitLabelChangeSignal);
 
     QString m_id;
     QString m_title;
     QString m_startPrefixLabel;
     QString m_startPostfixLabel;
+    QString m_centralLabel;
     QString m_endPrefixLabel;
     QString m_endPostfixLabel;
-    QString m_centralLabel;
     unity::scopes::Variant m_defaultStart;
     unity::scopes::Variant m_defaultEnd;
     unity::scopes::Variant m_start;
