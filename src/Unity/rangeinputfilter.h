@@ -36,6 +36,7 @@ class Q_DECL_EXPORT RangeInputFilter : public unity::shell::scopes::RangeInputFi
 public:
     RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
+    QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
     double startValue() const override;
     double endValue() const override;
@@ -67,6 +68,7 @@ private:
     void setEndValue(unity::scopes::Variant const& value);
 
     QString m_id;
+    QString m_title;
     QString m_startPrefixLabel;
     QString m_startPostfixLabel;
     QString m_endPrefixLabel;

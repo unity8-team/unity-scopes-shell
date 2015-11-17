@@ -30,6 +30,7 @@ namespace scopes_ng
 RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::RangeInputFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
+    m_title(QString::fromStdString(filter->title())),
     m_defaultStart(filter->default_start_value()),
     m_defaultEnd(filter->default_end_value()),
     m_filterState(filterState),
@@ -40,6 +41,11 @@ RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter
 QString RangeInputFilter::filterId() const
 {
     return m_id;
+}
+
+QString RangeInputFilter::title() const
+{
+    return m_title;
 }
 
 unity::shell::scopes::FiltersInterface::FilterType RangeInputFilter::filterType() const
@@ -80,6 +86,12 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
     }
 
     m_filter = rangefilter;
+
+    if (rangefilter->title() != m_title.toStdString())
+    {
+        m_title = QString::fromStdString(rangefilter->title());
+        Q_EMIT titleChanged();
+    }
 
     if (QString::fromStdString(m_filter->start_prefix_label()) != m_startPrefixLabel) {
         m_startPrefixLabel = QString::fromStdString(m_filter->start_prefix_label());
