@@ -30,6 +30,8 @@ namespace scopes_ng
 RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::RangeInputFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
+    m_defaultStart(filter->default_start_value()),
+    m_defaultEnd(filter->default_end_value()),
     m_filterState(filterState),
     m_filter(filter)
 {
@@ -58,33 +60,13 @@ double RangeInputFilter::endValue() const
 void RangeInputFilter::setStartValue(double value)
 {
     const unity::scopes::Variant newValue(value);
-
-    if (auto state = m_filterState.lock()) {
-        if (!compare(newValue, m_start)) {
-            m_start = newValue;
-
-            m_filter->update_state(*state, m_start, m_end);
-
-            Q_EMIT startValueChanged();
-            Q_EMIT filterStateChanged();
-        }
-    }
+    setStartValue(newValue);
 }
 
 void RangeInputFilter::setEndValue(double value)
 {
     const unity::scopes::Variant newValue(value);
-
-    if (auto state = m_filterState.lock()) {
-        if (!compare(newValue, m_end)) {
-            m_end = newValue;
-
-            m_filter->update_state(*state, m_start, m_end);
-
-            Q_EMIT endValueChanged();
-            Q_EMIT filterStateChanged();
-        }
-    }
+    setEndValue(newValue);
 }
 
 void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
@@ -98,6 +80,15 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
     }
 
     m_filter = rangefilter;
+
+    if (QString::fromStdString(m_filter->start_prefix_label()) != m_startPrefixLabel) {
+        m_startPrefixLabel = QString::fromStdString(m_filter->start_prefix_label());
+        Q_EMIT startPrefixLabelChanged();
+    }
+    if (QString::fromStdString(m_filter->start_postfix_label()) != m_startPostfixLabel) {
+        m_startPrefixLabel = QString::fromStdString(m_filter->start_postfix_label());
+        Q_EMIT startPostfixLabelChanged();
+    }
 
     const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : unity::scopes::Variant::null();
     if (!compare(start, m_start)) {
@@ -115,7 +106,13 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
 bool RangeInputFilter::isActive() const
 {
     if (auto state = m_filterState.lock()) {
-        return (m_filter->has_start_value(*state) || m_filter->has_end_value(*state));
+        // check if current value from filter state is equal to default value
+        if (m_filter->has_start_value(*state) && !compare(m_filter->start_value(*state), m_filter->default_start_value())) {
+            return false;
+        }
+        if (m_filter->has_end_value(*state) && !compare(m_filter->end_value(*state), m_filter->default_end_value())) {
+            return false;
+        }
     }
     return false;
 }
@@ -162,12 +159,46 @@ bool RangeInputFilter::hasEndValue() const
 
 void RangeInputFilter::eraseStartValue()
 {
-    m_start = Variant::null();
+    setStartValue(Variant::null());
 }
 
 void RangeInputFilter::eraseEndValue()
 {
-    m_end = Variant::null();
+    setEndValue(Variant::null());
+}
+
+void RangeInputFilter::setStartValue(Variant const& value)
+{
+    if (auto state = m_filterState.lock()) {
+        if (!compare(value, m_start)) {
+            m_start = value;
+
+            m_filter->update_state(*state, m_start, m_end);
+
+            if (value.is_null()) {
+                Q_EMIT hasStartValueChanged();
+            }
+            Q_EMIT startValueChanged();
+            Q_EMIT filterStateChanged();
+        }
+    }
+}
+
+void RangeInputFilter::setEndValue(Variant const& value)
+{
+    if (auto state = m_filterState.lock()) {
+        if (!compare(value, m_end)) {
+            m_end = value;
+
+            m_filter->update_state(*state, m_start, m_end);
+
+            if (value.is_null()) {
+                Q_EMIT hasEndValueChanged();
+            }
+            Q_EMIT endValueChanged();
+            Q_EMIT filterStateChanged();
+        }
+    }
 }
 
 bool RangeInputFilter::compare(Variant const& v1, Variant const& v2)
@@ -177,6 +208,14 @@ bool RangeInputFilter::compare(Variant const& v1, Variant const& v2)
     }
     if (v1.which() == Variant::Double && v2.which() == Variant::Double) {
         return std::abs(v1.get_double() - v2.get_double()) < 0.0000001f;
+    }
+    return false;
+}
+
+bool RangeInputFilter::compare(double v1, Variant const& v2)
+{
+    if (v2.which() == Variant::Double) {
+        return std::abs(v1 - v2.get_double()) < 0.0000001f;
     }
     return false;
 }

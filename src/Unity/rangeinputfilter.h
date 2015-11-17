@@ -63,14 +63,23 @@ Q_SIGNALS:
     void filterStateChanged();
 
 private:
+    void setStartValue(unity::scopes::Variant const& value);
+    void setEndValue(unity::scopes::Variant const& value);
+
     QString m_id;
-    // TODO labels
-    QString m_unitLabel;
+    QString m_startPrefixLabel;
+    QString m_startPostfixLabel;
+    QString m_endPrefixLabel;
+    QString m_endPostfixLabel;
+    QString m_centralLabel;
+    unity::scopes::Variant m_defaultStart;
+    unity::scopes::Variant m_defaultEnd;
     unity::scopes::Variant m_start;
     unity::scopes::Variant m_end;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
     unity::scopes::experimental::RangeInputFilter::SCPtr m_filter;
 
+    static bool compare(double v1, unity::scopes::Variant const& v2);
     static bool compare(unity::scopes::Variant const& v1, unity::scopes::Variant const& v2);
 };
 

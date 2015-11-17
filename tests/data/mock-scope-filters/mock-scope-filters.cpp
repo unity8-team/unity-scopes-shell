@@ -52,7 +52,7 @@ public:
         auto opt1 = filter1->add_option("o1", "Option1");
         filter1->add_option("o2", "Option2");
 
-        RangeInputFilter::SPtr filter2 = RangeInputFilter::create("f2", "start", "end", "unit");
+        RangeInputFilter::SPtr filter2 = RangeInputFilter::create("f2", "start", "", "", "end", "");
 
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
