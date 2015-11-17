@@ -27,6 +27,7 @@ namespace scopes_ng
 OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::OptionSelectorFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
+    m_title(QString::fromStdString(filter->title())),
     m_multiSelect(filter->multi_select()),
     m_label(QString::fromStdString(filter->label())),
     m_options(new OptionSelectorOptions(this)),
@@ -40,6 +41,11 @@ OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::
 QString OptionSelectorFilter::filterId() const
 {
     return m_id;
+}
+
+QString OptionSelectorFilter::title() const
+{
+    return m_title;
 }
 
 unity::shell::scopes::FiltersInterface::FilterType OptionSelectorFilter::filterType() const
@@ -98,6 +104,12 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
     {
         m_multiSelect = optselfilter->multi_select();
         Q_EMIT multiSelectChanged(m_multiSelect);
+    }
+
+    if (optselfilter->title() != m_title.toStdString())
+    {
+        m_title = QString::fromStdString(optselfilter->title());
+        Q_EMIT titleChanged();
     }
 
     if (QString::fromStdString(optselfilter->label()) != m_label)
