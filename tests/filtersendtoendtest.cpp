@@ -176,20 +176,43 @@ private Q_SLOTS:
         QCOMPARE(f2->hasStartValue(), false);
         QCOMPARE(f2->hasEndValue(), false);
 
-        f2->setStartValue(111.0f);
-        TestUtils::waitForSearchFinish(m_scope);
+        {
+            f2->setStartValue(111.0f);
+            TestUtils::waitForSearchFinish(m_scope);
 
-        QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), false);
 
-        auto resultIdx = filters->index(0, 0);
-        QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - ***"));
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - ***"));
+        }
 
-        QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
-        f2->setEndValue(300.5f);
-        TestUtils::waitForSearchFinish(m_scope);
+        {
+            QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
+            f2->setEndValue(300.5f);
+            TestUtils::waitForSearchFinish(m_scope);
 
-        QCOMPARE(filters, m_scope->filters());
-        QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - 300.500000"));
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - 300.500000"));
+        }
+
+        // erase start value, end value still present
+        {
+            f2->eraseStartValue();
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(f2->hasStartValue(), false);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: *** - 300.500000"));
+        }
     }
 
 private:
