@@ -63,6 +63,11 @@ bool OptionSelectorFilter::multiSelect() const
     return m_multiSelect;
 }
 
+void OptionSelectorFilter::reset()
+{
+    //TODO
+}
+
 void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
 {
     if (auto state = m_filterState.lock())

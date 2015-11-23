@@ -1232,6 +1232,11 @@ void Scope::resetPrimaryNavigationTag()
     invalidateResults();
 }
 
+void Scope::resetFilters()
+{
+    m_filters->reset();
+}
+
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
 {
     if (m_scopesInstance) {
