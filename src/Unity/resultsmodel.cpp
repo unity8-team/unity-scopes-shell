@@ -23,7 +23,9 @@
 // local
 #include "utils.h"
 #include "iconutils.h"
+#include "resultsmap.h"
 
+#include <map>
 #include <QDebug>
 
 namespace scopes_ng {
@@ -33,6 +35,7 @@ using namespace unity;
 ResultsModel::ResultsModel(QObject* parent)
  : unity::shell::scopes::ResultsModelInterface(parent)
  , m_maxAttributes(2)
+ , m_purge(true)
 {
 }
 
@@ -70,10 +73,70 @@ void ResultsModel::setMaxAtrributesCount(int count)
     m_maxAttributes = count;
 }
 
+void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
+{
+    if (results.count() == 0) {
+        return;
+    }
+
+    m_purge = false;
+
+    const int oldCount = m_results.count();
+
+    ResultsMap newResultsMap(results);
+
+    int row = 0;
+    // iterate over old (i.e. currently visible) results, remove results which are no longer present in new set
+    for (auto it = m_results.begin(); it != m_results.end(); ) {
+        int newPos = newResultsMap.find(*it);
+        bool haveNow = (newPos >= 0);
+        if (!haveNow) {
+            // delete row
+            beginRemoveRows(QModelIndex(), row, row);
+            it = m_results.erase(it);
+            endRemoveRows();
+        } else {
+            ++it;
+            ++row;
+        }
+    }
+
+    ResultsMap oldResultsMap(m_results);
+
+    // iterate over new results
+    for (row = 0; row<results.count(); ++row) {
+        const int oldPos = oldResultsMap.find(results[row]);
+        const bool hadBefore = (oldPos >= 0);
+        if (hadBefore) {
+            if (row != oldPos) {
+                // move row
+                beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
+                m_results.move(oldPos, row);
+                oldResultsMap.rebuild(m_results);
+                endMoveRows();
+            }
+        } else {
+            // insert row
+            beginInsertRows(QModelIndex(), row, row);
+            m_results.insert(row, results[row]);
+            oldResultsMap.rebuild(m_results);
+            endInsertRows();
+        }
+    }
+
+    if (oldCount != m_results.count()) {
+        Q_EMIT countChanged();
+    }
+}
+
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
-    if (results.count() == 0) return;
-    
+    if (results.count() == 0) {
+        return;
+    }
+
+    m_purge = false;
+
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
     Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
         m_results.append(result);
@@ -107,7 +170,7 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::CategorisedResult const* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::Result const* result, std::string const& fieldName) const
 {
     auto mappingIt = m_componentMapping.find(fieldName);
     if (mappingIt == m_componentMapping.end()) {
@@ -116,10 +179,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
     std::string const& realFieldName = mappingIt->second;
     try {
         scopes::Variant const& v = result->value(realFieldName);
-        if (v.which() != scopes::Variant::Type::String) {
-            return QVariant();
-        }
-        return QString::fromStdString(v.get_string());
+        return scopeVariantToQVariant(v);
     } catch (...) {
         // value() throws if realFieldName is empty or the result
         // doesn't have a value for it
@@ -128,7 +188,7 @@ ResultsModel::componentValue(scopes::CategorisedResult const* result, std::strin
 }
 
 QVariant
-ResultsModel::attributesValue(scopes::CategorisedResult const* result) const
+ResultsModel::attributesValue(scopes::Result const* result) const
 {
     auto mappingIt = m_componentMapping.find("attributes");
     if (mappingIt == m_componentMapping.end()) {
@@ -171,6 +231,25 @@ QHash<int, QByteArray> ResultsModel::roleNames() const
     return roles;
 }
 
+void ResultsModel::updateResult(scopes::Result const& result, scopes::Result const& updatedResult)
+{
+    for (int i = 0; i<m_results.size(); i++)
+    {
+        auto const res = m_results[i];
+        if (result.uri() == res->uri() && result.serialize() == res->serialize())
+        {
+            qDebug() << "Updated result with uri '" << QString::fromStdString(res->uri()) << "'";
+            m_results[i] = std::make_shared<scopes::Result>(updatedResult);
+            auto const idx = index(i, 0);
+            Q_EMIT dataChanged(idx, idx);
+            return;
+        }
+    }
+    qWarning() << "ResultsModel::updateResult - failed to find result with uri '"
+        << QString::fromStdString(result.uri())
+        << "', category '" << categoryId() << "'";
+}
+
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
@@ -182,13 +261,13 @@ ResultsModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::CategorisedResult* result = m_results.at(index.row()).get();
+    scopes::Result* result = m_results.at(index.row()).get();
 
     switch (role) {
         case RoleUri:
             return QString::fromStdString(result->uri());
         case RoleCategoryId:
-            return QString::fromStdString(result->category()->id());
+            return categoryId();
         case RoleDndUri:
             return QString::fromStdString(result->dnd_uri());
         case RoleResult:
@@ -241,9 +320,21 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 }
             }
             return QVariant();
+        case RoleQuickPreviewData:
+            return componentValue(result, "quick-preview-data");
         default:
             return QVariant();
     }
+}
+
+void ResultsModel::markNewSearch()
+{
+    m_purge = true;
+}
+
+bool ResultsModel::needsPurging() const
+{
+    return m_purge;
 }
 
 } // namespace scopes_ng

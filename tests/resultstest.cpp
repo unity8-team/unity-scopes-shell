@@ -101,7 +101,8 @@ private Q_SLOTS:
             shr::CustomRegistry::Parameters({
                 TEST_DATA_DIR "mock-scope/mock-scope.ini",
                 TEST_DATA_DIR "mock-scope-info/mock-scope-info.ini",
-                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini"
+                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini",
+                TEST_DATA_DIR "mock-scope-manyresults/mock-scope-manyresults.ini"
             })
         );
     }
@@ -573,41 +574,6 @@ private Q_SLOTS:
         );
     }
 
-// FIXME Add code to harness to test special categories
-//    void testSpecialCategory()
-//    {
-//        auto resultsView = m_harness->resultsView();
-//        resultsView->setActiveScope("mock-scope");
-//        resultsView->setQuery("");
-//
-//        auto categories = resultsView->raw_categories();
-//        QString rawTemplate(R"({"schema-version": 1, "template": {"category-layout": "special"}})");
-//        CountObject* countObject = new CountObject(categories);
-//        categories->addSpecialCategory("special", "Special", "", rawTemplate, countObject);
-//
-//        // should have 2 categories now
-//        QCOMPARE(categories->rowCount(), 2);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 0);
-//        countObject->setCount(1);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 1);
-//
-//        qRegisterMetaType<QVector<int>>();
-//        QSignalSpy spy(categories, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&, const QVector<int>&)));
-//
-//        countObject->setCountAsync(13);
-//        QCOMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 1);
-//        QTRY_COMPARE(categories->data(categories->index(0), ss::CategoriesInterface::Roles::RoleCount).toInt(), 13);
-//
-//        // expecting a few dataChanged signals, count should have changed
-//        bool countChanged = false;
-//        while (!spy.empty() && !countChanged) {
-//            QList<QVariant> arguments = spy.takeFirst();
-//            auto roles = arguments.at(2).value<QVector<int>>();
-//            countChanged |= roles.contains(ss::CategoriesInterface::Roles::RoleCount);
-//        }
-//        QCOMPARE(countChanged, true);
-//    }
-
     void testCategoryWithRating()
     {
         auto resultsView = m_harness->resultsView();
@@ -908,6 +874,62 @@ private Q_SLOTS:
         QCOMPARE(nextView->scopeId(), string("mock-scope"));
     }
 
+    /**
+     * This test activates a result action
+     */
+    void testScopeResultActionActivation()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope");
+        resultsView->setQuery("result-action");
+
+        // activate action1
+        {
+            auto view = resultsView->category("cat1").result("test:result-action").tapAction("action1");
+            QVERIFY(bool(view));
+            auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
+            QVERIFY(bool(nextView));
+            QCOMPARE(resultsView, nextView);
+
+            // check that mock scope updated the result by inserting 'actionId' in it
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .mode(shm::CategoryListMatcher::Mode::starts_with)
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::starts_with)
+                        .result(
+                            shm::ResultMatcher("test:result-action")
+                                .property("actionId", sc::Variant("action1"))
+                            )
+                    )
+                    .match(resultsView->categories())
+            );
+        }
+
+        // activate action2
+        {
+            auto view = resultsView->category("cat1").result("test:result-action").tapAction("action2");
+            QVERIFY(bool(view));
+            auto nextView = dynamic_pointer_cast<shv::ResultsView>(view);
+            QVERIFY(bool(nextView));
+            QCOMPARE(resultsView, nextView);
+
+            // check that mock scope updated the result
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .mode(shm::CategoryListMatcher::Mode::starts_with)
+                    .category(shm::CategoryMatcher("cat1")
+                        .mode(shm::CategoryMatcher::Mode::starts_with)
+                        .result(
+                            shm::ResultMatcher("test:result-action")
+                                .property("actionId", sc::Variant("action2"))
+                            )
+                    )
+                    .match(resultsView->categories())
+            );
+        }
+    }
+
     void testScopeResultWithScopeUri()
     {
         auto resultsView = m_harness->resultsView();
@@ -971,6 +993,76 @@ private Q_SLOTS:
         QCOMPARE(resultsView->status(), ss::ScopeInterface::Status::NoInternet);
     }
 
+    void testResultsModelChanges()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+        resultsView->setQuery("search1");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("cat1_uri0"))
+                    .result(shm::ResultMatcher("cat1_uri1"))
+                    .result(shm::ResultMatcher("cat1_uri2"))
+                    .result(shm::ResultMatcher("cat1_uri3"))
+                    .result(shm::ResultMatcher("cat1_uri4"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search2");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(2)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("cat1_uri3"))
+                    .result(shm::ResultMatcher("cat1_uri4"))
+                    .result(shm::ResultMatcher("cat1_uri5"))
+                    .result(shm::ResultMatcher("cat1_uri6"))
+                    .result(shm::ResultMatcher("cat1_uri7"))
+                )
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri3"))
+                    .result(shm::ResultMatcher("cat2_uri4"))
+                    .result(shm::ResultMatcher("cat2_uri5"))
+                    .result(shm::ResultMatcher("cat2_uri6"))
+                    .result(shm::ResultMatcher("cat2_uri7"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search3");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(2)
+                .category(shm::CategoryMatcher("cat1")
+                    .result(shm::ResultMatcher("cat1_uri7"))
+                    .result(shm::ResultMatcher("cat1_uri6"))
+                    .result(shm::ResultMatcher("cat1_uri5"))
+                    .result(shm::ResultMatcher("cat1_uri4"))
+                    .result(shm::ResultMatcher("cat1_uri3"))
+                )
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri7"))
+                    .result(shm::ResultMatcher("cat2_uri6"))
+                    .result(shm::ResultMatcher("cat2_uri5"))
+                    .result(shm::ResultMatcher("cat2_uri4"))
+                    .result(shm::ResultMatcher("cat2_uri3"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search4");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri5"))
+                )
+                .match(resultsView->categories())
+        );
+    }
 };
 
 QTEST_GUILESS_MAIN(ResultsTest)

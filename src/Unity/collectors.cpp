@@ -247,7 +247,9 @@ private:
 class ActivationCollector: public CollectorBase
 {
 public:
-    ActivationCollector(std::shared_ptr<scopes::Result> const& result): CollectorBase(), m_result(result)
+    ActivationCollector(std::shared_ptr<scopes::Result> const& result, QString const& categoryId): CollectorBase(),
+        m_result(result),
+        m_categoryId(categoryId)
     {
     }
 
@@ -258,7 +260,7 @@ public:
         m_response.reset(new scopes::ActivationResponse(response));
     }
 
-    Status collect(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result)
+    Status collect(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result, QString& out_categoryId)
     {
         Status status;
 
@@ -270,6 +272,7 @@ public:
         status = m_status;
         out_response = m_response;
         out_result = m_result;
+        out_categoryId = m_categoryId;
 
         return status;
     }
@@ -277,6 +280,7 @@ public:
 private:
     std::shared_ptr<scopes::ActivationResponse> m_response;
     std::shared_ptr<scopes::Result> m_result;
+    QString m_categoryId;
 };
 
 PushEvent::PushEvent(Type event_type, const std::shared_ptr<CollectorBase>& collector):
@@ -310,13 +314,14 @@ CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& ou
     return collector->collect(out_columns, out_widgets, out_data);
 }
 
-CollectorBase::Status PushEvent::collectActivationResponse(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>& out_result)
+CollectorBase::Status PushEvent::collectActivationResponse(std::shared_ptr<scopes::ActivationResponse>& out_response, std::shared_ptr<scopes::Result>&
+        out_result, QString& categoryId)
 {
     auto collector = std::dynamic_pointer_cast<ActivationCollector>(m_collector);
-    return collector->collect(out_response, out_result);
+    return collector->collect(out_response, out_result, categoryId);
 }
 
-ScopeDataReceiverBase::ScopeDataReceiverBase(QObject* receiver, PushEvent::Type push_type, 
+ScopeDataReceiverBase::ScopeDataReceiverBase(QObject* receiver, PushEvent::Type push_type,
                                              std::shared_ptr<CollectorBase> const& collector):
     m_receiver(receiver), m_eventType(push_type), m_collector(collector)
 {
@@ -435,8 +440,8 @@ void ActivationReceiver::finished(scopes::CompletionDetails const& details)
     postCollectedResults(getStatus(details));
 }
 
-ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result):
-    ScopeDataReceiverBase(receiver, PushEvent::ACTIVATION, std::shared_ptr<CollectorBase>(new ActivationCollector(result)))
+ActivationReceiver::ActivationReceiver(QObject* receiver, std::shared_ptr<scopes::Result> const& result, QString const& categoryId):
+    ScopeDataReceiverBase(receiver, PushEvent::ACTIVATION, std::shared_ptr<CollectorBase>(new ActivationCollector(result, categoryId)))
 {
     m_collector = collectorAs<ActivationCollector>();
 }

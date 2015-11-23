@@ -45,6 +45,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
+    void addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const&);
     void clearResults();
 
     /* getters */
@@ -57,15 +58,19 @@ public:
     void setMaxAtrributesCount(int count);
 
     QHash<int, QByteArray> roleNames() const override;
+    void updateResult(unity::scopes::Result const& result, unity::scopes::Result const& updatedResult);
+    void markNewSearch();
+    bool needsPurging() const;
 
 private:
-    QVariant componentValue(unity::scopes::CategorisedResult const* result, std::string const& fieldName) const;
-    QVariant attributesValue(unity::scopes::CategorisedResult const* result) const;
+    QVariant componentValue(unity::scopes::Result const* result, std::string const& fieldName) const;
+    QVariant attributesValue(unity::scopes::Result const* result) const;
 
     std::unordered_map<std::string, std::string> m_componentMapping;
-    QList<std::shared_ptr<unity::scopes::CategorisedResult>> m_results;
+    QList<std::shared_ptr<unity::scopes::Result>> m_results;
     QString m_categoryId;
     int m_maxAttributes;
+    bool m_purge;
 };
 
 } // namespace scopes_ng

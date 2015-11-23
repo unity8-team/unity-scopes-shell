@@ -251,6 +251,7 @@ libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #M
  (c++)"unity::scopeharness::results::Result::subtitle() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Result::summary() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Result::tap() const@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::results::Result::tapAction(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.5+16.04.20151111
  (c++)"unity::scopeharness::results::Result::title() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Result::uri() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::results::Result::value(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 0.5.4+15.04.20150311.3
