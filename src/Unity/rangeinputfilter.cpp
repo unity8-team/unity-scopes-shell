@@ -244,4 +244,9 @@ bool RangeInputFilter::compare(double v1, Variant const& v2)
     return false;
 }
 
+void RangeInputFilter::reset()
+{
+    //TODO
+}
+
 }
