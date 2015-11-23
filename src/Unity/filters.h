@@ -38,6 +38,7 @@ class FilterUpdateInterface
     public:
         virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) = 0;
         virtual bool isActive() const = 0;
+        virtual void reset() = 0;
 };
 
 class Q_DECL_EXPORT Filters :
@@ -51,13 +52,16 @@ public:
     explicit Filters(unity::shell::scopes::ScopeInterface *parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    void clear();
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments = false);
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
-    void resetState();
     int activeFiltersCount() const;
+
+public Q_SLOTS:
+    void clear();
+    void resetState();
+    void reset();
 
 Q_SIGNALS:
     void filterStateChanged();

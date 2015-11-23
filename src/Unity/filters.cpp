@@ -81,6 +81,11 @@ void Filters::resetState()
     m_filterState.reset();
 }
 
+void Filters::reset()
+{
+    //TODO reset to defaults
+}
+
 //
 // Update current filters model and primary filter pointer with filters coming from scope.
 void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)

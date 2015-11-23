@@ -160,6 +160,7 @@ public:
     Q_INVOKABLE void performQuery(QString const& cannedQuery) override;
     Q_INVOKABLE void refresh() override;
     Q_INVOKABLE void resetPrimaryNavigationTag() override;
+    Q_INVOKABLE void resetFilters() override;
 
     void setScopeData(unity::scopes::ScopeMetadata const& data);
     void handleActivation(std::shared_ptr<unity::scopes::ActivationResponse> const&, unity::scopes::Result::SPtr const&);
