@@ -26,6 +26,7 @@
 
 #include <QSharedPointer>
 #include <QJsonValue>
+#include <set>
 
 #include <unity/scopes/Category.h>
 
@@ -55,12 +56,14 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     Q_INVOKABLE bool overrideCategoryJson(QString const& categoryId, QString const& json) override;
-    Q_INVOKABLE void addSpecialCategory(QString const& categoryId, QString const& name, QString const& icon, QString const& rawTemplate, QObject* countObject) override;
 
     QSharedPointer<ResultsModel> lookupCategory(std::string const& category_id);
     void registerCategory(const unity::scopes::Category::SCPtr& category, QSharedPointer<ResultsModel> model);
     void updateResultCount(const QSharedPointer<ResultsModel>& resultsModel);
     void clearAll();
+    void markNewSearch();
+    void purgeResults();
+    void updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result);
 
     static bool parseTemplate(std::string const& raw_template, QJsonValue* renderer, QJsonValue* components);
 
@@ -69,11 +72,12 @@ private Q_SLOTS:
 
 private:
     int getCategoryIndex(QString const& categoryId) const;
-    int getFirstEmptyCategoryIndex() const;
 
     QList<QSharedPointer<CategoryData>> m_categories;
     QMap<std::string, QSharedPointer<ResultsModel>> m_categoryResults;
     QMap<QObject*, QString> m_countObjects;
+    std::set<std::string> m_registeredCategories;
+    int m_categoryIndex;
 };
 
 } // namespace scopes_ng

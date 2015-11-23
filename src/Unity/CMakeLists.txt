@@ -32,6 +32,7 @@ set(QMLPLUGIN_SRC
     previewmodel.cpp
     previewstack.cpp
     previewwidgetmodel.cpp
+    resultsmap.cpp
     resultsmodel.cpp
     scope.cpp
     scopes.cpp
