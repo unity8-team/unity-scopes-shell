@@ -135,16 +135,19 @@ private Q_SLOTS:
 
         // select option 1
         opts->setChecked(0, true);
+        TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o1"));
 
         // select option 2
         opts->setChecked(1, true);
+        TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o2"));
 
         // deselect option 2
         opts->setChecked(1, false);
+        TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for: \"\""));
     }

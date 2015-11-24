@@ -29,6 +29,7 @@
 
 #include <QList>
 #include <QSharedPointer>
+#include <QTimer>
 
 namespace scopes_ng
 {
@@ -63,6 +64,10 @@ public Q_SLOTS:
     void resetState();
     void reset();
 
+private Q_SLOTS:
+    void onFilterStateChanged();
+    void delayedFilterStateChange();
+
 Q_SIGNALS:
     void filterStateChanged();
     void primaryFilterChanged();
@@ -73,6 +78,7 @@ private:
     QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> m_primaryFilter;
     unity::scopes::FilterState::SPtr m_filterState;
+    QTimer m_filterStateChangeTimer;
 };
 
 } // namespace scopes_ng

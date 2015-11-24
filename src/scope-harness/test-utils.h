@@ -51,6 +51,9 @@ Q_DECL_EXPORT
 static void performSearch(QSharedPointer<shell::scopes::ScopeInterface> scope, QString const& searchString);
 
 Q_DECL_EXPORT
+static void waitForFilterStateChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
+
+Q_DECL_EXPORT
 static void waitForResultsChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
 
 Q_DECL_EXPORT

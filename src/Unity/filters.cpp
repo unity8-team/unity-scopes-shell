@@ -30,9 +30,13 @@
 namespace scopes_ng
 {
 
+const int FILTER_CHANGE_PROCESSING_DELAY = 300;
+
 Filters::Filters(unity::shell::scopes::ScopeInterface *parent)
     : ModelUpdate(parent)
 {
+    m_filterStateChangeTimer.setSingleShot(true);
+    QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);
 }
 
 int Filters::rowCount(const QModelIndex&) const
@@ -82,6 +86,16 @@ void Filters::resetState()
 void Filters::reset()
 {
     //TODO reset to defaults
+}
+
+void Filters::onFilterStateChanged()
+{
+    m_filterStateChangeTimer.start(FILTER_CHANGE_PROCESSING_DELAY);
+}
+
+void Filters::delayedFilterStateChange()
+{
+    Q_EMIT filterStateChanged();
 }
 
 //
@@ -163,7 +177,7 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     if (filterObj)
     {
         QQmlEngine::setObjectOwnership(filterObj.data(), QQmlEngine::CppOwnership);
-        connect(filterObj.data(), SIGNAL(filterStateChanged()), this, SIGNAL(filterStateChanged()));
+        connect(filterObj.data(), SIGNAL(filterStateChanged()), this, SLOT(onFilterStateChanged()));
     }
     else
     {
