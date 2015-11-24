@@ -181,6 +181,7 @@ private Q_SLOTS:
 
         {
             f2->setStartValue(111.0f);
+            TestUtils::waitForFilterStateChange(m_scope);
             TestUtils::waitForSearchFinish(m_scope);
 
             QCOMPARE(filters, m_scope->filters());
@@ -194,6 +195,7 @@ private Q_SLOTS:
         {
             QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
             f2->setEndValue(300.5f);
+            TestUtils::waitForFilterStateChange(m_scope);
             TestUtils::waitForSearchFinish(m_scope);
 
             QCOMPARE(f2->hasStartValue(), true);
@@ -207,6 +209,7 @@ private Q_SLOTS:
         // erase start value, end value still present
         {
             f2->eraseStartValue();
+            TestUtils::waitForFilterStateChange(m_scope);
             TestUtils::waitForSearchFinish(m_scope);
 
             QCOMPARE(filters, m_scope->filters());
