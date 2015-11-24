@@ -136,6 +136,13 @@ void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
+void TestUtils::waitForFilterStateChange(QSharedPointer<ss::ScopeInterface> scope)
+{
+    QSignalSpy spy(scope->filters(), SIGNAL(filterStateChanged()));
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+}
+
 bool TestUtils::previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
 {
     performSearch(scope, searchString);

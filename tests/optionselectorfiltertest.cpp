@@ -224,8 +224,10 @@ private Q_SLOTS:
             f1->update_state(filterState, f1o2, true);
             filtersModel->update(backendFilters, filterState);
 
-            QCOMPARE(dataChangedSignal.count(), 2);
+            stateChangeSignal.wait();
+            dataChangedSignal.wait();
             QCOMPARE(stateChangeSignal.count(), 1);
+            QCOMPARE(dataChangedSignal.count(), 2);
 
             // verify arguments of dataChanged signal
             {
