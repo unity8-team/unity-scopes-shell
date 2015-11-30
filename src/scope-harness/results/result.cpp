@@ -62,7 +62,8 @@ public:
         goto_uri,
         preview_requested,
         goto_scope,
-        open_scope
+        open_scope,
+        update_result
     };
 
     QSharedPointer<ss::ResultsModelInterface> m_resultsModel;
@@ -86,16 +87,22 @@ public:
         connect(m_scope.data(), SIGNAL(previewRequested(QVariant const&)), SLOT(previewRequested(QVariant const&)));
         connect(m_scope.data(), SIGNAL(gotoScope(QString const&)), SLOT(gotoScope(QString const&)));
         connect(m_scope.data(), SIGNAL(openScope(unity::shell::scopes::ScopeInterface*)), SLOT(openScope(unity::shell::scopes::ScopeInterface*)));
+        connect(m_scope.data(), SIGNAL(updateResultRequested()), SLOT(updateResultRequested()));
     }
 
-    view::AbstractView::SPtr activate() const
+    view::AbstractView::SPtr activate(QString const& actionId = QString::null) const
     {
         auto result = m_resultsModel->data(m_index,
                 ss::ResultsModelInterface::Roles::RoleResult).value<sc::Result::SPtr>();
         TestUtils::throwIfNot(bool(result), "Couldn't get result");
 
         QSignalSpy spy(this, SIGNAL(activated(int, const QVariant&)));
-        m_scope->activate(QVariant::fromValue(result), m_resultsModel->categoryId());
+        if (actionId.isNull()) {
+            m_scope->activate(QVariant::fromValue(result), m_resultsModel->categoryId());
+        } else {
+            m_scope->activateAction(QVariant::fromValue(result), m_resultsModel->categoryId(), actionId);
+        }
+
         if (spy.empty())
         {
             TestUtils::throwIfNot(spy.wait(), "Scope activation signal failed to emit");
@@ -178,6 +185,12 @@ public:
                     qDebug() << "open_scope" << parameter;
                     break;
                 }
+            case _Priv::ActivationResponse::update_result:
+                {
+                    qDebug() << "update_result";
+                    view = resultsView;
+                    break;
+                }
         }
 
         return view;
@@ -217,6 +230,11 @@ public Q_SLOTS:
     void openScope(unity::shell::scopes::ScopeInterface* scope)
     {
         Q_EMIT activated(ActivationResponse::open_scope, QVariant::fromValue(scope));
+    }
+
+    void updateResultRequested()
+    {
+        Q_EMIT activated(ActivationResponse::update_result);
     }
 
 Q_SIGNALS:
@@ -367,6 +385,21 @@ view::AbstractView::SPtr Result::tap() const
         }
     }
     throw std::domain_error("Long press failed: invalid result");
+}
+
+view::AbstractView::SPtr Result::tapAction(std::string const &actionId) const
+{
+    auto result_var = p->m_resultsModel->data(p->m_index, ss::ResultsModelInterface::Roles::RoleResult);
+
+    if (result_var.canConvert<std::shared_ptr<scopes::Result>>())
+    {
+        scopes::Result::SPtr result = result_var.value<std::shared_ptr<scopes::Result>>();
+        if (result)
+        {
+            return p->activate(QString::fromStdString(actionId));
+        }
+    }
+    throw std::domain_error("Tap failed for action '" + actionId + "': invalid result");
 }
 
 view::AbstractView::SPtr Result::longPress() const

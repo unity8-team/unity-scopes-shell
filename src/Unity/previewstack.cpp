@@ -257,7 +257,8 @@ void PreviewStack::processActionResponse(PushEvent* pushEvent)
 {
     std::shared_ptr<scopes::ActivationResponse> response;
     scopes::Result::SPtr result;
-    pushEvent->collectActivationResponse(response, result);
+    QString categoryId;
+    pushEvent->collectActivationResponse(response, result, categoryId);
     if (!response) return;
 
     switch (response->status()) {

@@ -83,6 +83,7 @@ public:
 
     view::AbstractView::SPtr tap() const;
     view::AbstractView::SPtr longPress() const;
+    view::AbstractView::SPtr tapAction(std::string const &actionId) const;
 
 protected:
     friend view::ResultsView;
