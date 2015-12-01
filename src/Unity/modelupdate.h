@@ -21,15 +21,14 @@
 #define NG_MODEL_UPDATE_H
 
 #include <QSet>
-#include <QString>
 #include <functional>
 
-template <class ModelBase, class InputContainer, class OutputContainer>
+template <class ModelBase, class InputContainer, class OutputContainer, class KeyType=QString>
 class ModelUpdate: public ModelBase
 {
 public:
-    using InputKeyFunc = std::function<QString(typename InputContainer::value_type)>;
-    using OutputKeyFunc = std::function<QString(typename OutputContainer::value_type)>;
+    using InputKeyFunc = std::function<KeyType(typename InputContainer::value_type)>;
+    using OutputKeyFunc = std::function<KeyType(typename OutputContainer::value_type)>;
     using CreateFunc = std::function<typename OutputContainer::value_type(typename InputContainer::value_type const&)>;
     using UpdateFunc = std::function<bool(int, typename InputContainer::value_type const&, typename OutputContainer::value_type const&)>;
 
@@ -42,8 +41,8 @@ public:
             const CreateFunc& createFunc,
             const UpdateFunc& updateFunc)
     {
-        QMap<QString, int> newItems; // lookup for recevied objects and their desired rows in the model
-        QSet<QString> oldItems; // lookup for objects that were already displayed
+        QMap<KeyType, int> newItems; // lookup for recevied objects and their desired rows in the model
+        QSet<KeyType> oldItems; // lookup for objects that were already displayed
 
         {
             int pos = 0;
@@ -58,7 +57,7 @@ public:
             int row = 0;
             for (auto it = model.begin(); it != model.end();)
             {
-                const QString id = outKeyFunc(*it);
+                const KeyType id = outKeyFunc(*it);
                 if (!newItems.contains(id))
                 {
                     this->beginRemoveRows(QModelIndex(), row, row);

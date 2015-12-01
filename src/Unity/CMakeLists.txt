@@ -25,6 +25,7 @@ set(QMLPLUGIN_SRC
     optionselectoroptions.cpp
     rangeinputfilter.cpp
     valuesliderfilter.cpp
+    valueslidervalues.cpp
     geoip.cpp
     localization.h
     locationservice.cpp

@@ -21,6 +21,7 @@
 #include "filters.h"
 #include "optionselectorfilter.h"
 #include "rangeinputfilter.h"
+#include "valuesliderfilter.h"
 #include <QSet>
 #include <QMap>
 #include <QQmlEngine>
@@ -28,6 +29,7 @@
 
 #include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
 
 namespace scopes_ng
 {
@@ -180,6 +182,11 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     {
         unity::scopes::experimental::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter);
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::RangeInputFilter(rangefilter, m_filterState, this));
+    }
+    else if (filter->filter_type() == "value_slider")
+    {
+        unity::scopes::experimental::ValueSliderFilter::SCPtr valuesliderfilter = std::dynamic_pointer_cast<unity::scopes::experimental::ValueSliderFilter const>(filter);
+        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::ValueSliderFilter(valuesliderfilter, m_filterState, this));
     }
 
     if (filterObj)
