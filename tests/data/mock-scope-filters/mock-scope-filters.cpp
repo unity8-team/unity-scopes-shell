@@ -19,6 +19,8 @@
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
+#include <unity/scopes/ValueSliderLabels.h>
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
@@ -75,9 +77,12 @@ public:
                     (has_end_val ? std::to_string(filter2->end_value(query().filter_state())) : "***"));
         }
 
+        ValueSliderFilter::SPtr filter3 = ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}}));
+
         Filters filters;
         filters.push_back(std::move(filter1));
         filters.push_back(std::move(filter2));
+        filters.push_back(std::move(filter3));
 
         reply->push(filters, query().filter_state());
         reply->push(res1);

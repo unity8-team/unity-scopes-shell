@@ -26,12 +26,14 @@
 #include "categories.h"
 #include "optionselectorfilter.h"
 #include "rangeinputfilter.h"
+#include "valuesliderfilter.h"
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
 
 #include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
 
 using namespace unity::scopeharness;
 using namespace unity::scopeharness::registry;
@@ -86,7 +88,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 2);
+        QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(0, 0);
         QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
@@ -124,7 +126,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 2);
+        QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(0, 0);
         auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
@@ -170,7 +172,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 2);
+        QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(1, 0);
         auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
@@ -219,6 +221,36 @@ private Q_SLOTS:
             auto resultIdx = filters->index(0, 0);
             QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: *** - 300.500000"));
         }
+    }
+
+    void testValueSliderFilter()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+
+        QCOMPARE(f3->minValue(), 1);
+        QCOMPARE(f3->maxValue(), 99);
+        QCOMPARE(f3->value(), 50);
+
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+
+        QCOMPARE(filters, m_scope->filters());
+        QCOMPARE(f3->value(), 75);
     }
 
 private:

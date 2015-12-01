@@ -67,9 +67,7 @@ void ValueSliderFilter::setValue(int value)
 {
     if (auto state = m_filterState.lock()) {
         if (value != m_value) {
-            m_value = value;
-
-            m_filter->update_state(*state, m_value);
+            m_filter->update_state(*state, m_value = value);
 
             Q_EMIT valueChanged();
             Q_EMIT filterStateChanged();
