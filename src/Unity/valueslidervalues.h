@@ -30,6 +30,8 @@
 namespace scopes_ng
 {
 
+class ValueSliderFilter;
+
 class Q_DECL_EXPORT ValueSliderValues :
     public ModelUpdate<unity::shell::scopes::ValueSliderValuesInterface,
         unity::scopes::experimental::ValueLabelPairList,
@@ -40,7 +42,8 @@ class Q_DECL_EXPORT ValueSliderValues :
     Q_OBJECT
 
 public:
-    void update(const unity::scopes::experimental::ValueLabelPairList& values);
+    explicit ValueSliderValues(ValueSliderFilter *parent = nullptr);
+    void update(const unity::scopes::experimental::ValueSliderLabels& values, int min, int max);
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

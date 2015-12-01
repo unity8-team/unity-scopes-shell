@@ -18,17 +18,47 @@
  */
 
 #include "valueslidervalues.h"
+#include "valuesliderfilter.h"
+#include <utility>
 
 namespace scopes_ng
 {
 
-void ValueSliderValues::update(const unity::scopes::experimental::ValueLabelPairList& values)
+ValueSliderValues::ValueSliderValues(ValueSliderFilter *parent)
+    : ModelUpdate(parent)
 {
-    syncModel(values, m_values,
-            [](const unity::scopes::experimental::ValueLabelPair&) -> int { return 0; },
-            [](const QSharedPointer<QPair<int, QString>>) -> int { return 0; },
-            [](const unity::scopes::experimental::ValueLabelPair&) -> QSharedPointer<QPair<int, QString>> { return QSharedPointer<QPair<int, QString>>(new QPair<int, QString>()); },
-            [](int, const unity::scopes::experimental::ValueLabelPair&, const QSharedPointer<QPair<int, QString>>) -> bool { return false; });
+}
+
+void ValueSliderValues::update(const unity::scopes::experimental::ValueSliderLabels& values, int min, int max)
+{
+    unity::scopes::experimental::ValueLabelPairList labels;
+    labels.push_back(std::make_pair(min, values.min_label()));
+    for (auto const v: values.extra_labels())
+    {
+        labels.push_back(v);
+    }
+    labels.push_back(std::make_pair(max, values.max_label()));
+    syncModel(labels, m_values,
+            [](const unity::scopes::experimental::ValueLabelPair& p) -> int { return p.first; },
+            [](const QSharedPointer<QPair<int, QString>>& p) -> int { return p->first; },
+            [](const unity::scopes::experimental::ValueLabelPair& p) -> QSharedPointer<QPair<int, QString>> {
+                return QSharedPointer<QPair<int, QString>>(new QPair<int, QString>(p.first, QString::fromStdString(p.second)));
+                },
+            [this](int row, const unity::scopes::experimental::ValueLabelPair& v1, const QSharedPointer<QPair<int, QString>>& v2) -> bool {
+                if (v1.first != v2->first) {
+                    return false;
+                }
+
+                QVector<int> roles;
+                if (v1.second != v2->second.toStdString()) {
+                    roles.append(unity::shell::scopes::ValueSliderValuesInterface::SliderValueRoles::RoleLabel);
+                }
+
+                if (roles.count()) {
+                    Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+                }
+                return true;
+            });
 }
 
 int ValueSliderValues::rowCount(const QModelIndex& parent) const

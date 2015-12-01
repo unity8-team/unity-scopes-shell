@@ -21,6 +21,7 @@
 #include "utils.h"
 #include <cmath>
 #include <functional>
+#include <QQmlEngine>
 #include <QDebug>
 
 using namespace unity::scopes;
@@ -34,9 +35,11 @@ ValueSliderFilter::ValueSliderFilter(unity::scopes::experimental::ValueSliderFil
     m_title(QString::fromStdString(filter->title())),
     m_min(filter->min()),
     m_max(filter->max()),
+    m_values(new ValueSliderValues(this)),
     m_filterState(filterState),
     m_filter(filter)
 {
+    QQmlEngine::setObjectOwnership(m_values.data(), QQmlEngine::CppOwnership);
     m_value = (filter->has_value(*filterState) ? filter->value(*filterState) : filter->default_value());
 }
 
@@ -76,17 +79,17 @@ void ValueSliderFilter::setValue(int value)
 
 int ValueSliderFilter::minValue() const
 {
-    return 0;
+    return m_min;
 }
 
 int ValueSliderFilter::maxValue() const
 {
-    return 0;
+    return m_max;
 }
 
 unity::shell::scopes::ValueSliderValuesInterface* ValueSliderFilter::values() const
 {
-    return nullptr;
+    return m_values.data();
 }
 
 void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
@@ -122,6 +125,8 @@ void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, u
         m_max = valueslider->max();
         Q_EMIT maxValueChanged();
     }
+
+    m_values->update(valueslider->labels(), valueslider->min(), valueslider->max());
 }
 
 bool ValueSliderFilter::isActive() const
