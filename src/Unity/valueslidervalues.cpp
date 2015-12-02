@@ -68,7 +68,20 @@ int ValueSliderValues::rowCount(const QModelIndex& parent) const
 
 QVariant ValueSliderValues::data(const QModelIndex& index, int role) const
 {
-    return QVariant();
+    if (index.row() >= m_values.count())
+    {
+        return QVariant();
+    }
+    switch (role)
+    {
+        case Qt::DisplayRole:
+        case RoleValue:
+            return QVariant(m_values.at(index.row())->first);
+        case RoleLabel:
+            return QVariant(m_values.at(index.row())->second);
+        default:
+            return QVariant();
+    }
 }
 
 }

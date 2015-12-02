@@ -189,6 +189,8 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::ValueSliderFilter(valuesliderfilter, m_filterState, this));
     }
 
+    // Warning!!! Make sure any new filter type created by this factory method is reflected below in getFilterType() method as well!
+
     if (filterObj)
     {
         QQmlEngine::setObjectOwnership(filterObj.data(), QQmlEngine::CppOwnership);
