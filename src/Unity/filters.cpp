@@ -212,6 +212,10 @@ unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity:
     {
         return unity::shell::scopes::FiltersInterface::FilterType::RangeInputFilter;
     }
+    if (typeid(*filter) == typeid(unity::scopes::experimental::ValueSliderFilter))
+    {
+        return unity::shell::scopes::FiltersInterface::FilterType::ValueSliderFilter;
+    }
     return unity::shell::scopes::FiltersInterface::FilterType::Invalid;
 }
 

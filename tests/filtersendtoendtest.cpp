@@ -249,6 +249,11 @@ private Q_SLOTS:
         TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
 
+        QCOMPARE(filters->rowCount(), 3);
+
+        // filter object shouldn't be recreated
+        QCOMPARE(filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>(), f3);
+
         QCOMPARE(filters, m_scope->filters());
         QCOMPARE(f3->value(), 75);
     }
