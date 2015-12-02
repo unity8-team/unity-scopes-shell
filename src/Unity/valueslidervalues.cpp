@@ -51,7 +51,7 @@ void ValueSliderValues::update(const unity::scopes::experimental::ValueSliderLab
 
                 QVector<int> roles;
                 if (v1.second != v2->second.toStdString()) {
-                    roles.append(unity::shell::scopes::ValueSliderValuesInterface::SliderValueRoles::RoleLabel);
+                    roles.append(unity::shell::scopes::ValueSliderValuesInterface::Roles::RoleLabel);
                 }
 
                 if (roles.count()) {
@@ -61,7 +61,7 @@ void ValueSliderValues::update(const unity::scopes::experimental::ValueSliderLab
             });
 }
 
-int ValueSliderValues::rowCount(const QModelIndex& parent) const
+int ValueSliderValues::rowCount(const QModelIndex&) const
 {
     return m_values.count();
 }
