@@ -249,12 +249,12 @@ private Q_SLOTS:
         QVERIFY(valuesModel != nullptr);
 
         QCOMPARE(valuesModel->rowCount(), 3);
-        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleValue).toInt(), 1);
-        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleLabel).toString(), QString("Min"));
-        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleValue).toInt(), 33);
-        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleLabel).toString(), QString("One third"));
-        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleValue).toInt(), 99);
-        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::SliderValueRoles::RoleLabel).toString(), QString("Max"));
+        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 1);
+        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("Min"));
+        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 33);
+        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("One third"));
+        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 99);
+        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("Max"));
 
         f3->setValue(75);
         TestUtils::waitForFilterStateChange(m_scope);
