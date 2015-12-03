@@ -206,18 +206,19 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
 
 unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity::scopes::FilterBase::SCPtr const& filter)
 {
-    if (typeid(*filter) == typeid(unity::scopes::OptionSelectorFilter))
+    if (std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
     }
-    if (typeid(*filter) == typeid(unity::scopes::experimental::RangeInputFilter))
+    if (std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::RangeInputFilter;
     }
-    if (typeid(*filter) == typeid(unity::scopes::experimental::ValueSliderFilter))
+    if (std::dynamic_pointer_cast<unity::scopes::experimental::ValueSliderFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::ValueSliderFilter;
     }
+    qFatal("getFilterType(): Unknown filter type: %s\n", filter->filter_type().c_str());
     return unity::shell::scopes::FiltersInterface::FilterType::Invalid;
 }
 
