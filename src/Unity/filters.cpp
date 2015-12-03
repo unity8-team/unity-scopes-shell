@@ -206,6 +206,8 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
 
 unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity::scopes::FilterBase::SCPtr const& filter)
 {
+    // WARNING! Some filters may rely on inheritance, in that case the dynamic casts below need to be in correct order
+    // (e.g. more concrete types first, base/generic types last).
     if (std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
