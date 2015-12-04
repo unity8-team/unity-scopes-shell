@@ -58,12 +58,12 @@ unity::shell::scopes::FiltersInterface::FilterType ValueSliderFilter::filterType
     return unity::shell::scopes::FiltersInterface::FilterType::ValueSliderFilter;
 }
 
-int ValueSliderFilter::value() const
+double ValueSliderFilter::value() const
 {
     return m_value;
 }
 
-void ValueSliderFilter::setValue(int value)
+void ValueSliderFilter::setValue(double value)
 {
     if (auto state = m_filterState.lock()) {
         if (value != m_value) {
@@ -75,12 +75,12 @@ void ValueSliderFilter::setValue(int value)
     }
 }
 
-int ValueSliderFilter::minValue() const
+double ValueSliderFilter::minValue() const
 {
     return m_min;
 }
 
-int ValueSliderFilter::maxValue() const
+double ValueSliderFilter::maxValue() const
 {
     return m_max;
 }
@@ -108,18 +108,18 @@ void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, u
         Q_EMIT titleChanged();
     }
 
-    const int value = (valueslider->has_value(*filterState) ? valueslider->value(*filterState) : valueslider->default_value());
+    const double value = (valueslider->has_value(*filterState) ? valueslider->value(*filterState) : valueslider->default_value());
     if (value != m_value) {
         m_value = value;
         Q_EMIT valueChanged();
     }
 
-    if (valueslider->min() != m_min) {
+    if (std::abs(valueslider->min() - m_min) < 0.0000001f) {
         m_min = valueslider->min();
         Q_EMIT minValueChanged();
     }
 
-    if (valueslider->max() != m_max) {
+    if (std::abs(valueslider->max() - m_max) < 0.0000001f) {
         m_max = valueslider->max();
         Q_EMIT maxValueChanged();
     }

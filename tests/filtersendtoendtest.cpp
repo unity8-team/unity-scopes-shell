@@ -241,9 +241,9 @@ private Q_SLOTS:
         auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
         QVERIFY(f3 != nullptr);
 
-        QCOMPARE(f3->minValue(), 1);
-        QCOMPARE(f3->maxValue(), 99);
-        QCOMPARE(f3->value(), 50);
+        QCOMPARE(static_cast<int>(f3->minValue()), 1);
+        QCOMPARE(static_cast<int>(f3->maxValue()), 99);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
 
         auto valuesModel = f3->values();
         QVERIFY(valuesModel != nullptr);
@@ -266,7 +266,7 @@ private Q_SLOTS:
         QCOMPARE(filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>(), f3);
 
         QCOMPARE(filters, m_scope->filters());
-        QCOMPARE(f3->value(), 75);
+        QCOMPARE(static_cast<int>(f3->value()), 75);
     }
 
 private:

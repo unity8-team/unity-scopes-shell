@@ -38,11 +38,11 @@ public:
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
-    int value() const override;
+    double value() const override;
 
-    void setValue(int value) override;
-    int minValue() const override;
-    int maxValue() const override;
+    void setValue(double value) override;
+    double minValue() const override;
+    double maxValue() const override;
     unity::shell::scopes::ValueSliderValuesInterface* values() const override;
 
     void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
@@ -56,9 +56,9 @@ Q_SIGNALS:
 private:
     QString m_id;
     QString m_title;
-    int m_min;
-    int m_max;
-    int m_value;
+    double m_min;
+    double m_max;
+    double m_value;
     QScopedPointer<ValueSliderValues> m_values;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
     unity::scopes::experimental::ValueSliderFilter::SCPtr m_filter;
