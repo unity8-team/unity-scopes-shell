@@ -21,6 +21,7 @@
 #include "utils.h"
 #include <cmath>
 #include <functional>
+#include <unity/UnityExceptions.h>
 #include <QDebug>
 
 using namespace unity::scopes;
@@ -61,12 +62,20 @@ unity::shell::scopes::FiltersInterface::FilterType RangeInputFilter::filterType(
 
 double RangeInputFilter::startValue() const
 {
-    return m_start.get_double();
+    if (m_start.which() == Variant::Double) {
+        return m_start.get_double();
+    }
+    qWarning() << "Requested startValue for filter" << m_id << ", but value is not set";
+    return 0.0f;
 }
 
 double RangeInputFilter::endValue() const
 {
-    return m_end.get_double();
+    if (m_start.which() == Variant::Double) {
+        return m_end.get_double();
+    }
+    qWarning() << "Requested endValue for filter" << m_id << ", but value is not set";
+    return 0.0f;
 }
 
 void RangeInputFilter::setStartValue(double value)
@@ -194,16 +203,23 @@ void RangeInputFilter::eraseEndValue()
 void RangeInputFilter::setStartValue(Variant const& value)
 {
     if (auto state = m_filterState.lock()) {
-        if (!compare(value, m_start)) {
-            m_start = value;
+        try {
+            if (!compare(value, m_start)) {
+                m_start = value;
 
-            m_filter->update_state(*state, m_start, m_end);
+                m_filter->update_state(*state, m_start, m_end);
 
-            if (value.is_null()) {
-                Q_EMIT hasStartValueChanged();
+                if (value.is_null()) {
+                    Q_EMIT hasStartValueChanged();
+                }
+                Q_EMIT startValueChanged();
+                Q_EMIT filterStateChanged();
             }
-            Q_EMIT startValueChanged();
-            Q_EMIT filterStateChanged();
+        }
+        catch (unity::InvalidArgumentException const& err)
+        {
+            // this is ok, it's user input and we may get partial input
+            qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
         }
     }
 }
@@ -211,16 +227,23 @@ void RangeInputFilter::setStartValue(Variant const& value)
 void RangeInputFilter::setEndValue(Variant const& value)
 {
     if (auto state = m_filterState.lock()) {
-        if (!compare(value, m_end)) {
-            m_end = value;
+        try {
+            if (!compare(value, m_end)) {
+                m_end = value;
 
-            m_filter->update_state(*state, m_start, m_end);
+                m_filter->update_state(*state, m_start, m_end);
 
-            if (value.is_null()) {
-                Q_EMIT hasEndValueChanged();
+                if (value.is_null()) {
+                    Q_EMIT hasEndValueChanged();
+                }
+                Q_EMIT endValueChanged();
+                Q_EMIT filterStateChanged();
             }
-            Q_EMIT endValueChanged();
-            Q_EMIT filterStateChanged();
+        }
+        catch (unity::InvalidArgumentException const& err)
+        {
+            // this is ok, it's user input and we may get partial input
+            qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
         }
     }
 }
