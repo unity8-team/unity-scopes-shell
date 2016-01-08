@@ -21,7 +21,6 @@
 #include "utils.h"
 #include <cmath>
 #include <functional>
-#include <unity/UnityExceptions.h>
 #include <QDebug>
 
 using namespace unity::scopes;
@@ -216,7 +215,7 @@ void RangeInputFilter::setStartValue(Variant const& value)
                 Q_EMIT filterStateChanged();
             }
         }
-        catch (unity::InvalidArgumentException const& err)
+        catch (std::exception const& err)
         {
             // this is ok, it's user input and we may get partial input
             qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
@@ -240,7 +239,7 @@ void RangeInputFilter::setEndValue(Variant const& value)
                 Q_EMIT filterStateChanged();
             }
         }
-        catch (unity::InvalidArgumentException const& err)
+        catch (std::exception const& err)
         {
             // this is ok, it's user input and we may get partial input
             qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
