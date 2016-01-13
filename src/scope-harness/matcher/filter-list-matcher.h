@@ -18,12 +18,13 @@
 
 #pragma once
 
+#include <scope-harness/view/filters-view.h>
+#include <scope-harness/matcher/match-result.h>
+
 #include <memory>
 #include <string>
 
 #include <QtGlobal>
-
-#include <scope-harness/results/filter.h>
 
 namespace unity
 {
@@ -32,7 +33,7 @@ namespace scopeharness
 namespace matcher
 {
 
-class FiltersView;
+class FilterMatcher;
 
 class Q_DECL_EXPORT FilterListMatcher final
 {
@@ -56,7 +57,7 @@ public:
 
     FilterListMatcher& hasExactly(std::size_t amount);
 
-    MatchResult match(const results::Filter::List& filterList) const;
+    MatchResult match(const view::FiltersView::SPtr& filterList) const;
 
 protected:
     FilterListMatcher(const FilterListMatcher& other) = delete;

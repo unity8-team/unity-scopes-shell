@@ -19,6 +19,7 @@
 #pragma once
 
 #include <scope-harness/view/abstract-view.h>
+#include <scope-harness/results/filter.h>
 #include <unity/scopes/Variant.h>
 
 namespace unity
@@ -42,6 +43,7 @@ public:
     FiltersView& operator=(const FiltersView&) = delete;
 
     std::size_t count() const;
+    results::Filter::List& filters() const;
 
 protected:
     FiltersView(const internal::FiltersViewArguments& args);

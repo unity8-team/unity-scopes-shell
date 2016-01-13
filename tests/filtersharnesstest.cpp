@@ -17,36 +17,18 @@
  *  Pawel Stolowski <pawel.stolowski@canonical.com>
  */
 
-#include <QSignalSpy>
-#include <QScopedPointer>
 #include <QTest>
-#include <scopes.h>
-#include <scope.h>
-#include "filters.h"
-#include "categories.h"
-#include "optionselectorfilter.h"
-#include "rangeinputfilter.h"
-#include "valuesliderfilter.h"
 #include <scope-harness/scope-harness.h>
-#include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
-#include <unity/shell/scopes/CategoriesInterface.h>
+#include <scope-harness/matcher/filter-list-matcher.h>
 
-#include <unity/scopes/OptionSelectorFilter.h>
-#include <unity/scopes/RangeInputFilter.h>
-#include <unity/scopes/ValueSliderFilter.h>
-
-using namespace unity::scopeharness;
 using namespace unity::scopeharness::registry;
-using namespace scopes_ng;
 
-namespace uss = unity::shell::scopes;
 namespace sh = unity::scopeharness;
 namespace shr = unity::scopeharness::registry;
+namespace shm = unity::scopeharness::matcher;
 namespace shv = unity::scopeharness::view;
-namespace sc = unity::scopes;
 
-// FIXME: use scope harness wrapper once it exposes filters
 class FiltersScopeHarnessTest : public QObject
 {
     Q_OBJECT
@@ -65,24 +47,18 @@ private Q_SLOTS:
         );
     }
 
-    void cleanupTestCase()
-    {
-    }
-
-    void init()
-    {
-    }
-
-    void cleanup()
-    {
-    }
-
     void testBasic()
     {
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope-filters");
         resultsView->setQuery("");
-        //TODO
+
+        // ensure we have filters
+        QVERIFY_MATCHRESULT(
+            shm::FilterListMatcher()
+                .hasExactly(3)
+                .match(resultsView->filters())
+        );
     }
 };
 

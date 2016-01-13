@@ -26,6 +26,7 @@ src/scope-harness/registry/pre-existing-registry.cpp
 src/scope-harness/registry/custom-registry.cpp
 src/scope-harness/matcher/settings-option-matcher.cpp
 src/scope-harness/matcher/category-matcher.cpp
+src/scope-harness/matcher/filter-matcher.cpp
 src/scope-harness/matcher/filter-list-matcher.cpp
 src/scope-harness/matcher/preview-matcher.cpp
 src/scope-harness/matcher/match-result.cpp

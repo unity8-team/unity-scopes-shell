@@ -28,6 +28,7 @@ add_library(
     matcher/child-department-matcher.cpp
     matcher/department-matcher.cpp
     matcher/filter-list-matcher.cpp
+    matcher/filter-matcher.cpp
     matcher/match-result.cpp
     matcher/preview-matcher.cpp
     matcher/preview-column-matcher.cpp

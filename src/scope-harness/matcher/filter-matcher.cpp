@@ -16,7 +16,6 @@
  * Author: Pawel Stolowski <pawel.stolowski@canonical.com>
  */
 
-#include <scope-harness/matcher/filter-list-matcher.h>
 #include <scope-harness/matcher/filter-matcher.h>
 
 using namespace std;
@@ -28,45 +27,9 @@ namespace scopeharness
 namespace matcher
 {
 
-struct FilterListMatcher::_Priv
+FilterMatcher::FilterMatcher(const std::string& id)
 {
-    int x;
-};
-
-FilterListMatcher::FilterListMatcher()
-: p(new _Priv)
-{
-}
-
-FilterListMatcher& FilterListMatcher::mode(FilterListMatcher::Mode mode)
-{
-    return *this;
-}
-
-FilterListMatcher& FilterListMatcher::filter(const FilterMatcher& filterMatcher)
-{
-    return *this;
-}
-
-FilterListMatcher& FilterListMatcher::filter(FilterMatcher&& filterMatcher)
-{
-    return *this;
-}
-
-FilterListMatcher& FilterListMatcher::hasAtLeast(std::size_t minimum)
-{
-    return *this;
-}
-
-FilterListMatcher& FilterListMatcher::hasExactly(std::size_t amount)
-{
-    return *this;
-}
-
-MatchResult FilterListMatcher::match(const view::FiltersView::SPtr& filterList) const
-{
-    MatchResult matchResult;
-    return matchResult;
+    //TODO
 }
 
 }

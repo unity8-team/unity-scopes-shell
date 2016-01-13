@@ -434,6 +434,11 @@ unity::shell::scopes::ScopeInterface::Status ResultsView::status() const
     return p->m_active_scope->status();
 }
 
+FiltersView::SPtr ResultsView::filters() const
+{
+    return nullptr; //TODO
+}
+
 }
 }
 }
