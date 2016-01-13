@@ -25,6 +25,7 @@
 #include <scope-harness/results/department.h>
 #include <scope-harness/preview/preview-widget.h>
 #include <scope-harness/view/settings-view.h>
+#include <scope-harness/view/filters-view.h>
 
 #include <string>
 
@@ -128,6 +129,8 @@ public:
     results::Department browseAltDepartment(const std::string& id = std::string());
 
     SettingsView::SPtr settings() const;
+
+    FiltersView::SPtr filters() const;
 
 protected:
     friend ScopeHarness;

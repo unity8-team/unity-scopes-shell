@@ -27,6 +27,7 @@ add_library(
     matcher/category-list-matcher.cpp
     matcher/child-department-matcher.cpp
     matcher/department-matcher.cpp
+    matcher/filter-list-matcher.cpp
     matcher/match-result.cpp
     matcher/preview-matcher.cpp
     matcher/preview-column-matcher.cpp
@@ -43,9 +44,11 @@ add_library(
     results/category.cpp
     results/child-department.cpp
     results/department.cpp
+    results/filter.cpp
     results/result.cpp
     view/preview-view.cpp
     view/results-view.cpp
+    view/filters-view.cpp
     view/settings-view.cpp
     scope-harness.cpp
     test-utils.cpp
@@ -83,4 +86,3 @@ install(
     FILES_MATCHING PATTERN "*.h"
     PATTERN "internal" EXCLUDE
 )
-
