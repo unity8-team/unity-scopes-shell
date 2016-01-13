@@ -57,6 +57,7 @@ public:
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> filter(int index) const;
     int activeFiltersCount() const;
 
 public Q_SLOTS:

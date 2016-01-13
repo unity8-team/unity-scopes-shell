@@ -19,6 +19,7 @@
 #include <scope-harness/test-utils.h>
 #include <scope-harness/results/filter.h>
 #include <scope-harness/view/filters-view.h>
+#include <scope-harness/internal/filter-arguments.h>
 
 #include <Unity/utils.h>
 #include <Unity/filters.h>
@@ -51,7 +52,7 @@ public:
     weak_ptr<view::FiltersView> m_FiltersView;
 };
 
-Filter::Filter() :
+Filter::Filter(internal::FilterArguments const& args) :
         p(new _Priv)
 {
     //TODO

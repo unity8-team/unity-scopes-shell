@@ -19,7 +19,10 @@
 #include <scope-harness/matcher/filter-list-matcher.h>
 #include <scope-harness/matcher/filter-matcher.h>
 
+#include <boost/optional.hpp>
+
 using namespace std;
+using namespace boost;
 
 namespace unity
 {
@@ -30,7 +33,13 @@ namespace matcher
 
 struct FilterListMatcher::_Priv
 {
-    int x;
+    Mode m_mode = Mode::all;
+
+    vector<FilterMatcher> m_filters;
+
+    optional<size_t> m_hasAtLeast;
+
+    optional<size_t> m_hasExactly;
 };
 
 FilterListMatcher::FilterListMatcher()
@@ -55,17 +64,34 @@ FilterListMatcher& FilterListMatcher::filter(FilterMatcher&& filterMatcher)
 
 FilterListMatcher& FilterListMatcher::hasAtLeast(std::size_t minimum)
 {
+    p->m_hasAtLeast = minimum;
     return *this;
 }
 
 FilterListMatcher& FilterListMatcher::hasExactly(std::size_t amount)
 {
+    p->m_hasExactly = amount;
     return *this;
 }
 
-MatchResult FilterListMatcher::match(const view::FiltersView::SPtr& filterList) const
+MatchResult FilterListMatcher::match(const results::Filter::List& filtersList) const
 {
     MatchResult matchResult;
+
+    if (p->m_hasAtLeast && filtersList.size() < p->m_hasAtLeast.get())
+    {
+        matchResult.failure(
+                "Expected at least " + to_string(p->m_hasAtLeast.get())
+                        + " filters");
+    }
+
+    if (p->m_hasExactly && filtersList.size() != p->m_hasExactly.get())
+    {
+        matchResult.failure(
+                "Expected exactly " + to_string(p->m_hasExactly.get())
+                        + " filters");
+    }
+
     return matchResult;
 }
 

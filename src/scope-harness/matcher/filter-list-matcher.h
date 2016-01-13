@@ -57,7 +57,7 @@ public:
 
     FilterListMatcher& hasExactly(std::size_t amount);
 
-    MatchResult match(const view::FiltersView::SPtr& filterList) const;
+    MatchResult match(const results::Filter::List& filterList) const;
 
 protected:
     FilterListMatcher(const FilterListMatcher& other) = delete;

@@ -237,6 +237,14 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::primaryFilter
     return m_primaryFilter;
 }
 
+QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::filter(int index) const
+{
+    if (index >= 0 && index < m_filters.size()) {
+        return m_filters.at(index);
+    }
+    return QSharedPointer<unity::shell::scopes::FilterBaseInterface>();
+}
+
 int Filters::activeFiltersCount() const
 {
     int count = 0;

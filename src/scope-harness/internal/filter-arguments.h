@@ -18,49 +18,23 @@
 
 #pragma once
 
+#include <Unity/scope.h>
+#include <QSharedPointer>
+
+namespace ng = scopes_ng;
+
 namespace unity
 {
+
 namespace scopeharness
 {
-
 namespace internal
 {
-struct FilterArguments;
-}
 
-namespace view
+struct FilterArguments
 {
-class ResultsView;
-}
-namespace results
-{
-
-class Q_DECL_EXPORT Filter final
-{
-public:
-    typedef std::vector<Filter> List;
-
-    Filter(Filter&& other);
-
-    Filter(const Filter& other);
-
-    Filter& operator=(const Filter& other);
-
-    Filter& operator=(Filter&& other);
-
-    ~Filter() = default;
-
-    std::string id() const noexcept;
-
-    std::string title() const noexcept;
-
-protected:
-    Filter(internal::FilterArguments const&);
-    friend view::ResultsView;
-
-    struct _Priv;
-
-    std::shared_ptr<_Priv> p;
+    ng::Scope::Ptr m_scope;
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> m_filter;
 };
 
 }

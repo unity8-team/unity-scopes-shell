@@ -23,9 +23,9 @@
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/results/category.h>
 #include <scope-harness/results/department.h>
+#include <scope-harness/results/filter.h>
 #include <scope-harness/preview/preview-widget.h>
 #include <scope-harness/view/settings-view.h>
-#include <scope-harness/view/filters-view.h>
 
 #include <string>
 
@@ -130,7 +130,7 @@ public:
 
     SettingsView::SPtr settings() const;
 
-    FiltersView::SPtr filters() const;
+    results::Filter::List filters() const;
 
 protected:
     friend ScopeHarness;

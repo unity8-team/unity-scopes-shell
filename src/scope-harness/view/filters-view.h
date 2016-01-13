@@ -42,7 +42,7 @@ public:
     FiltersView(const FiltersView&) = delete;
     FiltersView& operator=(const FiltersView&) = delete;
 
-    std::size_t count() const;
+    std::size_t size() const;
     results::Filter::List& filters() const;
 
 protected:

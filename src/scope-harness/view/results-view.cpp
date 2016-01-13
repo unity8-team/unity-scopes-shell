@@ -27,6 +27,7 @@
 #include <scope-harness/internal/result-arguments.h>
 #include <scope-harness/internal/results-view-arguments.h>
 #include <scope-harness/internal/settings-view-arguments.h>
+#include <scope-harness/internal/filter-arguments.h>
 #include <scope-harness/view/preview-view.h>
 #include <scope-harness/view/results-view.h>
 #include <scope-harness/test-utils.h>
@@ -434,9 +435,16 @@ unity::shell::scopes::ScopeInterface::Status ResultsView::status() const
     return p->m_active_scope->status();
 }
 
-FiltersView::SPtr ResultsView::filters() const
+results::Filter::List ResultsView::filters() const
 {
-    return nullptr; //TODO
+    p->checkActiveScope();
+
+    results::Filter::List list;
+    auto filtersModel = dynamic_cast<ng::Filters*>(p->m_active_scope->filters());
+    for (int i = 0; i<filtersModel->rowCount(); i++) {
+        list.push_back(results::Filter(internal::FilterArguments {p->m_active_scope, filtersModel->filter(i)}));
+    }
+    return list;
 }
 
 }

@@ -46,7 +46,7 @@ FiltersView::FiltersView(const internal::FiltersViewArguments& args)
     p->m_scope = args.m_scope;
 }
 
-std::size_t FiltersView::count() const
+std::size_t FiltersView::size() const
 {
     return p->m_scope->filters()->rowCount();
 }
