@@ -60,10 +60,7 @@ private Q_SLOTS:
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
         m_harness = sh::ScopeHarness::newFromScopeList(
             shr::CustomRegistry::Parameters({
-                TEST_DATA_DIR "mock-scope/mock-scope.ini",
-                TEST_DATA_DIR "mock-scope-info/mock-scope-info.ini",
-                TEST_DATA_DIR "mock-scope-ttl/mock-scope-ttl.ini",
-                TEST_DATA_DIR "mock-scope-manyresults/mock-scope-manyresults.ini"
+                TEST_DATA_DIR "mock-scope-filters/mock-scope-filters.ini",
             })
         );
     }
@@ -83,7 +80,7 @@ private Q_SLOTS:
     void testBasic()
     {
         auto resultsView = m_harness->resultsView();
-        resultsView->setActiveScope("mock-scope");
+        resultsView->setActiveScope("mock-scope-filters");
         resultsView->setQuery("");
         //TODO
     }
