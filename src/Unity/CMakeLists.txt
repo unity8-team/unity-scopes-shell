@@ -34,7 +34,6 @@ set(QMLPLUGIN_SRC
     scope.cpp
     scopes.cpp
     settingsmodel.cpp
-    ubuntulocationservice.cpp
     utils.cpp
     iconutils.cpp
     logintoaccount.cpp

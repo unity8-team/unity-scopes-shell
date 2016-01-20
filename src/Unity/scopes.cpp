@@ -23,7 +23,6 @@
 // Local
 #include "scope.h"
 #include "overviewscope.h"
-#include "ubuntulocationservice.h"
 
 // Qt
 #include <QDebug>
@@ -34,6 +33,7 @@
 #include <QFile>
 #include <QUrlQuery>
 #include <QTextStream>
+#include <QGeoPositionInfoSource>
 
 #include <unity/scopes/Registry.h>
 #include <unity/scopes/Scope.h>
@@ -129,7 +129,8 @@ Scopes::Scopes(QObject *parent)
     m_registryRefreshTimer.setSingleShot(true);
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
-    m_locationService.reset(new UbuntuLocationService());
+    m_locationService = new LocationService(this);
+    //TODO
 
     createUserAgentString();
 
@@ -326,7 +327,7 @@ void Scopes::discoveryFinished()
     {
         // Otherwise we have to wait for location data
         // Either the the location data needs to change, or the timeout happens
-        connect(m_locationService.data(), &LocationService::locationChanged,
+        connect(m_locationService, &LocationService::locationChanged,
                 this, &Scopes::completeDiscoveryFinished);
         connect(&m_startupQueryTimeout, &QTimer::timeout, this,
                 &Scopes::completeDiscoveryFinished);
@@ -342,7 +343,7 @@ void Scopes::completeDiscoveryFinished()
     m_startupQueryTimeout.stop();
     disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
                &Scopes::completeDiscoveryFinished);
-    disconnect(m_locationService.data(), &LocationService::locationChanged,
+    disconnect(m_locationService, &LocationService::locationChanged,
                this, &Scopes::completeDiscoveryFinished);
 
     processFavoriteScopes();
@@ -765,7 +766,7 @@ bool Scopes::loaded() const
     return m_loaded;
 }
 
-LocationService::Ptr Scopes::locationService() const
+LocationService* Scopes::locationService() const
 {
     return m_locationService;
 }

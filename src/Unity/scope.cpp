@@ -662,8 +662,6 @@ void Scope::setScopesInstance(Scopes* scopes)
     if (m_scopesInstance) {
         m_metadataConnection = QObject::connect(scopes, &Scopes::metadataRefreshed, this, &Scope::metadataRefreshed);
         m_locationService = m_scopesInstance->locationService();
-        // TODO Notify the user the the location has changed
-        // connect(m_locationService.data(), &LocationService::locationChanged, this, &Scope::invalidateResults);
     }
 }
 
@@ -750,7 +748,11 @@ void Scope::dispatchSearch()
                 QVariant locationEnabled = m_settingsModel->value(QStringLiteral("internal.location"));
                 if (locationEnabled.type() == QVariant::Bool && locationEnabled.toBool())
                 {
-                    meta.set_location(m_locationService->location());
+                    if (m_locationService->hasLocation()) {
+                        qDebug() << "Location is available";
+                        auto const location = m_locationService->location();
+                        meta.set_location(location);
+                    }
                 }
             }
         }
@@ -1150,18 +1152,6 @@ void Scope::setActive(const bool active) {
     if (active != m_isActive) {
         m_isActive = active;
         Q_EMIT isActiveChanged();
-
-        if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
-        {
-            if (m_isActive)
-            {
-                m_locationToken = m_locationService->activate();
-            }
-            else
-            {
-                m_locationToken.reset();
-            }
-        }
 
         if (active && m_resultsDirty) {
             dispatchSearch();

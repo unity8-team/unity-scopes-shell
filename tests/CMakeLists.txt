@@ -34,7 +34,7 @@ macro(run_tests)
         add_test(NAME test${CLASSNAME}${_test} COMMAND ${testCommand})
         add_custom_target(${_test} ${testCommand})
         add_executable(${_test}Exec
-                       ${_test}.cpp 
+                       ${_test}.cpp
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
@@ -59,7 +59,7 @@ endmacro(run_tests)
 run_tests(
     departmentstest
     favoritestest
-    locationtest
+    #locationtest
     overviewtest
     previewtest
     resultstest

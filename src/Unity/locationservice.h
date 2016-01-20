@@ -15,17 +15,15 @@
  *
  * Authors:
  *  Pete Woods <pete.woods@canonical.com>
+ *  Pawel Stolowski <pawel.stolowski@canonical.com>
  */
 
 #ifndef LOCATIONSERVICE_H
 #define LOCATIONSERVICE_H
 
 #include <QObject>
-
-#include <com/ubuntu/location/heading.h>
-#include <com/ubuntu/location/position.h>
-#include <com/ubuntu/location/update.h>
-#include <com/ubuntu/location/velocity.h>
+#include <QGeoPositionInfo>
+#include <QGeoPositionInfoSource>
 
 #include <unity/scopes/Location.h>
 
@@ -41,30 +39,29 @@ class Q_DECL_EXPORT LocationService : public QObject
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
 
 public:
-    typedef QSharedPointer<LocationService> Ptr;
-
-    class Token : public QObject
-    {
-    };
-
-    LocationService();
+    LocationService(QObject *parent = nullptr);
 
     virtual ~LocationService() = default;
 
-    virtual unity::scopes::Location location() const = 0;
+    virtual unity::scopes::Location location() const;
 
-    virtual bool hasLocation() const = 0;
+    virtual bool hasLocation();
 
-    virtual bool isActive() const = 0;
-
-public Q_SLOTS:
-    virtual QSharedPointer<Token> activate() = 0;
+    virtual bool isActive();
 
 Q_SIGNALS:
     void locationChanged();
 
     void activeChanged();
 
+private Q_SLOTS:
+    void onPositionUpdated(const QGeoPositionInfo & update);
+    void onPositionUpdateTimeout();
+    void onError(QGeoPositionInfoSource::Error positioningError);
+
+private:
+    QGeoPositionInfoSource *m_locationSource;
+    QGeoPositionInfo m_location;
 };
 
 } // namespace scopes_ng

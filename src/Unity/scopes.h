@@ -22,6 +22,7 @@
 
 #include <unity/shell/scopes/ScopesInterface.h>
 #include "scope.h"
+#include "locationservice.h"
 
 // Qt
 #include <QList>
@@ -39,11 +40,11 @@
 #include <unity/scopes/ScopeMetadata.h>
 
 class QGSettings;
+class QGeoPositionInfoSource;
 
 namespace scopes_ng
 {
 
-class LocationService;
 class Scope;
 class OverviewScope;
 
@@ -75,7 +76,7 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
     Scope::Ptr overviewScopeSPtr() const;
 
-    QSharedPointer<LocationService> locationService() const;
+    LocationService* locationService() const;
     QString userAgentString() const;
 
     Scope::Ptr findTempScope(QString const& id) const;
@@ -122,7 +123,8 @@ private:
     QString m_userAgent;
     bool m_loaded;
 
-    QSharedPointer<LocationService> m_locationService;
+    LocationService* m_locationService;
+
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;
