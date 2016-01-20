@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 #define EXPORT __attribute__ ((visibility ("default")))
 
@@ -114,7 +115,21 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_ == "search5")
+        {
+            // thousands of items
+            for (int i = 0; i<3000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
 
+                if (i % 500 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+            }
+        }
     }
 
 private:

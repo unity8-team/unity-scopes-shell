@@ -22,7 +22,9 @@
 #include <QTimer>
 #include <QSignalSpy>
 #include <QDBusConnection>
+#include <QDebug>
 
+#include <chrono>
 #include <Unity/resultsmodel.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
@@ -1062,6 +1064,20 @@ private Q_SLOTS:
                 )
                 .match(resultsView->categories())
         );
+
+        auto const start = std::chrono::system_clock::now();
+        resultsView->setQuery("search5");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(3000)
+                )
+                .match(resultsView->categories())
+        );
+        auto const end = std::chrono::system_clock::now();
+        auto search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+        qDebug() << "Search with 3000 results duration: " << search_dur;
     }
 };
 
