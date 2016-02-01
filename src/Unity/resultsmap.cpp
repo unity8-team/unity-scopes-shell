@@ -63,3 +63,22 @@ int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
     }
     return -1;
 }
+
+void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& results, int start, int end, int delta)
+{
+    for (int i = start; i<end; i++) {
+        auto const result = results[i];
+        auto it = m_results.find(result->uri());
+        if (it != m_results.end()) {
+            while (it != m_results.end() && it->second.result->uri() == result->uri())
+            {
+                if (*(it->second.result) == *result) {
+                    it->second.index += delta;
+                    break;
+                }
+                ++it;
+            }
+        }
+    }
+}
+

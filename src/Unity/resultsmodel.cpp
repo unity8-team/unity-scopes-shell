@@ -23,7 +23,6 @@
 // local
 #include "utils.h"
 #include "iconutils.h"
-#include "resultsmap.h"
 
 #include <map>
 #include <QDebug>
@@ -79,6 +78,11 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
         return;
     }
 
+    if (m_results.count() == 0) {
+    //    addResults(results); FIXME enable back
+    //    return;
+    }
+
     m_purge = false;
 
     const int oldCount = m_results.count();
@@ -112,14 +116,18 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
                 // move row
                 beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
                 m_results.move(oldPos, row);
-                oldResultsMap.rebuild(m_results);
+                if (row > oldPos) {
+                    oldResultsMap.update(m_results, oldPos, row, -1);
+                } else {
+                    oldResultsMap.update(m_results, row, oldPos, 1);
+                }
                 endMoveRows();
             }
         } else {
             // insert row
             beginInsertRows(QModelIndex(), row, row);
             m_results.insert(row, results[row]);
-            oldResultsMap.rebuild(m_results);
+            oldResultsMap.update(m_results, row, m_results.size(), 1);
             endInsertRows();
         }
     }

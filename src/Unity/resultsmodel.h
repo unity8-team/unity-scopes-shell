@@ -27,6 +27,7 @@
 
 #include <unity/scopes/CategorisedResult.h>
 #include <unordered_map>
+#include "resultsmap.h"
 
 namespace scopes_ng {
 
