@@ -64,6 +64,15 @@ int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
     return -1;
 }
 
+void ResultsMap::update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results, int start)
+{
+    for (int pos = start; pos<results.size(); pos++) {
+        auto const result = results[pos];
+        const ResultPos rpos { result, pos };
+        m_results.insert({result->uri(), rpos });
+    }
+}
+
 void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& results, int start, int end, int delta)
 {
     for (int i = start; i<end; i++) {
@@ -82,3 +91,27 @@ void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& res
     }
 }
 
+void ResultsMap::remove(std::shared_ptr<unity::scopes::Result> const& result)
+{
+    //TODO, remove, update mappings for existing rows
+    assert(result);
+    auto it = m_results.find(result->uri());
+    if (it != m_results.end()) {
+        assert(it->second.result);
+        while (it != m_results.end() && it->second.result->uri() == result->uri())
+        {
+            if (*(it->second.result) == *result) {
+                const int row = it->second.index;
+                m_results.erase(it);
+                // TODO update row numbers
+                return;
+            }
+            ++it;
+        }
+    }
+}
+
+void ResultsMap::clear()
+{
+    m_results.clear();
+}

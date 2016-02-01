@@ -38,7 +38,11 @@ class ResultsMap
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
         void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
+        void update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results, int start);
         void update(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta);
+        void remove(std::shared_ptr<unity::scopes::Result> const& result);
+        void clear();
+
     private:
         struct ResultPos {
             std::shared_ptr<unity::scopes::Result> result;

@@ -31,6 +31,15 @@
 
 namespace scopes_ng {
 
+struct SearchContext
+{
+    ResultsMap newResultsMap;
+    ResultsMap oldResultsMap;
+    int lastResultIndex;
+
+    void reset();
+};
+
 class Q_DECL_EXPORT ResultsModel : public unity::shell::scopes::ResultsModelInterface
 {
     Q_OBJECT
@@ -72,6 +81,7 @@ private:
     QString m_categoryId;
     int m_maxAttributes;
     bool m_purge;
+    SearchContext m_search_ctx;
 };
 
 } // namespace scopes_ng

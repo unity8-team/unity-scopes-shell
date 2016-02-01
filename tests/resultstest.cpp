@@ -1064,6 +1064,12 @@ private Q_SLOTS:
                 )
                 .match(resultsView->categories())
         );
+    }
+
+    void testResultsMassiveModelChanges()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
 
         auto const start = std::chrono::system_clock::now();
         resultsView->setQuery("search5");
@@ -1078,6 +1084,11 @@ private Q_SLOTS:
         auto const end = std::chrono::system_clock::now();
         auto search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
         qDebug() << "Search with 3000 results duration: " << search_dur;
+
+        auto const results = resultsView->category("cat1").results();
+        for (unsigned i = 0; i<results.size(); i++) {
+            QCOMPARE("cat1_uri" + std::to_string(i), results[i].uri());
+        }
     }
 };
 
