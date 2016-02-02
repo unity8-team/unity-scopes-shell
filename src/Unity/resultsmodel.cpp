@@ -87,8 +87,8 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
     // optimize for simple case when current view is initially empty - just add all the results
     if (m_results.count() == 0) {
-        //addResults(results);
-        //return;
+        addResults(results);
+        return;
     }
 
     m_purge = false;
@@ -97,7 +97,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
     // update result -> index mappings with a subset of current result set, starting from lastResultIndex.
     m_search_ctx.newResultsMap.update(results, m_search_ctx.lastResultIndex);
-    m_search_ctx.lastResultIndex = results.count();
+    qDebug() << "Last result index=" << m_search_ctx.lastResultIndex;
 
     int row = 0;
     bool rowsRemoved = false;
@@ -123,7 +123,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     }
 
     // iterate over new results
-    for (row = 0; row<results.count(); ++row) {
+    for (row = m_search_ctx.lastResultIndex; row<results.count(); ++row) {
         const int oldPos = m_search_ctx.oldResultsMap.find(results[row]);
         const bool hadBefore = (oldPos >= 0);
         if (hadBefore) {
@@ -142,11 +142,14 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
             // insert row
             beginInsertRows(QModelIndex(), row, row);
             m_results.insert(row, results[row]);
-            m_search_ctx.oldResultsMap.update(m_results, row, m_results.size(), 1);
+            m_search_ctx.oldResultsMap.update(m_results, row + 1, m_results.size(), 1);
             endInsertRows();
         }
     }
 
+    m_search_ctx.lastResultIndex = results.count();
+
+    qDebug() << "Added #" << (m_results.count() - oldCount) << "results (called with" << results.count() << "), current results#=" << m_results.count();
     if (oldCount != m_results.count()) {
         Q_EMIT countChanged();
     }
@@ -154,6 +157,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
+    qDebug() << "Adding #" << results.count() << "results";
     if (results.count() == 0) {
         return;
     }
@@ -161,14 +165,15 @@ void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedRe
     m_purge = false;
 
     m_search_ctx.newResultsMap.update(results, 0);
-    m_search_ctx.lastResultIndex = results.count();
-    m_search_ctx.oldResultsMap = m_search_ctx.newResultsMap;
 
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
-    Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
+    for (auto const& result: results) {
         m_results.append(result);
     }
     endInsertRows();
+
+    m_search_ctx.oldResultsMap = m_search_ctx.newResultsMap;
+    m_search_ctx.lastResultIndex = m_results.count();
 
     Q_EMIT countChanged();
 }

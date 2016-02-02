@@ -28,7 +28,7 @@ ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &resu
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results)
 {
     int pos = 0;
-    for (auto result: results) {
+    for (auto const& result: results) {
         std::shared_ptr<unity::scopes::Result> res = result;
         assert(res);
         const ResultPos rpos { res, pos++ };
@@ -40,7 +40,7 @@ void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &re
 {
     m_results.clear();
     int pos = 0;
-    for (auto result: results) {
+    for (auto const& result: results) {
         assert(result);
         const ResultPos rpos { result, pos++ };
         m_results.insert({result->uri(), rpos });
@@ -78,22 +78,20 @@ void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& res
     for (int i = start; i<end; i++) {
         auto const result = results[i];
         auto it = m_results.find(result->uri());
-        if (it != m_results.end()) {
-            while (it != m_results.end() && it->second.result->uri() == result->uri())
-            {
-                if (*(it->second.result) == *result) {
-                    it->second.index += delta;
-                    break;
-                }
-                ++it;
+        while (it != m_results.end() && it->second.result->uri() == result->uri())
+        {
+            if (*(it->second.result) == *result) {
+                int foo = it->second.index;
+                it->second.index += delta;
+                assert(it->second.index != foo);
             }
+            ++it;
         }
     }
 }
 
 void ResultsMap::remove(std::shared_ptr<unity::scopes::Result> const& result)
 {
-    //TODO, remove, update mappings for existing rows
     assert(result);
     auto it = m_results.find(result->uri());
     if (it != m_results.end()) {
@@ -102,11 +100,19 @@ void ResultsMap::remove(std::shared_ptr<unity::scopes::Result> const& result)
         {
             if (*(it->second.result) == *result) {
                 const int row = it->second.index;
-                m_results.erase(it);
-                // TODO update row numbers
-                return;
+                it = m_results.erase(it);
+
+                // update row numbers for all results below the removed one
+                for (auto it2 = m_results.begin(); it2 != m_results.end(); it2++) {
+                    if (it2->second.index > row) {
+                        int foo = it->second.index;
+                        it2->second.index -= 1;
+                        assert(it->second.index != foo);
+                    }
+                }
+            } else {
+                ++it;
             }
-            ++it;
         }
     }
 }

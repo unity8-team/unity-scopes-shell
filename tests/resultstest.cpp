@@ -1077,17 +1077,21 @@ private Q_SLOTS:
             shm::CategoryListMatcher()
                 .hasExactly(1)
                 .category(shm::CategoryMatcher("cat1")
-                    .hasAtLeast(3000)
+                    .hasAtLeast(1000)
                 )
                 .match(resultsView->categories())
         );
         auto const end = std::chrono::system_clock::now();
         auto search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
-        qDebug() << "Search with 3000 results duration: " << search_dur;
+        qDebug() << "Search with 1000 results duration: " << search_dur;
 
         auto const results = resultsView->category("cat1").results();
+        QCOMPARE(results.size(), 1000UL);
         for (unsigned i = 0; i<results.size(); i++) {
-            QCOMPARE("cat1_uri" + std::to_string(i), results[i].uri());
+            QCOMPARE(
+                    QString::fromStdString(results[i].uri()),
+                    QString::fromStdString("cat1_uri" + std::to_string(i))
+                    );
         }
     }
 };
