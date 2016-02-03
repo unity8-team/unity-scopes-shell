@@ -1142,7 +1142,7 @@ private Q_SLOTS:
 
             auto const end = std::chrono::system_clock::now();
             auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
-            qDebug() << "Search #2 duration: " << search_dur;
+            qDebug() << "Search #3 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
             QCOMPARE(results.size(), 1000UL);
@@ -1170,7 +1170,7 @@ private Q_SLOTS:
 
             auto const end = std::chrono::system_clock::now();
             auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
-            qDebug() << "Search #3 duration: " << search_dur;
+            qDebug() << "Search #4 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
             QCOMPARE(results.size(), 2000UL);
