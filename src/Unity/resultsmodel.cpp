@@ -100,26 +100,24 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     qDebug() << "Last result index=" << m_search_ctx.lastResultIndex;
 
     int row = 0;
-    bool rowsRemoved = false;
-    // iterate over currently visible results, remove results which are no longer present in new set
-    for (auto it = m_results.begin(); it != m_results.end(); ) {
-        int newPos = m_search_ctx.newResultsMap.find(*it);
-        bool haveNow = (newPos >= 0);
-        if (!haveNow) {
-            // delete row
-            beginRemoveRows(QModelIndex(), row, row);
-            it = m_results.erase(it);
-            endRemoveRows();
-            rowsRemoved = true;
-        } else {
-            ++it;
-            ++row;
+    // iterate over currently visible results, remove results which are no longer present in new set.
+    // this needs to be done only once on first run of the new search, since in consecutive runs there
+    // we will only by appending or moving.
+    if (m_search_ctx.lastResultIndex == 0) {
+        for (auto it = m_results.begin(); it != m_results.end(); ) {
+            int newPos = m_search_ctx.newResultsMap.find(*it);
+            bool haveNow = (newPos >= 0);
+            if (!haveNow) {
+                // delete row
+                beginRemoveRows(QModelIndex(), row, row);
+                m_search_ctx.oldResultsMap.remove(*it); // FIXME: optimize, pass results list to iterate over range only
+                it = m_results.erase(it);
+                endRemoveRows();
+            } else {
+                ++it;
+                ++row;
+            }
         }
-    }
-
-    if (rowsRemoved) {
-        // it's cheaper to rebuild than to update several mappings with every removal
-        m_search_ctx.oldResultsMap.rebuild(m_results);
     }
 
     // iterate over new results

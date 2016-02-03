@@ -118,15 +118,15 @@ public:
         else if (query_ == "search5")
         {
             // thousands of items
-            for (int i = 0; i<1000; i++)
+            for (int i = 0; i<2000; i++)
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
                 res.set_title("result5 for: \"" + query_ + "\"");
                 reply->push(res);
 
-                if (i % 5 == 0) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
                 }
             }
         }
