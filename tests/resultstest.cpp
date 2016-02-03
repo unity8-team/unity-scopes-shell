@@ -1071,27 +1071,59 @@ private Q_SLOTS:
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope-manyresults");
 
-        auto const start = std::chrono::system_clock::now();
-        resultsView->setQuery("search5");
-        QVERIFY_MATCHRESULT(
-            shm::CategoryListMatcher()
-                .hasExactly(1)
-                .category(shm::CategoryMatcher("cat1")
-                    .hasAtLeast(2000)
-                )
-                .match(resultsView->categories())
-        );
-        auto const end = std::chrono::system_clock::now();
-        auto search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
-        qDebug() << "Search with 2000 results duration: " << search_dur;
+        // first search run
+        {
+            auto const start = std::chrono::system_clock::now();
 
-        auto const results = resultsView->category("cat1").results();
-        QCOMPARE(results.size(), 2000UL);
-        for (unsigned i = 0; i<results.size(); i++) {
-            QCOMPARE(
-                    QString::fromStdString(results[i].uri()),
-                    QString::fromStdString("cat1_uri" + std::to_string(i))
-                    );
+            resultsView->setQuery("search5");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(2000)
+                    )
+                    .match(resultsView->categories())
+            );
+            auto end = std::chrono::system_clock::now();
+            auto search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+            qDebug() << "Search #1 duration: " << search_dur;
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(results.size(), 2000UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("cat1_uri" + std::to_string(i))
+                        );
+            }
+        }
+
+        {
+            // second search run, reversed order of results
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("search6");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(2000)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const end = std::chrono::system_clock::now();
+            auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+            qDebug() << "Search #2 duration: " << search_dur;
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(results.size(), 2000UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("cat1_uri" + std::to_string(1999-i))
+                        );
+            }
         }
     }
 };

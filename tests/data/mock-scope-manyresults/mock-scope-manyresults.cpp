@@ -130,6 +130,22 @@ public:
                 }
             }
         }
+        else if (query_ == "search6")
+        {
+            // thousands of items, in the reversed order of search5
+            for (int i = 1999; i>=0; i--)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+
     }
 
 private:
