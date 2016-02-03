@@ -97,7 +97,10 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
     // update result -> index mappings with a subset of current result set, starting from lastResultIndex.
     m_search_ctx.newResultsMap.update(results, m_search_ctx.lastResultIndex);
+
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "Last result index=" << m_search_ctx.lastResultIndex;
+#endif
 
     int row = 0;
     // iterate over currently visible results, remove results which are no longer present in new set.
@@ -149,7 +152,10 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
     m_search_ctx.lastResultIndex = results.count();
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "Added #" << (m_results.count() - oldCount) << "results (called with" << results.count() << "), current results#=" << m_results.count();
+#endif
+
     if (oldCount != m_results.count()) {
         Q_EMIT countChanged();
     }
@@ -157,7 +163,9 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
 {
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "Adding #" << results.count() << "results";
+#endif
     if (results.count() == 0) {
         return;
     }

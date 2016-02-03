@@ -357,7 +357,9 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+#endif
 
     processResultSet(m_cachedResults); // clears the result list
 
