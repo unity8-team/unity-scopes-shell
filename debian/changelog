@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.6+16.04.20160203-0ubuntu1) xenial; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Show activation progress bar when activate is called on scope proxy.
+    (LP: #1537132)
+
+ -- Michał Sawicz <michal.sawicz@canonical.com>  Wed, 03 Feb 2016 18:04:13 +0000
+
 unity-scopes-shell (0.5.6+16.04.20160104.1-0ubuntu1) xenial; urgency=medium
 
   [ Pawel Stolowski ]
