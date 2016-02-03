@@ -88,32 +88,6 @@ void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& res
     }
 }
 
-void ResultsMap::remove(std::shared_ptr<unity::scopes::Result> const& result)
-{
-    assert(result);
-    auto it = m_results.find(result->uri());
-    if (it != m_results.end()) {
-        assert(it->second.result);
-        while (it != m_results.end() && it->second.result->uri() == result->uri())
-        {
-            if (*(it->second.result) == *result) {
-                const int row = it->second.index;
-                it = m_results.erase(it);
-
-                // update row numbers for all results below the removed one
-                for (auto it2 = m_results.begin(); it2 != m_results.end(); it2++) {
-                    if (it2->second.index > row) {
-                        it2->second.index -= 1;
-                    }
-                }
-                break;
-            } else {
-                ++it;
-            }
-        }
-    }
-}
-
 void ResultsMap::clear()
 {
     m_results.clear();

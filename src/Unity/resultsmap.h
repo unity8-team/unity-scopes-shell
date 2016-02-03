@@ -40,7 +40,6 @@ class ResultsMap
         void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
         void update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results, int start);
         void update(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta);
-        void remove(std::shared_ptr<unity::scopes::Result> const& result);
         void clear();
 
     private:
