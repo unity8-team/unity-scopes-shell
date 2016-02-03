@@ -115,7 +115,7 @@ public:
                 reply->push(res);
             }
         }
-        else if (query_ == "search5")
+        else if (query_ == "lots_of_results")
         {
             // 2000 items
             for (int i = 0; i<2000; i++)
@@ -130,7 +130,7 @@ public:
                 }
             }
         }
-        else if (query_ == "search6")
+        else if (query_ == "lots_of_results_reversed")
         {
             // 2000 items, in the reversed order of search5
             for (int i = 1999; i>=0; i--)
@@ -145,7 +145,7 @@ public:
                 }
             }
         }
-        else if (query_ == "search8")
+        else if (query_ == "lots_of_results_half_of_them_missing")
         {
             // 1000 items with uris matching every other item from previous search
             for (int i = 0; i<1000; i++)
@@ -160,7 +160,7 @@ public:
                 }
             }
         }
-        else if (query_ == "search7")
+        else if (query_ == "lots_of_results_2")
         {
             // 2000 items, all different than in previous searches
             for (int i = 0; i<2000; i++)

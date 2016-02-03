@@ -1075,7 +1075,7 @@ private Q_SLOTS:
         {
             auto const start = std::chrono::system_clock::now();
 
-            resultsView->setQuery("search5");
+            resultsView->setQuery("lots_of_results");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
                     .hasExactly(1)
@@ -1102,7 +1102,7 @@ private Q_SLOTS:
         {
             auto const start = std::chrono::system_clock::now();
 
-            resultsView->setQuery("search6");
+            resultsView->setQuery("lots_of_results_reversed");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
                     .hasExactly(1)
@@ -1130,7 +1130,7 @@ private Q_SLOTS:
         {
             auto const start = std::chrono::system_clock::now();
 
-            resultsView->setQuery("search8");
+            resultsView->setQuery("lots_of_results_half_of_them_missing");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
                     .hasExactly(1)
@@ -1158,7 +1158,7 @@ private Q_SLOTS:
         {
             auto const start = std::chrono::system_clock::now();
 
-            resultsView->setQuery("search7");
+            resultsView->setQuery("lots_of_results_2");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
                     .hasExactly(1)
