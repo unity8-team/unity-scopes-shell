@@ -110,7 +110,6 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
             if (!haveNow) {
                 // delete row
                 beginRemoveRows(QModelIndex(), row, row);
-                m_search_ctx.oldResultsMap.remove(*it); // FIXME: optimize, pass results list to iterate over range only
                 it = m_results.erase(it);
                 endRemoveRows();
             } else {
@@ -118,6 +117,9 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
                 ++row;
             }
         }
+        // called only once on new search - it's cheaper to rebuild than to update
+        // indices of all rows below removed row.
+        m_search_ctx.oldResultsMap.rebuild(m_results);
     }
 
     // iterate over new results
