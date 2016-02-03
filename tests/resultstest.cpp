@@ -1098,8 +1098,8 @@ private Q_SLOTS:
             }
         }
 
+        // second search run, reversed order of results
         {
-            // second search run, reversed order of results
             auto const start = std::chrono::system_clock::now();
 
             resultsView->setQuery("search6");
@@ -1122,6 +1122,62 @@ private Q_SLOTS:
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
                         QString::fromStdString("cat1_uri" + std::to_string(1999-i))
+                        );
+            }
+        }
+
+        // 1000 results, every other matches previous set
+        {
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("search8");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(1000)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const end = std::chrono::system_clock::now();
+            auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+            qDebug() << "Search #2 duration: " << search_dur;
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(results.size(), 1000UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("cat1_uri" + std::to_string(i*2))
+                        );
+            }
+        }
+
+        // third search run, different result set
+        {
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("search7");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(2000)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const end = std::chrono::system_clock::now();
+            auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+            qDebug() << "Search #3 duration: " << search_dur;
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(results.size(), 2000UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("cat1_uri" + std::to_string(5000+i))
                         );
             }
         }

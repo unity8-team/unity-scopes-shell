@@ -117,7 +117,7 @@ public:
         }
         else if (query_ == "search5")
         {
-            // thousands of items
+            // 2000 items
             for (int i = 0; i<2000; i++)
             {
                 CategorisedResult res(cat1);
@@ -132,7 +132,7 @@ public:
         }
         else if (query_ == "search6")
         {
-            // thousands of items, in the reversed order of search5
+            // 2000 items, in the reversed order of search5
             for (int i = 1999; i>=0; i--)
             {
                 CategorisedResult res(cat1);
@@ -145,7 +145,36 @@ public:
                 }
             }
         }
+        else if (query_ == "search8")
+        {
+            // 1000 items with uris matching every other item from previous search
+            for (int i = 0; i<1000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i*2));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
 
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+        else if (query_ == "search7")
+        {
+            // 2000 items, all different than in previous searches
+            for (int i = 0; i<2000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(5000 + i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
     }
 
 private:
