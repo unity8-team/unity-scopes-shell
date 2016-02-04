@@ -150,4 +150,9 @@ void OverviewScope::dispatchSearch()
     qWarning() << "Search is not implemented for Manage Dash";
 }
 
+void OverviewScope::setActive(const bool)
+{
+    // do nothing
+}
+
 } // namespace scopes_ng
