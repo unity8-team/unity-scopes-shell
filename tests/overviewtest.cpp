@@ -79,7 +79,6 @@ private Q_SLOTS:
         // get scope proxy
         m_scope = m_scopes->overviewScopeSPtr();
         QVERIFY(bool(m_scope));
-        m_scope->setActive(true);
     }
 
     void cleanup()
@@ -91,10 +90,6 @@ private Q_SLOTS:
     void testScopeProperties()
     {
         QCOMPARE(m_scope->id(), QString("scopes"));
-
-        QCOMPARE(m_scope->isActive(), true);
-        m_scope->setActive(false);
-        QCOMPARE(m_scope->isActive(), false);
     }
 
     void testSurfacingQuery()
