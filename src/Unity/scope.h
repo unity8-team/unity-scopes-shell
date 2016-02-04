@@ -236,6 +236,7 @@ private:
     bool m_hasAltNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
+    int m_cardinality;
 
     QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;

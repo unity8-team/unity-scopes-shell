@@ -99,6 +99,7 @@ private Q_SLOTS:
     void initTestCase()
     {
         qputenv("UNITY_SCOPES_NO_WAIT_LOCATION", "1");
+        qputenv("UNITY_SCOPES_CARDINALITY_OVERRIDE", "9999");
         m_harness = sh::ScopeHarness::newFromScopeList(
             shr::CustomRegistry::Parameters({
                 TEST_DATA_DIR "mock-scope/mock-scope.ini",
