@@ -1090,7 +1090,7 @@ private Q_SLOTS:
             qDebug() << "Search #1 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(results.size(), 2000UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 2000UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
@@ -1118,7 +1118,7 @@ private Q_SLOTS:
             qDebug() << "Search #2 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(results.size(), 2000UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 2000UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
@@ -1146,7 +1146,7 @@ private Q_SLOTS:
             qDebug() << "Search #3 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(results.size(), 1000UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 1000UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
@@ -1174,7 +1174,7 @@ private Q_SLOTS:
             qDebug() << "Search #4 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(results.size(), 2000UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 2000UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
