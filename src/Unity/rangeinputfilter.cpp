@@ -268,7 +268,10 @@ bool RangeInputFilter::compare(double v1, Variant const& v2)
 
 void RangeInputFilter::reset()
 {
-    //TODO
+    // Filters::onFilterStateChanged will delay actual refresh,
+    // so it's ok to make two independent updates and emit two signals
+    setStartValue(m_filter->default_start_value());
+    setEndValue(m_filter->default_end_value());
 }
 
 }
