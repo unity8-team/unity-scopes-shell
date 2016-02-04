@@ -136,10 +136,13 @@ bool OptionSelectorFilter::isActive() const
 
 QString OptionSelectorFilter::filterTag() const
 {
+    if (m_multiSelect) {
+        // multi-selection filter cannot be used as primary navigation
+        return "";
+    }
     if (auto state = m_filterState.lock()) {
         auto selected = m_filter->active_options(*state);
         if (selected.size() > 0) {
-            // TODO: what about multi-selection?
             for (auto opt: m_filter->options()) {
                 if (selected.find(opt) != selected.end()) {
                     return QString::fromStdString(opt->label()); // TODO: i18n
