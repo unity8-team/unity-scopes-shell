@@ -91,12 +91,6 @@ private Q_SLOTS:
     void testScopeProperties()
     {
         QCOMPARE(m_scope->id(), QString("scopes"));
-        QCOMPARE(m_scope->name(), QString("mock.scopes.DisplayName"));
-        QCOMPARE(m_scope->iconHint(), QString("/mock.Icon"));
-        QCOMPARE(m_scope->description(), QString("mock.scopes.Description"));
-        QCOMPARE(m_scope->searchHint(), QString("mock.SearchHint"));
-        QCOMPARE(m_scope->shortcut(), QString("mock.HotKey"));
-        QCOMPARE(m_scope->searchQuery(), QString());
 
         QCOMPARE(m_scope->isActive(), true);
         m_scope->setActive(false);
@@ -105,8 +99,6 @@ private Q_SLOTS:
 
     void testSurfacingQuery()
     {
-        TestUtils::performSearch(m_scope, QString(""));
-
         // ensure categories have > 0 rows
         auto categories = m_scope->categories();
         QVERIFY(categories->rowCount() > 0);
@@ -120,26 +112,6 @@ private Q_SLOTS:
 
         QCOMPARE(results->data(results->index(0), OverviewResultsModel::Roles::RoleTitle), QVariant(QString("mock-departments.DisplayName")));
         QCOMPARE(results->data(results->index(0), OverviewResultsModel::Roles::RoleSubtitle), QVariant(QString("mock-double-nav.DisplayName, mock.DisplayName")));
-    }
-
-    void testPreview()
-    {
-        TestUtils::performSearch(m_scope, QString(""));
-
-        // get a result from the model
-        auto categories = m_scope->categories();
-        QVERIFY(categories->rowCount() > 0);
-        QVariant results_var = categories->data(categories->index(0), Categories::Roles::RoleResults);
-        QVERIFY(results_var.canConvert<OverviewResultsModel*>());
-        OverviewResultsModel* results = results_var.value<OverviewResultsModel*>();
-        auto result_var = results->data(results->index(0), ResultsModel::RoleResult);
-        QCOMPARE(result_var.isNull(), false);
-        auto result = result_var.value<std::shared_ptr<unity::scopes::Result>>();
-        QVERIFY(result != nullptr);
-
-        // preview not available for the overview scope
-        QScopedPointer<PreviewStack> preview_stack(static_cast<PreviewStack*>(m_scope->preview(QVariant::fromValue(result), results->categoryId())));
-        QVERIFY(preview_stack == nullptr);
     }
 };
 

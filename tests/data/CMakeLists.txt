@@ -5,7 +5,6 @@ add_subdirectory(mock-scope-double-nav)
 add_subdirectory(mock-scope-info)
 add_subdirectory(mock-scope-ttl)
 add_subdirectory(mock-scope-manyresults)
-add_subdirectory(scopes)
 
 configure_file(Runtime.ini.in Runtime.ini @ONLY)
 configure_file(Registry.ini.in Registry.ini @ONLY)
