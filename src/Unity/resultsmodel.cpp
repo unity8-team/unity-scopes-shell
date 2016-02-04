@@ -110,8 +110,9 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
         if (hadBefore) {
             if (row != oldPos) {
                 // move row
-                beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
-                m_results.move(oldPos, row);
+                int pos = (row >= m_results.count()) ? (m_results.count() - 1) : row;
+                beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), pos);
+                m_results.move(oldPos, pos);
                 oldResultsMap.rebuild(m_results);
                 endMoveRows();
             }
