@@ -33,8 +33,6 @@ class ResultsMap
 {
     public:
         ResultsMap() = default;
-        ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results);
-        ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
         void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
