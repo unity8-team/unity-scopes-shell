@@ -89,6 +89,7 @@ void Filters::resetState()
 
 void Filters::reset()
 {
+    qDebug() << "Resetting filters to defaults";
     if (m_primaryFilter) {
         auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
         Q_ASSERT(shellFilter);
