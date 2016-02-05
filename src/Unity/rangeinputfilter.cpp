@@ -70,7 +70,7 @@ double RangeInputFilter::startValue() const
 
 double RangeInputFilter::endValue() const
 {
-    if (m_start.which() == Variant::Double) {
+    if (m_end.which() == Variant::Double) {
         return m_end.get_double();
     }
     qWarning() << "Requested endValue for filter" << m_id << ", but value is not set";
