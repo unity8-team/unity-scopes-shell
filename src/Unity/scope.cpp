@@ -305,10 +305,8 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     if (scope) {
         scope->setCannedQuery(query);
-        // FIXME: implement better way to do multiple changes to search props and dispatch single search
-        if (!scope->searchInProgress()) {
-            scope->invalidateResults();
-        }
+        scope->invalidateResults();
+
         if (scope != this) {
             Q_EMIT gotoScope(scopeId);
         } else {
