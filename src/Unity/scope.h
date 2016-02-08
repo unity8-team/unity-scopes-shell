@@ -261,7 +261,8 @@ private:
     QMultiMap<QString, Department*> m_altNavModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
-    LocationService *m_locationService;
+    QSharedPointer<LocationService> m_locationService;
+    QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
     QList<PreviewStack*> m_previewStacks;
 };
