@@ -31,6 +31,7 @@ LocationService::LocationService(QObject *parent)
 {
     m_locationSource = QGeoPositionInfoSource::createDefaultSource(this);
     connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &LocationService::onPositionUpdated);
+    connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &LocationService::locationChanged);
     connect(m_locationSource, &QGeoPositionInfoSource::updateTimeout, this, &LocationService::onPositionUpdateTimeout);
     connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError));
     m_locationSource->startUpdates();
