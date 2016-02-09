@@ -65,7 +65,18 @@ bool OptionSelectorFilter::multiSelect() const
 
 void OptionSelectorFilter::reset()
 {
-    //TODO
+    // FIXME: OptionSelectorFilter needs to provide defaults
+    if (auto state = m_filterState.lock())
+    {
+        for (auto const opt: m_filter->options())
+        {
+            m_filter->update_state(*state, opt, false);
+            m_options->update(m_filter->options(), m_filter->active_options(*state));
+        }
+        qDebug() << "Removing filter state for filter" << QString::fromStdString(m_filter->id());
+        state->remove(m_filter->id());
+        Q_EMIT filterStateChanged();
+    }
 }
 
 void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
