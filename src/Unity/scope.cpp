@@ -761,6 +761,9 @@ void Scope::dispatchSearch()
 
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
+
+        Q_EMIT searchDispatched(id());
+
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
             scopes::QueryCtrlProxy controller = m_queryUserData ?
@@ -1155,7 +1158,11 @@ void Scope::setActive(const bool active) {
         {
             if (m_isActive)
             {
-                m_locationToken = m_locationService->activate();
+                if (m_scopesInstance->shouldRequestLocation()) {
+                    m_locationToken = m_locationService->activate();
+                } else {
+                    qDebug() << "Waiting for more searches before requesting location";
+                }
             }
             else
             {

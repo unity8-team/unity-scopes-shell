@@ -81,9 +81,13 @@ public:
     Scope::Ptr findTempScope(QString const& id) const;
     void addTempScope(Scope::Ptr const& scope);
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
+    bool shouldRequestLocation() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
+
+public Q_SLOTS:
+    void searchDispatched(QString const& scopeId);
 
 protected:
     virtual QString readPartnerId();
@@ -126,6 +130,7 @@ private:
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;
+    int m_numerOfSearches;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

@@ -106,6 +106,7 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_numerOfSearches(0)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -154,6 +155,16 @@ QString Scopes::userAgentString() const
 void Scopes::purgeScopesToDelete()
 {
     m_scopesToDelete.clear();
+}
+
+bool Scopes::shouldRequestLocation() const
+{
+    return m_numerOfSearches >= 6;
+}
+
+void Scopes::searchDispatched(QString const& /*scopeId*/)
+{
+    ++m_numerOfSearches;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -460,6 +471,7 @@ void Scopes::processFavoriteScopes()
                 {
                     Scope::Ptr scope = Scope::newInstance(this);
                     connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
+                    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), this, SLOT(searchDispatched(QString const&)));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
@@ -665,6 +677,7 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
 
 void Scopes::addTempScope(Scope::Ptr const& scope)
 {
+    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), this, SLOT(searchDispatched(QString const&)));
     m_tempScopes.insert(scope->id(), scope);
 }
 
