@@ -29,7 +29,6 @@
 #include "categories.h"
 #include "department.h"
 #include "resultsmodel.h"
-#include "previewstack.h"
 #include "previewmodel.h"
 #include "previewwidgetmodel.h"
 #include "settingsmodel.h"
@@ -48,9 +47,8 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterUncreatableType<unity::shell::scopes::CategoriesInterface>(uri, 0, 2, "Categories", QStringLiteral("Can't create Categories object in QML. Get them from Scope instance."));
     qmlRegisterUncreatableType<unity::shell::scopes::SettingsModelInterface>(uri, 0, 2, "Settings", QStringLiteral("Can't create Settings object in QML. Get them from Scope instance."));
     qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 2, "ResultsModel", QStringLiteral("Can't create new ResultsModel in QML. Get them from Categories instance."));
-    qmlRegisterUncreatableType<unity::shell::scopes::PreviewModelInterface>(uri, 0, 2, "PreviewModel", QStringLiteral("Can't create new PreviewModel in QML. Get them from PreviewStack instance."));
+    qmlRegisterUncreatableType<unity::shell::scopes::PreviewModelInterface>(uri, 0, 2, "PreviewModel", QStringLiteral("Can't create new PreviewModel in QML. Get them from Scope instance."));
     qmlRegisterUncreatableType<scopes_ng::PreviewWidgetModel>(uri, 0, 2, "PreviewWidgetModel", QStringLiteral("Can't create new PreviewWidgetModel in QML. Get them from PreviewModel instance."));
-    qmlRegisterUncreatableType<unity::shell::scopes::PreviewStackInterface>(uri, 0, 2, "PreviewStack", QStringLiteral("Can't create new PreviewStack in QML. Get them from Scope instance."));
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
