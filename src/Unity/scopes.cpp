@@ -471,7 +471,6 @@ void Scopes::processFavoriteScopes()
                 {
                     Scope::Ptr scope = Scope::newInstance(this);
                     connect(scope.data(), SIGNAL(isActiveChanged()), this, SLOT(prepopulateNextScopes()));
-                    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), this, SLOT(searchDispatched(QString const&)));
                     scope->setScopeData(*(it.value()));
                     scope->setFavorite(true);
                     beginInsertRows(QModelIndex(), row, row);
@@ -677,7 +676,6 @@ void Scopes::setFavorite(QString const& scopeId, bool value)
 
 void Scopes::addTempScope(Scope::Ptr const& scope)
 {
-    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), this, SLOT(searchDispatched(QString const&)));
     m_tempScopes.insert(scope->id(), scope);
 }
 

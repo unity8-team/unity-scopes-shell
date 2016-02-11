@@ -75,7 +75,9 @@ const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
-    return Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+    auto scope = Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), parent, SLOT(searchDispatched(QString const&)));
+    return scope;
 }
 
 Scope::Scope(scopes_ng::Scopes* parent) :
