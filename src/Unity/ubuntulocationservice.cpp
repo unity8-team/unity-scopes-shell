@@ -99,7 +99,7 @@ public:
         connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &Priv::positionChanged);
         connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &Priv::locationChanged);
         connect(m_locationSource, &QGeoPositionInfoSource::updateTimeout, this, &Priv::onPositionUpdateTimeout);
-        connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError));
+        connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError(QGeoPositionInfoSource::Error)));
 
         // Wire up the deactivate timer
         connect(&m_deactivateTimer, &QTimer::timeout, this, &Priv::update, Qt::QueuedConnection);
