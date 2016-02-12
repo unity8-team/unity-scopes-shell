@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.6+16.04.20160209.1-0ubuntu1) xenial; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Don't attempt to access the real scope-scopes. (LP: #1439172)
+
+ -- Rodney Dawes <ci-train-bot@canonical.com>  Tue, 09 Feb 2016 16:42:42 +0000
+
 unity-scopes-shell (0.5.6+16.04.20160104.1-0ubuntu1) xenial; urgency=medium
 
   [ Pawel Stolowski ]
