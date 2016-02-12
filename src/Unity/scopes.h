@@ -44,6 +44,7 @@ namespace scopes_ng
 {
 
 class LocationService;
+class LocationAccessHelper;
 class Scope;
 class OverviewScope;
 
@@ -81,7 +82,7 @@ public:
     Scope::Ptr findTempScope(QString const& id) const;
     void addTempScope(Scope::Ptr const& scope);
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
-    bool shouldRequestLocation() const;
+    const LocationAccessHelper& locationAccessHelper() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
@@ -130,7 +131,7 @@ private:
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;
-    int m_numerOfSearches;
+    LocationAccessHelper *m_locationAccessHelper;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

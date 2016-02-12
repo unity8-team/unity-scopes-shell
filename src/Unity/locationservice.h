@@ -65,6 +65,7 @@ Q_SIGNALS:
 
     void activeChanged();
 
+    void accessDenied();
 };
 
 } // namespace scopes_ng

@@ -117,6 +117,7 @@ public:
 
 Q_SIGNALS:
     void locationChanged();
+    void accessDenied();
 
 public Q_SLOTS:
     void update()
@@ -168,6 +169,7 @@ public Q_SLOTS:
         qWarning() << "Position update error:" << positioningError;
         if (positioningError == QGeoPositionInfoSource::AccessError) {
             qDebug() << "Postion update denied";
+            Q_EMIT accessDenied();
         }
     }
 
@@ -233,6 +235,7 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
 
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::accessDenied, this, &LocationService::accessDenied, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueDeactivate, p.data(), &Priv::deactivate, Qt::QueuedConnection);
 

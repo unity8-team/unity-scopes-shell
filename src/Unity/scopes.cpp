@@ -24,6 +24,7 @@
 #include "scope.h"
 #include "overviewscope.h"
 #include "ubuntulocationservice.h"
+#include "locationaccesshelper.h"
 
 // Qt
 #include <QDebug>
@@ -106,7 +107,7 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
-    , m_numerOfSearches(0)
+    , m_locationAccessHelper(new LocationAccessHelper(this))
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -131,6 +132,8 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper, &LocationAccessHelper::accessDenied);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper, &LocationAccessHelper::positionChanged);
 
     createUserAgentString();
 
@@ -157,14 +160,14 @@ void Scopes::purgeScopesToDelete()
     m_scopesToDelete.clear();
 }
 
-bool Scopes::shouldRequestLocation() const
+const LocationAccessHelper& Scopes::locationAccessHelper() const
 {
-    return m_numerOfSearches >= 6;
+    return *m_locationAccessHelper;
 }
 
-void Scopes::searchDispatched(QString const& /*scopeId*/)
+void Scopes::searchDispatched(QString const& scopeId)
 {
-    ++m_numerOfSearches;
+    m_locationAccessHelper->searchDispatched(scopeId);
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const

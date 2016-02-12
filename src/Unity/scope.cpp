@@ -24,6 +24,7 @@
 #include "categories.h"
 #include "collectors.h"
 #include "previewstack.h"
+#include "locationaccesshelper.h"
 #include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
@@ -1160,7 +1161,7 @@ void Scope::setActive(const bool active) {
         {
             if (m_isActive)
             {
-                if (m_scopesInstance->shouldRequestLocation()) {
+                if (m_scopesInstance->locationAccessHelper().shouldRequestLocation()) {
                     m_locationToken = m_locationService->activate();
                 } else {
                     qDebug() << "Waiting for more searches before requesting location";
