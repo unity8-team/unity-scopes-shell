@@ -285,19 +285,14 @@ scopes::Location UbuntuLocationService::location() const
         location.set_longitude(p->m_lastLocation.coordinate().longitude());
         location.set_altitude(p->m_lastLocation.coordinate().altitude());
 
-        /*TODO if (pos.accuracy.horizontal)
+        if (p->m_lastLocation.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))
         {
-            location.set_horizontal_accuracy(pos.accuracy.horizontal.get().value());
+            location.set_horizontal_accuracy(p->m_lastLocation.attribute(QGeoPositionInfo::HorizontalAccuracy));
         }
-        if (pos.accuracy.vertical)
+        if (p->m_lastLocation.hasAttribute(QGeoPositionInfo::VerticalAccuracy))
         {
-            location.set_vertical_accuracy(pos.accuracy.vertical.get().value());
+            location.set_vertical_accuracy(p->m_lastLocation.attribute(QGeoPositionInfo::VerticalAccuracy));
         }
-
-        if (pos.altitude)
-        {
-            location.set_altitude(pos.altitude.get().value.value());
-        }*/
     }
     else if (result.valid)
     {
