@@ -22,6 +22,7 @@
 
 #include <unity/shell/scopes/ScopesInterface.h>
 #include "scope.h"
+#include "locationaccesshelper.h"
 
 // Qt
 #include <QList>
@@ -82,7 +83,7 @@ public:
     Scope::Ptr findTempScope(QString const& id) const;
     void addTempScope(Scope::Ptr const& scope);
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
-    const LocationAccessHelper& locationAccessHelper() const;
+    QSharedPointer<LocationAccessHelper> locationAccessHelper() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
@@ -131,7 +132,7 @@ private:
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;
-    LocationAccessHelper *m_locationAccessHelper;
+    QSharedPointer<LocationAccessHelper> m_locationAccessHelper;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

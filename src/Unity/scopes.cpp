@@ -24,7 +24,6 @@
 #include "scope.h"
 #include "overviewscope.h"
 #include "ubuntulocationservice.h"
-#include "locationaccesshelper.h"
 
 // Qt
 #include <QDebug>
@@ -107,7 +106,7 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
-    , m_locationAccessHelper(new LocationAccessHelper(this))
+    , m_locationAccessHelper(new LocationAccessHelper(nullptr))
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -132,8 +131,8 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
-    QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper, &LocationAccessHelper::accessDenied);
-    QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper, &LocationAccessHelper::positionChanged);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
 
     createUserAgentString();
 
@@ -160,9 +159,9 @@ void Scopes::purgeScopesToDelete()
     m_scopesToDelete.clear();
 }
 
-const LocationAccessHelper& Scopes::locationAccessHelper() const
+QSharedPointer<LocationAccessHelper> Scopes::locationAccessHelper() const
 {
-    return *m_locationAccessHelper;
+    return m_locationAccessHelper;
 }
 
 void Scopes::searchDispatched(QString const& scopeId)

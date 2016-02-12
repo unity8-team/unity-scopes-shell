@@ -795,6 +795,11 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_customizations = converted.toMap();
     Q_EMIT customizationsChanged();
 
+    createSettingsModel();
+}
+
+void Scope::createSettingsModel()
+{
     try
     {
         scopes::Variant settings_definitions;
@@ -809,10 +814,20 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
             shareDir = QDir::home().filePath(QStringLiteral(".config/unity-scopes"));
         }
 
+        Q_ASSERT(m_scopesInstance);
+
         m_settingsModel.reset(
                 new SettingsModel(shareDir, id(),
-                        scopeVariantToQVariant(settings_definitions), this));
+                        scopeVariantToQVariant(settings_definitions),
+                        !m_scopesInstance->locationAccessHelper()->isLocationAccessDenied(),
+                        this));
+
         QObject::connect(m_settingsModel.data(), &SettingsModel::settingsChanged, this, &Scope::invalidateResults);
+
+        // If the scope needs location, then changes to global location access need to be monitored.
+        if (m_scopeMetadata->location_data_needed()) {
+            QObject::connect(m_scopesInstance->locationAccessHelper().data(), &LocationAccessHelper::accessChanged, this, &Scope::locationAccessChanged);
+        }
     }
     catch (unity::scopes::NotFoundException&)
     {
@@ -906,6 +921,13 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
         m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
     }
     return m_settingsModel.data();
+}
+
+void Scope::locationAccessChanged()
+{
+    qDebug() << "Location access changed, recreating settings model for scope" << id();
+    createSettingsModel();
+    Q_EMIT settingsChanged();
 }
 
 bool Scope::require_child_scopes_refresh() const
@@ -1161,7 +1183,9 @@ void Scope::setActive(const bool active) {
         {
             if (m_isActive)
             {
-                if (m_scopesInstance->locationAccessHelper().shouldRequestLocation()) {
+                Q_ASSERT(m_scopesInstance);
+
+                if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
                     m_locationToken = m_locationService->activate();
                 } else {
                     qDebug() << "Waiting for more searches before requesting location";

@@ -34,7 +34,7 @@ LocationAccessHelper::LocationAccessHelper(QObject *parent) :
     QObject(parent),
     m_numOfSearches(NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT),
     m_dotFileExists(false),
-    m_denied(false)
+    m_denied(true)
 {
     auto const path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QDir locationPromptFile(path);
@@ -60,7 +60,10 @@ void LocationAccessHelper::searchDispatched(QString const& /* scopeId */)
 
 void LocationAccessHelper::positionChanged()
 {
-    m_denied = false;
+    if (m_denied) {
+        m_denied = false;
+        Q_EMIT accessChanged();
+    }
 
     if (!m_dotFileExists) {
         createLocationPromptFile();
@@ -69,7 +72,10 @@ void LocationAccessHelper::positionChanged()
 
 void LocationAccessHelper::accessDenied()
 {
-    m_denied = true;
+    if (!m_denied) {
+        m_denied = true;
+        Q_EMIT accessChanged();
+    }
 
     if (!m_dotFileExists) {
         createLocationPromptFile();

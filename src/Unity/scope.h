@@ -42,6 +42,7 @@
 #include "departmentnode.h"
 #include "department.h"
 #include "locationservice.h"
+#include "locationaccesshelper.h"
 
 namespace scopes_ng
 {
@@ -191,12 +192,14 @@ private Q_SLOTS:
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
     void previewStackDestroyed(QObject *obj);
+    void locationAccessChanged();
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
 
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
+    void createSettingsModel();
 
     unity::scopes::ScopeProxy proxy() const;
 

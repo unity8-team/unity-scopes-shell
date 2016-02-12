@@ -39,6 +39,9 @@ public Q_SLOTS:
     void accessDenied();
     void positionChanged();
 
+Q_SIGNALS:
+    void accessChanged();
+
 private:
     void createLocationPromptFile();
 

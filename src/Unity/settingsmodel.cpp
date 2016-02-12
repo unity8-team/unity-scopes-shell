@@ -30,7 +30,8 @@ using namespace scopes_ng;
 namespace sc = unity::scopes;
 
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
-        const QVariant& settingsDefinitions, QObject* parent,
+        const QVariant& settingsDefinitions, bool isLocationGloballyEnabled,
+        QObject* parent,
         int settingsTimeout)
         : SettingsModelInterface(parent), m_scopeId(scopeId), m_settingsTimeout(settingsTimeout),
           m_requireChildScopesRefresh(false)
@@ -46,6 +47,12 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         QVariantMap data = it.toMap();
         QString id = data[QStringLiteral("id")].toString();
         QString displayName = data[QStringLiteral("displayName")].toString();
+
+        if (id == "internal.location" && isLocationGloballyEnabled) {
+            qDebug() << "Location setting ignored, waiting for global location access to be enabled first";
+            continue;
+        }
+
         QVariantMap properties;
         QVariant defaultValue;
         if (data.contains(QStringLiteral("displayValues")))
