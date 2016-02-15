@@ -212,6 +212,30 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_ == "duplicated_uris1")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri");
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
+        else if (query_ == "duplicated_uris2")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                if (i % 2 == 0) { // every other result uses same uri
+                    res.set_uri("uri");
+                } else {
+                    res.set_uri("uri" + std::to_string(i));
+                }
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
     }
 
 private:

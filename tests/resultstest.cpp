@@ -1067,6 +1067,60 @@ private Q_SLOTS:
         );
     }
 
+    void testResultsModelChangesWithDuplicatedUris()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+
+        // first search run
+        {
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("duplicated_uris1");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(10)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results.size()), 10UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("uri")
+                        );
+            }
+        }
+
+        // second search run
+        {
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("duplicated_uris2");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(10)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results.size()), 10UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        (i % 2 == 0) ? QString::fromStdString("uri") : QString::fromStdString("uri" + std::to_string(i))
+                        );
+            }
+        }
+    }
+
     void testResultsMassiveModelChanges()
     {
         auto resultsView = m_harness->resultsView();
