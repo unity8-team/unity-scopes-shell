@@ -1118,6 +1118,27 @@ private Q_SLOTS:
         }
     }
 
+    void testResultsModelChangesWithDuplicatedResults()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+
+        {
+            resultsView->setQuery("duplicated_results");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(2)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results.size()), 2UL);
+        }
+    }
+
     void testResultsMassiveModelChanges()
     {
         auto resultsView = m_harness->resultsView();
@@ -1316,6 +1337,34 @@ private Q_SLOTS:
                         );
             }
         }
+        // search with empty string
+        {
+            auto const start = std::chrono::system_clock::now();
+
+            resultsView->setQuery("");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(200)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const end = std::chrono::system_clock::now();
+            auto const search_dur = std::chrono::duration_cast<std::chrono::seconds>(end.time_since_epoch()).count() - std::chrono::duration_cast<std::chrono::seconds>(start.time_since_epoch()).count();
+            qDebug() << "Search #8 duration: " << search_dur;
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results.size()), 200UL);
+            for (unsigned i = 0; i<results.size(); i++) {
+                QCOMPARE(
+                        QString::fromStdString(results[i].uri()),
+                        QString::fromStdString("cat1_uri" + std::to_string(i))
+                        );
+            }
+        }
+
     }
 
     void testResultsModelUpdatesRandomSearches()
