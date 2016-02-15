@@ -1129,13 +1129,13 @@ private Q_SLOTS:
                 shm::CategoryListMatcher()
                     .hasExactly(1)
                     .category(shm::CategoryMatcher("cat1")
-                        .hasAtLeast(2)
+                        .hasAtLeast(1)
                     )
                     .match(resultsView->categories())
             );
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(static_cast<unsigned long>(results.size()), 2UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 1UL);
         }
     }
 

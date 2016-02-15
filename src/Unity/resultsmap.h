@@ -33,7 +33,9 @@ class ResultsMap
 {
     public:
         ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results);
-        ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results);
+
+        // note: this constructor modifies the input results list (de-duplicates it).
+        ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
         void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
