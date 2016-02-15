@@ -237,6 +237,32 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_ == "two-categories")
+        {
+            auto cat3 = reply->register_category("cat3", "Category 3", "", meta_rndr);
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri" + std::to_string(i));
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+
+                CategorisedResult res2(cat3);
+                res2.set_uri("uri" + std::to_string(i));
+                res2.set_title("result " + std::to_string(i));
+                reply->push(res2);
+            }
+        }
+        else if (query_ == "two-categories-second-gone")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri" + std::to_string(i));
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
         else if (query_.find("random") == 0) // "random", followed by an int for the number of results
         {
             for (int i = 0; i<std::stoi(query_.substr(6)); i++)
@@ -245,9 +271,11 @@ public:
                 res.set_uri("cat1_uri" + std::to_string(rand()));
                 res.set_title("result5 for: \"" + query_ + "\"");
                 reply->push(res);
+                if (i % 2 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
             }
         }
-
     }
 
 private:

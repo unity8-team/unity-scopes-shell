@@ -1342,6 +1342,47 @@ private Q_SLOTS:
             QCOMPARE(static_cast<unsigned long>(results.size()), n);
         }
     }
+
+    void testResultsModelUpdatesTwoCategories()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+
+        {
+            resultsView->setQuery("two-categories");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(2)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(10)
+                    )
+                    .category(shm::CategoryMatcher("cat3")
+                        .hasAtLeast(10)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results1 = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results1.size()), 10UL);
+
+            auto const results2 = resultsView->category("cat3").results();
+            QCOMPARE(static_cast<unsigned long>(results2.size()), 10UL);
+        }
+        {
+            resultsView->setQuery("two-categories-second-gone");
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(10)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results1 = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results1.size()), 10UL);
+        }
+    }
 };
 
 QTEST_GUILESS_MAIN(ResultsTest)
