@@ -145,6 +145,21 @@ public:
                 }
             }
         }
+        else if (query_ == "lots_of_results_reversed_plus_some")
+        {
+            // 2100 items, in the reversed order of search5, plus 100 extra results
+            for (int i = 2099; i>=0; i--)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
         else if (query_ == "lots_of_results_half_of_them_missing")
         {
             // 1000 items with uris matching every other item from previous search
