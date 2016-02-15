@@ -25,6 +25,7 @@
 #include <QDebug>
 
 #include <chrono>
+#include <cstdlib>
 #include <Unity/resultsmodel.h>
 
 #include <unity/shell/scopes/CategoriesInterface.h>
@@ -1074,8 +1075,6 @@ private Q_SLOTS:
 
         // first search run
         {
-            auto const start = std::chrono::system_clock::now();
-
             resultsView->setQuery("duplicated_uris1");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
@@ -1098,8 +1097,6 @@ private Q_SLOTS:
 
         // second search run
         {
-            auto const start = std::chrono::system_clock::now();
-
             resultsView->setQuery("duplicated_uris2");
             QVERIFY_MATCHRESULT(
                 shm::CategoryListMatcher()
@@ -1318,6 +1315,31 @@ private Q_SLOTS:
                         QString::fromStdString("cat1_uri" + std::to_string(9-i))
                         );
             }
+        }
+    }
+
+    void testResultsModelUpdatesRandomSearches()
+    {
+        // the aim of this test is to ensure no crashes; results art random and not verified
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+
+        for (int i = 0; i<100; i++)
+        {
+            const unsigned long n = 1 + rand() % 100; // up to 100 results
+
+            resultsView->setQuery("random" + std::to_string(n));
+            QVERIFY_MATCHRESULT(
+                shm::CategoryListMatcher()
+                    .hasExactly(1)
+                    .category(shm::CategoryMatcher("cat1")
+                        .hasAtLeast(n)
+                    )
+                    .match(resultsView->categories())
+            );
+
+            auto const results = resultsView->category("cat1").results();
+            QCOMPARE(static_cast<unsigned long>(results.size()), n);
         }
     }
 };

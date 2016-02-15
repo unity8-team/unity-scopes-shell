@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cstdlib>
 #include <chrono>
 
 #define EXPORT __attribute__ ((visibility ("default")))
@@ -236,6 +237,17 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_.find("random") == 0) // "random", followed by an int for the number of results
+        {
+            for (int i = 0; i<std::stoi(query_.substr(6)); i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(rand()));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+            }
+        }
+
     }
 
 private:
