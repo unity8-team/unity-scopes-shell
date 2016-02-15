@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 #define EXPORT __attribute__ ((visibility ("default")))
 
@@ -114,7 +115,88 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_ == "lots_of_results")
+        {
+            // 2000 items
+            for (int i = 0; i<2000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
 
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+        else if (query_ == "lots_of_results_reversed")
+        {
+            // 2000 items, in the reversed order of search5
+            for (int i = 1999; i>=0; i--)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+        else if (query_ == "lots_of_results_half_of_them_missing")
+        {
+            // 1000 items with uris matching every other item from previous search
+            for (int i = 0; i<1000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i*2));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+        else if (query_ == "lots_of_results_2")
+        {
+            // 2000 items, all different than in previous searches
+            for (int i = 0; i<2000; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(5000 + i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
+        else if (query_ == "lots_of_results_fast")
+        {
+            // 100 items
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+            }
+        }
+        else if (query_ == "lots_of_results_reversed_fast")
+        {
+            // 100 items, in the reversed order of search5
+            for (int i = 9; i>=0; i--)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+            }
+        }
     }
 
 private:
