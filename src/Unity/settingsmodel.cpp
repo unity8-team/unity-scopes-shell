@@ -48,7 +48,7 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         QString id = data[QStringLiteral("id")].toString();
         QString displayName = data[QStringLiteral("displayName")].toString();
 
-        if (id == "internal.location" && isLocationGloballyEnabled) {
+        if (id == "internal.location" && !isLocationGloballyEnabled) {
             qDebug() << "Location setting ignored, waiting for global location access to be enabled first";
             continue;
         }
