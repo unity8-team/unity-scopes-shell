@@ -1373,7 +1373,7 @@ private Q_SLOTS:
         auto resultsView = m_harness->resultsView();
         resultsView->setActiveScope("mock-scope-manyresults");
 
-        for (int i = 0; i<100; i++)
+        for (int i = 0; i<10; i++)
         {
             const unsigned long n = 1 + rand() % 100; // up to 100 results
 

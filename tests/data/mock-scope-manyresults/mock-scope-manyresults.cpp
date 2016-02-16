@@ -290,10 +290,11 @@ public:
         }
         else if (query_.find("random") == 0) // "random", followed by an int for the number of results
         {
+            auto rand_start = rand() % 30;
             for (int i = 0; i<std::stoi(query_.substr(6)); i++)
             {
                 CategorisedResult res(cat1);
-                res.set_uri("cat1_uri" + std::to_string(rand() % 100));
+                res.set_uri("cat1_uri" + std::to_string(rand_start + i));
                 res.set_title("result" + std::to_string(i));
                 reply->push(res);
                 if (i % 2 == 0) {
