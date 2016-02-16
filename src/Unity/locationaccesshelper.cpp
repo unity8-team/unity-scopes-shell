@@ -61,6 +61,8 @@ void LocationAccessHelper::searchDispatched(QString const& /* scopeId */)
 
 void LocationAccessHelper::positionChanged()
 {
+    qDebug() << "LocationAccessHelper::positionChanged";
+
     if (m_denied) {
         m_denied = false;
         Q_EMIT accessChanged();
@@ -73,6 +75,7 @@ void LocationAccessHelper::positionChanged()
 
 void LocationAccessHelper::accessDenied()
 {
+    qDebug() << "LocationAccessHelper::accessDenied";
     if (!m_denied) {
         m_denied = true;
         Q_EMIT accessChanged();
