@@ -43,7 +43,7 @@ LocationAccessHelper::LocationAccessHelper(QObject *parent) :
 
 bool LocationAccessHelper::shouldRequestLocation() const
 {
-    return m_dotFileExists || m_numOfSearches == 0;
+    return m_dotFileExists || (m_numOfSearches == 0);
 }
 
 bool LocationAccessHelper::isLocationAccessDenied() const
@@ -55,6 +55,7 @@ void LocationAccessHelper::searchDispatched(QString const& /* scopeId */)
 {
     if (m_numOfSearches > 0) {
         --m_numOfSearches;
+        qDebug() << "Number of searches before requesting location:" << m_numOfSearches;
     }
 }
 
