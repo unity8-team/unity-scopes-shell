@@ -97,7 +97,6 @@ public:
 
         m_locationSource = QGeoPositionInfoSource::createDefaultSource(this);
         connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &Priv::positionChanged);
-        connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &Priv::locationChanged);
         connect(m_locationSource, &QGeoPositionInfoSource::updateTimeout, this, &Priv::onPositionUpdateTimeout);
         connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError(QGeoPositionInfoSource::Error)));
 
@@ -175,8 +174,10 @@ public Q_SLOTS:
 
     void requestFinished(const GeoIp::Result& result)
     {
-        QMutexLocker lock(&m_resultMutex);
-        m_result = result;
+        {
+            QMutexLocker lock(&m_resultMutex);
+            m_result = result;
+        }
         Q_EMIT locationChanged();
     }
 
