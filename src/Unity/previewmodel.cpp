@@ -56,6 +56,17 @@ PreviewModel::PreviewModel(QObject* parent) :
     m_previewWidgetModels.append(columnModel);
 }
 
+PreviewModel::~PreviewModel()
+{
+    if (m_listener) {
+        m_listener->invalidate();
+    }
+
+    if (m_lastActivation) {
+        m_lastActivation->invalidate();
+    }
+}
+
 void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
 {
     m_previewedResult = result;
@@ -69,6 +80,9 @@ bool PreviewModel::event(QEvent* ev)
         switch (pushEvent->type()) {
             case PushEvent::PREVIEW:
                 processPreviewChunk(pushEvent);
+                return true;
+            case PushEvent::ACTIVATION:
+                processActionResponse(pushEvent);
                 return true;
             default:
                 qWarning("PreviewModel: Unhandled PushEvent type");
@@ -538,67 +552,62 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
         }
     };
 
-    PreviewModel* previewModel = qobject_cast<scopes_ng::PreviewModel*>(sender());
-    if (previewModel != nullptr) {
-        PreviewWidgetData* widgetData = previewModel->getWidgetData(widgetId);
-        if (widgetData != nullptr) {
-            QString wtype = widgetData->type;
-            auto uriAction = [this, wtype, data, action]() {
-                if ((wtype == QLatin1String("actions") || wtype == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
-                    if (m_associatedScope) {
-                        m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
-                        return;
-                    }
+    PreviewWidgetData* widgetData = getWidgetData(widgetId);
+    if (widgetData != nullptr) {
+        QString wtype = widgetData->type;
+        auto uriAction = [this, wtype, data, action]() {
+            if ((wtype == QLatin1String("actions") || wtype == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
+                if (m_associatedScope) {
+                    m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
+                    return;
                 }
-                action();
-            };
+            }
+            action();
+        };
 
-            if (m_associatedScope && widgetData->data.contains(QStringLiteral("online_account_details")))
+        if (m_associatedScope && widgetData->data.contains(QStringLiteral("online_account_details")))
+        {
+            QVariantMap details = widgetData->data.value(QStringLiteral("online_account_details")).toMap();
+            if (details.contains(QStringLiteral("service_name")) &&
+                details.contains(QStringLiteral("service_type")) &&
+                details.contains(QStringLiteral("provider_name")) &&
+                details.contains(QStringLiteral("login_passed_action")) &&
+                details.contains(QStringLiteral("login_failed_action")))
             {
-                QVariantMap details = widgetData->data.value(QStringLiteral("online_account_details")).toMap();
-                if (details.contains(QStringLiteral("service_name")) &&
-                    details.contains(QStringLiteral("service_type")) &&
-                    details.contains(QStringLiteral("provider_name")) &&
-                    details.contains(QStringLiteral("login_passed_action")) &&
-                    details.contains(QStringLiteral("login_failed_action")))
-                {
-                    LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
-                                                               details.value(QStringLiteral("service_name")).toString(),
-                                                               details.value(QStringLiteral("service_type")).toString(),
-                                                               details.value(QStringLiteral("provider_name")).toString(),
-                                                               details.value(QStringLiteral("login_passed_action")).toInt(),
-                                                               details.value(QStringLiteral("login_failed_action")).toInt(),
-                                                               this);
-                    connect(login, SIGNAL(searchInProgress(bool)), m_associatedScope, SLOT(setSearchInProgress(bool)));
-                    connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
-                        if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+                LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                                            details.value(QStringLiteral("service_name")).toString(),
+                                                            details.value(QStringLiteral("service_type")).toString(),
+                                                            details.value(QStringLiteral("provider_name")).toString(),
+                                                            details.value(QStringLiteral("login_passed_action")).toInt(),
+                                                            details.value(QStringLiteral("login_failed_action")).toInt(),
+                                                            this);
+                connect(login, SIGNAL(searchInProgress(bool)), m_associatedScope, SLOT(setSearchInProgress(bool)));
+                connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
+                    if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+                    {
+                        scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                        switch (action_code)
                         {
-                            scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
-                            switch (action_code)
-                            {
-                                case scopes::OnlineAccountClient::DoNothing:
-                                    return;
-                                case scopes::OnlineAccountClient::InvalidateResults:
-                                    m_associatedScope->invalidateResults();
-                                    return;
-                                default:
-                                    break;
-                            }
+                            case scopes::OnlineAccountClient::DoNothing:
+                                return;
+                            case scopes::OnlineAccountClient::InvalidateResults:
+                                m_associatedScope->invalidateResults();
+                                return;
+                            default:
+                                break;
                         }
-                        uriAction();
-                        login->deleteLater();
-                    });
-                    login->loginToAccount();
-                    return; // main execution ends here
-                }
-            } else {
-                uriAction();
+                    }
+                    uriAction();
+                    login->deleteLater();
+                });
+                login->loginToAccount();
+                return; // main execution ends here
             }
         } else {
-            qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
+            uriAction();
         }
     } else {
-        action();
+        qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
     }
 }
 

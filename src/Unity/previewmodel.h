@@ -63,6 +63,7 @@ class Q_DECL_EXPORT PreviewModel : public unity::shell::scopes::PreviewModelInte
 
 public:
     explicit PreviewModel(QObject* parent = 0);
+    ~PreviewModel();
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
