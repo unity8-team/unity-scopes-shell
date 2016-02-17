@@ -27,7 +27,7 @@ namespace shell
 {
 namespace scopes
 {
-class PreviewStackInterface;
+class PreviewModelInterface;
 }
 }
 namespace scopeharness
@@ -74,7 +74,7 @@ protected:
     friend ScopeHarness;
     friend preview::PreviewWidget;
 
-    void preview(std::shared_ptr<shell::scopes::PreviewStackInterface> previewStack);
+    void preview(std::shared_ptr<shell::scopes::PreviewModelInterface> previewModel);
 
     void setResultsView(std::shared_ptr<ResultsView> resultsView);
 

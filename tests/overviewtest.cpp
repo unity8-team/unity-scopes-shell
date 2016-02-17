@@ -31,7 +31,6 @@
 #include <categories.h>
 #include <overviewresults.h>
 #include <previewmodel.h>
-#include <previewstack.h>
 #include <previewwidgetmodel.h>
 
 #include <scope-harness/registry/pre-existing-registry.h>
@@ -138,8 +137,8 @@ private Q_SLOTS:
         QVERIFY(result != nullptr);
 
         // preview not available for the overview scope
-        QScopedPointer<PreviewStack> preview_stack(static_cast<PreviewStack*>(m_scope->preview(QVariant::fromValue(result), results->categoryId())));
-        QVERIFY(preview_stack == nullptr);
+        QScopedPointer<PreviewModel> preview_model(static_cast<PreviewModel*>(m_scope->preview(QVariant::fromValue(result), results->categoryId())));
+        QVERIFY(preview_model== nullptr);
     }
 };
 
