@@ -116,6 +116,7 @@ public:
 
 Q_SIGNALS:
     void locationChanged();
+    void geoIpLookupFinished();
     void accessDenied();
 
 public Q_SLOTS:
@@ -179,7 +180,7 @@ public Q_SLOTS:
             QMutexLocker lock(&m_resultMutex);
             m_result = result;
         }
-        Q_EMIT locationChanged();
+        Q_EMIT geoIpLookupFinished();
     }
 
     void activate()
@@ -237,6 +238,7 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
 
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::geoIpLookupFinished, this, &LocationService::geoIpLookupFinished, Qt::QueuedConnection);
     connect(p.data(), &Priv::accessDenied, this, &LocationService::accessDenied, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueDeactivate, p.data(), &Priv::deactivate, Qt::QueuedConnection);

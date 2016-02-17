@@ -38,6 +38,7 @@ public Q_SLOTS:
     void searchDispatched(QString const& scopeId);
     void accessDenied();
     void positionChanged();
+    void geoIpLookupFinished();
 
 Q_SIGNALS:
     void accessChanged();

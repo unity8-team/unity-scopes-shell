@@ -59,6 +59,13 @@ void LocationAccessHelper::searchDispatched(QString const& /* scopeId */)
     }
 }
 
+void LocationAccessHelper::geoIpLookupFinished()
+{
+    qDebug() << "LocationAccessHelper::geoIpLookupFinished";
+    // This signal is not interesting at the moment. If, however we need to refresh scopes on location update,
+    // then it should be re-emited (forwarded) here and in positonChanged() below.
+}
+
 void LocationAccessHelper::positionChanged()
 {
     qDebug() << "LocationAccessHelper::positionChanged";
