@@ -174,6 +174,7 @@ public Q_SLOTS:
 
     void requestFinished(const GeoIp::Result& result)
     {
+        qDebug() << "GeoIP request finished";
         {
             QMutexLocker lock(&m_resultMutex);
             m_result = result;
