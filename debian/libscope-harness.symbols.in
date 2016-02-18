@@ -1,4 +1,5 @@
 libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #MINVER#
+ (c++)"unity::scopeharness::view::PreviewView::preview(std::shared_ptr<unity::shell::scopes::PreviewModelInterface>)@Base" 0replaceme
  (c++)"typeinfo for unity::scopeharness::registry::CustomRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"typeinfo for unity::scopeharness::registry::PreExistingRegistry@Base" 0.5.4+15.04.20150311.3
  (c++)"typeinfo for unity::scopeharness::registry::Registry@Base" 0.5.4+15.04.20150311.3
@@ -264,7 +265,6 @@ libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #M
  (c++)"unity::scopeharness::TestUtils::getFavoriteScopes()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::getFirstResult(unity::shell::scopes::CategoriesInterface*, std::shared_ptr<unity::scopes::Result>&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::performSearch(QSharedPointer<unity::shell::scopes::ScopeInterface>, QString const&)@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::TestUtils::previewForFirstResult(QSharedPointer<scopes_ng::Scope>, QString const&, QScopedPointer<scopes_ng::PreviewStack, QScopedPointerDeleter<scopes_ng::PreviewStack> >&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::refreshSearch(QSharedPointer<scopes_ng::Scope>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::setFavouriteScopes(QStringList const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::throwIf(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
@@ -273,7 +273,6 @@ libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #M
  (c++)"unity::scopeharness::TestUtils::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::columnCount() const@Base" 0.5.4+15.04.20150311.3
- (c++)"unity::scopeharness::view::PreviewView::preview(std::shared_ptr<unity::shell::scopes::PreviewStackInterface>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::PreviewView()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::refresh()@Base" 0.5.4+15.04.20150311.3
