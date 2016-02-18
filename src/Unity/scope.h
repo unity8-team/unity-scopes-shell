@@ -125,6 +125,7 @@ public:
     bool favorite() const override;
     QString shortcut() const override;
     bool searchInProgress() const override;
+    bool activationInProgress() const override;
     unity::shell::scopes::ScopeInterface::Status status() const override;
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
@@ -177,6 +178,7 @@ public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
     void setSearchInProgress(bool searchInProgress);
+    void setActivationInProgress(bool activationInProgress);
 
 Q_SIGNALS:
     void resultsDirtyChanged();
@@ -230,6 +232,7 @@ private:
     std::unique_ptr<unity::scopes::Variant> m_queryUserData;
     bool m_isActive;
     bool m_searchInProgress;
+    bool m_activationInProgress;
     bool m_resultsDirty;
     bool m_delayedSearchProcessing;
     bool m_hasNavigation;
