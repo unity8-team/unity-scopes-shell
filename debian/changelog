@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.6+16.04.20160223-0ubuntu1) xenial; urgency=medium
+
+  * Use Qt Location API. (LP: #1419829)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Tue, 23 Feb 2016 08:40:04 +0000
+
 unity-scopes-shell (0.5.6+16.04.20160216-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
