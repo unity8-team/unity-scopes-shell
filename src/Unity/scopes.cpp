@@ -106,6 +106,7 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_locationAccessHelper(new LocationAccessHelper(nullptr))
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -130,6 +131,9 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::geoIpLookupFinished, m_locationAccessHelper.data(), &LocationAccessHelper::geoIpLookupFinished);
 
     createUserAgentString();
 
@@ -154,6 +158,16 @@ QString Scopes::userAgentString() const
 void Scopes::purgeScopesToDelete()
 {
     m_scopesToDelete.clear();
+}
+
+QSharedPointer<LocationAccessHelper> Scopes::locationAccessHelper() const
+{
+    return m_locationAccessHelper;
+}
+
+void Scopes::searchDispatched(QString const& scopeId)
+{
+    m_locationAccessHelper->searchDispatched(scopeId);
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const

@@ -22,6 +22,7 @@ set(QMLPLUGIN_SRC
     departmentnode.cpp
     geoip.cpp
     localization.h
+    locationaccesshelper.cpp
     locationservice.cpp
     overviewcategories.cpp
     overviewresults.cpp

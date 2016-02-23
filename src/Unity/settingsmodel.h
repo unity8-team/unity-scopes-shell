@@ -64,7 +64,8 @@ Q_OBJECT
 
 public:
     explicit SettingsModel(const QDir& configDir, const QString& scopeId,
-            const QVariant& settingsDefinitions, QObject* parent = 0,
+            const QVariant& settingsDefinitions, bool isLocationGloballyEnabled = true,
+            QObject* parent = 0,
             int settingsTimeout = 300);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const

@@ -19,9 +19,9 @@ set(
     Gui
     Network
     Qml
+    Positioning
 )
 
 add_subdirectory(Unity)
 add_subdirectory(scope-harness)
 add_subdirectory(python)
-

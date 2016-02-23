@@ -61,10 +61,16 @@ public Q_SLOTS:
     virtual QSharedPointer<Token> activate() = 0;
 
 Q_SIGNALS:
+    // emited when location changes and only when access has been granted by apparmor
     void locationChanged();
+
+    // emited when geoip lookup finishes (including initial lookup on startup). regardless of apparmor permissions
+    // (receiving it doesn't mean position updates are allowed).
+    void geoIpLookupFinished();
 
     void activeChanged();
 
+    void accessDenied();
 };
 
 } // namespace scopes_ng

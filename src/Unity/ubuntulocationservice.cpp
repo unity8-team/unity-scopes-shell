@@ -24,11 +24,8 @@
 #include <QRunnable>
 #include <QThreadPool>
 #include <QTimer>
-
-#include <com/ubuntu/location/service/stub.h>
-
-#include <core/dbus/resolver.h>
-#include <core/dbus/asio/executor.h>
+#include <QGeoPositionInfo>
+#include <QGeoPositionInfoSource>
 
 #include <memory>
 
@@ -36,11 +33,6 @@ using namespace std;
 using namespace std::placeholders;
 using namespace scopes_ng;
 
-namespace cul = com::ubuntu::location;
-namespace culs = com::ubuntu::location::service;
-namespace culss = com::ubuntu::location::service::session;
-namespace culu = com::ubuntu::location::units;
-namespace dbus = core::dbus;
 namespace scopes = unity::scopes;
 
 namespace
@@ -55,25 +47,6 @@ namespace
      * Re-do the GeoIP call every 60 seconds
      */
     static const int GEOIP_INTERVAL = 60000;
-
-    class DBusThread : public QThread
-    {
-
-    public:
-        DBusThread(const dbus::Bus::Ptr& bus) :
-                m_bus(bus)
-        {
-        }
-
-    protected:
-        void run() override
-        {
-            m_bus->run();
-        }
-
-        dbus::Bus::Ptr m_bus;
-    };
-
 }
 
 class UbuntuLocationService::TokenImpl: public LocationService::Token
@@ -102,8 +75,7 @@ Q_OBJECT
 
 public:
     Priv() :
-            m_lastLocationMutex(QMutex::Recursive), m_resultMutex(
-                    QMutex::Recursive)
+        m_resultMutex(QMutex::Recursive)
     {
     }
 
@@ -123,21 +95,10 @@ public:
 
         QMetaObject::invokeMethod(m_geoIp.data(), "start", Qt::QueuedConnection);
 
-        try
-        {
-            m_bus = make_shared<dbus::Bus>(dbus::WellKnownBus::system);
-            m_bus->install_executor(dbus::asio::make_executor(m_bus));
-
-            m_dbusThread.reset(new DBusThread(m_bus));
-            m_dbusThread->start();
-
-            m_locationService = dbus::resolve_service_on_bus<culs::Interface,
-                    culs::Stub>(m_bus);
-        }
-        catch (exception& e)
-        {
-            qWarning() << e.what();
-        }
+        m_locationSource = QGeoPositionInfoSource::createDefaultSource(this);
+        connect(m_locationSource, &QGeoPositionInfoSource::positionUpdated, this, &Priv::positionChanged);
+        connect(m_locationSource, &QGeoPositionInfoSource::updateTimeout, this, &Priv::onPositionUpdateTimeout);
+        connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError(QGeoPositionInfoSource::Error)));
 
         // Wire up the deactivate timer
         connect(&m_deactivateTimer, &QTimer::timeout, this, &Priv::update, Qt::QueuedConnection);
@@ -151,29 +112,16 @@ public:
 
     ~Priv()
     {
-        if (m_bus)
-        {
-            m_bus->stop();
-        }
-
-        if (m_dbusThread && m_dbusThread->isRunning())
-        {
-            m_dbusThread->wait();
-        }
     }
 
 Q_SIGNALS:
     void locationChanged();
+    void geoIpLookupFinished();
+    void accessDenied();
 
 public Q_SLOTS:
     void update()
     {
-        if (!m_locationService)
-        {
-            qWarning() << "Location service not available";
-            return;
-        }
-
         if (m_activationCount > 0)
         {
             // Update the GeoIp data again
@@ -182,32 +130,17 @@ public Q_SLOTS:
 
         try
         {
-            if (!m_session)
-            {
-                m_session = m_locationService->create_session_for_criteria(
-                        cul::Criteria());
-
-                m_session->updates().position.changed().connect(
-                        bind(&UbuntuLocationService::Priv::positionChanged,
-                             this, _1));
-            }
-
-            if (m_activationCount > 0
-                    && m_session->updates().position_status
-                            == culss::Interface::Updates::Status::disabled)
+            if (m_activationCount > 0)
             {
                 qDebug() << "Enabling location updates";
-                m_session->updates().position_status =
-                        culss::Interface::Updates::Status::enabled;
+                m_locationSource->startUpdates();
                 m_geoipTimer.start();
             }
-            else if (m_activationCount == 0
-                    && m_session->updates().position_status
-                            == culss::Interface::Updates::Status::enabled)
+            else
             {
                 qDebug() << "Disabling location updates";
-                m_session->updates().position_status =
-                        culss::Interface::Updates::Status::disabled;
+                m_active = false;
+                m_locationSource->stopUpdates();
                 m_geoipTimer.stop();
             }
         }
@@ -217,24 +150,42 @@ public Q_SLOTS:
         }
     }
 
-    void positionChanged(const cul::Update<cul::Position>& newPosition)
+    void positionChanged(const QGeoPositionInfo& update)
     {
-        QMutexLocker lock(&m_lastLocationMutex);
+        qDebug() << "Position updated:" << update;
 
         m_locationUpdatedAtLeastOnce = true;
-        m_lastLocation = newPosition.value;
+        m_lastLocation = update;
         Q_EMIT locationChanged();
+    }
+
+    void onPositionUpdateTimeout()
+    {
+        qWarning() << "Position update timeout";
+    }
+
+    void onError(QGeoPositionInfoSource::Error positioningError)
+    {
+        qWarning() << "Position update error:" << positioningError;
+        if (positioningError == QGeoPositionInfoSource::AccessError) {
+            qDebug() << "Postion update denied";
+            Q_EMIT accessDenied();
+        }
     }
 
     void requestFinished(const GeoIp::Result& result)
     {
-        QMutexLocker lock(&m_resultMutex);
-        m_result = result;
-        Q_EMIT locationChanged();
+        qDebug() << "GeoIP request finished";
+        {
+            QMutexLocker lock(&m_resultMutex);
+            m_result = result;
+        }
+        Q_EMIT geoIpLookupFinished();
     }
 
     void activate()
     {
+        m_active = true;
         ++m_activationCount;
         m_deactivateTimer.stop();
         update();
@@ -252,15 +203,10 @@ public Q_SLOTS:
     }
 
 public:
-    dbus::Bus::Ptr m_bus;
+    bool m_active;
 
-    culs::Stub::Ptr m_locationService;
-
-    culss::Interface::Ptr m_session;
-
-    cul::Position m_lastLocation;
-
-    QMutex m_lastLocationMutex;
+    QGeoPositionInfoSource *m_locationSource;
+    QGeoPositionInfo m_lastLocation;
 
     bool m_locationUpdatedAtLeastOnce = false;
 
@@ -271,8 +217,6 @@ public:
     QTimer m_deactivateTimer;
 
     GeoIp::Ptr m_geoIp;
-
-    QSharedPointer<QThread> m_dbusThread;
 
     QMutex m_resultMutex;
 
@@ -294,6 +238,8 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
 
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::geoIpLookupFinished, this, &LocationService::geoIpLookupFinished, Qt::QueuedConnection);
+    connect(p.data(), &Priv::accessDenied, this, &LocationService::accessDenied, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueDeactivate, p.data(), &Priv::deactivate, Qt::QueuedConnection);
 
@@ -336,28 +282,21 @@ scopes::Location UbuntuLocationService::location() const
         location.set_city(result.city.toStdString());
     }
 
-    QMutexLocker lock(&p->m_lastLocationMutex);
     // We need to be active, and the location session must have updated at least once
     if (isActive() && p->m_locationUpdatedAtLeastOnce)
     {
-        cul::Position pos = p->m_lastLocation;
+        location.set_latitude(p->m_lastLocation.coordinate().latitude());
+        location.set_longitude(p->m_lastLocation.coordinate().longitude());
+        location.set_altitude(p->m_lastLocation.coordinate().altitude());
 
-        if (pos.accuracy.horizontal)
+        if (p->m_lastLocation.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))
         {
-            location.set_horizontal_accuracy(pos.accuracy.horizontal.get().value());
+            location.set_horizontal_accuracy(p->m_lastLocation.attribute(QGeoPositionInfo::HorizontalAccuracy));
         }
-        if (pos.accuracy.vertical)
+        if (p->m_lastLocation.hasAttribute(QGeoPositionInfo::VerticalAccuracy))
         {
-            location.set_vertical_accuracy(pos.accuracy.vertical.get().value());
+            location.set_vertical_accuracy(p->m_lastLocation.attribute(QGeoPositionInfo::VerticalAccuracy));
         }
-
-        if (pos.altitude)
-        {
-            location.set_altitude(pos.altitude.get().value.value());
-        }
-
-        location.set_latitude(pos.latitude.value.value());
-        location.set_longitude(pos.longitude.value.value());
     }
     else if (result.valid)
     {
@@ -376,13 +315,12 @@ scopes::Location UbuntuLocationService::location() const
 
 bool UbuntuLocationService::isActive() const
 {
-    return p->m_session ? (p->m_session->updates().position_status ==
-            culss::Interface::Updates::Status::enabled) : false;
+    return p->m_active;
 }
 
 bool UbuntuLocationService::hasLocation() const
 {
-    return p->m_result.valid || p->m_locationUpdatedAtLeastOnce;
+    return p->m_lastLocation.isValid() || p->m_locationUpdatedAtLeastOnce;
 }
 
 QSharedPointer<LocationService::Token> UbuntuLocationService::activate()
