@@ -301,16 +301,6 @@ void Scopes::discoveryFinished()
         }
     }
 
-    // HACK! deal with the overview scope
-    {
-        auto it = scopes.find(SCOPES_SCOPE_ID);
-        if (it != scopes.end()) {
-            m_overviewScope->setScopeData(it->second);
-        } else {
-            qWarning("Unable to add overview scope, can't find with ID: \"%s\"", SCOPES_SCOPE_ID);
-        }
-    }
-
     // cache all the metadata
     m_cachedMetadata.clear();
     for (auto it = scopes.begin(); it != scopes.end(); ++it) {
@@ -536,7 +526,7 @@ void Scopes::invalidateScopeResults(QString const& scopeName)
         invalidateScopeResults(QStringLiteral("musicaggregator"));
     } else if (scopeName == QLatin1String("mediascanner-video")) {
         invalidateScopeResults(QStringLiteral("videoaggregator"));
-    } else if (scopeName == QLatin1String("scopes")) {
+    } else if (scopeName == QLatin1String(SCOPES_SCOPE_ID)) {
         // emitted when smart-scopes proxy or scope registry discovers new scopes
         m_registryRefreshTimer.start(5000);
         return;

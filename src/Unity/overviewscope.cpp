@@ -147,21 +147,12 @@ void OverviewScope::updateFavorites(const QStringList& favs)
 
 void OverviewScope::dispatchSearch()
 {
-    OverviewCategories* categories = qobject_cast<OverviewCategories*>(m_categories.data());
-    if (!categories) {
-        qWarning("Unable to cast m_categories to OverviewCategories");
-        return;
-    }
+    qWarning() << "Search is not implemented for Manage Dash";
+}
 
-    if (searchQuery().isEmpty()) {
-        setSearchInProgress(true);
-        invalidateLastSearch();
-        categories->setSurfacingMode(true);
-        setSearchInProgress(false);
-    } else {
-        categories->setSurfacingMode(false);
-        Scope::dispatchSearch();
-    }
+void OverviewScope::setActive(const bool)
+{
+    // do nothing
 }
 
 } // namespace scopes_ng

@@ -576,11 +576,11 @@ void Scope::processResultSet(QList<std::shared_ptr<scopes::CategorisedResult>>& 
         if (category_model == nullptr) {
             category_model.reset(new ResultsModel(m_categories.data()));
             category_model->setCategoryId(QString::fromStdString(category->id()));
-            category_model->addResults(m_category_results[category->id()]);
+            category_model->addResults(m_category_results[category->id()]); // de-duplicates m_category_results
             m_categories->registerCategory(category, category_model);
         } else {
             m_categories->registerCategory(category, QSharedPointer<ResultsModel>());
-            category_model->addUpdateResults(m_category_results[category->id()]);
+            category_model->addUpdateResults(m_category_results[category->id()]); // de-duplicates m_category_results
             m_categories->updateResultCount(category_model);
         }
     }
