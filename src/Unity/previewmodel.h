@@ -29,10 +29,13 @@
 #include <QMultiMap>
 #include <QStringList>
 #include <QPointer>
+#include <QUuid>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
 #include <unity/scopes/ColumnLayout.h>
+
+#include "collectors.h"
 
 namespace scopes_ng
 {
@@ -60,6 +63,7 @@ class Q_DECL_EXPORT PreviewModel : public unity::shell::scopes::PreviewModelInte
 
 public:
     explicit PreviewModel(QObject* parent = 0);
+    ~PreviewModel();
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -80,7 +84,18 @@ public:
 
     void updateWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
 
+    void loadForResult(unity::scopes::Result::SPtr const&);
+    void update(unity::scopes::PreviewWidgetList const&);
+
+    void setAssociatedScope(scopes_ng::Scope*, QUuid const&, QString const&);
+    scopes_ng::Scope* associatedScope() const;
+    unity::scopes::Result::SPtr previewedResult() const;
+
+private Q_SLOTS:
+    void widgetTriggered(QString const&, QString const&, QVariantMap const&);
+
 private:
+    void processActionResponse(PushEvent* pushEvent);
     void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
     void processWidgetDefinitions(unity::scopes::PreviewWidgetList const&, std::function<void(QSharedPointer<PreviewWidgetData>)> const& processFunc);
     void processPreviewChunk(PushEvent* pushEvent);
@@ -89,6 +104,7 @@ private:
     PreviewWidgetModel* createExpandableWidgetModel(unity::scopes::PreviewWidget const&, PreviewWidgetData &);
     void addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const&);
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
+    void dispatchPreview(unity::scopes::Variant const& extra_data = unity::scopes::Variant());
 
     bool m_loaded;
     bool m_processingAction;
@@ -100,7 +116,13 @@ private:
     QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets;
     QMultiMap<QString, PreviewWidgetData*> m_dataToWidgetMap;
 
+    unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
+    QPointer<scopes_ng::Scope> m_associatedScope;
+    QUuid m_session_id;
+    QString m_userAgent;
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
+    std::shared_ptr<ScopeDataReceiverBase> m_listener;
+    std::shared_ptr<ScopeDataReceiverBase> m_lastActivation;
 };
 
 } // namespace scopes_ng

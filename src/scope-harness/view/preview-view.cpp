@@ -23,7 +23,6 @@
 #include <scope-harness/test-utils.h>
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
-#include <unity/shell/scopes/PreviewStackInterface.h>
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
 
 
@@ -53,7 +52,7 @@ struct PreviewView::_Priv
         {
             previewWidgets.emplace_back(
                     preview::PreviewWidget(internal::PreviewWidgetArguments
-                    { previewWidgetModel, previewWidgetModel->index(row), previewModel, m_resultsView.lock(), previewView, m_previewStack}));
+                    { previewWidgetModel, previewWidgetModel->index(row), previewModel, m_resultsView.lock(), previewView }));
         }
 
         return preview::PreviewWidgetList(internal::PreviewWidgetListArguments{previewWidgets});
@@ -82,24 +81,23 @@ struct PreviewView::_Priv
         return previewModels;
     }
 
-    void setPreviewModel(shared_ptr<ss::PreviewStackInterface> previewStack, PreviewView::SPtr previewView)
+    void setPreviewModel(shared_ptr<ss::PreviewModelInterface> previewModel, PreviewView::SPtr previewView)
     {
-        m_previewStack = previewStack;
+        m_previewModel = previewModel;
         updateModels(previewView);
     }
 
     void updateModels(PreviewView::SPtr previewView)
     {
-        auto previewModel = m_previewStack->getPreviewModel(0);
-        m_previewModels = iteratePreviewModel(previewModel, previewView);
+        m_previewModels = iteratePreviewModel(m_previewModel.get(), previewView);
     }
 
-    void checkPreviewStack()
+    void checkPreviewModel()
     {
-        TestUtils::throwIfNot(bool(m_previewStack), "");
+        TestUtils::throwIfNot(bool(m_previewModel), "");
     }
 
-    shared_ptr<ss::PreviewStackInterface> m_previewStack;
+    shared_ptr<ss::PreviewModelInterface> m_previewModel;
 
     vector<preview::PreviewWidgetList> m_previewModels;
 
@@ -116,17 +114,17 @@ void PreviewView::setResultsView(ResultsView::SPtr resultsView)
     p->m_resultsView = resultsView;
 }
 
-void PreviewView::preview(shared_ptr<ss::PreviewStackInterface> previewStack)
+void PreviewView::preview(shared_ptr<ss::PreviewModelInterface> previewModel)
 {
-    p->setPreviewModel(previewStack,
+    p->setPreviewModel(previewModel,
                        dynamic_pointer_cast<PreviewView>(shared_from_this()));
 }
 
 void PreviewView::setColumnCount(unsigned int count)
 {
-    p->checkPreviewStack();
+    p->checkPreviewModel();
 
-    p->m_previewStack->setWidgetColumnCount(count);
+    p->m_previewModel->setWidgetColumnCount(count);
     // TODO Wait?
     refresh();
 }
@@ -138,21 +136,21 @@ void PreviewView::refresh()
 
 unsigned int PreviewView::columnCount() const
 {
-    p->checkPreviewStack();
+    p->checkPreviewModel();
 
-    return p->m_previewStack->widgetColumnCount();
+    return p->m_previewModel->widgetColumnCount();
 }
 
 vector<preview::PreviewWidgetList> PreviewView::widgets()
 {
-    p->checkPreviewStack();
+    p->checkPreviewModel();
 
     return p->m_previewModels;
 }
 
 preview::PreviewWidgetList PreviewView::widgetsInColumn(size_t column)
 {
-    p->checkPreviewStack();
+    p->checkPreviewModel();
 
     return p->m_previewModels.at(column);
 }

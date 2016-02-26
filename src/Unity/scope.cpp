@@ -23,7 +23,7 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "previewstack.h"
+#include "previewmodel.h"
 #include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
@@ -273,15 +273,15 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
 
 void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
 {
-    for (auto stack: m_previewStacks) {
-        auto previewedResult = stack->previewedResult();
+    for (auto model: m_previewModels) {
+        auto previewedResult = model->previewedResult();
 
         if (result == nullptr) {
             qWarning() << "handlePreviewUpdate: result is null";
             return;
         }
         if (previewedResult != nullptr && *result == *previewedResult) {
-            stack->update(widgets);
+            model->update(widgets);
         }
     }
 }
@@ -1024,12 +1024,13 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_inverseDepartments.erase(it);
 }
 
-void Scope::previewStackDestroyed(QObject *obj)
+void Scope::previewModelDestroyed(QObject *obj)
 {
-    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    for (auto it = m_previewModels.begin(); it != m_previewModels.end(); it++)
     {
         if (*it == obj) {
-            m_previewStacks.erase(it);
+            qDebug() << "PreviewModel destroyed";
+            m_previewModels.erase(it);
             break;
         }
     }
@@ -1302,7 +1303,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
+unity::shell::scopes::PreviewModelInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1320,12 +1321,12 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
-    PreviewStack* stack = new PreviewStack(nullptr);
-    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
-    m_previewStacks.append(stack);
-    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
-    stack->loadForResult(result);
-    return stack;
+    PreviewModel* previewModel = new PreviewModel(nullptr);
+    QObject::connect(previewModel, &QObject::destroyed, this, &Scope::previewModelDestroyed);
+    m_previewModels.append(previewModel);
+    previewModel->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
+    previewModel->loadForResult(result);
+    return previewModel;
 }
 
 void Scope::cancelActivation()

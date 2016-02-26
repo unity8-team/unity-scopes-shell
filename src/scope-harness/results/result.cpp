@@ -23,9 +23,9 @@
 #include <scope-harness/view/results-view.h>
 
 #include <Unity/resultsmodel.h>
-#include <Unity/previewstack.h>
 #include <Unity/scope.h>
 #include <Unity/utils.h>
+#include <Unity/previewmodel.h>
 
 #include <QObject>
 #include <QSignalSpy>
@@ -137,7 +137,7 @@ public:
                     // TODO set scope inactive?
                     auto result = m_resultsModel->data(
                             m_index, ss::ResultsModelInterface::Roles::RoleResult);
-                    shared_ptr<ss::PreviewStackInterface> preview(
+                    shared_ptr<ss::PreviewModelInterface> preview(
                             m_scope->preview(result, m_resultsModel->categoryId()));
                     previewView->preview(preview);
                     view = previewView;
@@ -161,7 +161,7 @@ public:
                         auto result = m_resultsModel->data(
                                 m_index,
                                 ss::ResultsModelInterface::Roles::RoleResult);
-                        shared_ptr<ss::PreviewStackInterface> preview(
+                        shared_ptr<ss::PreviewModelInterface> preview(
                                 m_scope->preview(result, m_resultsModel->categoryId()));
                         previewView->preview(preview);
                         view = previewView;
@@ -379,7 +379,7 @@ view::AbstractView::SPtr Result::tap() const
             }
 
             auto previewView = p->m_previewView.lock();
-            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
+            shared_ptr<ss::PreviewModelInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
             previewView->preview(preview);
             return previewView;
         }
@@ -418,7 +418,7 @@ view::AbstractView::SPtr Result::longPress() const
                 return nullptr; // nothing happens for scope:// uris
             }
             auto previewView = p->m_previewView.lock();
-            shared_ptr<ss::PreviewStackInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
+            shared_ptr<ss::PreviewModelInterface> preview(p->m_scope->preview(result_var, p->m_resultsModel->categoryId()));
             previewView->preview(preview);
             return previewView;
         }

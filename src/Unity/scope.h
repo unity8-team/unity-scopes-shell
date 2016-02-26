@@ -48,7 +48,7 @@ namespace scopes_ng
 
 class Categories;
 class PushEvent;
-class PreviewStack;
+class PreviewModel;
 class LocationService;
 class SettingsModel;
 class Scopes;
@@ -149,7 +149,7 @@ public:
     void setFavorite(const bool) override;
 
     Q_INVOKABLE void activate(QVariant const& result, QString const& categoryId) override;
-    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result, QString const& categoryId) override;
+    Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* preview(QVariant const& result, QString const& categoryId) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
@@ -191,7 +191,7 @@ private Q_SLOTS:
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
-    void previewStackDestroyed(QObject *obj);
+    void previewModelDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
@@ -267,7 +267,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
-    QList<PreviewStack*> m_previewStacks;
+    QList<PreviewModel*> m_previewModels;
 };
 
 } // namespace scopes_ng

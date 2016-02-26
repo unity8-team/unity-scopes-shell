@@ -27,11 +27,15 @@
 #include "previewwidgetmodel.h"
 #include "resultsmodel.h"
 #include "utils.h"
+#include "logintoaccount.h"
 
 // Qt
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ActionMetadata.h>
 
 namespace scopes_ng
 {
@@ -45,9 +49,22 @@ PreviewModel::PreviewModel(QObject* parent) :
     m_delayedClear(false),
     m_widgetColumnCount(1)
 {
+    connect(this, &PreviewModel::triggered, this, &PreviewModel::widgetTriggered);
+
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
     m_previewWidgetModels.append(columnModel);
+}
+
+PreviewModel::~PreviewModel()
+{
+    if (m_listener) {
+        m_listener->invalidate();
+    }
+
+    if (m_lastActivation) {
+        m_lastActivation->invalidate();
+    }
 }
 
 void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
@@ -64,6 +81,9 @@ bool PreviewModel::event(QEvent* ev)
             case PushEvent::PREVIEW:
                 processPreviewChunk(pushEvent);
                 return true;
+            case PushEvent::ACTIVATION:
+                processActionResponse(pushEvent);
+                return true;
             default:
                 qWarning("PreviewModel: Unhandled PushEvent type");
                 break;
@@ -71,6 +91,18 @@ bool PreviewModel::event(QEvent* ev)
     }
 
     return unity::shell::scopes::PreviewModelInterface::event(ev);
+}
+
+void PreviewModel::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
+{
+    m_associatedScope = scope;
+    m_session_id = session_id;
+    m_userAgent = userAgent;
+}
+
+scopes_ng::Scope* PreviewModel::associatedScope() const
+{
+    return m_associatedScope;
 }
 
 void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
@@ -176,6 +208,26 @@ int PreviewModel::widgetColumnCount() const
 bool PreviewModel::loaded() const
 {
     return m_loaded;
+}
+
+void PreviewModel::loadForResult(scopes::Result::SPtr const& result)
+{
+    m_previewedResult = result;
+    if (m_listener) {
+        m_listener->invalidate(); // TODO: is this needed?
+    }
+
+    dispatchPreview();
+}
+
+unity::scopes::Result::SPtr PreviewModel::previewedResult() const
+{
+    return m_previewedResult;
+}
+
+void PreviewModel::update(unity::scopes::PreviewWidgetList const& widgets)
+{
+    updateWidgetDefinitions(widgets);
 }
 
 bool PreviewModel::processingAction() const
@@ -438,5 +490,152 @@ QVariant PreviewModel::data(const QModelIndex& index, int role) const
             return QVariant();
     }
 }
+
+void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
+{
+    // TODO: figure out if the result can produce a preview without sending a request to the scope
+    // if (m_previewedResult->has_early_preview()) { ... }
+    try {
+        auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+        if (!extra_data.is_null()) {
+            metadata.set_scope_data(extra_data);
+        }
+        if (!m_session_id.isNull()) {
+            metadata["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        if (!m_userAgent.isEmpty()) {
+            metadata["user-agent"] = m_userAgent.toStdString();
+        }
+
+        std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(this));
+        // invalidate previous listener (if any); TODO: is this needed?
+        if (m_listener) {
+            m_listener->invalidate();
+        }
+        m_listener = listener;
+
+        m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from preview(): %s", e.what());
+    } catch (...) {
+        qWarning("Caught an error from preview()");
+    }
+}
+
+void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
+{
+    auto action = [this, widgetId, actionId, data]() {
+        try {
+            auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
+            QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
+            scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+            metadata.set_scope_data(qVariantToScopeVariant(data));
+
+            if (m_lastActivation) {
+                m_lastActivation->invalidate();
+            }
+            std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
+            m_lastActivation = listener;
+
+            setProcessingAction(true);
+
+            // FIXME: don't block
+            proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
+        } catch (...) {
+            qWarning("Caught an error from perform_action()");
+        }
+    };
+
+    PreviewWidgetData* widgetData = getWidgetData(widgetId);
+    if (widgetData != nullptr) {
+        QString wtype = widgetData->type;
+        auto uriAction = [this, wtype, data, action]() {
+            if ((wtype == QLatin1String("actions") || wtype == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
+                if (m_associatedScope) {
+                    m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
+                    return;
+                }
+            }
+            action();
+        };
+
+        if (m_associatedScope && widgetData->data.contains(QStringLiteral("online_account_details")))
+        {
+            QVariantMap details = widgetData->data.value(QStringLiteral("online_account_details")).toMap();
+            if (details.contains(QStringLiteral("service_name")) &&
+                details.contains(QStringLiteral("service_type")) &&
+                details.contains(QStringLiteral("provider_name")) &&
+                details.contains(QStringLiteral("login_passed_action")) &&
+                details.contains(QStringLiteral("login_failed_action")))
+            {
+                LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                                            details.value(QStringLiteral("service_name")).toString(),
+                                                            details.value(QStringLiteral("service_type")).toString(),
+                                                            details.value(QStringLiteral("provider_name")).toString(),
+                                                            details.value(QStringLiteral("login_passed_action")).toInt(),
+                                                            details.value(QStringLiteral("login_failed_action")).toInt(),
+                                                            this);
+                connect(login, SIGNAL(searchInProgress(bool)), m_associatedScope, SLOT(setSearchInProgress(bool)));
+                connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
+                    if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+                    {
+                        scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                        switch (action_code)
+                        {
+                            case scopes::OnlineAccountClient::DoNothing:
+                                return;
+                            case scopes::OnlineAccountClient::InvalidateResults:
+                                m_associatedScope->invalidateResults();
+                                return;
+                            default:
+                                break;
+                        }
+                    }
+                    uriAction();
+                    login->deleteLater();
+                });
+                login->loginToAccount();
+                return; // main execution ends here
+            }
+        } else {
+            uriAction();
+        }
+    } else {
+        qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
+    }
+}
+
+void PreviewModel::processActionResponse(PushEvent* pushEvent)
+{
+    std::shared_ptr<scopes::ActivationResponse> response;
+    scopes::Result::SPtr result;
+    QString categoryId;
+    pushEvent->collectActivationResponse(response, result, categoryId);
+    if (!response) return;
+
+    switch (response->status()) {
+        case scopes::ActivationResponse::ShowPreview:
+            // replace current preview
+            setDelayedClear();
+            // the preview is marked as processing action, leave the flag on until the preview is updated
+            dispatchPreview(scopes::Variant(response->scope_data()));
+            break;
+        // TODO: case to nest preview (once such API is available)
+        default:
+            if (m_associatedScope) {
+                m_associatedScope->handleActivation(response, result);
+            }
+
+            setProcessingAction(false);
+            break;
+    }
+}
+
 
 } // namespace scopes_ng
