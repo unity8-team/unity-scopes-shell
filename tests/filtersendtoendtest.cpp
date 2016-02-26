@@ -178,7 +178,7 @@ private Q_SLOTS:
         auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
         QVERIFY(f2 != nullptr);
 
-        QCOMPARE(f2->hasStartValue(), false);
+        QCOMPARE(f2->hasStartValue(), true);
         QCOMPARE(f2->hasEndValue(), false);
 
         {
