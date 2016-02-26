@@ -1029,6 +1029,7 @@ void Scope::previewModelDestroyed(QObject *obj)
     for (auto it = m_previewModels.begin(); it != m_previewModels.end(); it++)
     {
         if (*it == obj) {
+            qDebug() << "PreviewModel destroyed";
             m_previewModels.erase(it);
             break;
         }
