@@ -132,17 +132,15 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
     scopes::Department::SCPtr rootDepartment;
     scopes::OptionSelectorFilter::SCPtr sortOrderFilter;
-    scopes::FilterState filterState;
     QList<scopes::FilterBase::SCPtr> filters;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters, filterState);
+    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     m_rootDepartment = rootDepartment;
     m_receivedFilters = filters;
-    m_receivedFilterState = filterState;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -437,7 +435,7 @@ void Scope::flushUpdates(bool finalize)
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
-            m_filters->update(m_receivedFilters, m_receivedFilterState, containsDepartments);
+            m_filters->update(m_receivedFilters, m_filterState, containsDepartments);
             processPrimaryNavigationTag(m_currentNavigationId);
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();
