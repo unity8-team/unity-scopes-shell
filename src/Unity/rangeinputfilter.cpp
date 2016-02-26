@@ -28,7 +28,7 @@ using namespace unity::scopes;
 namespace scopes_ng
 {
 
-RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+RangeInputFilter::RangeInputFilter(unity::scopes::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::RangeInputFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
     m_title(QString::fromStdString(filter->title())),
@@ -102,7 +102,7 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
 {
     m_filterState = filterState;
 
-    unity::scopes::experimental::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter);
+    unity::scopes::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter);
     if (!rangefilter) {
         qWarning() << "RangeInputFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
         return;

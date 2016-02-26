@@ -34,7 +34,7 @@ class ValueSliderFilter;
 
 class Q_DECL_EXPORT ValueSliderValues :
     public ModelUpdate<unity::shell::scopes::ValueSliderValuesInterface,
-        unity::scopes::experimental::ValueLabelPairList,
+        unity::scopes::ValueLabelPairList,
         QList<QSharedPointer<QPair<int, QString>>>,
         int
     >
@@ -43,7 +43,7 @@ class Q_DECL_EXPORT ValueSliderValues :
 
 public:
     explicit ValueSliderValues(ValueSliderFilter *parent = nullptr);
-    void update(const unity::scopes::experimental::ValueSliderLabels& values, int min, int max);
+    void update(const unity::scopes::ValueSliderLabels& values, int min, int max);
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

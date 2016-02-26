@@ -29,7 +29,7 @@ using namespace unity::scopes;
 namespace scopes_ng
 {
 
-ValueSliderFilter::ValueSliderFilter(unity::scopes::experimental::ValueSliderFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+ValueSliderFilter::ValueSliderFilter(unity::scopes::ValueSliderFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::ValueSliderFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
     m_title(QString::fromStdString(filter->title())),
@@ -94,7 +94,7 @@ void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, u
 {
     m_filterState = filterState;
 
-    unity::scopes::experimental::ValueSliderFilter::SCPtr valueslider = std::dynamic_pointer_cast<unity::scopes::experimental::ValueSliderFilter const>(filter);
+    unity::scopes::ValueSliderFilter::SCPtr valueslider = std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter);
     if (!valueslider) {
         qWarning() << "ValueSliderFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
         return;

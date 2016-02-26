@@ -185,12 +185,12 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
     }
     else if (filter->filter_type() == "range_input")
     {
-        unity::scopes::experimental::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter);
+        unity::scopes::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter);
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::RangeInputFilter(rangefilter, m_filterState, this));
     }
     else if (filter->filter_type() == "value_slider")
     {
-        unity::scopes::experimental::ValueSliderFilter::SCPtr valuesliderfilter = std::dynamic_pointer_cast<unity::scopes::experimental::ValueSliderFilter const>(filter);
+        unity::scopes::ValueSliderFilter::SCPtr valuesliderfilter = std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter);
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::ValueSliderFilter(valuesliderfilter, m_filterState, this));
     }
 
@@ -217,11 +217,11 @@ unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity:
     {
         return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
     }
-    if (std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter))
+    if (std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::RangeInputFilter;
     }
-    if (std::dynamic_pointer_cast<unity::scopes::experimental::ValueSliderFilter const>(filter))
+    if (std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::ValueSliderFilter;
     }

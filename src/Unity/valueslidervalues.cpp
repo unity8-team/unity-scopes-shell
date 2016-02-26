@@ -29,9 +29,9 @@ ValueSliderValues::ValueSliderValues(ValueSliderFilter *parent)
 {
 }
 
-void ValueSliderValues::update(const unity::scopes::experimental::ValueSliderLabels& values, int min, int max)
+void ValueSliderValues::update(const unity::scopes::ValueSliderLabels& values, int min, int max)
 {
-    unity::scopes::experimental::ValueLabelPairList labels;
+    unity::scopes::ValueLabelPairList labels;
     labels.push_back(std::make_pair(min, values.min_label()));
     for (auto const v: values.extra_labels())
     {
@@ -39,12 +39,12 @@ void ValueSliderValues::update(const unity::scopes::experimental::ValueSliderLab
     }
     labels.push_back(std::make_pair(max, values.max_label()));
     syncModel(labels, m_values,
-            [](const unity::scopes::experimental::ValueLabelPair& p) -> int { return p.first; },
+            [](const unity::scopes::ValueLabelPair& p) -> int { return p.first; },
             [](const QSharedPointer<QPair<int, QString>>& p) -> int { return p->first; },
-            [](const unity::scopes::experimental::ValueLabelPair& p) -> QSharedPointer<QPair<int, QString>> {
+            [](const unity::scopes::ValueLabelPair& p) -> QSharedPointer<QPair<int, QString>> {
                 return QSharedPointer<QPair<int, QString>>(new QPair<int, QString>(p.first, QString::fromStdString(p.second)));
                 },
-            [this](int row, const unity::scopes::experimental::ValueLabelPair& v1, const QSharedPointer<QPair<int, QString>>& v2) -> bool {
+            [this](int row, const unity::scopes::ValueLabelPair& v1, const QSharedPointer<QPair<int, QString>>& v2) -> bool {
                 if (v1.first != v2->first) {
                     return false;
                 }
