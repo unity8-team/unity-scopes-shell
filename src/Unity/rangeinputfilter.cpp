@@ -122,13 +122,13 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
     labelChange(m_filter->end_prefix_label(), m_endPrefixLabel, [this]() { Q_EMIT endPrefixLabelChanged(); });
     labelChange(m_filter->end_postfix_label(), m_endPostfixLabel, [this]() { Q_EMIT endPostfixLabelChanged(); });
 
-    const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : unity::scopes::Variant::null();
+    const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : rangefilter->default_start_value();
     if (!compare(start, m_start)) {
         m_start = start;
         Q_EMIT startValueChanged();
     }
 
-    const unity::scopes::Variant end = rangefilter->has_end_value(*filterState) ? Variant(rangefilter->end_value(*filterState)) :  unity::scopes::Variant::null();
+    const unity::scopes::Variant end = rangefilter->has_end_value(*filterState) ? Variant(rangefilter->end_value(*filterState)) : rangefilter->default_end_value();
     if (!compare(end, m_end)) {
         m_end = end;
         Q_EMIT endValueChanged();
