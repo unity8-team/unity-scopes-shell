@@ -83,6 +83,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_formFactor(QStringLiteral("phone"))
     , m_isActive(false)
     , m_searchInProgress(false)
+    , m_activationInProgress(false)
     , m_resultsDirty(false)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
@@ -207,6 +208,8 @@ bool Scope::event(QEvent* ev)
 
 void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
+    setActivationInProgress(false);
+
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
             activateUri(QString::fromStdString(result->uri()));
@@ -675,6 +678,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
+void Scope::setActivationInProgress(bool activationInProgress)
+{
+    if (m_activationInProgress != activationInProgress) {
+        m_activationInProgress = activationInProgress;
+        Q_EMIT activationInProgressChanged();
+    }
+}
+
 void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 {
     if (m_status != status) {
@@ -862,6 +873,11 @@ QString Scope::searchHint() const
 bool Scope::searchInProgress() const
 {
     return m_searchInProgress;
+}
+
+bool Scope::activationInProgress() const
+{
+    return m_activationInProgress;
 }
 
 unity::shell::scopes::ScopeInterface::Status Scope::status() const
@@ -1205,13 +1221,17 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                 scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
                 m_activationController->setListener(listener);
 
+                setActivationInProgress(true);
+
                 auto proxy = proxy_for_result(result);
                 unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
                 scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
                 m_activationController->setController(controller);
             } catch (std::exception& e) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate(): %s", e.what());
             } catch (...) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate()");
             }
         }
