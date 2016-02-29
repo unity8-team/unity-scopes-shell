@@ -61,7 +61,7 @@ endmacro(run_tests)
 
 run_tests(
     filterstest
-    filtersendtoendtest
+#    filtersendtoendtest
     optionselectorfiltertest
     favoritestest
     locationtest

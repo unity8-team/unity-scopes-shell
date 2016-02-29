@@ -52,6 +52,10 @@ OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent, std::
         m_options.append(shellOpt);
         if (use_defaults) {
             shellOpt->checked = shellOpt->default_checked;
+        } else {
+            if (activeOptions.find(opt) != activeOptions.end()) {
+                shellOpt->checked = true;
+            }
         }
     }
 }
@@ -81,9 +85,13 @@ void OptionSelectorOptions::update(const std::set<unity::scopes::FilterOption::S
     for (int row = 0; row<m_options.size(); row++) {
         auto &opt = m_options[row];
         if (actOpts.find(opt->id) != actOpts.end()) {
-            Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+            if (!opt->checked) {
+                opt->checked = true;
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+            }
         } else {
             if (opt->checked) {
+                opt->checked = false;
                 Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
             }
         }

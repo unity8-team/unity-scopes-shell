@@ -36,8 +36,9 @@ namespace scopes_ng
 
 const int FILTER_CHANGE_PROCESSING_DELAY = 300;
 
-Filters::Filters(unity::shell::scopes::ScopeInterface *parent)
-    : ModelUpdate(parent)
+Filters::Filters(unity::scopes::FilterState const& filterState,
+        unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent)
+        ,m_filterState(new unity::scopes::FilterState(filterState))
 {
     m_filterStateChangeTimer.setSingleShot(true);
     QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);

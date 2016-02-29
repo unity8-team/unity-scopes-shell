@@ -58,7 +58,7 @@ class Q_DECL_EXPORT Filters :
     Q_OBJECT
 
 public:
-    explicit Filters(unity::shell::scopes::ScopeInterface *parent = nullptr);
+    explicit Filters(unity::scopes::FilterState const& filterState, unity::shell::scopes::ScopeInterface *parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false);
