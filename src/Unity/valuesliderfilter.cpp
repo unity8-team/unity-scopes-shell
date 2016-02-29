@@ -90,10 +90,29 @@ unity::shell::scopes::ValueSliderValuesInterface* ValueSliderFilter::values() co
     return m_values.data();
 }
 
-void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
+void ValueSliderFilter::update(unity::scopes::FilterState::SPtr const& filterState)
 {
     m_filterState = filterState;
 
+    const double value = (m_filter->has_value(*filterState) ? m_filter->value(*filterState) : m_filter->default_value());
+    if (value != m_value) {
+        m_value = value;
+        Q_EMIT valueChanged();
+    }
+
+    if (std::abs(m_filter->min() - m_min) < 0.0000001f) {
+        m_min = m_filter->min();
+        Q_EMIT minValueChanged();
+    }
+
+    if (std::abs(m_filter->max() - m_max) < 0.0000001f) {
+        m_max = m_filter->max();
+        Q_EMIT maxValueChanged();
+    }
+}
+
+void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
+{
     unity::scopes::ValueSliderFilter::SCPtr valueslider = std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter);
     if (!valueslider) {
         qWarning() << "ValueSliderFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
@@ -106,22 +125,6 @@ void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter, u
     {
         m_title = QString::fromStdString(valueslider->title());
         Q_EMIT titleChanged();
-    }
-
-    const double value = (valueslider->has_value(*filterState) ? valueslider->value(*filterState) : valueslider->default_value());
-    if (value != m_value) {
-        m_value = value;
-        Q_EMIT valueChanged();
-    }
-
-    if (std::abs(valueslider->min() - m_min) < 0.0000001f) {
-        m_min = valueslider->min();
-        Q_EMIT minValueChanged();
-    }
-
-    if (std::abs(valueslider->max() - m_max) < 0.0000001f) {
-        m_max = valueslider->max();
-        Q_EMIT maxValueChanged();
     }
 
     m_values->update(valueslider->labels(), valueslider->min(), valueslider->max());

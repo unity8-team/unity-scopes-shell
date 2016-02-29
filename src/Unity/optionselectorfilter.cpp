@@ -30,7 +30,7 @@ OptionSelectorFilter::OptionSelectorFilter(unity::scopes::OptionSelectorFilter::
     m_title(QString::fromStdString(filter->title())),
     m_multiSelect(filter->multi_select()),
     m_label(QString::fromStdString(filter->label())),
-    m_options(new OptionSelectorOptions(this)),
+    m_options(new OptionSelectorOptions(this, filter->options(), filter->active_options(*filterState))),
     m_filterState(filterState),
     m_filter(filter)
 {
@@ -67,13 +67,9 @@ void OptionSelectorFilter::reset()
 {
     if (auto state = m_filterState.lock())
     {
-        for (auto const opt: m_filter->options())
-        {
-            m_filter->update_state(*state, opt, opt->default_value());
-            m_options->update(m_filter->options(), m_filter->active_options(*state));
-        }
-        qDebug() << "Removing filter state for filter" << QString::fromStdString(m_filter->id());
         state->remove(m_filter->id());
+        qDebug() << "Removing filter state for filter" << QString::fromStdString(m_filter->id());
+        m_options->update(m_filter->active_options(*state), true);
         Q_EMIT filterStateChanged();
     }
 }
@@ -88,7 +84,11 @@ void OptionSelectorFilter::onOptionChecked(const QString& id, bool checked)
             if (opt->id() == optid)
             {
                 m_filter->update_state(*state, opt, checked);
-                m_options->update(m_filter->options(), m_filter->active_options(*state));
+                // onOptionChecked signal is triggered by the user, but we need to updated filter
+                // with new state since the state of other options may have changed if this is a single-selection filter.
+                // However, we pass allow_defaults = false, so that user is able to unselect all options and they are
+                // not forcefully reset to defaults if this happens.
+                m_options->update(m_filter->active_options(*state), false);
                 Q_EMIT filterStateChanged();
                 return;
             }
@@ -103,10 +103,14 @@ unity::shell::scopes::OptionSelectorOptionsInterface* OptionSelectorFilter::opti
     return m_options.data();
 }
 
-void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
+void OptionSelectorFilter::update(unity::scopes::FilterState::SPtr const& filterState)
 {
     m_filterState = filterState;
+    m_options->update(m_filter->active_options(*filterState), true);
+}
 
+void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
+{
     unity::scopes::OptionSelectorFilter::SCPtr optselfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
     if (!optselfilter) {
         qWarning() << "OptionSelectorFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
@@ -133,7 +137,10 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
         Q_EMIT labelChanged(m_label);
     }
 
-    m_options->update(optselfilter->options(), optselfilter->active_options(*filterState));
+    m_options->update(optselfilter->options());
+    if (auto state = m_filterState.lock()) {
+        m_options->update(m_filter->active_options(*state), false);
+    }
 }
 
 bool OptionSelectorFilter::isActive() const

@@ -19,6 +19,7 @@
 
 #include "optionselectoroptions.h"
 #include "optionselectorfilter.h"
+#include <QSet>
 #include <QDebug>
 
 namespace scopes_ng
@@ -29,26 +30,70 @@ struct OptionSelectorOption
     QString id;
     QString label;
     bool checked;
+    bool default_checked;
 
-    OptionSelectorOption(const QString& id, const QString &label) :
+    OptionSelectorOption(const QString& id, const QString &label, bool default_checked) :
         id(id),
         label(label),
-        checked(false)
+        checked(false),
+        default_checked(default_checked)
     {}
 };
 
-OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent)
+OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent, std::list<unity::scopes::FilterOption::SCPtr> const& options,
+        std::set<unity::scopes::FilterOption::SCPtr> const& activeOptions)
     : ModelUpdate(parent)
 {
+    bool const use_defaults = (activeOptions.size() == 0);
+
+    for (auto const& opt: options) {
+        auto shellOpt = QSharedPointer<OptionSelectorOption>(new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label()),
+                        opt->default_value()));
+        m_options.append(shellOpt);
+        if (use_defaults) {
+            shellOpt->checked = shellOpt->default_checked;
+        }
+    }
 }
 
-void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options, const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions)
+void OptionSelectorOptions::update(const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions, bool allow_defaults)
 {
+    QVector<int> roles;
+    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked);
+
+    bool const use_defaults = (allow_defaults && activeOptions.size() == 0);
+    if (use_defaults) {
+        for (int row = 0; row<m_options.size(); row++) {
+            auto &opt = m_options[row];
+            if (opt->checked != opt->default_checked) {
+                opt->checked = opt->default_checked;
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+            }
+        }
+        return;
+    }
+
     QSet<QString> actOpts;
-    for (auto const& opt: activeOptions)
-    {
+    for (auto const& opt: activeOptions) {
         actOpts.insert(QString::fromStdString(opt->id()));
     }
+
+    for (int row = 0; row<m_options.size(); row++) {
+        auto &opt = m_options[row];
+        if (actOpts.find(opt->id) != actOpts.end()) {
+            Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+        } else {
+            if (opt->checked) {
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+            }
+        }
+    }
+}
+
+void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::SCPtr>& options)
+{
+    QVector<int> roles;
+    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionLabel);
 
     syncModel(options, m_options,
             // key function for scopes api filter option
@@ -58,35 +103,23 @@ void OptionSelectorOptions::update(const std::list<unity::scopes::FilterOption::
             // factory function for creating shell filter option from scopes api filter option
             [this](const unity::scopes::FilterOption::SCPtr& opt) -> QSharedPointer<OptionSelectorOption> {
                 auto optObj = QSharedPointer<OptionSelectorOption>(
-                    new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label())));
+                    new OptionSelectorOption(QString::fromStdString(opt->id()), QString::fromStdString(opt->label()), opt->default_value()));
                 return optObj;
             },
             // filter option update function
-            [&actOpts, this](int row, const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
+            [&roles, this](int row, const unity::scopes::FilterOption::SCPtr& op1, const QSharedPointer<OptionSelectorOption>& op2) -> bool {
                 if (op2->id != QString::fromStdString(op1->id())) {
                     return false;
                 }
-
-                bool backendState = actOpts.contains(op2->id);
-                QVector<int> roles;
-                if (backendState != op2->checked) {
-                    op2->checked = backendState;
-                    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked);
-                }
-
                 if (op2->label != QString::fromStdString(op1->label())) {
                     op2->label = QString::fromStdString(op1->label());
-                    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionLabel);
-                }
-
-                if (roles.count()) {
                     Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
                 }
                 return true;
             });
 }
 
-int OptionSelectorOptions::rowCount(const QModelIndex& parent) const
+int OptionSelectorOptions::rowCount(const QModelIndex& /* parent */) const
 {
     return m_options.count();
 }
@@ -98,9 +131,6 @@ void OptionSelectorOptions::setChecked(int row, bool checked)
         auto opt = m_options.at(row);
         if (checked != opt->checked)
         {
-            //opt->checked = checked;
-            //const QVector<int> roles {unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked};
-            //Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
             Q_EMIT optionChecked(opt->id, checked);
         }
     }

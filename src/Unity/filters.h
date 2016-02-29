@@ -37,8 +37,16 @@ namespace scopes_ng
 class FilterUpdateInterface
 {
     public:
-        virtual void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) = 0;
+        // Apply potential updates of filter definition coming from scope.
+        virtual void update(unity::scopes::FilterBase::SCPtr const& filter) = 0;
+
+        // Apply filter state change (e.g. after user executed a canned query).
+        virtual void update(unity::scopes::FilterState::SPtr const& filterState) = 0;
+
+        // Check if the filter is active (i.e. has non-default values set).
         virtual bool isActive() const = 0;
+
+        // Reset filter to defaults.
         virtual void reset() = 0;
 };
 
@@ -53,7 +61,8 @@ public:
     explicit Filters(unity::shell::scopes::ScopeInterface *parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments = false);
+    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false);
+    void update(unity::scopes::FilterState const& filterState);
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;

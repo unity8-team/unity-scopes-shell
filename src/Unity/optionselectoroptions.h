@@ -43,8 +43,11 @@ class Q_DECL_EXPORT OptionSelectorOptions :
     Q_OBJECT
 
 public:
-    explicit OptionSelectorOptions(OptionSelectorFilter *parent = nullptr);
-    void update(const std::list<unity::scopes::FilterOption::SCPtr>& options, const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions);
+    OptionSelectorOptions(OptionSelectorFilter *parent,
+            std::list<unity::scopes::FilterOption::SCPtr> const& options,
+            std::set<unity::scopes::FilterOption::SCPtr> const& activeOptions);
+    void update(const std::list<unity::scopes::FilterOption::SCPtr>& options);
+    void update(const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions, bool allow_defaults);
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Q_INVOKABLE void setChecked(int row, bool checked) override;

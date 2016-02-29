@@ -107,12 +107,8 @@ void Filters::delayedFilterStateChange()
     Q_EMIT filterStateChanged();
 }
 
-//
-// Update current filters model and primary filter pointer with filters coming from scope.
-void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)
+void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments)
 {
-    m_filterState.reset(new unity::scopes::FilterState(filterState));
-
     // Primary filter needs to be handled separately and not inserted into the main filters model,
     bool hasPrimaryFilter = containsDepartments;
     QList<unity::scopes::FilterBase::SCPtr> inFilters;
@@ -130,7 +126,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
             if (hadSamePrimaryFilterBefore) {
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
                 if (shellFilter) {
-                    shellFilter->update(f, m_filterState);
+                    shellFilter->update(f);
                 } else {
                     // this should never happen
                     qCritical() << "Failed to cast filter" << m_primaryFilter->filterId() << "to FilterUpdateInterface";
@@ -169,10 +165,38 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 }
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f2.data());
                 if (shellFilter) {
-                    shellFilter->update(f1, m_filterState);
+                    shellFilter->update(f1);
+                } else {
+                    // this should never happen
+                    qCritical() << "Failed to cast filter" << f2->filterId() << "to FilterUpdateInterface";
                 }
                 return true;
             });
+}
+//
+// Update current filters model and primary filter pointer with filters coming from scope.
+void Filters::update(unity::scopes::FilterState const& filterState)
+{
+    m_filterState.reset(new unity::scopes::FilterState(filterState));
+
+    if (m_primaryFilter) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
+        if (shellFilter) {
+            shellFilter->update(m_filterState);
+        } else {
+            // this should never happen
+            qCritical() << "Failed to cast filter" << m_primaryFilter->filterId() << "to FilterUpdateInterface";
+        }
+    }
+    for (auto f: m_filters) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f.data());
+        if (shellFilter) {
+            shellFilter->update(m_filterState);
+        } else {
+            // this should never happen
+            qCritical() << "Failed to cast filter" << f->filterId() << "to FilterUpdateInterface";
+        }
+    }
 }
 
 QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterObject(unity::scopes::FilterBase::SCPtr const& filter)

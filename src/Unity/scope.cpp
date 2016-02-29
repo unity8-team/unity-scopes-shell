@@ -435,7 +435,7 @@ void Scope::flushUpdates(bool finalize)
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
-            m_filters->update(m_receivedFilters, m_filterState, containsDepartments);
+            m_filters->update(m_receivedFilters, containsDepartments);
             processPrimaryNavigationTag(m_currentNavigationId);
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();

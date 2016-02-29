@@ -42,6 +42,13 @@ RangeInputFilter::RangeInputFilter(unity::scopes::RangeInputFilter::SCPtr const&
     m_filterState(filterState),
     m_filter(filter)
 {
+    const bool use_defaults = !filterState->has_filter(m_filter->id());
+    const unity::scopes::Variant start = m_filter->has_start_value(*filterState) ? Variant(m_filter->start_value(*filterState)) : (use_defaults ?
+        m_filter->default_start_value() : Variant::null());
+    m_start = start;
+    const unity::scopes::Variant end = m_filter->has_end_value(*filterState) ? Variant(m_filter->end_value(*filterState)) : (use_defaults ?
+            m_filter->default_end_value() : Variant::null());
+    m_end = end;
 }
 
 QString RangeInputFilter::filterId() const
@@ -98,10 +105,28 @@ void RangeInputFilter::labelChange(std::string const& srcLabel, QString& destLab
     }
 }
 
-void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
+void RangeInputFilter::update(unity::scopes::FilterState::SPtr const& filterState)
 {
     m_filterState = filterState;
 
+    const bool use_defaults = !filterState->has_filter(m_filter->id());
+    const unity::scopes::Variant start = m_filter->has_start_value(*filterState) ? Variant(m_filter->start_value(*filterState)) : (use_defaults ?
+        m_filter->default_start_value() : Variant::null());
+    if (!compare(start, m_start)) {
+        m_start = start;
+        Q_EMIT startValueChanged();
+    }
+
+    const unity::scopes::Variant end = m_filter->has_end_value(*filterState) ? Variant(m_filter->end_value(*filterState)) : (use_defaults ?
+            m_filter->default_end_value() : Variant::null());
+    if (!compare(end, m_end)) {
+        m_end = end;
+        Q_EMIT endValueChanged();
+    }
+}
+
+void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
+{
     unity::scopes::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter);
     if (!rangefilter) {
         qWarning() << "RangeInputFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
@@ -121,22 +146,6 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
     labelChange(m_filter->central_label(), m_centralLabel, [this]() { Q_EMIT centralLabelChanged(); });
     labelChange(m_filter->end_prefix_label(), m_endPrefixLabel, [this]() { Q_EMIT endPrefixLabelChanged(); });
     labelChange(m_filter->end_postfix_label(), m_endPostfixLabel, [this]() { Q_EMIT endPostfixLabelChanged(); });
-
-    const bool use_defaults = !filterState->has_filter(rangefilter->id());
-
-    const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : (use_defaults ?
-        rangefilter->default_start_value() : Variant::null());
-    if (!compare(start, m_start)) {
-        m_start = start;
-        Q_EMIT startValueChanged();
-    }
-
-    const unity::scopes::Variant end = rangefilter->has_end_value(*filterState) ? Variant(rangefilter->end_value(*filterState)) : (use_defaults ?
-            rangefilter->default_end_value() : Variant::null());
-    if (!compare(end, m_end)) {
-        m_end = end;
-        Q_EMIT endValueChanged();
-    }
 }
 
 bool RangeInputFilter::isActive() const

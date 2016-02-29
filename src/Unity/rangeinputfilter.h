@@ -56,7 +56,8 @@ public:
     Q_INVOKABLE void eraseStartValue() override;
     Q_INVOKABLE void eraseEndValue() override;
 
-    void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+    void update(unity::scopes::FilterBase::SCPtr const& filter) override;
+    void update(unity::scopes::FilterState::SPtr const& filterState) override;
     bool isActive() const override;
     QString filterTag() const override;
     void reset() override;
