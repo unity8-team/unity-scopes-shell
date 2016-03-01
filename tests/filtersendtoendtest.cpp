@@ -25,11 +25,15 @@
 #include "filters.h"
 #include "categories.h"
 #include "optionselectorfilter.h"
+#include "rangeinputfilter.h"
+#include "valuesliderfilter.h"
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
 
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
 
 using namespace unity::scopeharness;
 using namespace unity::scopeharness::registry;
@@ -84,7 +88,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 1);
+        QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(0, 0);
         QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
@@ -122,7 +126,7 @@ private Q_SLOTS:
 
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
-        QCOMPARE(filters->rowCount(), 1);
+        QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(0, 0);
         auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
@@ -137,12 +141,14 @@ private Q_SLOTS:
         opts->setChecked(0, true);
         TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(filters, m_scope->filters());
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o1"));
 
         // select option 2
         opts->setChecked(1, true);
         TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(filters, m_scope->filters());
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for option o2"));
 
         // deselect option 2
@@ -150,6 +156,179 @@ private Q_SLOTS:
         TestUtils::waitForFilterStateChange(m_scope);
         TestUtils::waitForSearchFinish(m_scope);
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for: \"\""));
+
+        QCOMPARE(filters, m_scope->filters());
+    }
+
+    void testRangeInputFilter()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+
+        QCOMPARE(f2->hasStartValue(), true);
+        QCOMPARE(f2->hasEndValue(), false);
+
+        {
+            f2->setStartValue(111.0f);
+            TestUtils::waitForFilterStateChange(m_scope);
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), false);
+
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - ***"));
+        }
+
+        {
+            QCOMPARE(f2, filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>());
+            f2->setEndValue(300.5f);
+            TestUtils::waitForFilterStateChange(m_scope);
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 111.000000 - 300.500000"));
+        }
+
+        // erase start value, end value still present
+        {
+            f2->eraseStartValue();
+            TestUtils::waitForFilterStateChange(m_scope);
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(filters, m_scope->filters());
+            QCOMPARE(f2->hasStartValue(), false);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = filters->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: *** - 300.500000"));
+        }
+    }
+
+    void testValueSliderFilter()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+
+        QCOMPARE(static_cast<int>(f3->minValue()), 1);
+        QCOMPARE(static_cast<int>(f3->maxValue()), 99);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+
+        auto valuesModel = f3->values();
+        QVERIFY(valuesModel != nullptr);
+
+        QCOMPARE(valuesModel->rowCount(), 3);
+        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 1);
+        QCOMPARE(valuesModel->data(valuesModel->index(0, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("Min"));
+        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 33);
+        QCOMPARE(valuesModel->data(valuesModel->index(1, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("One third"));
+        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::Roles::RoleValue).toInt(), 99);
+        QCOMPARE(valuesModel->data(valuesModel->index(2, 0), uss::ValueSliderValuesInterface::Roles::RoleLabel).toString(), QString("Max"));
+
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+
+        QCOMPARE(filters->rowCount(), 3);
+
+        // filter object shouldn't be recreated
+        QCOMPARE(filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>(), f3);
+
+        QCOMPARE(filters, m_scope->filters());
+        QCOMPARE(static_cast<int>(f3->value()), 75);
+    }
+
+    void testResetToDefault()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+
+        idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        f2->setStartValue(5.0f);
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 5.0f);
+        QCOMPARE(static_cast<int>(f3->value()), 75);
+
+        m_scope->resetFilters();
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+    }
+
+    void testCancel()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+
+        idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        f2->setStartValue(5.0f);
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 5.0f);
+        QCOMPARE(static_cast<int>(f3->value()), 75);
+
+        m_scope->resetPrimaryNavigationTag();
+
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        QCOMPARE(QString(), m_scope->primaryNavigationTag());
     }
 
 private:

@@ -23,6 +23,9 @@ set(QMLPLUGIN_SRC
     filters.cpp
     optionselectorfilter.cpp
     optionselectoroptions.cpp
+    rangeinputfilter.cpp
+    valuesliderfilter.cpp
+    valueslidervalues.cpp
     geoip.cpp
     localization.h
     locationservice.cpp
@@ -47,6 +50,9 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterBaseInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorFilterInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorOptionsInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/RangeInputFilterInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ValueSliderFilterInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ValueSliderValuesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/NavigationInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h

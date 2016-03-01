@@ -154,14 +154,8 @@ public:
         m_filters.append(filter);
     }
 
-    void setFilterState(scopes::FilterState const& state)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_filterState = state;
-    }
-
     Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& out_rootDepartment, scopes::OptionSelectorFilter::SCPtr&
-            out_sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters, scopes::FilterState& out_filterState)
+            out_sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters)
     {
         Status status;
 
@@ -175,7 +169,6 @@ public:
         out_rootDepartment = m_rootDepartment;
 
         out_sortOrder = m_sortOrderFilter;
-        out_filterState = m_filterState;
         out_filters = m_filters;
 
         return status;
@@ -186,7 +179,6 @@ private:
     scopes::Department::SCPtr m_rootDepartment;
     scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
     QList<scopes::FilterBase::SCPtr> m_filters;
-    scopes::FilterState m_filterState;
 };
 
 class PreviewDataCollector: public CollectorBase
@@ -302,10 +294,10 @@ qint64 PushEvent::msecsSinceStart() const
 }
 
 CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& rootDepartment,
-        scopes::OptionSelectorFilter::SCPtr& sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters, scopes::FilterState& filterState)
+        scopes::OptionSelectorFilter::SCPtr& sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters)
 {
     auto collector = std::dynamic_pointer_cast<SearchDataCollector>(m_collector);
-    return collector->collect(out_results, rootDepartment, sortOrder, out_filters, filterState);
+    return collector->collect(out_results, rootDepartment, sortOrder, out_filters);
 }
 
 CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
@@ -368,7 +360,7 @@ void SearchResultReceiver::push(scopes::Department::SCPtr const& department)
     m_collector->setDepartment(department);
 }
 
-void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterState const& state)
+void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterState const& /* state */)
 {
     bool has_sort_order = false;
     for (auto it = filters.begin(); it != filters.end(); ++it) {
@@ -384,7 +376,6 @@ void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterSt
             m_collector->addFilter(filter);
         }
     }
-    m_collector->setFilterState(state);
 }
 
 // this might be called from any thread (might be main, might be any other thread)

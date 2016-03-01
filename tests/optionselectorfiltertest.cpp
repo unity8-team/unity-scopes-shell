@@ -37,7 +37,8 @@ private Q_SLOTS:
 
     void init()
     {
-        filtersModel.reset(new Filters());
+        unity::scopes::FilterState filterState;
+        filtersModel.reset(new Filters(filterState));
 
         f1 = unity::scopes::OptionSelectorFilter::create("f1", "Filter1", false);
         f1o1 = f1->add_option("f1o1", "Option1");
@@ -50,10 +51,11 @@ private Q_SLOTS:
         backendFilters.clear();
         backendFilters.append(f1);
         backendFilters.append(f2);
+        filtersModel->update(backendFilters);
 
         f1->update_state(filterState, f1o1, true);
 
-        filtersModel->update(backendFilters, filterState);
+        filtersModel->update(filterState);
     }
 
     void testOptions()
@@ -129,7 +131,7 @@ private Q_SLOTS:
 
             // enable second option (which disables 1st option)
             f1->update_state(filterState, f1o2, true);
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(filterState);
 
             QCOMPARE(dataChangedSignal.count(), 2);
             QCOMPARE(stateChangeSignal.count(), 0); // change initiated by backend, so no state change signal
@@ -181,7 +183,7 @@ private Q_SLOTS:
             backendFilters2.append(f3);
 
             // sync model with new backend filters
-            filtersModel->update(backendFilters2, filterState);
+            filtersModel->update(backendFilters2);
 
             if (dataChangedSignal.empty()) {
                 QVERIFY(dataChangedSignal.wait());
@@ -191,7 +193,7 @@ private Q_SLOTS:
             QCOMPARE(opts->data(idx1, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("Option1"));
             QCOMPARE(opts->data(idx2, uss::OptionSelectorOptionsInterface::Roles::RoleOptionLabel).toString(), QString("UpdatedOption2"));
 
-            QCOMPARE(stateChangeSignal.count(), 0); // change initiated by backend, so no state change signal
+            QCOMPARE(stateChangeSignal.count(), 0); // no state change signal
 
             // verify arguments of dataChanged signal
             {
@@ -221,11 +223,12 @@ private Q_SLOTS:
             // enable second option (which disables 1st option)
             opts->setChecked(1, true);
 
-            f1->update_state(filterState, f1o2, true);
-            filtersModel->update(backendFilters, filterState);
-
-            stateChangeSignal.wait();
-            dataChangedSignal.wait();
+            if (stateChangeSignal.empty()) {
+                stateChangeSignal.wait();
+            }
+            if (dataChangedSignal.empty()) {
+                dataChangedSignal.wait();
+            }
             QCOMPARE(stateChangeSignal.count(), 1);
             QCOMPARE(dataChangedSignal.count(), 2);
 

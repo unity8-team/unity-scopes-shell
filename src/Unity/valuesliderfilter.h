@@ -17,31 +17,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NG_OPTIONSELECTORFILTER_H
-#define NG_OPTIONSELECTORFILTER_H
+#ifndef NG_VALUESLIDERFILTER_H
+#define NG_VALUESLIDERFILTER_H
 
-#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
+#include <unity/shell/scopes/ValueSliderFilterInterface.h>
 #include <unity/shell/scopes/FiltersInterface.h>
 #include "filters.h"
-#include <unity/scopes/OptionSelectorFilter.h>
-#include "optionselectoroptions.h"
-#include <QScopedPointer>
+#include "valueslidervalues.h"
+#include <unity/scopes/ValueSliderFilter.h>
 
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSelectorFilterInterface, public FilterUpdateInterface
+class Q_DECL_EXPORT ValueSliderFilter : public unity::shell::scopes::ValueSliderFilterInterface, public FilterUpdateInterface
 {
     Q_OBJECT
 
 public:
-    OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    ValueSliderFilter(unity::scopes::ValueSliderFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
-    QString label() const override;
-    bool multiSelect() const override;
-    unity::shell::scopes::OptionSelectorOptionsInterface* options() const override;
+    double value() const override;
+
+    void setValue(double value) override;
+    double minValue() const override;
+    double maxValue() const override;
+    unity::shell::scopes::ValueSliderValuesInterface* values() const override;
+
     void update(unity::scopes::FilterBase::SCPtr const& filter) override;
     void update(unity::scopes::FilterState::SPtr const& filterState) override;
     bool isActive() const override;
@@ -51,17 +54,15 @@ public:
 Q_SIGNALS:
     void filterStateChanged();
 
-protected Q_SLOTS:
-    void onOptionChecked(const QString& id, bool checked);
-
 private:
     QString m_id;
     QString m_title;
-    bool m_multiSelect;
-    QString m_label;
-    QScopedPointer<OptionSelectorOptions> m_options;
+    double m_min;
+    double m_max;
+    double m_value;
+    QScopedPointer<ValueSliderValues> m_values;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
-    unity::scopes::OptionSelectorFilter::SCPtr m_filter;
+    unity::scopes::ValueSliderFilter::SCPtr m_filter;
 };
 
 } // namespace scopes_ng

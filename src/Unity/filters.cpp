@@ -20,20 +20,25 @@
 // Self
 #include "filters.h"
 #include "optionselectorfilter.h"
+#include "rangeinputfilter.h"
+#include "valuesliderfilter.h"
 #include <QSet>
 #include <QMap>
 #include <QQmlEngine>
 #include <QDebug>
 
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
 
 namespace scopes_ng
 {
 
 const int FILTER_CHANGE_PROCESSING_DELAY = 300;
 
-Filters::Filters(unity::shell::scopes::ScopeInterface *parent)
-    : ModelUpdate(parent)
+Filters::Filters(unity::scopes::FilterState const& filterState,
+        unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent),
+        m_filterState(new unity::scopes::FilterState(filterState))
 {
     m_filterStateChangeTimer.setSingleShot(true);
     QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);
@@ -73,23 +78,26 @@ void Filters::clear()
     {
         beginResetModel();
         m_filters.clear();
-        resetState();
+        m_filterState.reset(new unity::scopes::FilterState());
         endResetModel();
     }
 }
 
-void Filters::resetState()
-{
-    m_filterState.reset();
-}
-
 void Filters::reset()
 {
-    //TODO reset to defaults
+    // Resetting filters will emit filterStateChanged.
+    qDebug() << "Resetting filters to defaults";
+    for (auto f: m_filters) {
+        qDebug() << "Resetting filter:" << f->filterId();
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f.data());
+        Q_ASSERT(shellFilter);
+        shellFilter->reset();
+    }
 }
 
 void Filters::onFilterStateChanged()
 {
+    qDebug() << "Filter::onFilterStateChanged";
     m_filterStateChangeTimer.start(FILTER_CHANGE_PROCESSING_DELAY);
 }
 
@@ -98,12 +106,8 @@ void Filters::delayedFilterStateChange()
     Q_EMIT filterStateChanged();
 }
 
-//
-// Update current filters model and primary filter pointer with filters coming from scope.
-void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState const& filterState, bool containsDepartments)
+void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments)
 {
-    m_filterState.reset(new unity::scopes::FilterState(filterState));
-
     // Primary filter needs to be handled separately and not inserted into the main filters model,
     bool hasPrimaryFilter = containsDepartments;
     QList<unity::scopes::FilterBase::SCPtr> inFilters;
@@ -121,7 +125,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
             if (hadSamePrimaryFilterBefore) {
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
                 if (shellFilter) {
-                    shellFilter->update(f, m_filterState);
+                    shellFilter->update(f);
                 } else {
                     // this should never happen
                     qCritical() << "Failed to cast filter" << m_primaryFilter->filterId() << "to FilterUpdateInterface";
@@ -153,16 +157,45 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, uni
                 },
             // filter update function
             [this](int, const unity::scopes::FilterBase::SCPtr &f1, const QSharedPointer<unity::shell::scopes::FilterBaseInterface>& f2) -> bool {
+                qDebug() << "Updating filter" << f2->filterId();
                 if (f2->filterId() != QString::fromStdString(f1->id()) || f2->filterType() != getFilterType(f1))
                 {
                     return false;
                 }
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f2.data());
                 if (shellFilter) {
-                    shellFilter->update(f1, m_filterState);
+                    shellFilter->update(f1);
+                } else {
+                    // this should never happen
+                    qCritical() << "Failed to cast filter" << f2->filterId() << "to FilterUpdateInterface";
                 }
                 return true;
             });
+}
+//
+// Update current filters model and primary filter pointer with filters coming from scope.
+void Filters::update(unity::scopes::FilterState const& filterState)
+{
+    m_filterState.reset(new unity::scopes::FilterState(filterState));
+
+    if (m_primaryFilter) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
+        if (shellFilter) {
+            shellFilter->update(m_filterState);
+        } else {
+            // this should never happen
+            qCritical() << "Failed to cast filter" << m_primaryFilter->filterId() << "to FilterUpdateInterface";
+        }
+    }
+    for (auto f: m_filters) {
+        auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f.data());
+        if (shellFilter) {
+            shellFilter->update(m_filterState);
+        } else {
+            // this should never happen
+            qCritical() << "Failed to cast filter" << f->filterId() << "to FilterUpdateInterface";
+        }
+    }
 }
 
 QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterObject(unity::scopes::FilterBase::SCPtr const& filter)
@@ -173,6 +206,18 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
         unity::scopes::OptionSelectorFilter::SCPtr optfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);
         filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::OptionSelectorFilter(optfilter, m_filterState, this));
     }
+    else if (filter->filter_type() == "range_input")
+    {
+        unity::scopes::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter);
+        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::RangeInputFilter(rangefilter, m_filterState, this));
+    }
+    else if (filter->filter_type() == "value_slider")
+    {
+        unity::scopes::ValueSliderFilter::SCPtr valuesliderfilter = std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter);
+        filterObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::ValueSliderFilter(valuesliderfilter, m_filterState, this));
+    }
+
+    // Warning!!! Make sure any new filter type created by this factory method is reflected below in getFilterType() method as well!
 
     if (filterObj)
     {
@@ -189,10 +234,21 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
 
 unity::shell::scopes::FiltersInterface::FilterType Filters::getFilterType(unity::scopes::FilterBase::SCPtr const& filter)
 {
-    if (typeid(*filter) == typeid(unity::scopes::OptionSelectorFilter))
+    // WARNING! Some filters may rely on inheritance, in that case the dynamic casts below need to be in correct order
+    // (e.g. more concrete types first, base/generic types last).
+    if (std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter))
     {
         return unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter;
     }
+    if (std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter))
+    {
+        return unity::shell::scopes::FiltersInterface::FilterType::RangeInputFilter;
+    }
+    if (std::dynamic_pointer_cast<unity::scopes::ValueSliderFilter const>(filter))
+    {
+        return unity::shell::scopes::FiltersInterface::FilterType::ValueSliderFilter;
+    }
+    qFatal("getFilterType(): Unknown filter type: %s\n", filter->filter_type().c_str());
     return unity::shell::scopes::FiltersInterface::FilterType::Invalid;
 }
 

@@ -96,7 +96,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     m_categories.reset(new Categories(this));
-    m_filters.reset(new Filters(this));
+    m_filters.reset(new Filters(m_filterState, this));
 
     connect(m_filters.data(), SIGNAL(primaryFilterChanged()), this, SIGNAL(primaryNavigationFilterChanged()));
 
@@ -132,17 +132,15 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
     scopes::Department::SCPtr rootDepartment;
     scopes::OptionSelectorFilter::SCPtr sortOrderFilter;
-    scopes::FilterState filterState;
     QList<scopes::FilterBase::SCPtr> filters;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters, filterState);
+    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     m_rootDepartment = rootDepartment;
     m_receivedFilters = filters;
-    m_receivedFilterState = filterState;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -437,7 +435,7 @@ void Scope::flushUpdates(bool finalize)
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
-            m_filters->update(m_receivedFilters, m_receivedFilterState, containsDepartments);
+            m_filters->update(m_receivedFilters, containsDepartments);
             processPrimaryNavigationTag(m_currentNavigationId);
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();
@@ -1258,14 +1256,11 @@ void Scope::invalidateResults()
 
 void Scope::resetPrimaryNavigationTag()
 {
-    m_filterState = unity::scopes::FilterState();
-    m_filters->resetState();
-
+    m_currentNavigationId.clear();
     m_primaryNavigationTag.clear();
-    m_currentNavigationId = "";
-    processActiveFiltersCount();
     Q_EMIT primaryNavigationTagChanged();
-    invalidateResults();
+    m_filters->update(unity::scopes::FilterState());
+    filterStateChanged();
 }
 
 void Scope::resetFilters()

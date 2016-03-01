@@ -18,10 +18,12 @@
 
 #include <unity/scopes/CategorisedResult.h>
 #include <unity/scopes/OptionSelectorFilter.h>
+#include <unity/scopes/RangeInputFilter.h>
+#include <unity/scopes/ValueSliderFilter.h>
+#include <unity/scopes/ValueSliderLabels.h>
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
-#include <iostream>
 #include <sstream>
 
 #define EXPORT __attribute__ ((visibility ("default")))
@@ -51,21 +53,35 @@ public:
         auto opt1 = filter1->add_option("o1", "Option1");
         filter1->add_option("o2", "Option2");
 
+        RangeInputFilter::SPtr filter2 = RangeInputFilter::create("f2", Variant(2.0f), Variant::null(), "start", "", "", "end", "");
+
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
         res1.set_uri("test:uri");
 
         auto selected = filter1->active_options(query().filter_state());
         if (selected.size() == 1) {
-            std::cerr << "Option is selected\n";
             res1.set_title("result for option " + (*selected.begin())->id());
         } else {
-            std::cerr << "Option is NOT selected\n";
             res1.set_title("result for: \"" + query().query_string() + "\"");
         }
 
+        bool has_start_val = filter2->has_start_value(query().filter_state());
+        bool has_end_val = filter2->has_end_value(query().filter_state());
+
+        if (has_start_val || has_end_val)
+        {
+            res1.set_title("result for range: " +
+                    (has_start_val ? std::to_string(filter2->start_value(query().filter_state())) : "***") + " - " +
+                    (has_end_val ? std::to_string(filter2->end_value(query().filter_state())) : "***"));
+        }
+
+        ValueSliderFilter::SPtr filter3 = ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}}));
+
         Filters filters;
         filters.push_back(std::move(filter1));
+        filters.push_back(std::move(filter2));
+        filters.push_back(std::move(filter3));
 
         reply->push(filters, query().filter_state());
         reply->push(res1);

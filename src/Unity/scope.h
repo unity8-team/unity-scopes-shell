@@ -254,7 +254,6 @@ private:
     unity::scopes::Department::SCPtr m_rootDepartment;
     unity::scopes::Department::SCPtr m_lastRootDepartment;
     unity::scopes::FilterState m_filterState;
-    unity::scopes::FilterState m_receivedFilterState;
     unity::shell::scopes::ScopeInterface::Status m_status;
     QList<unity::scopes::FilterBase::SCPtr> m_receivedFilters;
     QScopedPointer<Filters> m_filters;
