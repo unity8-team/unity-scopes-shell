@@ -78,18 +78,14 @@ void Filters::clear()
     {
         beginResetModel();
         m_filters.clear();
-        resetState();
+        m_filterState.reset(new unity::scopes::FilterState());
         endResetModel();
     }
 }
 
-void Filters::resetState()
-{
-    m_filterState.reset();
-}
-
 void Filters::reset()
 {
+    // Resetting filters will emit filterStateChanged.
     qDebug() << "Resetting filters to defaults";
     for (auto f: m_filters) {
         qDebug() << "Resetting filter:" << f->filterId();

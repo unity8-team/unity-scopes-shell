@@ -1258,9 +1258,9 @@ void Scope::resetPrimaryNavigationTag()
 {
     m_currentNavigationId.clear();
     m_primaryNavigationTag.clear();
-    m_filterState = unity::scopes::FilterState();
     Q_EMIT primaryNavigationTagChanged();
-    m_filters->update(m_filterState);
+    m_filters->update(unity::scopes::FilterState());
+    filterStateChanged();
 }
 
 void Scope::resetFilters()

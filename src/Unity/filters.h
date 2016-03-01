@@ -70,7 +70,6 @@ public:
 
 public Q_SLOTS:
     void clear();
-    void resetState();
     void reset();
 
 private Q_SLOTS:

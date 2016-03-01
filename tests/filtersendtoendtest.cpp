@@ -269,6 +269,68 @@ private Q_SLOTS:
         QCOMPARE(static_cast<int>(f3->value()), 75);
     }
 
+    void testResetToDefault()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+
+        idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        f2->setStartValue(5.0f);
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 5.0f);
+        QCOMPARE(static_cast<int>(f3->value()), 75);
+
+        m_scope->resetFilters();
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+    }
+
+    void testCancel()
+    {
+        TestUtils::performSearch(m_scope, "");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 3);
+
+        auto idx = filters->index(1, 0);
+        auto f2 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+
+        idx = filters->index(2, 0);
+        auto f3 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        f2->setStartValue(5.0f);
+        f3->setValue(75);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 5.0f);
+        QCOMPARE(static_cast<int>(f3->value()), 75);
+
+        m_scope->resetPrimaryNavigationTag();
+
+        TestUtils::waitForSearchFinish(m_scope);
+        QCOMPARE(f2->startValue(), 2.0f); //QCOMPARE does fuzzy comparison for floats/doubles
+        QCOMPARE(static_cast<int>(f3->value()), 50);
+        QCOMPARE(QString(), m_scope->primaryNavigationTag());
+    }
+
 private:
     QScopedPointer<Scopes> m_scopes;
     Scope::Ptr m_scope;
