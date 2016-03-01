@@ -114,6 +114,9 @@ void RangeInputFilter::update(unity::scopes::FilterState::SPtr const& filterStat
         m_filter->default_start_value() : Variant::null());
     if (!compare(start, m_start)) {
         m_start = start;
+        if (m_start.is_null()) {
+            Q_EMIT hasStartValueChanged();
+        }
         Q_EMIT startValueChanged();
     }
 
@@ -121,6 +124,9 @@ void RangeInputFilter::update(unity::scopes::FilterState::SPtr const& filterStat
             m_filter->default_end_value() : Variant::null());
     if (!compare(end, m_end)) {
         m_end = end;
+        if (m_end.is_null()) {
+            Q_EMIT hasEndValueChanged();
+        }
         Q_EMIT endValueChanged();
     }
 }
@@ -217,6 +223,7 @@ void RangeInputFilter::setStartValue(Variant const& value)
     if (auto state = m_filterState.lock()) {
         try {
             if (!compare(value, m_start)) {
+                qDebug() << "Changing startValue of filter" << m_id;
                 m_start = value;
 
                 m_filter->update_state(*state, m_start, m_end);
@@ -241,6 +248,7 @@ void RangeInputFilter::setEndValue(Variant const& value)
     if (auto state = m_filterState.lock()) {
         try {
             if (!compare(value, m_end)) {
+                qDebug() << "Changing endValue of filter" << m_id;
                 m_end = value;
 
                 m_filter->update_state(*state, m_start, m_end);

@@ -37,8 +37,8 @@ namespace scopes_ng
 const int FILTER_CHANGE_PROCESSING_DELAY = 300;
 
 Filters::Filters(unity::scopes::FilterState const& filterState,
-        unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent)
-        ,m_filterState(new unity::scopes::FilterState(filterState))
+        unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent),
+        m_filterState(new unity::scopes::FilterState(filterState))
 {
     m_filterStateChangeTimer.setSingleShot(true);
     QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);
@@ -92,6 +92,7 @@ void Filters::reset()
 {
     qDebug() << "Resetting filters to defaults";
     for (auto f: m_filters) {
+        qDebug() << "Resetting filter:" << f->filterId();
         auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f.data());
         Q_ASSERT(shellFilter);
         shellFilter->reset();
@@ -100,6 +101,7 @@ void Filters::reset()
 
 void Filters::onFilterStateChanged()
 {
+    qDebug() << "Filter::onFilterStateChanged";
     m_filterStateChangeTimer.start(FILTER_CHANGE_PROCESSING_DELAY);
 }
 
