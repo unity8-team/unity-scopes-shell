@@ -34,7 +34,7 @@ class Q_DECL_EXPORT ValueSliderFilter : public unity::shell::scopes::ValueSlider
     Q_OBJECT
 
 public:
-    ValueSliderFilter(unity::scopes::experimental::ValueSliderFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    ValueSliderFilter(unity::scopes::ValueSliderFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
@@ -45,7 +45,8 @@ public:
     double maxValue() const override;
     unity::shell::scopes::ValueSliderValuesInterface* values() const override;
 
-    void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+    void update(unity::scopes::FilterBase::SCPtr const& filter) override;
+    void update(unity::scopes::FilterState::SPtr const& filterState) override;
     bool isActive() const override;
     QString filterTag() const override;
     void reset() override;
@@ -61,7 +62,7 @@ private:
     double m_value;
     QScopedPointer<ValueSliderValues> m_values;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
-    unity::scopes::experimental::ValueSliderFilter::SCPtr m_filter;
+    unity::scopes::ValueSliderFilter::SCPtr m_filter;
 };
 
 } // namespace scopes_ng

@@ -73,7 +73,7 @@ void ResultsModel::setMaxAtrributesCount(int count)
     m_maxAttributes = count;
 }
 
-void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
+void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& results)
 {
     if (results.count() == 0) {
         return;
@@ -129,13 +129,16 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     }
 }
 
-void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const& results)
+void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& results)
 {
     if (results.count() == 0) {
         return;
     }
 
     m_purge = false;
+
+    ResultsMap newResultsMap(results); // deduplicate results
+    Q_UNUSED(newResultsMap);
 
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
     Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {

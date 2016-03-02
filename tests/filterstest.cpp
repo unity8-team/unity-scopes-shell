@@ -37,7 +37,8 @@ private Q_SLOTS:
 
     void init()
     {
-        filtersModel.reset(new Filters());
+        unity::scopes::FilterState filterState;
+        filtersModel.reset(new Filters(filterState));
 
         f1 = unity::scopes::OptionSelectorFilter::create("f1", "Filter1", false);
         f1o1 = f1->add_option("o1", "Option1");
@@ -59,7 +60,8 @@ private Q_SLOTS:
 
             f1->update_state(filterState, f1o1, true);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
+            filtersModel->update(filterState);
         }
 
         QCOMPARE(filtersSpy.count(), 1); // 1 filter object added
@@ -81,8 +83,6 @@ private Q_SLOTS:
 
     void testFiltersModelInsert()
     {
-        unity::scopes::FilterState filterState;
-
         QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
         QSignalSpy rowsRemovedSignal(filtersModel.data(), SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
         QSignalSpy rowsMovedSignal(filtersModel.data(), SIGNAL(rowsMoved(const QModelIndex&, int, int, const QModelIndex&, int)));
@@ -91,7 +91,7 @@ private Q_SLOTS:
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
             backendFilters.append(f1);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QCOMPARE(rowsMovedSignal.count(), 0);
@@ -112,7 +112,7 @@ private Q_SLOTS:
             backendFilters.append(f1);
             backendFilters.append(f2);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QCOMPARE(rowsMovedSignal.count(), 0);
@@ -137,13 +137,12 @@ private Q_SLOTS:
 
     void testFiltersModelMove()
     {
-        unity::scopes::FilterState filterState;
         {
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
             backendFilters.append(f1);
             backendFilters.append(f2);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
@@ -157,7 +156,7 @@ private Q_SLOTS:
             backendFilters.append(f2);
             backendFilters.append(f1);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QCOMPARE(rowsInsertedSignal.count(), 0); // no change
@@ -183,13 +182,12 @@ private Q_SLOTS:
 
     void testFiltersModelRemove()
     {
-        unity::scopes::FilterState filterState;
         {
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
             backendFilters.append(f2);
             backendFilters.append(f1);
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QSignalSpy rowsInsertedSignal(filtersModel.data(), SIGNAL(rowsInserted(const QModelIndex&, int, int)));
@@ -201,7 +199,7 @@ private Q_SLOTS:
             QList<unity::scopes::FilterBase::SCPtr> backendFilters;
             backendFilters.append(f2); // filter1 not present (removed)
 
-            filtersModel->update(backendFilters, filterState);
+            filtersModel->update(backendFilters);
         }
 
         QCOMPARE(rowsInsertedSignal.count(), 0);

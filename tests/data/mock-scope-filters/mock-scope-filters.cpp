@@ -30,7 +30,6 @@
 
 using namespace std;
 using namespace unity::scopes;
-using namespace unity::scopes::experimental;
 
 class MyQuery : public SearchQueryBase
 {

@@ -34,7 +34,7 @@ class Q_DECL_EXPORT RangeInputFilter : public unity::shell::scopes::RangeInputFi
     Q_OBJECT
 
 public:
-    RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    RangeInputFilter(unity::scopes::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
@@ -56,7 +56,8 @@ public:
     Q_INVOKABLE void eraseStartValue() override;
     Q_INVOKABLE void eraseEndValue() override;
 
-    void update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState) override;
+    void update(unity::scopes::FilterBase::SCPtr const& filter) override;
+    void update(unity::scopes::FilterState::SPtr const& filterState) override;
     bool isActive() const override;
     QString filterTag() const override;
     void reset() override;
@@ -81,7 +82,7 @@ private:
     unity::scopes::Variant m_start;
     unity::scopes::Variant m_end;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
-    unity::scopes::experimental::RangeInputFilter::SCPtr m_filter;
+    unity::scopes::RangeInputFilter::SCPtr m_filter;
 
     static bool compare(double v1, unity::scopes::Variant const& v2);
     static bool compare(unity::scopes::Variant const& v1, unity::scopes::Variant const& v2);

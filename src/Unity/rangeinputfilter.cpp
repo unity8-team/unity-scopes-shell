@@ -28,7 +28,7 @@ using namespace unity::scopes;
 namespace scopes_ng
 {
 
-RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+RangeInputFilter::RangeInputFilter(unity::scopes::RangeInputFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : unity::shell::scopes::RangeInputFilterInterface(parent),
     m_id(QString::fromStdString(filter->id())),
     m_title(QString::fromStdString(filter->title())),
@@ -42,6 +42,13 @@ RangeInputFilter::RangeInputFilter(unity::scopes::experimental::RangeInputFilter
     m_filterState(filterState),
     m_filter(filter)
 {
+    const bool use_defaults = !filterState->has_filter(m_filter->id());
+    const unity::scopes::Variant start = m_filter->has_start_value(*filterState) ? Variant(m_filter->start_value(*filterState)) : (use_defaults ?
+        m_filter->default_start_value() : Variant::null());
+    m_start = start;
+    const unity::scopes::Variant end = m_filter->has_end_value(*filterState) ? Variant(m_filter->end_value(*filterState)) : (use_defaults ?
+            m_filter->default_end_value() : Variant::null());
+    m_end = end;
 }
 
 QString RangeInputFilter::filterId() const
@@ -61,12 +68,20 @@ unity::shell::scopes::FiltersInterface::FilterType RangeInputFilter::filterType(
 
 double RangeInputFilter::startValue() const
 {
-    return m_start.get_double();
+    if (m_start.which() == Variant::Double) {
+        return m_start.get_double();
+    }
+    qWarning() << "Requested startValue for filter" << m_id << ", but value is not set";
+    return 0.0f;
 }
 
 double RangeInputFilter::endValue() const
 {
-    return m_end.get_double();
+    if (m_end.which() == Variant::Double) {
+        return m_end.get_double();
+    }
+    qWarning() << "Requested endValue for filter" << m_id << ", but value is not set";
+    return 0.0f;
 }
 
 void RangeInputFilter::setStartValue(double value)
@@ -90,11 +105,35 @@ void RangeInputFilter::labelChange(std::string const& srcLabel, QString& destLab
     }
 }
 
-void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState)
+void RangeInputFilter::update(unity::scopes::FilterState::SPtr const& filterState)
 {
     m_filterState = filterState;
 
-    unity::scopes::experimental::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::experimental::RangeInputFilter const>(filter);
+    const bool use_defaults = !filterState->has_filter(m_filter->id());
+    const unity::scopes::Variant start = m_filter->has_start_value(*filterState) ? Variant(m_filter->start_value(*filterState)) : (use_defaults ?
+        m_filter->default_start_value() : Variant::null());
+    if (!compare(start, m_start)) {
+        m_start = start;
+        if (m_start.is_null()) {
+            Q_EMIT hasStartValueChanged();
+        }
+        Q_EMIT startValueChanged();
+    }
+
+    const unity::scopes::Variant end = m_filter->has_end_value(*filterState) ? Variant(m_filter->end_value(*filterState)) : (use_defaults ?
+            m_filter->default_end_value() : Variant::null());
+    if (!compare(end, m_end)) {
+        m_end = end;
+        if (m_end.is_null()) {
+            Q_EMIT hasEndValueChanged();
+        }
+        Q_EMIT endValueChanged();
+    }
+}
+
+void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
+{
+    unity::scopes::RangeInputFilter::SCPtr rangefilter = std::dynamic_pointer_cast<unity::scopes::RangeInputFilter const>(filter);
     if (!rangefilter) {
         qWarning() << "RangeInputFilter::update(): Unexpected filter" << QString::fromStdString(filter->id()) << "of type" << QString::fromStdString(filter->filter_type());
         return;
@@ -113,18 +152,6 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter, un
     labelChange(m_filter->central_label(), m_centralLabel, [this]() { Q_EMIT centralLabelChanged(); });
     labelChange(m_filter->end_prefix_label(), m_endPrefixLabel, [this]() { Q_EMIT endPrefixLabelChanged(); });
     labelChange(m_filter->end_postfix_label(), m_endPostfixLabel, [this]() { Q_EMIT endPostfixLabelChanged(); });
-
-    const unity::scopes::Variant start = rangefilter->has_start_value(*filterState) ? Variant(rangefilter->start_value(*filterState)) : unity::scopes::Variant::null();
-    if (!compare(start, m_start)) {
-        m_start = start;
-        Q_EMIT startValueChanged();
-    }
-
-    const unity::scopes::Variant end = rangefilter->has_end_value(*filterState) ? Variant(rangefilter->end_value(*filterState)) :  unity::scopes::Variant::null();
-    if (!compare(end, m_end)) {
-        m_end = end;
-        Q_EMIT endValueChanged();
-    }
 }
 
 bool RangeInputFilter::isActive() const
@@ -132,10 +159,10 @@ bool RangeInputFilter::isActive() const
     if (auto state = m_filterState.lock()) {
         // check if current value from filter state is equal to default value
         if (m_filter->has_start_value(*state) && !compare(m_filter->start_value(*state), m_filter->default_start_value())) {
-            return false;
+            return true;
         }
         if (m_filter->has_end_value(*state) && !compare(m_filter->end_value(*state), m_filter->default_end_value())) {
-            return false;
+            return true;
         }
     }
     return false;
@@ -194,16 +221,24 @@ void RangeInputFilter::eraseEndValue()
 void RangeInputFilter::setStartValue(Variant const& value)
 {
     if (auto state = m_filterState.lock()) {
-        if (!compare(value, m_start)) {
-            m_start = value;
+        try {
+            if (!compare(value, m_start)) {
+                qDebug() << "Changing startValue of filter" << m_id;
+                m_start = value;
 
-            m_filter->update_state(*state, m_start, m_end);
+                m_filter->update_state(*state, m_start, m_end);
 
-            if (value.is_null()) {
-                Q_EMIT hasStartValueChanged();
+                if (value.is_null()) {
+                    Q_EMIT hasStartValueChanged();
+                }
+                Q_EMIT startValueChanged();
+                Q_EMIT filterStateChanged();
             }
-            Q_EMIT startValueChanged();
-            Q_EMIT filterStateChanged();
+        }
+        catch (std::exception const& err)
+        {
+            // this is ok, it's user input and we may get partial input
+            qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
         }
     }
 }
@@ -211,16 +246,24 @@ void RangeInputFilter::setStartValue(Variant const& value)
 void RangeInputFilter::setEndValue(Variant const& value)
 {
     if (auto state = m_filterState.lock()) {
-        if (!compare(value, m_end)) {
-            m_end = value;
+        try {
+            if (!compare(value, m_end)) {
+                qDebug() << "Changing endValue of filter" << m_id;
+                m_end = value;
 
-            m_filter->update_state(*state, m_start, m_end);
+                m_filter->update_state(*state, m_start, m_end);
 
-            if (value.is_null()) {
-                Q_EMIT hasEndValueChanged();
+                if (value.is_null()) {
+                    Q_EMIT hasEndValueChanged();
+                }
+                Q_EMIT endValueChanged();
+                Q_EMIT filterStateChanged();
             }
-            Q_EMIT endValueChanged();
-            Q_EMIT filterStateChanged();
+        }
+        catch (std::exception const& err)
+        {
+            // this is ok, it's user input and we may get partial input
+            qWarning() << "Could not set start value of filter" << m_id << ":" << QString::fromStdString(err.what());
         }
     }
 }
@@ -246,7 +289,10 @@ bool RangeInputFilter::compare(double v1, Variant const& v2)
 
 void RangeInputFilter::reset()
 {
-    //TODO
+    // Filters::onFilterStateChanged will delay actual refresh,
+    // so it's ok to make two independent updates and emit two signals
+    setStartValue(m_filter->default_start_value());
+    setEndValue(m_filter->default_end_value());
 }
 
 }
