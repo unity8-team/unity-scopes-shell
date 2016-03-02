@@ -49,13 +49,8 @@ void ValueSliderValues::update(const unity::scopes::ValueSliderLabels& values, i
                     return false;
                 }
 
-                QVector<int> roles;
                 if (v1.second != v2->second.toStdString()) {
-                    roles.append(unity::shell::scopes::ValueSliderValuesInterface::Roles::RoleLabel);
-                }
-
-                if (roles.count()) {
-                    Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+                    Q_EMIT dataChanged(index(row, 0), index(row, 0), { unity::shell::scopes::ValueSliderValuesInterface::Roles::RoleLabel });
                 }
                 return true;
             });

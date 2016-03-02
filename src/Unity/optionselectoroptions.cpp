@@ -62,16 +62,13 @@ OptionSelectorOptions::OptionSelectorOptions(OptionSelectorFilter *parent, std::
 
 void OptionSelectorOptions::update(const std::set<unity::scopes::FilterOption::SCPtr>& activeOptions, bool allow_defaults)
 {
-    QVector<int> roles;
-    roles.append(unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked);
-
     bool const use_defaults = (allow_defaults && activeOptions.size() == 0);
     if (use_defaults) {
         for (int row = 0; row<m_options.size(); row++) {
             auto &opt = m_options[row];
             if (opt->checked != opt->default_checked) {
                 opt->checked = opt->default_checked;
-                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), { unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked });
             }
         }
         return;
@@ -87,12 +84,12 @@ void OptionSelectorOptions::update(const std::set<unity::scopes::FilterOption::S
         if (actOpts.find(opt->id) != actOpts.end()) {
             if (!opt->checked) {
                 opt->checked = true;
-                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), { unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked });
             }
         } else {
             if (opt->checked) {
                 opt->checked = false;
-                Q_EMIT dataChanged(index(row, 0), index(row, 0), roles);
+                Q_EMIT dataChanged(index(row, 0), index(row, 0), { unity::shell::scopes::OptionSelectorOptionsInterface::Roles::RoleOptionChecked });
             }
         }
     }
