@@ -131,10 +131,9 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
     scopes::Department::SCPtr rootDepartment;
-    scopes::OptionSelectorFilter::SCPtr sortOrderFilter;
     QList<scopes::FilterBase::SCPtr> filters;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filters);
+    status = pushEvent->collectSearchResults(results, rootDepartment, filters);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }

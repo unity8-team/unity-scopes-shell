@@ -121,7 +121,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, boo
         if (wantsToBePrimary && !hasPrimaryFilter) {
             hasPrimaryFilter = true;
             //
-            const bool hadSamePrimaryFilterBefore = m_primaryFilter && m_primaryFilter->filterId() == QString::fromStdString(f->id()) && m_primaryFilter->filterType() == getFilterType(f);
+            const bool hadSamePrimaryFilterBefore = m_primaryFilter && (m_primaryFilter->filterId() == QString::fromStdString(f->id())) && (m_primaryFilter->filterType() == getFilterType(f));
             if (hadSamePrimaryFilterBefore) {
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
                 if (shellFilter) {

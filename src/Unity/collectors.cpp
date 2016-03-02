@@ -142,20 +142,13 @@ public:
         m_rootDepartment = department;
     }
 
-    void setSortOrder(scopes::OptionSelectorFilter::SCPtr const& sortOrder)
-    {
-        QMutexLocker locker(&m_mutex);
-        m_sortOrderFilter = sortOrder;
-    }
-
     void addFilter(scopes::FilterBase::SCPtr const& filter)
     {
         QMutexLocker locker(&m_mutex);
         m_filters.append(filter);
     }
 
-    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& out_rootDepartment, scopes::OptionSelectorFilter::SCPtr&
-            out_sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters)
+    Status collect(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& out_rootDepartment, QList<scopes::FilterBase::SCPtr>& out_filters)
     {
         Status status;
 
@@ -168,7 +161,6 @@ public:
         m_results.swap(out_results);
         out_rootDepartment = m_rootDepartment;
 
-        out_sortOrder = m_sortOrderFilter;
         out_filters = m_filters;
 
         return status;
@@ -177,7 +169,6 @@ public:
 private:
     QList<scopes::CategorisedResult::SPtr> m_results;
     scopes::Department::SCPtr m_rootDepartment;
-    scopes::OptionSelectorFilter::SCPtr m_sortOrderFilter;
     QList<scopes::FilterBase::SCPtr> m_filters;
 };
 
@@ -294,10 +285,10 @@ qint64 PushEvent::msecsSinceStart() const
 }
 
 CollectorBase::Status PushEvent::collectSearchResults(QList<scopes::CategorisedResult::SPtr>& out_results, scopes::Department::SCPtr& rootDepartment,
-        scopes::OptionSelectorFilter::SCPtr& sortOrder, QList<scopes::FilterBase::SCPtr>& out_filters)
+        QList<scopes::FilterBase::SCPtr>& out_filters)
 {
     auto collector = std::dynamic_pointer_cast<SearchDataCollector>(m_collector);
-    return collector->collect(out_results, rootDepartment, sortOrder, out_filters);
+    return collector->collect(out_results, rootDepartment, out_filters);
 }
 
 CollectorBase::Status PushEvent::collectPreviewData(scopes::ColumnLayoutList& out_columns, scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data)
@@ -362,19 +353,9 @@ void SearchResultReceiver::push(scopes::Department::SCPtr const& department)
 
 void SearchResultReceiver::push(scopes::Filters const& filters, scopes::FilterState const& /* state */)
 {
-    bool has_sort_order = false;
     for (auto it = filters.begin(); it != filters.end(); ++it) {
         scopes::FilterBase::SCPtr filter = *it;
-        if (filter->display_hints() == scopes::FilterBase::DisplayHints::Primary) {
-            scopes::OptionSelectorFilter::SCPtr option_filter = std::dynamic_pointer_cast<const scopes::OptionSelectorFilter>(filter);
-            if (option_filter && !has_sort_order) {
-                has_sort_order = true;
-                m_collector->setSortOrder(option_filter);
-                break;
-            }
-        } else { // no 'primary' flag - display at the bottom
-            m_collector->addFilter(filter);
-        }
+        m_collector->addFilter(filter);
     }
 }
 

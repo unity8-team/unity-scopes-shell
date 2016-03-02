@@ -77,7 +77,7 @@ public:
     Type type();
 
     CollectorBase::Status collectSearchResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& out_results, unity::scopes::Department::SCPtr&
-            out_rootDepartment, unity::scopes::OptionSelectorFilter::SCPtr& out_sortOrder, QList<unity::scopes::FilterBase::SCPtr>& out_filters);
+            out_rootDepartment, QList<unity::scopes::FilterBase::SCPtr>& out_filters);
     CollectorBase::Status collectPreviewData(unity::scopes::ColumnLayoutList& out_columns, unity::scopes::PreviewWidgetList& out_widgets, QHash<QString, QVariant>& out_data);
     CollectorBase::Status collectActivationResponse(std::shared_ptr<unity::scopes::ActivationResponse>& out_response, std::shared_ptr<unity::scopes::Result>&
             out_result, QString& categoryId);

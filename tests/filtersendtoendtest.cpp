@@ -30,6 +30,7 @@
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
+#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
 
 #include <unity/scopes/OptionSelectorFilter.h>
 #include <unity/scopes/RangeInputFilter.h>
@@ -86,35 +87,22 @@ private Q_SLOTS:
     {
         TestUtils::performSearch(m_scope, "");
 
+        QCOMPARE(m_scope->primaryNavigationTag(), QString(""));
+        QVERIFY(m_scope->primaryNavigationFilter() == nullptr);
+
         auto filters = m_scope->filters();
         QVERIFY(filters != nullptr);
         QCOMPARE(filters->rowCount(), 3);
 
         auto idx = filters->index(0, 0);
         QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f1"));
-        QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterType).toInt(),
-                static_cast<int>(unity::shell::scopes::FiltersInterface::FilterType::OptionSelectorFilter));
-
-        auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
-        QVERIFY(f1 != nullptr);
-        QCOMPARE(f1->filterId(), QString("f1"));
-        QCOMPARE(f1->label(), QString("Filter1"));
-        QVERIFY(!f1->multiSelect());
-
-        // check options
-        auto opts = f1->options();
-        QVERIFY(opts != nullptr);
-        QCOMPARE(opts->rowCount(), 2);
-
-        idx = opts->index(0, 0);
-        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o1"));
-        QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
-        idx = opts->index(1, 0);
-        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o2"));
-        QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
+        idx = filters->index(1, 0);
+        QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+        idx = filters->index(2, 0);
+        QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f3"));
     }
 
-    void testOptionSelected()
+    void testOptionSelectorFilter()
     {
         TestUtils::performSearch(m_scope, "");
 
@@ -137,6 +125,17 @@ private Q_SLOTS:
         QVERIFY(opts != nullptr);
         QCOMPARE(opts->rowCount(), 2);
 
+        QCOMPARE(f1->filterId(), QString("f1"));
+        QCOMPARE(f1->label(), QString("Filter1"));
+        QVERIFY(!f1->multiSelect());
+
+        idx = opts->index(0, 0);
+        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o1"));
+        QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
+        idx = opts->index(1, 0);
+        QCOMPARE(opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionId).toString(), QString("o2"));
+        QVERIFY(!opts->data(idx, uss::OptionSelectorOptionsInterface::Roles::RoleOptionChecked).toBool());
+
         // select option 1
         opts->setChecked(0, true);
         TestUtils::waitForFilterStateChange(m_scope);
@@ -158,6 +157,33 @@ private Q_SLOTS:
         QCOMPARE(results->data(results->index(0, 0), unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for: \"\""));
 
         QCOMPARE(filters, m_scope->filters());
+    }
+
+    void testPrimaryFilter()
+    {
+        TestUtils::performSearch(m_scope, "test_primary_filter");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 2);
+
+        auto idx = filters->index(0, 0);
+        QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f2"));
+        idx = filters->index(1, 0);
+        QCOMPARE(filters->data(idx, unity::shell::scopes::FiltersInterface::Roles::RoleFilterId).toString(), QString("f3"));
+
+        auto f1 = dynamic_cast<unity::shell::scopes::OptionSelectorFilterInterface *>(m_scope->primaryNavigationFilter());
+        QVERIFY(f1 != nullptr);
+        QCOMPARE(f1->filterId(), QString("f1"));
+
+        auto opts = f1->options();
+
+        // select option 1
+        opts->setChecked(0, true);
+        TestUtils::waitForFilterStateChange(m_scope);
+        TestUtils::waitForSearchFinish(m_scope);
+
+        QCOMPARE(m_scope->primaryNavigationTag(), QString("Option1"));
     }
 
     void testRangeInputFilter()

@@ -50,6 +50,10 @@ public:
     virtual void run(SearchReplyProxy const& reply) override
     {
         OptionSelectorFilter::UPtr filter1 = OptionSelectorFilter::create("f1", "Filter1");
+        if (query().query_string() == "test_primary_filter") {
+            filter1->set_display_hints(FilterBase::DisplayHints::Primary);
+        }
+
         auto opt1 = filter1->add_option("o1", "Option1");
         filter1->add_option("o2", "Option2");
 
