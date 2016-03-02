@@ -30,6 +30,7 @@ add_library(
     matcher/filter-list-matcher.cpp
     matcher/filter-matcher.cpp
     matcher/match-result.cpp
+    matcher/option-selector-filter-matcher.cpp
     matcher/preview-matcher.cpp
     matcher/preview-column-matcher.cpp
     matcher/preview-widget-matcher.cpp

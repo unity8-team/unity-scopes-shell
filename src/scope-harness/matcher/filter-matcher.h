@@ -52,15 +52,15 @@ public:
 
     FilterMatcher& operator=(FilterMatcher&& other);
 
-    ~FilterMatcher() = default;
-
-    FilterMatcher& title(const std::string& title);
+    virtual ~FilterMatcher() = default;
 
     virtual MatchResult match(const results::Filter& filter) const = 0;
 
     virtual void match(MatchResult& matchResult, const results::Filter& filter) const = 0;
 
 protected:
+    FilterMatcher& matchTitle(const std::string& title);
+
     struct _Priv;
 
     std::shared_ptr<_Priv> p;

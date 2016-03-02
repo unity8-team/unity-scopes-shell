@@ -32,6 +32,31 @@ FilterMatcher::FilterMatcher(const std::string& id)
     //TODO
 }
 
+FilterMatcher::FilterMatcher(const FilterMatcher& other)
+{
+
+}
+
+FilterMatcher::FilterMatcher(FilterMatcher&& other)
+{
+
+}
+
+FilterMatcher& FilterMatcher::operator=(const FilterMatcher& other)
+{
+
+}
+
+FilterMatcher& FilterMatcher::operator=(FilterMatcher&& other)
+{
+
+}
+
+FilterMatcher& FilterMatcher::matchTitle(const std::string& label)
+{
+    return *this;
+}
+
 }
 }
 }

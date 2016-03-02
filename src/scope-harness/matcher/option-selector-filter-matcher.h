@@ -19,7 +19,7 @@
 #pragma once
 
 #include <scope-harness/matcher/match-result.h>
-
+#include <scope-harness/matcher/filter-matcher.h>
 #include <QtGlobal>
 
 namespace unity
@@ -48,6 +48,14 @@ public:
     OptionSelectorFilterMatcher& operator=(OptionSelectorFilterMatcher&& other);
 
     ~OptionSelectorFilterMatcher() = default;
+
+    OptionSelectorFilterMatcher& title(const std::string& title);
+
+    OptionSelectorFilterMatcher& label(const std::string& label);
+
+    OptionSelectorFilterMatcher& hasAtLeast(std::size_t minimum);
+
+    OptionSelectorFilterMatcher& hasExactly(std::size_t amount);
 
     MatchResult match(const results::Filter& filter) const override;
 

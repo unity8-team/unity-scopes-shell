@@ -15,6 +15,7 @@ global:
         typeinfo?for?unity::scopeharness::matcher::ScopeUri;
         typeinfo?for?unity::scopeharness::matcher::FilterMatcher;
         typeinfo?for?unity::scopeharness::matcher::FilterListMatcher;
+        typeinfo?for?unity::scopeharness::matcher::OptionSelectorFilterMatcher;
         typeinfo?for?unity::scopeharness::preview::PreviewWidget;
         typeinfo?for?unity::scopeharness::preview::PreviewWidgetList;
         typeinfo?for?unity::scopeharness::registry::CustomRegistry;
@@ -34,7 +35,9 @@ global:
         vtable?for?unity::scopeharness::matcher::CategoryMatcher;
         vtable?for?unity::scopeharness::matcher::ChildDepartmentMatcher;
         vtable?for?unity::scopeharness::matcher::DepartmentMatcher;
+        vtable?for?unity::scopeharness::matcher::FilterMatcher;
         vtable?for?unity::scopeharness::matcher::MatchResult;
+        vtable?for?unity::scopeharness::matcher::OptionSelectorFilterMatcher;
         vtable?for?unity::scopeharness::matcher::PreviewColumnMatcher;
         vtable?for?unity::scopeharness::matcher::PreviewMatcher;
         vtable?for?unity::scopeharness::matcher::PreviewWidgetMatcher;
@@ -69,6 +72,7 @@ global:
         unity::scopeharness::matcher::SettingsOptionMatcher::[!_]*;
         unity::scopeharness::matcher::FilterListMatcher::[!_]*;
         unity::scopeharness::matcher::FilterMatcher::[!_]*;
+        unity::scopeharness::matcher::OptionSelectorFilterMatcher::[!_]*;
         unity::scopeharness::preview::PreviewWidget::[!_]*;
         unity::scopeharness::preview::PreviewWidgetList::[!_]*;
         unity::scopeharness::registry::CustomRegistry::[!_]*;

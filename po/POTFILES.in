@@ -24,6 +24,7 @@ tests/settingstest.cpp
 src/scope-harness/registry/system-registry.cpp
 src/scope-harness/registry/pre-existing-registry.cpp
 src/scope-harness/registry/custom-registry.cpp
+src/scope-harness/matcher/option-selector-filter-matcher.cpp
 src/scope-harness/matcher/settings-option-matcher.cpp
 src/scope-harness/matcher/category-matcher.cpp
 src/scope-harness/matcher/filter-matcher.cpp
@@ -122,6 +123,7 @@ src/scope-harness/internal/settings-view-arguments.h
 src/scope-harness/internal/result-arguments.h
 src/scope-harness/internal/results-view-arguments.h
 src/scope-harness/internal/preview-widget-arguments.h
+src/scope-harness/internal/filter-arguments.h
 src/scope-harness/internal/category-arguments.h
 src/scope-harness/internal/filters-view-arguments.h
 src/scope-harness/internal/preview-widget-list-arguments.h

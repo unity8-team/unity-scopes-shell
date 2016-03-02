@@ -21,6 +21,7 @@
 #include <scope-harness/scope-harness.h>
 #include <scope-harness/test-utils.h>
 #include <scope-harness/matcher/filter-list-matcher.h>
+#include <scope-harness/matcher/option-selector-filter-matcher.h>
 
 using namespace unity::scopeharness::registry;
 
@@ -57,6 +58,24 @@ private Q_SLOTS:
         QVERIFY_MATCHRESULT(
             shm::FilterListMatcher()
                 .hasExactly(3)
+                .match(resultsView->filters())
+        );
+    }
+
+    void testOptionSelector()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-filters");
+        resultsView->setQuery("");
+
+        // ensure we have filters
+        QVERIFY_MATCHRESULT(
+            shm::FilterListMatcher()
+                .filter(
+                    shm::OptionSelectorFilterMatcher("filter1")
+                        .title("")
+                        .hasExactly(2)
+                )
                 .match(resultsView->filters())
         );
     }
