@@ -1256,6 +1256,7 @@ void Scope::invalidateResults()
 
 void Scope::resetPrimaryNavigationTag()
 {
+    qDebug() << "resetPrimaryNavigationTag()";
     m_currentNavigationId.clear();
     m_primaryNavigationTag.clear();
     Q_EMIT primaryNavigationTagChanged();
