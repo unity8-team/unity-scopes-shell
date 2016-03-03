@@ -325,8 +325,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
             return QVariant();
         case RoleQuickPreviewData:
             return componentValue(result, "quick-preview-data");
-        case RoleSocialAttributes:
-            return componentValue(result, "social-attributes");
+        case RoleSocialActions:
+            return componentValue(result, "social-actions");
         default:
             return QVariant();
     }
