@@ -49,7 +49,7 @@ namespace scopes_ng
 
 class Categories;
 class PushEvent;
-class PreviewStack;
+class PreviewModel;
 class LocationService;
 class SettingsModel;
 class Scopes;
@@ -126,6 +126,7 @@ public:
     bool favorite() const override;
     QString shortcut() const override;
     bool searchInProgress() const override;
+    bool activationInProgress() const override;
     unity::shell::scopes::ScopeInterface::Status status() const override;
     unity::shell::scopes::CategoriesInterface* categories() const override;
     unity::shell::scopes::SettingsModelInterface* settings() const override;
@@ -152,7 +153,7 @@ public:
     void setFavorite(const bool) override;
 
     Q_INVOKABLE void activate(QVariant const& result, QString const& categoryId) override;
-    Q_INVOKABLE unity::shell::scopes::PreviewStackInterface* preview(QVariant const& result, QString const& categoryId) override;
+    Q_INVOKABLE unity::shell::scopes::PreviewModelInterface* preview(QVariant const& result, QString const& categoryId) override;
     Q_INVOKABLE void cancelActivation() override;
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
     Q_INVOKABLE unity::shell::scopes::NavigationInterface* getNavigation(QString const& id) override;
@@ -182,6 +183,7 @@ public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
     void setSearchInProgress(bool searchInProgress);
+    void setActivationInProgress(bool activationInProgress);
 
 Q_SIGNALS:
     void resultsDirtyChanged();
@@ -195,7 +197,7 @@ private Q_SLOTS:
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
     void filterStateChanged();
-    void previewStackDestroyed(QObject *obj);
+    void previewModelDestroyed(QObject *obj);
 
 protected:
     explicit Scope(scopes_ng::Scopes* parent);
@@ -239,6 +241,7 @@ private:
     int m_activeFiltersCount;
     bool m_isActive;
     bool m_searchInProgress;
+    bool m_activationInProgress;
     bool m_resultsDirty;
     bool m_delayedSearchProcessing;
     bool m_hasNavigation;
@@ -270,7 +273,7 @@ private:
     QSharedPointer<LocationService> m_locationService;
     QSharedPointer<LocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
-    QList<PreviewStack*> m_previewStacks;
+    QList<PreviewModel*> m_previewModels;
 };
 
 } // namespace scopes_ng

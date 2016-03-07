@@ -4,6 +4,18 @@ unity-scopes-shell (0.5.7-0ubuntu1) UNRELEASED; urgency=medium
 
  -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 30 Oct 2015 16:17:55 +0100
 
+unity-scopes-shell (0.5.6+16.04.20160226.1-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * debian/libscope-harness.symbols.in: update to released version.
+
+  [ Pawel Stolowski ]
+  * Removed preview stack. Return single preview model from Scope.
+  * Show activation progress bar when activate is called on scope proxy.
+    (LP: #1537132)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Fri, 26 Feb 2016 12:38:34 +0000
+
 unity-scopes-shell (0.5.6+16.04.20160216-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]

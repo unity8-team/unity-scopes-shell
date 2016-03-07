@@ -33,7 +33,6 @@ set(QMLPLUGIN_SRC
     overviewresults.cpp
     overviewscope.cpp
     previewmodel.cpp
-    previewstack.cpp
     previewwidgetmodel.cpp
     resultsmap.cpp
     resultsmodel.cpp
@@ -56,7 +55,6 @@ set(QMLPLUGIN_SRC
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/NavigationInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
-    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewStackInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewWidgetModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ResultsModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
