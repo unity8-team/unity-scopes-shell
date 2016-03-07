@@ -33,7 +33,6 @@
 #include <Unity/scope.h>
 #include <Unity/categories.h>
 #include <Unity/resultsmodel.h>
-#include <Unity/previewstack.h>
 
 namespace sc = unity::scopes;
 namespace ng = scopes_ng;
@@ -134,18 +133,6 @@ void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
         QVERIFY(spy.wait());
     }
     QCOMPARE(scope->searchInProgress(), false);
-}
-
-bool TestUtils::previewForFirstResult(ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<ng::PreviewStack>& preview_stack)
-{
-    performSearch(scope, searchString);
-
-    unity::scopes::Result::SPtr result;
-    if (!getFirstResult(scope->categories(), result))
-        return false;
-    preview_stack.reset(static_cast<ng::PreviewStack*>(scope->preview(QVariant::fromValue(result), ""))); //FIXME
-
-    return true;
 }
 
 void TestUtils::setFavouriteScopes(const QStringList& cannedQueries)

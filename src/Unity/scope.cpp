@@ -23,7 +23,7 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "previewstack.h"
+#include "previewmodel.h"
 #include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
@@ -83,6 +83,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_formFactor(QStringLiteral("phone"))
     , m_isActive(false)
     , m_searchInProgress(false)
+    , m_activationInProgress(false)
     , m_resultsDirty(false)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
@@ -207,6 +208,8 @@ bool Scope::event(QEvent* ev)
 
 void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
+    setActivationInProgress(false);
+
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
             activateUri(QString::fromStdString(result->uri()));
@@ -270,15 +273,15 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
 
 void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
 {
-    for (auto stack: m_previewStacks) {
-        auto previewedResult = stack->previewedResult();
+    for (auto model: m_previewModels) {
+        auto previewedResult = model->previewedResult();
 
         if (result == nullptr) {
             qWarning() << "handlePreviewUpdate: result is null";
             return;
         }
         if (previewedResult != nullptr && *result == *previewedResult) {
-            stack->update(widgets);
+            model->update(widgets);
         }
     }
 }
@@ -675,6 +678,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
+void Scope::setActivationInProgress(bool activationInProgress)
+{
+    if (m_activationInProgress != activationInProgress) {
+        m_activationInProgress = activationInProgress;
+        Q_EMIT activationInProgressChanged();
+    }
+}
+
 void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 {
     if (m_status != status) {
@@ -864,6 +875,11 @@ bool Scope::searchInProgress() const
     return m_searchInProgress;
 }
 
+bool Scope::activationInProgress() const
+{
+    return m_activationInProgress;
+}
+
 unity::shell::scopes::ScopeInterface::Status Scope::status() const
 {
     return m_status;
@@ -1008,12 +1024,13 @@ void Scope::departmentModelDestroyed(QObject* obj)
     m_inverseDepartments.erase(it);
 }
 
-void Scope::previewStackDestroyed(QObject *obj)
+void Scope::previewModelDestroyed(QObject *obj)
 {
-    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    for (auto it = m_previewModels.begin(); it != m_previewModels.end(); it++)
     {
         if (*it == obj) {
-            m_previewStacks.erase(it);
+            qDebug() << "PreviewModel destroyed";
+            m_previewModels.erase(it);
             break;
         }
     }
@@ -1205,13 +1222,17 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                 scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
                 m_activationController->setListener(listener);
 
+                setActivationInProgress(true);
+
                 auto proxy = proxy_for_result(result);
                 unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
                 scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
                 m_activationController->setController(controller);
             } catch (std::exception& e) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate(): %s", e.what());
             } catch (...) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate()");
             }
         }
@@ -1282,7 +1303,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
+unity::shell::scopes::PreviewModelInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1300,12 +1321,12 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
-    PreviewStack* stack = new PreviewStack(nullptr);
-    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
-    m_previewStacks.append(stack);
-    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
-    stack->loadForResult(result);
-    return stack;
+    PreviewModel* previewModel = new PreviewModel(nullptr);
+    QObject::connect(previewModel, &QObject::destroyed, this, &Scope::previewModelDestroyed);
+    m_previewModels.append(previewModel);
+    previewModel->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
+    previewModel->loadForResult(result);
+    return previewModel;
 }
 
 void Scope::cancelActivation()
