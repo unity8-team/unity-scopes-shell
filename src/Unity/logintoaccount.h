@@ -28,8 +28,8 @@ class Q_DECL_EXPORT LoginToAccount: public QObject
     Q_OBJECT
 
 public:
-    LoginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name, int login_passed_action, int
-            login_failed_action, QObject *parent);
+    LoginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name, QVariantMap const& auth_params,
+                   int login_passed_action, int login_failed_action, QObject *parent);
     void loginToAccount();
 
 Q_SIGNALS:
@@ -45,6 +45,7 @@ private:
     QString m_service_name;
     QString m_service_type;
     QString m_provider_name;
+    QVariantMap m_auth_params;
     int m_login_passed_action;
     int m_login_failed_action;
 };
