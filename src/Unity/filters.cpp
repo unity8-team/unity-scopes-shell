@@ -201,6 +201,7 @@ void Filters::update(unity::scopes::FilterState const& filterState)
 QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterObject(unity::scopes::FilterBase::SCPtr const& filter)
 {
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> filterObj;
+
     if (filter->filter_type() == "option_selector")
     {
         unity::scopes::OptionSelectorFilter::SCPtr optfilter = std::dynamic_pointer_cast<unity::scopes::OptionSelectorFilter const>(filter);

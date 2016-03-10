@@ -21,6 +21,7 @@ set(QMLPLUGIN_SRC
     department.cpp
     departmentnode.cpp
     filters.cpp
+    filtergroupwidget.cpp
     optionselectorfilter.cpp
     optionselectoroptions.cpp
     rangeinputfilter.cpp
@@ -47,6 +48,7 @@ set(QMLPLUGIN_SRC
     # compiled in, otherwise we miss some symbols
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FiltersInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterBaseInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterGroupWidgetInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorFilterInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorOptionsInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/RangeInputFilterInterface.h
