@@ -50,9 +50,18 @@ class FilterUpdateInterface
         virtual void reset() = 0;
 };
 
+struct FilterWrapper
+{
+    UNITY_DEFINES_PTRS(FilterWrapper);
+
+    QList<unity::scopes::FilterBase::SCPtr> filters;
+    std::string id() const;
+    bool isGroup() const;
+};
+
 class Q_DECL_EXPORT Filters :
     public ModelUpdate<unity::shell::scopes::FiltersInterface,
-        QList<unity::scopes::FilterBase::SCPtr>,
+        QList<FilterWrapper::SCPtr>,
         QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>>>
 {
     Q_OBJECT
@@ -81,8 +90,11 @@ Q_SIGNALS:
     void primaryFilterChanged();
 
 private:
+    static QList<FilterWrapper::SCPtr> preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters);
+    static unity::shell::scopes::FiltersInterface::FilterType getFilterType(FilterWrapper::SCPtr const& filterWrapper);
     static unity::shell::scopes::FiltersInterface::FilterType getFilterType(unity::scopes::FilterBase::SCPtr const& filter);
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(FilterWrapper::SCPtr const& filterWrapper);
     QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> m_primaryFilter;
     unity::scopes::FilterState::SPtr m_filterState;

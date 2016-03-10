@@ -24,7 +24,7 @@
 namespace scopes_ng
 {
 
-FilterGroupWidget::FilterGroupWidget(unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+FilterGroupWidget::FilterGroupWidget(QString const& id, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
 {
 }
 
@@ -62,5 +62,6 @@ QString FilterGroupWidget::filterTag() const
 
 void FilterGroupWidget::reset()
 {
+}
 
 }

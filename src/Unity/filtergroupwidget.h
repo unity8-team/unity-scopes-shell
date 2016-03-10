@@ -20,7 +20,7 @@
 #ifndef NG_FILTERGROUPWIDGET_H
 #define NG_FILTERGROUPWIDGET_H
 
-#include <unity/shell/scopes/FilterGroupWidgetInterface.h>
+#include <unity/shell/scopes/ExpandableFilterWidgetInterface.h>
 #include <unity/shell/scopes/FiltersInterface.h>
 #include "filters.h"
 #include <unity/scopes/FilterGroup.h>
@@ -29,16 +29,15 @@
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT FilterGroupWidget : public unity::shell::scopes::FilterGroupWidgetInterface, public FilterUpdateInterface
+class Q_DECL_EXPORT FilterGroupWidget : public unity::shell::scopes::ExpandableFilterWidgetInterface, public FilterUpdateInterface
 {
     Q_OBJECT
 
 public:
-    FilterGroupWidget(unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    FilterGroupWidget(QString const& id, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
-    QString label() const override;
     unity::shell::scopes::FiltersInterface* filters() const override;
     void update(unity::scopes::FilterBase::SCPtr const& filter) override;
     void update(unity::scopes::FilterState::SPtr const& filterState) override;
