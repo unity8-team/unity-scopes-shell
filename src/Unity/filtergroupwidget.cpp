@@ -24,12 +24,14 @@
 namespace scopes_ng
 {
 
-FilterGroupWidget::FilterGroupWidget(QString const& id, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+FilterGroupWidget::FilterGroupWidget(QString const& id, QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
+    : m_id(id)
 {
 }
 
 QString FilterGroupWidget::filterId() const
 {
+    return m_id;
 }
 
 QString FilterGroupWidget::title() const
@@ -38,10 +40,18 @@ QString FilterGroupWidget::title() const
 
 unity::shell::scopes::FiltersInterface::FilterType FilterGroupWidget::filterType() const
 {
+    return unity::shell::scopes::FiltersInterface::FilterType::ExpandableFilterWidget;
 }
 
 unity::shell::scopes::FiltersInterface* FilterGroupWidget::filters() const
 {
+}
+
+void FilterGroupWidget::update(FilterWrapper::SCPtr const& filterWrapper)
+{
+    for (auto const& filter: filterWrapper->filters) {
+        update(filter);
+    }
 }
 
 void FilterGroupWidget::update(unity::scopes::FilterBase::SCPtr const& filter)

@@ -34,11 +34,21 @@
 namespace scopes_ng
 {
 
+struct FilterWrapper
+{
+    UNITY_DEFINES_PTRS(FilterWrapper);
+
+    QList<unity::scopes::FilterBase::SCPtr> filters;
+    std::string id() const;
+    bool isGroup() const;
+};
+
 class FilterUpdateInterface
 {
     public:
         // Apply potential updates of filter definition coming from scope.
         virtual void update(unity::scopes::FilterBase::SCPtr const& filter) = 0;
+        virtual void update(FilterWrapper::SCPtr const& filterWrapper);
 
         // Apply filter state change (e.g. after user executed a canned query).
         virtual void update(unity::scopes::FilterState::SPtr const& filterState) = 0;
@@ -48,15 +58,8 @@ class FilterUpdateInterface
 
         // Reset filter to defaults.
         virtual void reset() = 0;
-};
 
-struct FilterWrapper
-{
-    UNITY_DEFINES_PTRS(FilterWrapper);
-
-    QList<unity::scopes::FilterBase::SCPtr> filters;
-    std::string id() const;
-    bool isGroup() const;
+        virtual ~FilterUpdateInterface() {}
 };
 
 class Q_DECL_EXPORT Filters :

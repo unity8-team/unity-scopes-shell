@@ -57,6 +57,17 @@ bool FilterWrapper::isGroup() const
     return filters.size() > 1;
 }
 
+void FilterUpdateInterface::update(FilterWrapper::SCPtr const& filterWrapper)
+{
+    // The following is true for all individual filters, if this warning ever shows up, then it signifies a bug.
+    // FilterGroupWidget overrides this method to handle multiple filters.
+    if (filterWrapper->filters.size() != 1) {
+        qWarning() << "FilterUpdateInterface::update() called with wrong number of filters (" << filterWrapper->filters.size() << "), expected 1";
+        return;
+    }
+    update(*(filterWrapper->filters.begin()));
+}
+
 Filters::Filters(unity::scopes::FilterState const& filterState,
         unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent),
         m_filterState(new unity::scopes::FilterState(filterState))
@@ -208,7 +219,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, boo
                 }
                 auto shellFilter = dynamic_cast<FilterUpdateInterface*>(f2.data());
                 if (shellFilter) {
-                    shellFilter->update(*(f1->filters.begin())); //FIXME
+                    shellFilter->update(f1);
                 } else {
                     // this should never happen
                     qCritical() << "Failed to cast filter" << f2->filterId() << "to FilterUpdateInterface";
@@ -245,7 +256,8 @@ void Filters::update(unity::scopes::FilterState const& filterState)
 QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterObject(FilterWrapper::SCPtr const& filterWrapper)
 {
     if (filterWrapper->isGroup()) {
-        QSharedPointer<unity::shell::scopes::FilterBaseInterface> groupObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::FilterGroupWidget(QString::fromStdString(filterWrapper->id()), m_filterState, this));
+        auto groupObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::FilterGroupWidget(QString::fromStdString(filterWrapper->id()),
+                    filterWrapper->filters, m_filterState, this));
         // TODO signals?
         return groupObj;
     } else {
