@@ -42,7 +42,7 @@ public:
     void update(FilterWrapper::SCPtr const& filterWrapper) override;
     void update(unity::scopes::FilterBase::SCPtr const& filter) override;
     void update(unity::scopes::FilterState::SPtr const& filterState) override;
-    bool isActive() const override;
+    int activeFiltersCount() const override;
     QString filterTag() const override;
     void reset() override;
 
@@ -53,7 +53,7 @@ private:
     QString m_id;
     QString m_title;
     QString m_label;
-    QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
+    Filters* m_filters;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
 };
 

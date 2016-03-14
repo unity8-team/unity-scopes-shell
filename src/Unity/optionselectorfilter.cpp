@@ -143,12 +143,12 @@ void OptionSelectorFilter::update(unity::scopes::FilterBase::SCPtr const& filter
     }
 }
 
-bool OptionSelectorFilter::isActive() const
+int OptionSelectorFilter::activeFiltersCount() const
 {
     if (auto state = m_filterState.lock()) {
-        return m_filter->has_active_option(*state);
+        return static_cast<int>(m_filter->has_active_option(*state));
     }
-    return false;
+    return 0;
 }
 
 QString OptionSelectorFilter::filterTag() const

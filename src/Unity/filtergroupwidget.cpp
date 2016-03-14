@@ -25,8 +25,10 @@ namespace scopes_ng
 {
 
 FilterGroupWidget::FilterGroupWidget(QString const& id, QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
-    : m_id(id)
+    : m_id(id),
+      m_filters(new Filters(filterState, this))
 {
+    m_filters->update(filters);
 }
 
 QString FilterGroupWidget::filterId() const
@@ -45,33 +47,39 @@ unity::shell::scopes::FiltersInterface::FilterType FilterGroupWidget::filterType
 
 unity::shell::scopes::FiltersInterface* FilterGroupWidget::filters() const
 {
+    return m_filters;
 }
 
 void FilterGroupWidget::update(FilterWrapper::SCPtr const& filterWrapper)
 {
-    for (auto const& filter: filterWrapper->filters) {
-        update(filter);
-    }
+    m_filters->update(filterWrapper->filters);
 }
 
 void FilterGroupWidget::update(unity::scopes::FilterBase::SCPtr const& filter)
 {
+    // This should never happen, if it does, it's a bug
+    qWarning() << "FilterGroupWidget::update(unity::scopes::FilterBase::SCPtr const&) is not supported for FilterGroupWidget";
 }
 
 void FilterGroupWidget::update(unity::scopes::FilterState::SPtr const& filterState)
 {
+    m_filters->update(filterState);
 }
 
-bool FilterGroupWidget::isActive() const
+int FilterGroupWidget::activeFiltersCount() const
 {
+    return m_filters->activeFiltersCount();
 }
 
 QString FilterGroupWidget::filterTag() const
 {
+    // FilterGroup cannot have primary filters, so no tag
+    return "";
 }
 
 void FilterGroupWidget::reset()
 {
+    m_filters->reset();
 }
 
 }

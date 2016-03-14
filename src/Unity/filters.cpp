@@ -68,9 +68,18 @@ void FilterUpdateInterface::update(FilterWrapper::SCPtr const& filterWrapper)
     update(*(filterWrapper->filters.begin()));
 }
 
-Filters::Filters(unity::scopes::FilterState const& filterState,
-        unity::shell::scopes::ScopeInterface *parent) : ModelUpdate(parent),
-        m_filterState(new unity::scopes::FilterState(filterState))
+Filters::Filters(unity::scopes::FilterState const& filterState, QObject *parent) :
+    ModelUpdate(parent),
+    m_filterState(new unity::scopes::FilterState(filterState))
+{
+    m_filterStateChangeTimer.setSingleShot(true);
+    QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);
+}
+
+
+Filters::Filters(unity::scopes::FilterState::SPtr const& filterState, QObject *parent) :
+    ModelUpdate(parent),
+    m_filterState(filterState)
 {
     m_filterStateChangeTimer.setSingleShot(true);
     QObject::connect(&m_filterStateChangeTimer, &QTimer::timeout, this, &Filters::delayedFilterStateChange);
@@ -227,12 +236,24 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, boo
                 return true;
             });
 }
+
+
+void Filters::update(unity::scopes::FilterState::SPtr const& filterState)
+{
+    m_filterState = filterState;
+    updateForNewState();
+}
+
 //
 // Update current filters model and primary filter pointer with filters coming from scope.
 void Filters::update(unity::scopes::FilterState const& filterState)
 {
     m_filterState.reset(new unity::scopes::FilterState(filterState));
+    updateForNewState();
+}
 
+void Filters::updateForNewState()
+{
     if (m_primaryFilter) {
         auto shellFilter = dynamic_cast<FilterUpdateInterface*>(m_primaryFilter.data());
         if (shellFilter) {
@@ -348,9 +369,10 @@ int Filters::activeFiltersCount() const
     int count = 0;
     for (auto filter: m_filters) {
         auto shellFilter = dynamic_cast<FilterUpdateInterface*>(filter.data());
-        if (shellFilter->isActive()) {
+        auto const delta = shellFilter->activeFiltersCount();
+        if (delta > 0) {
             qDebug() << "activeFiltersCount: filter" << filter->filterId() << "is active";
-            ++count;
+            count += delta;
         }
     }
     return count;
