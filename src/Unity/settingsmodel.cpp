@@ -152,7 +152,7 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                             result = m_settings->get_string("General", data->id.toStdString()).c_str();
                             break;
                         default:
-                            throw unity::LogicException("");
+                            result = data->defaultValue;
                     }
                 }
                 catch(const unity::LogicException&)
@@ -235,7 +235,7 @@ QVariant SettingsModel::value(const QString& id) const
                     result = m_settings->get_string("General", data->id.toStdString()).c_str();
                     break;
                 default:
-                    throw unity::LogicException("");
+                    result = data->defaultValue;
             }
         }
         catch(const unity::LogicException&)
@@ -428,8 +428,7 @@ void SettingsModel::settings_timeout()
                 m_settings->set_string("General", setting_id.toStdString(), value.toString().toStdString());
                 break;
             default:
-                int i = 0;
-                i++;
+                qWarning() << "SettingsModel::settings_timeout: Invalid value type for setting:" << setting_id;
         }
         m_settings->sync(); // make sure the change to setting value is synced to fs
     }
