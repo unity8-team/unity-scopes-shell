@@ -25,11 +25,11 @@
 #include <unity/scopes/Scope.h>
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
+#include <unity/util/IniParser.h>
 
 #include <QAbstractListModel>
 #include <QList>
 #include <QSharedPointer>
-#include <QSettings>
 
 QT_BEGIN_NAMESPACE
 class QDir;
@@ -96,7 +96,7 @@ protected:
 
     QList<QSharedPointer<Data>> m_data;
     QMap<QString, QSharedPointer<Data>> m_data_by_id;
-    QScopedPointer<QSettings> m_settings;
+    QScopedPointer<unity::util::IniParser> m_settings;
     QMap<QString, QSharedPointer<QTimer>> m_timers;
 
     QList<QSharedPointer<Data>> m_child_scopes_data;

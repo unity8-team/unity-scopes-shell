@@ -21,6 +21,8 @@
 #include "localization.h"
 #include "utils.h"
 
+#include <unity/UnityExceptions.h>
+
 #include <QDebug>
 #include <QDir>
 #include <QTextCodec>
@@ -38,8 +40,19 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
 
-    m_settings.reset(new QSettings(databaseDir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat));
-    m_settings->setIniCodec("UTF-8");
+    auto filePath = databaseDir.filePath(QStringLiteral("settings.ini")).toUtf8();
+    try
+    {
+        m_settings.reset(new unity::util::IniParser(filePath));
+    }
+    catch(const unity::FileException&)
+    {
+        // File was not found, so we create an empty one.
+        auto f = fopen(filePath, "w");
+        fclose(f);
+
+        m_settings.reset(new unity::util::IniParser(filePath));
+    }
 
     for (const auto &it : settingsDefinitions.toList())
     {
@@ -122,7 +135,30 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 break;
             case Roles::RoleValue:
             {
-                result = m_settings->value(data->id, data->defaultValue);
+                try
+                {
+                    switch (data->variantType)
+                    {
+                        case QVariant::Bool:
+                            result = m_settings->get_boolean("General", data->id.toStdString());
+                            break;
+                        case QVariant::UInt:
+                            result = m_settings->get_int("General", data->id.toStdString());
+                            break;
+                        case QVariant::Double:
+                            result = m_settings->get_double("General", data->id.toStdString());
+                            break;
+                        case QVariant::String:
+                            result = m_settings->get_string("General", data->id.toStdString()).c_str();
+                            break;
+                        default:
+                            throw unity::LogicException("");
+                    }
+                }
+                catch(const unity::LogicException&)
+                {
+                    result = data->defaultValue;
+                }
                 result.convert(data->variantType);
                 break;
             }
@@ -181,7 +217,31 @@ QVariant SettingsModel::value(const QString& id) const
     else if (m_data_by_id.contains(id))
     {
         QSharedPointer<Data> data = m_data_by_id[id];
-        auto result = m_settings->value(data->id, data->defaultValue);
+        QVariant result;
+        try
+        {
+            switch (data->variantType)
+            {
+                case QVariant::Bool:
+                    result = m_settings->get_boolean("General", data->id.toStdString());
+                    break;
+                case QVariant::UInt:
+                    result = m_settings->get_int("General", data->id.toStdString());
+                    break;
+                case QVariant::Double:
+                    result = m_settings->get_double("General", data->id.toStdString());
+                    break;
+                case QVariant::String:
+                    result = m_settings->get_string("General", data->id.toStdString()).c_str();
+                    break;
+                default:
+                    throw unity::LogicException("");
+            }
+        }
+        catch(const unity::LogicException&)
+        {
+            result = data->defaultValue;
+        }
         result.convert(data->variantType);
         return result;
     }
@@ -352,7 +412,25 @@ void SettingsModel::settings_timeout()
     }
     else if (m_data_by_id.contains(setting_id))
     {
-        m_settings->setValue(setting_id, value);
+        switch (value.type())
+        {
+            case QVariant::Bool:
+                m_settings->set_boolean("General", setting_id.toStdString(), value.toBool());
+                break;
+            case QVariant::Int:
+            case QVariant::UInt:
+                m_settings->set_int("General", setting_id.toStdString(), value.toUInt());
+                break;
+            case QVariant::Double:
+                m_settings->set_double("General", setting_id.toStdString(), value.toDouble());
+                break;
+            case QVariant::String:
+                m_settings->set_string("General", setting_id.toStdString(), value.toString().toStdString());
+                break;
+            default:
+                int i = 0;
+                i++;
+        }
         m_settings->sync(); // make sure the change to setting value is synced to fs
     }
     else
