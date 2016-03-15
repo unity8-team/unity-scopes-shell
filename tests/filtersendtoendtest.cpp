@@ -295,6 +295,16 @@ private Q_SLOTS:
         QCOMPARE(static_cast<int>(f3->value()), 75);
     }
 
+    void testFilterGroup()
+    {
+        TestUtils::performSearch(m_scope, "test_filter_group");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 2);
+
+    }
+
     void testResetToDefault()
     {
         TestUtils::performSearch(m_scope, "");

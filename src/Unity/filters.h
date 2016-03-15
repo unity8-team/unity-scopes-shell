@@ -74,7 +74,7 @@ public:
     explicit Filters(unity::scopes::FilterState::SPtr const& filterState, QObject *parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false);
+    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false, bool processGroups = true);
     void update(unity::scopes::FilterState const& filterState);
     void update(unity::scopes::FilterState::SPtr const& filterState);
 
@@ -97,7 +97,7 @@ Q_SIGNALS:
 private:
     void updateForNewState();
 
-    static QList<FilterWrapper::SCPtr> preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters);
+    static QList<FilterWrapper::SCPtr> preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters, bool processGroups);
     static unity::shell::scopes::FiltersInterface::FilterType getFilterType(FilterWrapper::SCPtr const& filterWrapper);
     static unity::shell::scopes::FiltersInterface::FilterType getFilterType(unity::scopes::FilterBase::SCPtr const& filter);
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);

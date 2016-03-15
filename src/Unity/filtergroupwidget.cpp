@@ -28,7 +28,7 @@ FilterGroupWidget::FilterGroupWidget(QString const& id, QList<unity::scopes::Fil
     : m_id(id),
       m_filters(new Filters(filterState, this))
 {
-    m_filters->update(filters);
+    m_filters->update(filters, false, false);
 }
 
 QString FilterGroupWidget::filterId() const
@@ -38,6 +38,7 @@ QString FilterGroupWidget::filterId() const
 
 QString FilterGroupWidget::title() const
 {
+    return ""; //FIXME
 }
 
 unity::shell::scopes::FiltersInterface::FilterType FilterGroupWidget::filterType() const
@@ -52,7 +53,7 @@ unity::shell::scopes::FiltersInterface* FilterGroupWidget::filters() const
 
 void FilterGroupWidget::update(FilterWrapper::SCPtr const& filterWrapper)
 {
-    m_filters->update(filterWrapper->filters);
+    m_filters->update(filterWrapper->filters, false, false);
 }
 
 void FilterGroupWidget::update(unity::scopes::FilterBase::SCPtr const& filter)

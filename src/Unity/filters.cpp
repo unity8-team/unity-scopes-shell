@@ -147,17 +147,21 @@ void Filters::delayedFilterStateChange()
     Q_EMIT filterStateChanged();
 }
 
-QList<FilterWrapper::SCPtr> Filters::preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters)
+QList<FilterWrapper::SCPtr> Filters::preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters, bool processGroups)
 {
     QMap<std::string, FilterWrapper::SPtr> groups;
 
     QList<FilterWrapper::SCPtr> outFilters;
     for (auto const& filter: filters) {
         FilterWrapper::SPtr wrapper;
-        if (filter->filter_group()) {
+        if (filter->filter_group() && processGroups) {
             auto it = groups.find(filter->filter_group()->id());
             if (it != groups.end()) {
+                wrapper = it.value();
             } else {
+                wrapper = std::make_shared<FilterWrapper>();
+                outFilters.append(wrapper);
+                groups[filter->filter_group()->id()] = wrapper;
             }
         } else {
             wrapper = std::make_shared<FilterWrapper>();
@@ -168,7 +172,7 @@ QList<FilterWrapper::SCPtr> Filters::preprocessFilters(QList<unity::scopes::Filt
     return outFilters;
 }
 
-void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments)
+void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments, bool processGroups)
 {
     // Primary filter needs to be handled separately and not inserted into the main filters model,
     bool hasPrimaryFilter = containsDepartments;
@@ -202,7 +206,7 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, boo
         }
     }
 
-    auto inputFilters = preprocessFilters(inFilters);
+    auto inputFilters = preprocessFilters(inFilters, processGroups);
 
     // Did we have primary filter before but not now?
     if (!hasPrimaryFilter && m_primaryFilter != nullptr) {
@@ -236,7 +240,6 @@ void Filters::update(QList<unity::scopes::FilterBase::SCPtr> const& filters, boo
                 return true;
             });
 }
-
 
 void Filters::update(unity::scopes::FilterState::SPtr const& filterState)
 {
