@@ -280,8 +280,7 @@ void Filters::updateForNewState()
 QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterObject(FilterWrapper::SCPtr const& filterWrapper)
 {
     if (filterWrapper->isGroup()) {
-        auto groupObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::FilterGroupWidget(QString::fromStdString(filterWrapper->id()),
-                    filterWrapper->filters, m_filterState, this));
+        auto groupObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::FilterGroupWidget(filterWrapper->filters, m_filterState, this));
         // TODO signals?
         return groupObj;
     } else {

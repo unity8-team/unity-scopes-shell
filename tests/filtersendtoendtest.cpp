@@ -27,6 +27,7 @@
 #include "optionselectorfilter.h"
 #include "rangeinputfilter.h"
 #include "valuesliderfilter.h"
+#include "filtergroupwidget.h"
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
@@ -303,6 +304,28 @@ private Q_SLOTS:
         QVERIFY(filters != nullptr);
         QCOMPARE(filters->rowCount(), 2);
 
+        auto idx = filters->index(0, 0);
+        auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
+        QVERIFY(f1 != nullptr);
+        QCOMPARE(f1->filterId(), QString("f1"));
+
+        idx = filters->index(1, 0);
+        auto gr = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<FilterGroupWidget*>();
+        QVERIFY(gr != nullptr);
+        QCOMPARE(gr->filterId(), QString("group"));
+        QCOMPARE(gr->title(), QString("Group label"));
+
+        // check filters within the group
+        QVERIFY(gr->filters() != nullptr);
+        idx = gr->filters()->index(0, 0);
+        auto f2 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+        //TODO test filter
+
+        idx = gr->filters()->index(1, 0);
+        auto f3 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+        //TODO test filter
     }
 
     void testResetToDefault()

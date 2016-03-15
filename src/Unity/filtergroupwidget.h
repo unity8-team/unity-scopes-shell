@@ -34,7 +34,7 @@ class Q_DECL_EXPORT FilterGroupWidget : public unity::shell::scopes::ExpandableF
     Q_OBJECT
 
 public:
-    FilterGroupWidget(QString const& id, QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    FilterGroupWidget(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
@@ -51,7 +51,6 @@ Q_SIGNALS:
 
 private:
     QString m_id;
-    QString m_title;
     QString m_label;
     Filters* m_filters;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
