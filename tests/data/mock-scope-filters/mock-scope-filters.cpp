@@ -90,6 +90,7 @@ public:
                 ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}}), group) :
                 ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}})));
 
+
         Filters filters;
         filters.push_back(std::move(filter1));
         filters.push_back(std::move(filter2));

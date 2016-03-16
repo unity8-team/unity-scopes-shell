@@ -27,6 +27,7 @@ namespace scopes_ng
 FilterGroupWidget::FilterGroupWidget(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent)
     : m_filters(new Filters(filterState, this))
 {
+    connect(m_filters, SIGNAL(filterStateChanged()), this, SIGNAL(filterStateChanged()));
     if (filters.size() > 0) {
         auto group = filters.front()->filter_group();
         Q_ASSERT(group != nullptr);

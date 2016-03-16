@@ -315,17 +315,33 @@ private Q_SLOTS:
         QCOMPARE(gr->filterId(), QString("group"));
         QCOMPARE(gr->title(), QString("Group label"));
 
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
         // check filters within the group
         QVERIFY(gr->filters() != nullptr);
         idx = gr->filters()->index(0, 0);
         auto f2 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
         QVERIFY(f2 != nullptr);
-        //TODO test filter
-
         idx = gr->filters()->index(1, 0);
         auto f3 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
         QVERIFY(f3 != nullptr);
-        //TODO test filter
+
+        // modify filter within the group
+        {
+            f2->setEndValue(300.5f);
+            TestUtils::waitForFilterStateChange(m_scope);
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = results->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 2.000000 - 300.500000"));
+        }
     }
 
     void testResetToDefault()

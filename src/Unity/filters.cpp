@@ -281,7 +281,8 @@ QSharedPointer<unity::shell::scopes::FilterBaseInterface> Filters::createFilterO
 {
     if (filterWrapper->isGroup()) {
         auto groupObj = QSharedPointer<unity::shell::scopes::FilterBaseInterface>(new scopes_ng::FilterGroupWidget(filterWrapper->filters, m_filterState, this));
-        // TODO signals?
+        QQmlEngine::setObjectOwnership(groupObj.data(), QQmlEngine::CppOwnership);
+        connect(groupObj.data(), SIGNAL(filterStateChanged()), this, SLOT(onFilterStateChanged()));
         return groupObj;
     } else {
         auto filter = *(filterWrapper->filters.begin());
