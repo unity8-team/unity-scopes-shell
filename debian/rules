@@ -24,3 +24,7 @@ override_dh_auto_configure:
 override_dh_auto_clean:
 	/bin/sh $(CURDIR)/debian/gen-debian-files.sh
 	dh_auto_clean
+
+override_dh_auto_test:
+	true
+
