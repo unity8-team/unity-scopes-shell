@@ -25,15 +25,10 @@ ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> 
     update(results, 0);
 }
 
-void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results)
+void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results)
 {
     m_results.clear();
-    int pos = 0;
-    for (auto const& result: results) {
-        assert(result);
-        const ResultPos rpos { result, pos++ };
-        m_results.insert({result->uri(), rpos });
-    }
+    update(results, 0);
 }
 
 int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
@@ -51,22 +46,6 @@ int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
         }
     }
     return -1;
-}
-
-void ResultsMap::update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results, int start)
-{
-    int pos = start;
-    for (auto it = results.begin() + start; it != results.end(); ) {
-        std::shared_ptr<unity::scopes::CategorisedResult> result = *it;
-        assert(result);
-        if (find(result) < 0) {
-            const ResultPos rpos { result, pos++ };
-            m_results.insert({result->uri(), rpos });
-            ++it;
-        } else {
-            it = results.erase(it);
-        }
-    }
 }
 
 void ResultsMap::updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta)

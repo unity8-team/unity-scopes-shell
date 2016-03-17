@@ -38,8 +38,24 @@ class ResultsMap
         ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
-        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
-        void update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results, int start);
+        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results);
+
+        template <typename ResultType>
+        void update(QList<std::shared_ptr<ResultType>> &results, int start)
+        {
+            int pos = start;
+            for (auto it = results.begin() + start; it != results.end(); ) {
+                std::shared_ptr<ResultType> result = *it;
+                if (find(result) < 0) {
+                    const ResultPos rpos { result, pos++ };
+                    m_results.insert({result->uri(), rpos });
+                    ++it;
+                } else {
+                    it = results.erase(it);
+                }
+        }
+        }
+
         void updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta);
         void clear();
 
