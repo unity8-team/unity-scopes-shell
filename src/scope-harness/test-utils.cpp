@@ -135,6 +135,13 @@ void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
     QCOMPARE(scope->searchInProgress(), false);
 }
 
+void TestUtils::waitForFilterStateChange(QSharedPointer<ss::ScopeInterface> scope)
+{
+    QSignalSpy spy(scope->filters(), SIGNAL(filterStateChanged()));
+    QVERIFY(spy.wait());
+    QCOMPARE(spy.count(), 1);
+}
+
 void TestUtils::setFavouriteScopes(const QStringList& cannedQueries)
 {
     setenv("GSETTINGS_BACKEND", "memory", 1);

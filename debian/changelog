@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.7-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Preliminary support for filters.
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 30 Oct 2015 16:17:55 +0100
+
 unity-scopes-shell (0.5.6+16.04.20160226.1-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
@@ -103,10 +109,6 @@ unity-scopes-shell (0.5.5+15.10.20150924-0ubuntu1) wily; urgency=medium
   [ Albert Astals Cid ]
   * Call parent class ::event (LP: #1495467)
   * Improvements from running clazy over the code
-
-  [ CI Train Bot ]
-  * Improvements from running clazy over the code
-  * New rebuild forced.
 
  -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 24 Sep 2015 12:44:30 +0000
 
