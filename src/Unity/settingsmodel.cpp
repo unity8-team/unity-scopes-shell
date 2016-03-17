@@ -21,6 +21,7 @@
 #include "localization.h"
 #include "utils.h"
 
+#include <unity/util/ResourcePtr.h>
 #include <unity/UnityExceptions.h>
 
 #include <QDebug>
@@ -28,8 +29,49 @@
 #include <QTextCodec>
 #include <QTimer>
 
+#include <fcntl.h>
+#include <unistd.h>
+
 using namespace scopes_ng;
 namespace sc = unity::scopes;
+
+namespace
+{
+
+typedef unity::util::ResourcePtr<int, std::function<void(int)>> FileLock;
+
+static FileLock unixLock(const std::string& path, bool writeLock)
+{
+    FileLock fileLock(::open(path.c_str(), writeLock ? O_WRONLY : O_RDONLY), [](int fd)
+    {
+        if (fd != -1)
+        {
+            close(fd);
+        }
+    });
+
+    if (fileLock.get() == -1)
+    {
+        throw unity::FileException("Couldn't open file " + path, errno);
+    }
+
+    struct flock fl;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+    fl.l_type = writeLock ? F_WRLCK : F_RDLCK;
+
+    if (::fcntl(fileLock.get(), F_SETLKW, &fl) != 0)
+    {
+        throw unity::FileException("Couldn't get file lock for " + path, errno);
+    }
+
+    return fileLock;
+}
+
+static const char* GROUP_NAME = "General";
+
+}  // namespace
 
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
@@ -41,17 +83,24 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     QDir databaseDir = configDir.filePath(scopeId);
 
     auto filePath = databaseDir.filePath(QStringLiteral("settings.ini")).toUtf8();
-    try
+
+    QFileInfo checkFile(filePath);
+    if (!checkFile.exists() || !checkFile.isFile())
     {
-        m_settings.reset(new unity::util::IniParser(filePath));
-    }
-    catch(const unity::FileException&)
-    {
-        // File was not found, so we create an empty one.
+        // Config file does not exist, so we create an empty one.
         auto f = fopen(filePath, "w");
         fclose(f);
+    }
 
+    try
+    {
+        FileLock lock = unixLock(filePath.toStdString(), false);
         m_settings.reset(new unity::util::IniParser(filePath));
+    }
+    catch(const unity::FileException& e)
+    {
+        // Something has gone seriously wrong, at this point we'll just have to continue with a null m_settings.
+        qWarning() << "SettingsModel::SettingsModel: Failed to read settings file:" << e.what();
     }
 
     for (const auto &it : settingsDefinitions.toList())
@@ -137,19 +186,23 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
             {
                 try
                 {
+                    if (!m_settings)
+                    {
+                        throw unity::LogicException(std::string());
+                    }
                     switch (data->variantType)
                     {
                         case QVariant::Bool:
-                            result = m_settings->get_boolean("General", data->id.toStdString());
+                            result = m_settings->get_boolean(GROUP_NAME, data->id.toStdString());
                             break;
                         case QVariant::UInt:
-                            result = m_settings->get_int("General", data->id.toStdString());
+                            result = m_settings->get_int(GROUP_NAME, data->id.toStdString());
                             break;
                         case QVariant::Double:
-                            result = m_settings->get_double("General", data->id.toStdString());
+                            result = m_settings->get_double(GROUP_NAME, data->id.toStdString());
                             break;
                         case QVariant::String:
-                            result = m_settings->get_string("General", data->id.toStdString()).c_str();
+                            result = m_settings->get_string(GROUP_NAME, data->id.toStdString()).c_str();
                             break;
                         default:
                             result = data->defaultValue;
@@ -200,8 +253,6 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
 
 QVariant SettingsModel::value(const QString& id) const
 {
-    m_settings->sync();
-
     // Check for the setting id in the child scopes list first, in case the
     // aggregator is incorrectly using a scope id as a settings as well.
     if (m_child_scopes_data_by_id.contains(id))
@@ -220,19 +271,23 @@ QVariant SettingsModel::value(const QString& id) const
         QVariant result;
         try
         {
+            if (!m_settings)
+            {
+                throw unity::LogicException(std::string());
+            }
             switch (data->variantType)
             {
                 case QVariant::Bool:
-                    result = m_settings->get_boolean("General", data->id.toStdString());
+                    result = m_settings->get_boolean(GROUP_NAME, data->id.toStdString());
                     break;
                 case QVariant::UInt:
-                    result = m_settings->get_int("General", data->id.toStdString());
+                    result = m_settings->get_int(GROUP_NAME, data->id.toStdString());
                     break;
                 case QVariant::Double:
-                    result = m_settings->get_double("General", data->id.toStdString());
+                    result = m_settings->get_double(GROUP_NAME, data->id.toStdString());
                     break;
                 case QVariant::String:
-                    result = m_settings->get_string("General", data->id.toStdString()).c_str();
+                    result = m_settings->get_string(GROUP_NAME, data->id.toStdString()).c_str();
                     break;
                 default:
                     result = data->defaultValue;
@@ -412,25 +467,41 @@ void SettingsModel::settings_timeout()
     }
     else if (m_data_by_id.contains(setting_id))
     {
-        switch (value.type())
+        try
         {
-            case QVariant::Bool:
-                m_settings->set_boolean("General", setting_id.toStdString(), value.toBool());
-                break;
-            case QVariant::Int:
-            case QVariant::UInt:
-                m_settings->set_int("General", setting_id.toStdString(), value.toUInt());
-                break;
-            case QVariant::Double:
-                m_settings->set_double("General", setting_id.toStdString(), value.toDouble());
-                break;
-            case QVariant::String:
-                m_settings->set_string("General", setting_id.toStdString(), value.toString().toStdString());
-                break;
-            default:
-                qWarning() << "SettingsModel::settings_timeout: Invalid value type for setting:" << setting_id;
+            if (!m_settings)
+            {
+                throw unity::LogicException(std::string());
+            }
+            switch (value.type())
+            {
+                case QVariant::Bool:
+                    m_settings->set_boolean(GROUP_NAME, setting_id.toStdString(), value.toBool());
+                    break;
+                case QVariant::Int:
+                case QVariant::UInt:
+                    m_settings->set_int(GROUP_NAME, setting_id.toStdString(), value.toUInt());
+                    break;
+                case QVariant::Double:
+                    m_settings->set_double(GROUP_NAME, setting_id.toStdString(), value.toDouble());
+                    break;
+                case QVariant::String:
+                    m_settings->set_string(GROUP_NAME, setting_id.toStdString(), value.toString().toStdString());
+                    break;
+                default:
+                    qWarning() << "SettingsModel::settings_timeout: Invalid value type for setting:" << setting_id;
+            }
+            FileLock lock = unixLock(m_settings->filename(), true);
+            m_settings->sync(); // make sure the change to setting value is synced to fs
         }
-        m_settings->sync(); // make sure the change to setting value is synced to fs
+        catch(const unity::LogicException&)
+        {
+            qWarning() << "SettingsModel::settings_timeout: Failed to set a value for setting:" << setting_id;
+        }
+        catch(const unity::FileException& e)
+        {
+            qWarning() << "SettingsModel::SettingsModel: Failed to write settings file:" << e.what();
+        }
     }
     else
     {
