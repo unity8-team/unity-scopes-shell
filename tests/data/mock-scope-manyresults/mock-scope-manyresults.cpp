@@ -178,7 +178,7 @@ public:
         else if (query_ == "lots_of_results_fast")
         {
             // 100 items
-            for (int i = 0; i<100; i++)
+            for (int i = 0; i<10; i++)
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
@@ -189,7 +189,7 @@ public:
         else if (query_ == "lots_of_results_reversed_fast")
         {
             // 100 items, in the reversed order of search5
-            for (int i = 99; i>=0; i--)
+            for (int i = 9; i>=0; i--)
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));

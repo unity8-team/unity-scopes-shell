@@ -1192,7 +1192,7 @@ private Q_SLOTS:
                 shm::CategoryListMatcher()
                     .hasExactly(1)
                     .category(shm::CategoryMatcher("cat1")
-                        .hasAtLeast(100)
+                        .hasAtLeast(10)
                     )
                     .match(resultsView->categories())
             );
@@ -1201,7 +1201,7 @@ private Q_SLOTS:
             qDebug() << "Search #4 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(static_cast<unsigned long>(results.size()), 100UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 10UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
@@ -1219,7 +1219,7 @@ private Q_SLOTS:
                 shm::CategoryListMatcher()
                     .hasExactly(1)
                     .category(shm::CategoryMatcher("cat1")
-                        .hasAtLeast(100)
+                        .hasAtLeast(10)
                     )
                     .match(resultsView->categories())
             );
@@ -1229,11 +1229,11 @@ private Q_SLOTS:
             qDebug() << "Search #5 duration: " << search_dur;
 
             auto const results = resultsView->category("cat1").results();
-            QCOMPARE(static_cast<unsigned long>(results.size()), 100UL);
+            QCOMPARE(static_cast<unsigned long>(results.size()), 10UL);
             for (unsigned i = 0; i<results.size(); i++) {
                 QCOMPARE(
                         QString::fromStdString(results[i].uri()),
-                        QString::fromStdString("cat1_uri" + std::to_string(99-i))
+                        QString::fromStdString("cat1_uri" + std::to_string(9-i))
                         );
             }
         }
