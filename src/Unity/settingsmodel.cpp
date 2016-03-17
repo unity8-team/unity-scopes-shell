@@ -40,9 +40,9 @@ namespace
 
 typedef unity::util::ResourcePtr<int, std::function<void(int)>> FileLock;
 
-static FileLock unixLock(const std::string& path, bool writeLock)
+static FileLock unixLock(const QString& path, bool writeLock)
 {
-    FileLock fileLock(::open(path.c_str(), writeLock ? O_WRONLY : O_RDONLY), [](int fd)
+    FileLock fileLock(::open(path.toUtf8(), writeLock ? O_WRONLY : O_RDONLY), [](int fd)
     {
         if (fd != -1)
         {
@@ -52,7 +52,7 @@ static FileLock unixLock(const std::string& path, bool writeLock)
 
     if (fileLock.get() == -1)
     {
-        throw unity::FileException("Couldn't open file " + path, errno);
+        throw unity::FileException("Couldn't open file " + path.toStdString(), errno);
     }
 
     struct flock fl;
@@ -63,7 +63,7 @@ static FileLock unixLock(const std::string& path, bool writeLock)
 
     if (::fcntl(fileLock.get(), F_SETLKW, &fl) != 0)
     {
-        throw unity::FileException("Couldn't get file lock for " + path, errno);
+        throw unity::FileException("Couldn't get file lock for " + path.toStdString(), errno);
     }
 
     return fileLock;
@@ -82,24 +82,24 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
 
-    auto filePath = databaseDir.filePath(QStringLiteral("settings.ini")).toUtf8();
+    m_settings_path = databaseDir.filePath(QStringLiteral("settings.ini"));
 
-    QFileInfo checkFile(filePath);
+    QFileInfo checkFile(m_settings_path);
     if (!checkFile.exists() || !checkFile.isFile())
     {
         // Config file does not exist, so we create an empty one.
-        auto f = fopen(filePath, "w");
+        auto f = fopen(m_settings_path.toUtf8(), "w");
         fclose(f);
     }
 
     try
     {
-        FileLock lock = unixLock(filePath.toStdString(), false);
-        m_settings.reset(new unity::util::IniParser(filePath));
+        FileLock lock = unixLock(m_settings_path, false);
+        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
     }
     catch(const unity::FileException& e)
     {
-        // Something has gone seriously wrong, at this point we'll just have to continue with a null m_settings.
+        // Something has gone wrong, at this point we'll just have to continue with a null m_settings.
         qWarning() << "SettingsModel::SettingsModel: Failed to read settings file:" << e.what();
     }
 
@@ -188,7 +188,8 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 {
                     if (!m_settings)
                     {
-                        throw unity::LogicException(std::string());
+                        FileLock lock = unixLock(m_settings_path, false);
+                        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
                     }
                     switch (data->variantType)
                     {
@@ -210,6 +211,12 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 }
                 catch(const unity::LogicException&)
                 {
+                    qWarning() << "SettingsModel::data: Failed to get a value for setting:" << data->id;
+                    result = data->defaultValue;
+                }
+                catch(const unity::FileException& e)
+                {
+                    qWarning() << "SettingsModel::data: Failed to read settings file:" << e.what();
                     result = data->defaultValue;
                 }
                 result.convert(data->variantType);
@@ -273,7 +280,8 @@ QVariant SettingsModel::value(const QString& id) const
         {
             if (!m_settings)
             {
-                throw unity::LogicException(std::string());
+                FileLock lock = unixLock(m_settings_path, false);
+                m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
             }
             switch (data->variantType)
             {
@@ -295,6 +303,12 @@ QVariant SettingsModel::value(const QString& id) const
         }
         catch(const unity::LogicException&)
         {
+            qWarning() << "SettingsModel::value: Failed to get a value for setting:" << data->id;
+            result = data->defaultValue;
+        }
+        catch(const unity::FileException& e)
+        {
+            qWarning() << "SettingsModel::value: Failed to read settings file:" << e.what();
             result = data->defaultValue;
         }
         result.convert(data->variantType);
@@ -471,7 +485,8 @@ void SettingsModel::settings_timeout()
         {
             if (!m_settings)
             {
-                throw unity::LogicException(std::string());
+                FileLock lock = unixLock(m_settings_path, false);
+                m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
             }
             switch (value.type())
             {
@@ -491,8 +506,10 @@ void SettingsModel::settings_timeout()
                 default:
                     qWarning() << "SettingsModel::settings_timeout: Invalid value type for setting:" << setting_id;
             }
-            FileLock lock = unixLock(m_settings->filename(), true);
+            FileLock lock = unixLock(m_settings_path, true);
             m_settings->sync(); // make sure the change to setting value is synced to fs
+
+            Q_EMIT settingsChanged();
         }
         catch(const unity::LogicException&)
         {
@@ -500,13 +517,11 @@ void SettingsModel::settings_timeout()
         }
         catch(const unity::FileException& e)
         {
-            qWarning() << "SettingsModel::SettingsModel: Failed to write settings file:" << e.what();
+            qWarning() << "SettingsModel::settings_timeout: Failed to write settings file:" << e.what();
         }
     }
     else
     {
         qWarning() << "No such setting:" << setting_id;
     }
-
-    Q_EMIT settingsChanged();
 }

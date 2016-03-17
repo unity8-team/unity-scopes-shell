@@ -94,9 +94,10 @@ protected:
     unity::scopes::ScopeProxy m_scopeProxy;
     int m_settingsTimeout;
 
+    QString m_settings_path;
     QList<QSharedPointer<Data>> m_data;
     QMap<QString, QSharedPointer<Data>> m_data_by_id;
-    QScopedPointer<unity::util::IniParser> m_settings;
+    mutable QScopedPointer<unity::util::IniParser> m_settings;
     QMap<QString, QSharedPointer<QTimer>> m_timers;
 
     QList<QSharedPointer<Data>> m_child_scopes_data;
