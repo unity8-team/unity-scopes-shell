@@ -25,7 +25,7 @@ ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> 
     update(results, 0);
 }
 
-void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results)
+void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results)
 {
     m_results.clear();
     int pos = 0;

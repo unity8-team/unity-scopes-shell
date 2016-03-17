@@ -34,13 +34,11 @@ class ResultsMap
     public:
         ResultsMap() = default;
 
-        ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results);
-
         // note: this constructor modifies the input results list (de-duplicates it).
         ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
-        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results);
+        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
         void update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results, int start);
         void updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta);
         void clear();
