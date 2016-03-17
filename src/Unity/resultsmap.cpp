@@ -22,21 +22,10 @@
 
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results)
 {
-    int pos = 0;
-    for (auto it = results.begin(); it != results.end(); ) {
-        std::shared_ptr<unity::scopes::Result> result = *it;
-        assert(result);
-        if (find(result) < 0) {
-            const ResultPos rpos { result, pos++ };
-            m_results.insert({result->uri(), rpos });
-            ++it;
-        } else {
-            it = results.erase(it);
-        }
-    }
+    update(results, 0);
 }
 
-void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results)
+void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results)
 {
     m_results.clear();
     int pos = 0;
@@ -64,16 +53,23 @@ int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
     return -1;
 }
 
-void ResultsMap::update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> const &results, int start)
+void ResultsMap::update(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results, int start)
 {
-    for (int pos = start; pos<results.size(); pos++) {
-        auto const result = results[pos];
-        const ResultPos rpos { result, pos };
-        m_results.insert({result->uri(), rpos });
+    int pos = start;
+    for (auto it = results.begin() + start; it != results.end(); ) {
+        std::shared_ptr<unity::scopes::CategorisedResult> result = *it;
+        assert(result);
+        if (find(result) < 0) {
+            const ResultPos rpos { result, pos++ };
+            m_results.insert({result->uri(), rpos });
+            ++it;
+        } else {
+            it = results.erase(it);
+        }
     }
 }
 
-void ResultsMap::update(QList<std::shared_ptr<unity::scopes::Result>> const& results, int start, int end, int delta)
+void ResultsMap::updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta)
 {
     for (int i = start; i<end; i++) {
         auto const result = results[i];

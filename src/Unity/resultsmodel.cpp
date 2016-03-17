@@ -135,9 +135,9 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
                 beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
                 m_results.move(oldPos, row);
                 if (row > oldPos) {
-                    m_search_ctx.oldResultsMap.update(m_results, oldPos, row, -1);
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row, -1);
                 } else {
-                    m_search_ctx.oldResultsMap.update(m_results, row, oldPos, 1);
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos, 1);
                 }
                 endMoveRows();
             }
@@ -145,7 +145,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
             // insert row
             beginInsertRows(QModelIndex(), row, row);
             m_results.insert(row, results[row]);
-            m_search_ctx.oldResultsMap.update(m_results, row + 1, m_results.size(), 1);
+            m_search_ctx.oldResultsMap.updateIndices(m_results, row + 1, m_results.size(), 1);
             endInsertRows();
         }
     }
