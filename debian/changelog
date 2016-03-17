@@ -1,8 +1,17 @@
-unity-scopes-shell (0.5.7-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.5.7+16.04.20160317-0ubuntu1) xenial; urgency=medium
 
+  [ Pawel Stolowski ]
   * Preliminary support for filters.
 
- -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 30 Oct 2015 16:17:55 +0100
+  [ CI Train Bot ]
+  * debian/libscope-harness.symbols.in: update to released version.
+
+  [ Marcus Tomlinson ]
+  * The "FIXME" in Scope::executeCannedQuery() is no longer necessary
+    since scope->invalidateResults() itself now ensures that there is
+    only ever one search is in progress. (LP: #1537139)
+
+ -- Michael Zanetti <michael.zanetti@canonical.com>  Thu, 17 Mar 2016 22:35:47 +0000
 
 unity-scopes-shell (0.5.6+16.04.20160226.1-0ubuntu1) xenial; urgency=medium
 
