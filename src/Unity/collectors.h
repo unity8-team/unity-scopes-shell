@@ -71,7 +71,7 @@ class PushEvent: public QEvent
 public:
     static const QEvent::Type eventType;
 
-    enum Type { SEARCH, PREVIEW, ACTIVATION };
+    enum Type { SEARCH = QEvent::User, PREVIEW, ACTIVATION };
 
     PushEvent(Type event_type, const std::shared_ptr<CollectorBase>& collector);
     Type type();

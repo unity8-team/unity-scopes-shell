@@ -29,7 +29,6 @@
 #include <categories.h>
 #include <resultsmodel.h>
 #include <previewmodel.h>
-#include <previewstack.h>
 #include <previewwidgetmodel.h>
 
 #include <scope-harness/matcher/category-matcher.h>

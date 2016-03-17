@@ -7,13 +7,13 @@ tests/overviewtest.cpp
 tests/departmentstest.cpp
 tests/locationtest.cpp
 tests/favoritestest.cpp
-tests/data/scopes/scopes.cpp
 tests/data/mock-scope-departments/mock-scope-departments.cpp
 tests/data/mock-scope-ttl/mock-scope-ttl.cpp
 tests/data/mock-scope-info/mock-scope-info.cpp
 tests/data/mock-scope-departments-flipflop/mock-scope-departments-flipflop.cpp
 tests/data/mock-scope/mock-scope.cpp
 tests/data/mock-scope-double-nav/mock-scope-double-nav.cpp
+tests/data/mock-scope-manyresults/mock-scope-manyresults.cpp
 tests/settingstest.cpp
 src/scope-harness/registry/system-registry.cpp
 src/scope-harness/registry/pre-existing-registry.cpp
@@ -72,11 +72,11 @@ src/Unity/plugin.cpp
 src/Unity/scopes.cpp
 src/Unity/settingsmodel.cpp
 src/Unity/utils.cpp
+src/Unity/resultsmap.cpp
 src/Unity/locationservice.cpp
 src/Unity/ubuntulocationservice.cpp
 src/Unity/iconutils.cpp
 src/Unity/department.cpp
-src/Unity/previewstack.cpp
 src/Unity/categories.cpp
 src/Unity/overviewresults.cpp
 src/Unity/resultsmodel.cpp
@@ -125,7 +125,6 @@ src/Unity/overviewresults.h
 src/Unity/plugin.h
 src/Unity/department.h
 src/Unity/scope.h
-src/Unity/previewstack.h
 src/Unity/logintoaccount.h
 src/Unity/overviewcategories.h
 src/Unity/locationservice.h
@@ -133,6 +132,7 @@ src/Unity/overviewscope.h
 src/Unity/settingsmodel.h
 src/Unity/resultsmodel.h
 src/Unity/geoip.h
+src/Unity/resultsmap.h
 src/Unity/collectors.h
 src/Unity/previewwidgetmodel.h
 src/Unity/categories.h

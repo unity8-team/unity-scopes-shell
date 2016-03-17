@@ -18,7 +18,7 @@
  */
 
 #ifndef NG_RESULTS_MAP_H
-#define NGRESULTS_MAP_H
+#define NG_RESULTS_MAP_H
 
 #include <QList>
 #include <memory>
@@ -33,6 +33,11 @@ class ResultsMap
 {
     public:
         ResultsMap() = default;
+
+        ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results);
+
+        // note: this constructor modifies the input results list (de-duplicates it).
+        ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
         void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);

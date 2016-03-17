@@ -20,6 +20,22 @@
 #include "resultsmap.h"
 #include <cassert>
 
+ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results)
+{
+    int pos = 0;
+    for (auto it = results.begin(); it != results.end(); ) {
+        std::shared_ptr<unity::scopes::Result> result = *it;
+        assert(result);
+        if (find(result) < 0) {
+            const ResultPos rpos { result, pos++ };
+            m_results.insert({result->uri(), rpos });
+            ++it;
+        } else {
+            it = results.erase(it);
+        }
+    }
+}
+
 void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results)
 {
     m_results.clear();

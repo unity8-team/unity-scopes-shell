@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cstdlib>
 #include <chrono>
 
 #define EXPORT __attribute__ ((visibility ("default")))
@@ -54,6 +55,21 @@ public:
         auto cat1 = reply->register_category("cat1", "Category 1", "", meta_rndr);
         auto cat2 = reply->register_category("cat2", "Category 2", "", meta_rndr);
 
+        if (query_ == "")
+        {
+            // 2000 items
+            for (int i = 0; i<200; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
         if (query_ == "search1")
         {
             // five results with uris 0..4 in a single category cat1
@@ -145,6 +161,21 @@ public:
                 }
             }
         }
+        else if (query_ == "lots_of_results_reversed_plus_some")
+        {
+            // 2100 items, in the reversed order of search5, plus 100 extra results
+            for (int i = 2099; i>=0; i--)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(i));
+                res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+
+                if (i % 100 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
+            }
+        }
         else if (query_ == "lots_of_results_half_of_them_missing")
         {
             // 1000 items with uris matching every other item from previous search
@@ -195,6 +226,80 @@ public:
                 res.set_uri("cat1_uri" + std::to_string(i));
                 res.set_title("result5 for: \"" + query_ + "\"");
                 reply->push(res);
+            }
+        }
+        else if (query_ == "duplicated_uris1")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri");
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
+        else if (query_ == "duplicated_uris2")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                if (i % 2 == 0) { // every other result uses same uri
+                    res.set_uri("uri");
+                } else {
+                    res.set_uri("uri" + std::to_string(i));
+                }
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
+        else if (query_ == "duplicated_results")
+        {
+            for (int i = 0; i<2; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri");
+                res.set_title("result");
+                reply->push(res);
+            }
+        }
+        else if (query_ == "two-categories")
+        {
+            auto cat3 = reply->register_category("cat3", "Category 3", "", meta_rndr);
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri" + std::to_string(i));
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+
+                CategorisedResult res2(cat3);
+                res2.set_uri("uri" + std::to_string(i));
+                res2.set_title("result " + std::to_string(i));
+                reply->push(res2);
+            }
+        }
+        else if (query_ == "two-categories-second-gone")
+        {
+            for (int i = 0; i<10; i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("uri" + std::to_string(i));
+                res.set_title("result " + std::to_string(i));
+                reply->push(res);
+            }
+        }
+        else if (query_.find("random") == 0) // "random", followed by an int for the number of results
+        {
+            auto rand_start = rand() % 30;
+            for (int i = 0; i<std::stoi(query_.substr(6)); i++)
+            {
+                CategorisedResult res(cat1);
+                res.set_uri("cat1_uri" + std::to_string(rand_start + i));
+                res.set_title("result" + std::to_string(i));
+                reply->push(res);
+                if (i % 2 == 0) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+                }
             }
         }
     }
