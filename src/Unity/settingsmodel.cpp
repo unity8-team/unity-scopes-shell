@@ -209,14 +209,14 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                             result = data->defaultValue;
                     }
                 }
-                catch(const unity::LogicException&)
-                {
-                    qWarning() << "SettingsModel::data: Failed to get a value for setting:" << data->id;
-                    result = data->defaultValue;
-                }
                 catch(const unity::FileException& e)
                 {
                     qWarning() << "SettingsModel::data: Failed to read settings file:" << e.what();
+                    result = data->defaultValue;
+                }
+                catch(const unity::LogicException&)
+                {
+                    qWarning() << "SettingsModel::data: Failed to get a value for setting:" << data->id;
                     result = data->defaultValue;
                 }
                 result.convert(data->variantType);
@@ -301,14 +301,14 @@ QVariant SettingsModel::value(const QString& id) const
                     result = data->defaultValue;
             }
         }
-        catch(const unity::LogicException&)
-        {
-            qWarning() << "SettingsModel::value: Failed to get a value for setting:" << data->id;
-            result = data->defaultValue;
-        }
         catch(const unity::FileException& e)
         {
             qWarning() << "SettingsModel::value: Failed to read settings file:" << e.what();
+            result = data->defaultValue;
+        }
+        catch(const unity::LogicException&)
+        {
+            qWarning() << "SettingsModel::value: Failed to get a value for setting:" << data->id;
             result = data->defaultValue;
         }
         result.convert(data->variantType);
@@ -511,13 +511,13 @@ void SettingsModel::settings_timeout()
 
             Q_EMIT settingsChanged();
         }
-        catch(const unity::LogicException&)
-        {
-            qWarning() << "SettingsModel::settings_timeout: Failed to set a value for setting:" << setting_id;
-        }
         catch(const unity::FileException& e)
         {
             qWarning() << "SettingsModel::settings_timeout: Failed to write settings file:" << e.what();
+        }
+        catch(const unity::LogicException&)
+        {
+            qWarning() << "SettingsModel::settings_timeout: Failed to set a value for setting:" << setting_id;
         }
     }
     else
