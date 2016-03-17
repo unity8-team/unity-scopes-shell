@@ -103,6 +103,7 @@ endif()
 # gtk and unity-core (actually sigc++) do not like Qt defining macros named
 # "signals" and "slots"
 add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DVERBOSE_MODEL_UPDATES)
 
 # Translation
 set(GETTEXT_PACKAGE "unity-plugin-scopes")
