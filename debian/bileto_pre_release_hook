@@ -33,7 +33,7 @@ set -e  # Fail if any command fails.
 dir=./debian
 
 [ -n "$SERIES" ] || SERIES=$(lsb_release -c -s)
-echo "gen-debian-files: detected distribution: $SERIES"
+echo "$0: detected distribution: $SERIES"
 
 harness_full_version=$(cat "${dir}"/HARNESS_VERSION)
 major=$(echo $harness_full_version | cut -d'.' -f1)
