@@ -43,6 +43,10 @@ PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
 void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
 {
     int insertPos = position >= 0 && position <= m_previewWidgets.count() ? position : m_previewWidgets.count();
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewWidgetModel::insertWidget(): inserting widget" << widget->id << "at" << insertPos;
+#endif
+
     beginInsertRows(QModelIndex(), insertPos, insertPos);
 
     m_previewWidgets.insert(insertPos, widget);

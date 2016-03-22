@@ -405,7 +405,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         if (it != m_widgetsInColumnCount.end()) {
             destinationRowIndex = it.value() + 1;
         } else {
-            destinationColumnIndex = 0;
+            destinationRowIndex = 0;
         }
     }
 
