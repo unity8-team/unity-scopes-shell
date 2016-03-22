@@ -32,8 +32,8 @@ set -e  # Fail if any command fails.
 }
 dir=./debian
 
-distro=$(lsb_release -c -s)
-echo "gen-debian-files: detected distribution: $distro"
+[ -n "$SERIES" ] || SERIES=$(lsb_release -c -s)
+echo "gen-debian-files: detected distribution: $SERIES"
 
 harness_full_version=$(cat "${dir}"/HARNESS_VERSION)
 major=$(echo $harness_full_version | cut -d'.' -f1)
@@ -41,7 +41,7 @@ minor=$(echo $harness_full_version | cut -d'.' -f2)
 harness_major_minor="${major}.${minor}"
 
 harness_so_ver=$major
-if [ "$distro" = "vivid" ]
+if [ "$SERIES" = "vivid" ]
 then
     infile="${dir}/libscope-harness.symbols.in"
     outfile="${dir}"/libscope-harness${harness_so_ver}.symbols
