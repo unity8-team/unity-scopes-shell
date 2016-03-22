@@ -61,27 +61,34 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
     endInsertRows();
 }
 
+void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& widget, int row)
+{
+    if (m_previewWidgets.at(row)->id != widget->id) {
+        qWarning() << "PreviewWidgetModel::updateWidget(): unexpected widget" << widget->id;
+        return;
+    }
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row;
+#endif
+    m_previewWidgets.replace(row, widget);
+    const QModelIndex idx = createIndex(row, 0);
+    Q_EMIT dataChanged(idx, idx);
+}
+
 void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& updatedWidget)
 {
     for (int i = 0; i<m_previewWidgets.count(); i++) {
         auto widget = m_previewWidgets.at(i);
         if (updatedWidget->id == widget->id) {
+#ifdef VERBOSE_MODEL_UPDATES
+            qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i;
+#endif
             m_previewWidgets.replace(i, updatedWidget);
             const QModelIndex idx = createIndex(i, 0);
             Q_EMIT dataChanged(idx, idx);
             break;
         }
     }
-}
-
-void PreviewWidgetModel::adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
-{
-    beginResetModel();
-
-    m_previewWidgets.clear();
-    m_previewWidgets.append(widgetList);
-
-    endResetModel();
 }
 
 void PreviewWidgetModel::clearWidgets()
@@ -105,6 +112,56 @@ bool PreviewWidgetModel::widgetChanged(PreviewWidgetData* widget)
     }
 
     return false;
+}
+
+
+void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& widget)
+{
+    int index = widgetIndex(widget);
+    if (index >= 0) {
+#ifdef VERBOSE_MODEL_UPDATES
+        qDebug() << "PreviewWidgetModel::removeWidget(): removing widget" << widget->id << "at row" << index;
+#endif
+        beginRemoveRows(QModelIndex(), index, index);
+        m_previewWidgets.removeAt(index);
+        endRemoveRows();
+    } else {
+        qWarning() << "PreviewWidgetModel::removeWidget(): widget" << widget->id << "doesn't exist in the column model";
+    }
+}
+
+int PreviewWidgetModel::widgetIndex(QSharedPointer<PreviewWidgetData> const& widget) const
+{
+    // TODO optimize
+    for (int i = 0; i<m_previewWidgets.size(); i++) {
+        if (*(m_previewWidgets.at(i)) == *widget) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& widget, int sourceRow, int destRow)
+{
+    if (destRow < 0 || destRow >= m_previewWidgets.size()) {
+        qWarning() << "PreviewWidgetModel::moveWidget(): invalid destRow" << destRow;
+        return;
+    }
+    if (sourceRow < 0 || sourceRow >= m_previewWidgets.size()) {
+        qWarning() << "PreviewWidgetModel::moveWidget(): invalid sourceRow" << sourceRow;
+        return;
+    }
+
+    if (m_previewWidgets.at(sourceRow)->id != widget->id) {
+        qWarning() << "PreviewWidgetModel::moveWidget(): unexpected widget" << widget->id;
+        return;
+    }
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "Moving widget" << widget->id << "from" << sourceRow << "to" << destRow;
+#endif
+    beginMoveRows(QModelIndex(), sourceRow, sourceRow, QModelIndex(), destRow + (destRow > sourceRow ? 1 : 0));
+    m_previewWidgets.move(sourceRow, destRow);
+    endMoveRows();
 }
 
 int PreviewWidgetModel::rowCount(const QModelIndex&) const

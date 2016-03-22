@@ -46,7 +46,6 @@ PreviewModel::PreviewModel(QObject* parent) :
     unity::shell::scopes::PreviewModelInterface (parent),
     m_loaded(false),
     m_processingAction(false),
-    m_delayedClear(false),
     m_widgetColumnCount(1)
 {
     connect(this, &PreviewModel::triggered, this, &PreviewModel::widgetTriggered);
@@ -117,50 +116,29 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
         return;
     }
 
-    if (m_delayedClear) {
-        clearAll();
-        m_delayedClear = false;
+    setProcessingAction(false);
 
-        setProcessingAction(false);
-    }
-
-    if (!columns.empty()) {
-        setColumnLayouts(columns);
-    }
+    setColumnLayouts(columns);
     addWidgetDefinitions(widgets);
     updatePreviewData(preview_data);
 
     // status in [FINISHED, ERROR]
     if (status != CollectorBase::Status::INCOMPLETE) {
         // FIXME: do something special when preview finishes with error?
+        for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); ) {
+            auto widget = *it;
+            if (!widget->received) {
+                qDebug() << "Widget '" << widget->id << "' not received";
+                for (auto model: m_previewWidgetModels) {
+                    model->removeWidget(widget);
+                }
+                it = m_previewWidgets.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
         m_loaded = true;
-        Q_EMIT loadedChanged();
-    }
-}
-
-void PreviewModel::setDelayedClear()
-{
-    m_delayedClear = true;
-    // signal right away that the preview is "dirty"
-    if (m_loaded) {
-        m_loaded = false;
-        Q_EMIT loadedChanged();
-    }
-}
-
-void PreviewModel::clearAll()
-{
-    // clear column models
-    for (int i = 0; i < m_previewWidgetModels.size(); i++) {
-        m_previewWidgetModels[i]->clearWidgets();
-    }
-    m_allData.clear();
-    m_columnLayouts.clear();
-    m_previewWidgets.clear();
-    m_dataToWidgetMap.clear();
-
-    if (m_loaded) {
-        m_loaded = false;
         Q_EMIT loadedChanged();
     }
 }
@@ -269,8 +247,26 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets)
 {
     processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
-        m_previewWidgets.append(widgetData);
-        addWidgetToColumnModel(widgetData);
+            // TODO optimize
+            bool widgetExists = false;
+            for (int i = 0; i<m_previewWidgets.size(); i++) {
+                if (m_previewWidgets.at(i)->id == widgetData->id) {
+                    widgetExists = true;
+
+                    m_previewWidgets.replace(i, widgetData);
+
+                    // Update widget with that id in all models
+                    for (auto model: m_previewWidgetModels) {
+                        model->updateWidget(widgetData);
+                    }
+                    break;
+                }
+            }
+
+            if (!widgetExists) {
+                m_previewWidgets.append(widgetData);
+            }
+            addWidgetToColumnModel(widgetData);
     });
 }
 
@@ -403,9 +399,33 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
       destinationColumnIndex = 0;
     }
 
+    // if destinationRowIndex is -1, need to move after last received
+    if (destinationRowIndex == -1) {
+        auto it = m_widgetsInColumnCount.find(destinationColumnIndex);
+        if (it != m_widgetsInColumnCount.end()) {
+            destinationRowIndex = it.value() + 1;
+        } else {
+            destinationColumnIndex = 0;
+        }
+    }
+
     if (destinationColumnIndex >= 0 && destinationColumnIndex < m_previewWidgetModels.size()) {
         PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
-        widgetModel->insertWidget(widgetData, destinationRowIndex);
+
+        Q_ASSERT(widgetModel);
+
+        int index = widgetModel->widgetIndex(widgetData);
+        if (index < 0) {
+            widgetModel->insertWidget(widgetData, destinationRowIndex);
+        } else {
+            // the widget already exists in the column model
+            if (index == destinationRowIndex) {
+                widgetModel->updateWidget(widgetData, index);
+            } else {
+                widgetModel->moveWidget(widgetData, index, destinationRowIndex);
+            }
+        }
+        m_widgetsInColumnCount.insert(destinationColumnIndex, destinationRowIndex);
     }
 }
 
@@ -517,6 +537,17 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
         }
         m_listener = listener;
 
+        if (m_loaded) {
+            m_loaded = false;
+            Q_EMIT loadedChanged();
+        }
+
+        // mark all existing preview widgets as 'not received'
+        Q_FOREACH(const QSharedPointer<PreviewWidgetData> pdata, m_previewWidgets) {
+            pdata->received = false;
+        }
+        m_widgetsInColumnCount.clear();
+
         m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
     } catch (std::exception& e) {
         qWarning("Caught an error from preview(): %s", e.what());
@@ -620,9 +651,7 @@ void PreviewModel::processActionResponse(PushEvent* pushEvent)
     if (!response) return;
 
     switch (response->status()) {
-        case scopes::ActivationResponse::ShowPreview:
-            // replace current preview
-            setDelayedClear();
+        case scopes::ActivationResponse::ShowPreview: // replace current preview
             // the preview is marked as processing action, leave the flag on until the preview is updated
             dispatchPreview(scopes::Variant(response->scope_data()));
             break;
