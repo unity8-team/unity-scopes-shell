@@ -128,7 +128,7 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
         for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); ) {
             auto widget = *it;
             if (!widget->received) {
-                qDebug() << "Widget '" << widget->id << "' not received";
+                qDebug() << "Widget" << widget->id << "not received";
                 for (auto model: m_previewWidgetModels) {
                     model->removeWidget(widget);
                 }
@@ -256,9 +256,9 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
                     m_previewWidgets.replace(i, widgetData);
 
                     // Update widget with that id in all models
-                    for (auto model: m_previewWidgetModels) {
-                        model->updateWidget(widgetData);
-                    }
+                    //for (auto model: m_previewWidgetModels) {
+                    //    model->updateWidget(widgetData);
+                    //}
                     break;
                 }
             }
