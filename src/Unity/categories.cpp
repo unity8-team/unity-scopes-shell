@@ -517,12 +517,14 @@ void Categories::countChanged()
 
 void Categories::updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result)
 {
+    qDebug() << "Categories::updateResult(): update result with uri" << QString::fromStdString(result.uri()) << ", category id" << categoryId;
     for (auto catData: m_categories) {
         if (catData->categoryId() == categoryId) {
             catData->resultsModel()->updateResult(result, updated_result);
-            break;
+            return;
         }
     }
+    qWarning() << "Categories::updateResult(): no category with id" << categoryId;
 }
 
 QVariant
