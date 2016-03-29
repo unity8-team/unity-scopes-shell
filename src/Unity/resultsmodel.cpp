@@ -175,15 +175,12 @@ int ResultsModel::count() const
 QVariant
 ResultsModel::componentValue(scopes::Result const* result, std::string const& fieldName) const
 {
-    qDebug() << "componentValue for:" << QString::fromStdString(fieldName);
-
     auto mappingIt = m_componentMapping.find(fieldName);
     if (mappingIt == m_componentMapping.end()) {
         return QVariant();
     }
     std::string const& realFieldName = mappingIt->second;
     try {
-        qDebug() << "realFieldName:" << QString::fromStdString(realFieldName) << "in the result:" << result->contains(realFieldName);
         scopes::Variant const& v = result->value(realFieldName);
         return scopeVariantToQVariant(v);
     } catch (...) {
