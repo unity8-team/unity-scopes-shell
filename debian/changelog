@@ -1,3 +1,13 @@
+unity-scopes-shell (0.5.7+16.04.20160330-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * Resync trunk.
+
+  [ Robert Bruce Park ]
+  * Use new bileto_pre_release_hook.
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Wed, 30 Mar 2016 11:37:22 +0000
+
 unity-scopes-shell (0.5.7+16.04.20160317-0ubuntu1) xenial; urgency=medium
 
   [ Pawel Stolowski ]
