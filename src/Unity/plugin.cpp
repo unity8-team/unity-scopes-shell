@@ -32,6 +32,12 @@
 #include "previewmodel.h"
 #include "previewwidgetmodel.h"
 #include "settingsmodel.h"
+#include <unity/shell/scopes/FiltersInterface.h>
+#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
+#include <unity/shell/scopes/OptionSelectorOptionsInterface.h>
+#include <unity/shell/scopes/RangeInputFilterInterface.h>
+#include <unity/shell/scopes/ValueSliderFilterInterface.h>
+#include <unity/shell/scopes/ValueSliderValuesInterface.h>
 #include "localization.h"
 
 void UnityPlugin::registerTypes(const char *uri)
@@ -49,6 +55,12 @@ void UnityPlugin::registerTypes(const char *uri)
     qmlRegisterUncreatableType<scopes_ng::ResultsModel>(uri, 0, 2, "ResultsModel", QStringLiteral("Can't create new ResultsModel in QML. Get them from Categories instance."));
     qmlRegisterUncreatableType<unity::shell::scopes::PreviewModelInterface>(uri, 0, 2, "PreviewModel", QStringLiteral("Can't create new PreviewModel in QML. Get them from Scope instance."));
     qmlRegisterUncreatableType<scopes_ng::PreviewWidgetModel>(uri, 0, 2, "PreviewWidgetModel", QStringLiteral("Can't create new PreviewWidgetModel in QML. Get them from PreviewModel instance."));
+    qmlRegisterUncreatableType<unity::shell::scopes::FiltersInterface>(uri, 0, 2, "Filters", "Can't create Filters object in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::FilterBaseInterface>(uri, 0, 2, "Filter", "Can't create Filter object in QML. Get them from Scope instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::OptionSelectorOptionsInterface>(uri, 0, 2, "OptionSelectorOptions", "Can't create Filters object in QML. Get them from OptionSelector instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::RangeInputFilterInterface>(uri, 0, 2, "RangeInputFilter", "Can't create new RangeInputFilter in QML. Get them from Filters instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::ValueSliderFilterInterface>(uri, 0, 2, "ValueSliderFilter", "Can't create new ValueSliderFilter in QML. Get them from Filters instance.");
+    qmlRegisterUncreatableType<unity::shell::scopes::ValueSliderValuesInterface>(uri, 0, 2, "ValueSliderValues", "Can't create new ValueSliderValues in QML. Get them from ValueSlideriFilter instance.");
 }
 
 void UnityPlugin::initializeEngine(QQmlEngine *engine, const char *uri)

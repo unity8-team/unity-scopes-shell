@@ -1,0 +1,8 @@
+[ScopeConfig]
+DisplayName = mock-scope-filters.DisplayName
+Description = mock-scope-filters.Description
+Art = /mock-scope-filters.Art
+Icon = /mock-scope-filters.Icon
+SearchHint = mock-scope-filters.SearchHint
+HotKey = mock-scope-filters.HotKey
+Author = mock-scope-filters.Author
