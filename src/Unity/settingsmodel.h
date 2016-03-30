@@ -89,6 +89,9 @@ Q_SIGNALS:
 protected Q_SLOTS:
     void settings_timeout();
 
+private:
+    void tryLoadSettings() const;
+
 protected:
     QString m_scopeId;
     unity::scopes::ScopeProxy m_scopeProxy;

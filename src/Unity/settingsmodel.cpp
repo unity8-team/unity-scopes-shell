@@ -84,18 +84,9 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
 
     m_settings_path = databaseDir.filePath(QStringLiteral("settings.ini"));
 
-    QFileInfo checkFile(m_settings_path);
-    if (!checkFile.exists() || !checkFile.isFile())
-    {
-        // Config file does not exist, so we create an empty one.
-        auto f = fopen(m_settings_path.toUtf8(), "w");
-        fclose(f);
-    }
-
     try
     {
-        FileLock lock = unixLock(m_settings_path, false);
-        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
+        tryLoadSettings();
     }
     catch(const unity::FileException& e)
     {
@@ -186,11 +177,7 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
             {
                 try
                 {
-                    if (!m_settings)
-                    {
-                        FileLock lock = unixLock(m_settings_path, false);
-                        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
-                    }
+                    tryLoadSettings();
                     switch (data->variantType)
                     {
                         case QVariant::Bool:
@@ -278,11 +265,7 @@ QVariant SettingsModel::value(const QString& id) const
         QVariant result;
         try
         {
-            if (!m_settings)
-            {
-                FileLock lock = unixLock(m_settings_path, false);
-                m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
-            }
+            tryLoadSettings();
             switch (data->variantType)
             {
                 case QVariant::Bool:
@@ -483,11 +466,7 @@ void SettingsModel::settings_timeout()
     {
         try
         {
-            if (!m_settings)
-            {
-                FileLock lock = unixLock(m_settings_path, false);
-                m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
-            }
+            tryLoadSettings();
             switch (value.type())
             {
                 case QVariant::Bool:
@@ -523,5 +502,24 @@ void SettingsModel::settings_timeout()
     else
     {
         qWarning() << "No such setting:" << setting_id;
+    }
+}
+
+void SettingsModel::tryLoadSettings() const
+{
+    if (!m_settings)
+    {
+        QFileInfo checkFile(m_settings_path);
+        if (!checkFile.exists() || !checkFile.isFile())
+        {
+            // Config file does not exist, so we create an empty one.
+            if (!QFile(m_settings_path).open(QFile::WriteOnly))
+            {
+                throw unity::FileException("Could not create an empty settings file at: " + m_settings_path.toStdString(), -1);
+            }
+        }
+
+        FileLock lock = unixLock(m_settings_path, false);
+        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
     }
 }
