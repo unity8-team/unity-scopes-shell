@@ -53,6 +53,7 @@ public:
     bool widgetChanged(PreviewWidgetData*);
     void removeWidget(QSharedPointer<PreviewWidgetData> const&);
     int widgetIndex(QSharedPointer<PreviewWidgetData> const&) const;
+    int widgetIndex(QString const &widgetId) const;
     void moveWidget(QSharedPointer<PreviewWidgetData> const&, int, int);
 
     void clearWidgets();

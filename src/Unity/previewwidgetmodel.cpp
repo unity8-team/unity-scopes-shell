@@ -134,6 +134,17 @@ void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& w
     }
 }
 
+int PreviewWidgetModel::widgetIndex(QString const &widgetId) const
+{
+    // TODO optimize
+    for (int i = 0; i<m_previewWidgets.size(); i++) {
+        if (m_previewWidgets.at(i)->id == widgetId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int PreviewWidgetModel::widgetIndex(QSharedPointer<PreviewWidgetData> const& widget) const
 {
     // TODO optimize

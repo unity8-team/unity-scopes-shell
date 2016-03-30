@@ -414,7 +414,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
 
         Q_ASSERT(widgetModel);
 
-        int index = widgetModel->widgetIndex(widgetData);
+        int index = widgetModel->widgetIndex(widgetData->id);
         if (index < 0) {
             widgetModel->insertWidget(widgetData, destinationRowIndex);
         } else {
