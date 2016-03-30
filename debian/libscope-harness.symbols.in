@@ -271,6 +271,7 @@ libscope-harness.so.@HARNESS_SO_VERSION@ libscope-harness@HARNESS_SO_VERSION@ #M
  (c++)"unity::scopeharness::TestUtils::throwIfNot(bool, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::waitForResultsChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::TestUtils::waitForSearchFinish(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.4+15.04.20150311.3
+ (c++)"unity::scopeharness::TestUtils::waitForFilterStateChange(QSharedPointer<unity::shell::scopes::ScopeInterface>)@Base" 0.5.7+16.04.20160317
  (c++)"unity::scopeharness::view::AbstractView::~AbstractView()@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::columnCount() const@Base" 0.5.4+15.04.20150311.3
  (c++)"unity::scopeharness::view::PreviewView::~PreviewView()@Base" 0.5.4+15.04.20150311.3
