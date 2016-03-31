@@ -118,6 +118,8 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
 
     setProcessingAction(false);
 
+    qDebug() << "PreviewModel::processPreviewChunk(): widgets#" << widgets.size();
+
     setColumnLayouts(columns);
     addWidgetDefinitions(widgets);
     updatePreviewData(preview_data);
@@ -513,6 +515,7 @@ QVariant PreviewModel::data(const QModelIndex& index, int role) const
 
 void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
 {
+    qDebug() << "PreviewModel::dispatchPreview()";
     // TODO: figure out if the result can produce a preview without sending a request to the scope
     // if (m_previewedResult->has_early_preview()) { ... }
     try {
@@ -558,6 +561,8 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
 
 void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
 {
+    qDebug() << "PreviewModel::widgetTriggered(): widget=" << widgetId << "action=" << actionId << "data=" << data;
+
     auto action = [this, widgetId, actionId, data]() {
         try {
             auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
@@ -652,12 +657,14 @@ void PreviewModel::processActionResponse(PushEvent* pushEvent)
 
     switch (response->status()) {
         case scopes::ActivationResponse::ShowPreview: // replace current preview
+            qDebug() << "PreviewModel::processActionResponse(): ShowPreview";
             // the preview is marked as processing action, leave the flag on until the preview is updated
             dispatchPreview(scopes::Variant(response->scope_data()));
             break;
         // TODO: case to nest preview (once such API is available)
         default:
             if (m_associatedScope) {
+                qDebug() << "PreviewModel::processActionResponse(): handleActivation";
                 m_associatedScope->handleActivation(response, result);
             }
 
