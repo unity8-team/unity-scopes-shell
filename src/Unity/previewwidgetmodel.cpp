@@ -72,7 +72,7 @@ void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& w
         return;
     }
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row;
+    qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row << ",data=" << widget->data;
 #endif
     m_previewWidgets.replace(row, widget);
     const QModelIndex idx = createIndex(row, 0);
@@ -85,7 +85,7 @@ void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& u
         auto widget = m_previewWidgets.at(i);
         if (updatedWidget->id == widget->id) {
 #ifdef VERBOSE_MODEL_UPDATES
-            qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i;
+            qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i << ",data=" << widget->data;
 #endif
             m_previewWidgets.replace(i, updatedWidget);
             const QModelIndex idx = createIndex(i, 0);
