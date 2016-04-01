@@ -60,14 +60,15 @@ private Q_SLOTS:
         qputenv("LC_ALL", "");
         qputenv("LC_MONETARY", "bad");
 
-        // this shouldn't crash when locales are broken
+        // This shouldn't crash when locales are broken.
+        // Note: broken locales cause issues on vivid, but not on xenial.
+        // On xenial scopes runtime is correctly initialized with broken locale.
         QScopedPointer<Scopes> scopes(new Scopes(nullptr));
 
         QSignalSpy spy(scopes.data(), SIGNAL(loadedChanged()));
         QVERIFY(spy.wait());
 
         QCOMPARE(scopes->loaded(), true);
-        QCOMPARE(scopes->count(), 0);
         QVERIFY(scopes->overviewScope() != nullptr);
     }
 
