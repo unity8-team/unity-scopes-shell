@@ -69,6 +69,7 @@ run_tests(
     overviewtest
     previewtest
     resultstest
+    scopesinittest
     settingsendtoendtest
     settingstest
     utilstest
