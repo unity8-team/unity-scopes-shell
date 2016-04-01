@@ -60,6 +60,7 @@ private Q_SLOTS:
         qputenv("LC_ALL", "");
         qputenv("LC_MONETARY", "bad");
 
+        // this shouldn't crash when locales are broken
         QScopedPointer<Scopes> scopes(new Scopes(nullptr));
 
         QSignalSpy spy(scopes.data(), SIGNAL(loadedChanged()));
