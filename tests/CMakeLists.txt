@@ -45,7 +45,8 @@ macro(run_tests)
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
                 PROPERTIES
-                  RUN_SERIAL TRUE)
+                  RUN_SERIAL TRUE
+                  ENVIRONMENT "LC_ALL=C")
 
         target_link_libraries(${_test}Exec
             Unity-qml
