@@ -61,9 +61,9 @@ void ScopeListWorker::run()
         auto registry = m_scopesRuntime->registry();
         m_metadataMap = registry->list();
     }
-    catch (unity::Exception const& err)
+    catch (std::exception const& err)
     {
-        qWarning("ERROR! Caught %s", err.to_string().c_str());
+        qWarning("ERROR! Caught %s", err.what());
     }
     Q_EMIT discoveryFinished();
 }
@@ -280,6 +280,14 @@ void Scopes::discoveryFinished()
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
     m_scopesRuntime = thread->getRuntime();
+
+    if (!m_scopesRuntime) {
+        // This signifies a serious problem, such as a broken locale setup. We cannot recover from that.
+        // Return early so that scope objects are not created etc. The Dash will remain blank.
+        qWarning() << "FATAL ERROR! Scopes runtime couldn't be initialized. Please check your system settings and locale data/setup. The Dash will remain empty until the underlying problem is fixed.";
+        return;
+    }
+
     auto scopes = thread->metadataMap();
     m_priv->m_list_update_callback_connection_.reset(
             new core::ScopedConnection(
