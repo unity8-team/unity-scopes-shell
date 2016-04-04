@@ -67,10 +67,12 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
 
 void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& widget, int row)
 {
-    if (m_previewWidgets.at(row)->id != widget->id) {
+    auto oldWidget = m_previewWidgets.at(row);
+    if (oldWidget->id != widget->id) {
         qWarning() << "PreviewWidgetModel::updateWidget(): unexpected widget" << widget->id;
         return;
     }
+
 #ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row << ",data=" << widget->data;
 #endif
@@ -182,6 +184,11 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
 int PreviewWidgetModel::rowCount(const QModelIndex&) const
 {
     return m_previewWidgets.size();
+}
+
+QSharedPointer<PreviewWidgetData> PreviewWidgetModel::widget(int index) const
+{
+    return m_previewWidgets.at(index);
 }
 
 QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const

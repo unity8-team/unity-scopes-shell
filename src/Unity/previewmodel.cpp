@@ -256,11 +256,6 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
                     widgetExists = true;
 
                     m_previewWidgets.replace(i, widgetData);
-
-                    // Update widget with that id in all models
-                    //for (auto model: m_previewWidgetModels) {
-                    //    model->updateWidget(widgetData);
-                    //}
                     break;
                 }
             }
@@ -379,6 +374,10 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
 
 void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
 {
+    //
+    // Insert widget in the column based on the column layout definition.
+    // If column layout hasn't been defined for current screen setup or
+    // widget is not present in the layout, then add it after last inserted widget.
     int destinationColumnIndex = -1;
     int destinationRowIndex = -1;
 
@@ -420,11 +419,14 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         if (index < 0) {
             widgetModel->insertWidget(widgetData, destinationRowIndex);
         } else {
-            // the widget already exists in the column model
-            if (index == destinationRowIndex) {
-                widgetModel->updateWidget(widgetData, index);
-            } else {
+            if (index != destinationRowIndex) {
                 widgetModel->moveWidget(widgetData, index, destinationRowIndex);
+            }
+            // Compare widget content to see if it needs updating.
+            // Icon-actions needs to be updated every time because unity8 requires it to properly deal
+            // with temporaryIcon.
+            if ((widgetData->type == "icon-actions") || (*widgetData != *widgetModel->widget(destinationRowIndex))) {
+                widgetModel->updateWidget(widgetData, destinationRowIndex);
             }
         }
         m_widgetsInColumnCount.insert(destinationColumnIndex, destinationRowIndex);

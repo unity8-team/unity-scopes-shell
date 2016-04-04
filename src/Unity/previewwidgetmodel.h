@@ -55,6 +55,7 @@ public:
     int widgetIndex(QSharedPointer<PreviewWidgetData> const&) const;
     int widgetIndex(QString const &widgetId) const;
     void moveWidget(QSharedPointer<PreviewWidgetData> const&, int, int);
+    QSharedPointer<PreviewWidgetData> widget(int) const;
 
     void clearWidgets();
 
