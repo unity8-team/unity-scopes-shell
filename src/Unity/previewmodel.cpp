@@ -128,18 +128,23 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
     if (status != CollectorBase::Status::INCOMPLETE) {
         // FIXME: do something special when preview finishes with error?
         for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); ) {
-            auto widget = *it;
+            auto widget = it.value();
             if (!widget->received) {
                 qDebug() << "Widget" << widget->id << "not received";
                 for (auto model: m_previewWidgetModels) {
                     model->removeWidget(widget);
                 }
+                m_previewWidgetsOrdered.removeOne(widget);
                 it = m_previewWidgets.erase(it);
             } else {
                 ++it;
             }
         }
 
+#ifdef VERBOSE_MODEL_UPDATES
+        qDebug() << "PreviewModel::processPreviewChunk(): preview complete";
+#endif
+        Q_ASSERT(m_previewWidgets.size() == m_previewWidgetsOrdered.size());
         m_loaded = true;
         Q_EMIT loadedChanged();
     }
@@ -147,6 +152,9 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
 
 void PreviewModel::setWidgetColumnCount(int count)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::setWidgetColumnCount():" << count;
+#endif
     if (count != m_widgetColumnCount && count > 0) {
         int oldCount = m_widgetColumnCount;
         m_widgetColumnCount = count;
@@ -172,8 +180,8 @@ void PreviewModel::setWidgetColumnCount(int count)
             endRemoveRows();
         }
         // recalculate which columns do the widgets belong to
-        for (int i = 0; i < m_previewWidgets.size(); i++) {
-            addWidgetToColumnModel(m_previewWidgets[i]);
+        for (auto it = m_previewWidgetsOrdered.cbegin(); it != m_previewWidgetsOrdered.cend(); it++) {
+            addWidgetToColumnModel(*it);
         }
 
         Q_EMIT widgetColumnCountChanged();
@@ -249,19 +257,12 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets)
 {
     processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
-            // TODO optimize
-            bool widgetExists = false;
-            for (int i = 0; i<m_previewWidgets.size(); i++) {
-                if (m_previewWidgets.at(i)->id == widgetData->id) {
-                    widgetExists = true;
-
-                    m_previewWidgets.replace(i, widgetData);
-                    break;
-                }
-            }
-
-            if (!widgetExists) {
-                m_previewWidgets.append(widgetData);
+            auto it = m_previewWidgets.find(widgetData->id);
+            if (it != m_previewWidgets.end()) {
+                it.value() = widgetData;
+            } else {
+                m_previewWidgets.insert(widgetData->id, widgetData);
+                m_previewWidgetsOrdered.append(widgetData);
             }
             addWidgetToColumnModel(widgetData);
     });
@@ -270,15 +271,12 @@ void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets
 void PreviewModel::updateWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets)
 {
     processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
-        for (int i = 0; i<m_previewWidgets.size(); i++) {
-                if (m_previewWidgets.at(i)->id == widgetData->id) {
-                    m_previewWidgets.replace(i, widgetData);
-
-                    // Update widget with that id in all models
-                    for (auto model: m_previewWidgetModels) {
-                        model->updateWidget(widgetData);
-                    }
-                    break;
+            auto it = m_previewWidgets.find(widgetData->id);
+            if (it != m_previewWidgets.end()) {
+                it.value() = widgetData;
+                // Update widget with that id in all models
+                for (auto model: m_previewWidgetModels) {
+                    model->updateWidget(widgetData);
                 }
         }
     });
@@ -445,8 +443,8 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
         }
     }
 
-    for (int i = 0; i < m_previewWidgets.size(); i++) {
-        PreviewWidgetData* widget = m_previewWidgets.at(i).data();
+    for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); it++) {
+        PreviewWidgetData* widget = it.value().data();
         if (changedWidgets.contains(widget)) {
             // re-process attributes and emit dataChanged
             processComponents(widget->component_map, widget->data);
@@ -482,13 +480,10 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
 
 PreviewWidgetData* PreviewModel::getWidgetData(QString const& widgetId) const
 {
-    for (int i = 0; i < m_previewWidgets.size(); i++) {
-        PreviewWidgetData* widgetData = m_previewWidgets[i].data();
-        if (widgetData->id == widgetId) {
-            return widgetData;
-        }
+    auto it = m_previewWidgets.find(widgetId);
+    if (it != m_previewWidgets.end()) {
+        return it.value().data();
     }
-
     return nullptr;
 }
 
@@ -548,8 +543,8 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
         }
 
         // mark all existing preview widgets as 'not received'
-        Q_FOREACH(const QSharedPointer<PreviewWidgetData> pdata, m_previewWidgets) {
-            pdata->received = false;
+        for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); it++) {
+            it.value()->received = false;
         }
         m_widgetsInColumnCount.clear();
 

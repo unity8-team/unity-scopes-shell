@@ -24,7 +24,7 @@
 
 #include <unity/shell/scopes/PreviewModelInterface.h>
 
-#include <QSet>
+#include <QMap>
 #include <QSharedPointer>
 #include <QMultiMap>
 #include <QStringList>
@@ -101,8 +101,6 @@ public:
     bool processingAction() const override;
     void setProcessingAction(bool processing);
 
-    PreviewWidgetData* getWidgetData(QString const& widgetId) const;
-
     void updateWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
 
     void loadForResult(unity::scopes::Result::SPtr const&);
@@ -115,7 +113,8 @@ public:
 private Q_SLOTS:
     void widgetTriggered(QString const&, QString const&, QVariantMap const&);
 
-private:
+private:   
+    PreviewWidgetData* getWidgetData(QString const& widgetId) const;
     void processActionResponse(PushEvent* pushEvent);
     void addWidgetDefinitions(unity::scopes::PreviewWidgetList const&);
     void processWidgetDefinitions(unity::scopes::PreviewWidgetList const&, std::function<void(QSharedPointer<PreviewWidgetData>)> const& processFunc);
@@ -139,7 +138,8 @@ private:
     QMap<int, int> m_widgetsInColumnCount;
 
     QList<PreviewWidgetModel*> m_previewWidgetModels; // column models (number of columns is set by the shell at this point).
-    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets; // all widgets, regardless of their columns
+    QMap<QString, QSharedPointer<PreviewWidgetData>> m_previewWidgets; // all widgets, regardless of their columns
+    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgetsOrdered; // all widgets, in the order they were received
     QMultiMap<QString, PreviewWidgetData*> m_dataToWidgetMap;
 
     unity::scopes::QueryCtrlProxy m_lastPreviewQuery;
