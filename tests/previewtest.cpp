@@ -405,6 +405,85 @@ private Q_SLOTS:
         );
     }
 
+    void testPreviewReplacingPreviewWithDifferentPushOrder()
+    {
+        // test preview is still ok when the order the widgets are pushed is different, but the order defined by
+        // layouts remains unchanged.
+        m_resultsView->setQuery("layout-push-order-change");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+            );
+    }
+
+    void testPreviewReplacingPreviewWithDifferentLayoutOrder()
+    {
+        m_resultsView->setQuery("layout-order-change");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+            );
+        }
 };
 
 QTEST_GUILESS_MAIN(PreviewTest)

@@ -233,6 +233,9 @@ void PreviewModel::setProcessingAction(bool processing)
 
 void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::setColumnLayouts()";
+#endif    
     if (layouts.empty()) return;
 
     for (auto it = layouts.begin(); it != layouts.end(); ++it) {
@@ -409,6 +412,9 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
     }
 
     if (destinationColumnIndex >= 0 && destinationColumnIndex < m_previewWidgetModels.size()) {
+#ifdef VERBOSE_MODEL_UPDATES
+        qDebug() << "PreviewModel::addWidgetToColumnModel(): destination for widget" << widgetData->id << "is row" << destinationRowIndex << ", column" << destinationColumnIndex;
+#endif    
         PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
 
         Q_ASSERT(widgetModel);

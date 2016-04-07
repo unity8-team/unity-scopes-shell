@@ -128,12 +128,12 @@ public:
             res["album"] = "FooAlbum";
             reply->push(res);
         }
-        else if (query_ == "layout")
+        else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
             CategorisedResult res(cat);
-            res.set_uri("test:layout");
+            res.set_uri("test:" + query_);
             res.set_title("result for: \"" + query_ + "\"");
             reply->push(res);
         }
@@ -328,7 +328,89 @@ public:
 
     virtual void run(PreviewReplyProxy const& reply) override
     {
-        if (result().uri().find("layout") != std::string::npos)
+        if (result().uri().find("layout-push-order-change") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute_value("source", Variant("foo2.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute_value("title", Variant("Preview title"));
+            PreviewWidget w3("desc", "text");
+            w3.add_attribute_value("text", Variant("Lorum ipsum..."));
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("open")},
+                {"label", Variant("Open")},
+                {"uri", Variant("application:///tmp/non-existent.desktop")}
+            });
+            builder.add_tuple({
+                {"id", Variant("download")},
+                {"label", Variant("Download")}
+            });
+            builder.add_tuple({
+                {"id", Variant("hideChanged")},
+                {"label", Variant("Hide Changed")}
+            });
+            w4.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"img", "hdr", "desc", "actions", "extra"});
+            ColumnLayout l2(2);
+            l2.add_column({"img"});
+            l2.add_column({"hdr", "desc", "actions"});
+
+            reply->register_layout({l1, l2});
+            PreviewWidgetList widgets({w3, w2, w1, w4}); // different push order
+            if (!scope_data_.is_null()) {
+                PreviewWidget extra("extra", "text");
+                extra.add_attribute_value("text", Variant("got scope data"));
+                widgets.push_back(extra);
+            }
+            reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("layout-order-change") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute_value("source", Variant("foo2.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute_value("title", Variant("Preview title"));
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("open")},
+                {"label", Variant("Open")},
+                {"uri", Variant("application:///tmp/non-existent.desktop")}
+            });
+            builder.add_tuple({
+                {"id", Variant("download")},
+                {"label", Variant("Download")}
+            });
+            builder.add_tuple({
+                {"id", Variant("hideChanged")},
+                {"label", Variant("Hide Changed")}
+            });
+            w4.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"hdr", "img", "actions", "extra"}); // hdr and img swapped, no desc
+            ColumnLayout l2(2);
+            l2.add_column({"img"});
+            l2.add_column({"hdr", "actions"});
+
+            reply->register_layout({l1, l2});
+            PreviewWidgetList widgets({w1, w2, w4});
+            if (!scope_data_.is_null()) {
+                PreviewWidget extra("extra", "text");
+                extra.add_attribute_value("text", Variant("got scope data"));
+                widgets.push_back(extra);
+            }
+            reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("layout") != std::string::npos)
         {
             PreviewWidget w1("img", "image");
             w1.add_attribute_value("source", Variant("foo.png"));

@@ -42,19 +42,29 @@ PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
 
 void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
 {
-    int insertPos = position >= 0 && position <= m_previewWidgetsOrdered.count() ? position : m_previewWidgetsOrdered.count();
+    if (position >= m_previewWidgetsOrdered.size()) {
+        const int dummyRows = position - m_previewWidgetsOrdered.size();
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "PreviewWidgetModel::insertWidget(): inserting widget" << widget->id << "at" << insertPos;
+        qDebug() << "PreviewWidgetModel::insertWidget(): adding" << dummyRows << "dummy rows";
 #endif
-
-    beginInsertRows(QModelIndex(), insertPos, insertPos);
-
-    m_previewWidgetsOrdered.insert(insertPos, widget);
-    m_previewWidgetsIndex.insert(widget->id, insertPos);
-
-    endInsertRows();
-
-    Q_ASSERT(m_previewWidgetsIndex.size() == m_previewWidgetsOrdered.size());
+        beginInsertRows(QModelIndex(), m_previewWidgetsOrdered.size() - 1, position);
+        for (int i = 0; i<dummyRows; i++) {
+            m_previewWidgetsOrdered.append(QSharedPointer<PreviewWidgetData>());
+        }
+        m_previewWidgetsOrdered.insert(position, widget);
+        m_previewWidgetsIndex.insert(widget->id, position);
+        endInsertRows();
+        
+        Q_ASSERT(m_previewWidgetsOrdered.size() - 1 == position);
+    } else {
+#ifdef VERBOSE_MODEL_UPDATES
+        qDebug() << "PreviewWidgetModel::insertWidget(): replacing widget at position" << position << "with" << widget->id;
+#endif
+        m_previewWidgetsOrdered.replace(position, widget);
+        m_previewWidgetsIndex.insert(widget->id, position);
+        auto idx = createIndex(position, 0);
+        Q_EMIT dataChanged(idx, idx);
+    }
 }
 
 void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
@@ -62,13 +72,11 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
     if (widgetList.size() == 0) return;
 
     beginInsertRows(QModelIndex(), m_previewWidgetsOrdered.count(), m_previewWidgetsOrdered.size() + widgetList.size() - 1);
-
-    m_previewWidgetsOrdered.append(widgetList);
-    int pos = m_previewWidgetsIndex.size();
+    int pos = 0;
     Q_FOREACH(QSharedPointer<PreviewWidgetData> const& w, widgetList) {
+        m_previewWidgetsOrdered.append(w);
         m_previewWidgetsIndex.insert(w->id, pos++);
     }
-
     endInsertRows();
 
     Q_ASSERT(m_previewWidgetsIndex.size() == m_previewWidgetsOrdered.size());
@@ -77,7 +85,7 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
 void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& widget, int row)
 {
     auto oldWidget = m_previewWidgetsOrdered.at(row);
-    if (oldWidget->id != widget->id) {
+    if (oldWidget == nullptr || oldWidget->id != widget->id) {
         qWarning() << "PreviewWidgetModel::updateWidget(): unexpected widget" << widget->id;
         return;
     }
@@ -94,7 +102,7 @@ void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& u
 {
     for (int i = 0; i<m_previewWidgetsOrdered.count(); i++) {
         auto widget = m_previewWidgetsOrdered.at(i);
-        if (updatedWidget->id == widget->id) {
+        if (widget != nullptr && updatedWidget->id == widget->id) {
 #ifdef VERBOSE_MODEL_UPDATES
             qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i << ",data=" << widget->data;
 #endif
@@ -167,7 +175,8 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
         return;
     }
 
-    if (m_previewWidgetsOrdered.at(sourceRow)->id != widget->id) {
+    auto existingWidget = m_previewWidgetsOrdered.at(sourceRow);
+    if (existingWidget == nullptr || existingWidget->id != widget->id) {
         qWarning() << "PreviewWidgetModel::moveWidget(): unexpected widget" << widget->id;
         return;
     }
@@ -178,16 +187,22 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
     m_previewWidgetsOrdered.move(sourceRow, destRow);
     if (sourceRow > destRow) {
         for (int i = destRow + 1; i<sourceRow; i++) {
-            auto it = m_previewWidgetsIndex.find(m_previewWidgetsOrdered.at(i)->id);
-            if (it != m_previewWidgetsIndex.end()) {
-                it.value() = it.value() + 1;
+            auto widget = m_previewWidgetsOrdered.at(i);
+            if (widget) {
+                auto it = m_previewWidgetsIndex.find(widget->id);
+                if (it != m_previewWidgetsIndex.end()) {
+                    it.value() = it.value() + 1;
+                }
             }
         }
     } else {
         for (int i = sourceRow + 1; i<destRow; i++) {
-            auto it = m_previewWidgetsIndex.find(m_previewWidgetsOrdered.at(i)->id);
-            if (it != m_previewWidgetsIndex.end()) {
-                it.value() = it.value() - 1;
+            auto widget = m_previewWidgetsOrdered.at(i);
+            if (widget) {
+                auto it = m_previewWidgetsIndex.find(widget->id);
+                if (it != m_previewWidgetsIndex.end()) {
+                    it.value() = it.value() - 1;
+                }
             }
         }
     }
@@ -216,6 +231,9 @@ QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
     }
 
     auto widget_data = m_previewWidgetsOrdered.at(index.row());
+    if (!widget_data) {
+        return QVariant();
+    }
     switch (role) {
         case RoleWidgetId:
             return widget_data->id;
