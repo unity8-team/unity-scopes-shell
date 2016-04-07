@@ -24,9 +24,8 @@
 
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
 
-#include <QSet>
+#include <QMap>
 #include <QSharedPointer>
-#include <QMultiMap>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
@@ -52,7 +51,6 @@ public:
     void updateWidget(QSharedPointer<PreviewWidgetData> const&, int);
     bool widgetChanged(PreviewWidgetData*);
     void removeWidget(QSharedPointer<PreviewWidgetData> const&);
-    int widgetIndex(QSharedPointer<PreviewWidgetData> const&) const;
     int widgetIndex(QString const &widgetId) const;
     void moveWidget(QSharedPointer<PreviewWidgetData> const&, int, int);
     QSharedPointer<PreviewWidgetData> widget(int) const;
@@ -62,7 +60,8 @@ public:
 private Q_SLOTS:
 
 private:
-    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets;
+    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgetsOrdered;
+    QMap<QString, int> m_previewWidgetsIndex;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };

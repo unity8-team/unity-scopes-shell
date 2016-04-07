@@ -400,8 +400,8 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
 
     // if destinationRowIndex is -1, need to move after last received
     if (destinationRowIndex == -1) {
-        auto it = m_widgetsInColumnCount.find(destinationColumnIndex);
-        if (it != m_widgetsInColumnCount.end()) {
+        auto it = m_widgetsInColumnCount.constFind(destinationColumnIndex);
+        if (it != m_widgetsInColumnCount.cend()) {
             destinationRowIndex = it.value() + 1;
         } else {
             destinationRowIndex = 0;
@@ -480,8 +480,8 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
 
 PreviewWidgetData* PreviewModel::getWidgetData(QString const& widgetId) const
 {
-    auto it = m_previewWidgets.find(widgetId);
-    if (it != m_previewWidgets.end()) {
+    auto it = m_previewWidgets.constFind(widgetId);
+    if (it != m_previewWidgets.cend()) {
         return it.value().data();
     }
     return nullptr;
