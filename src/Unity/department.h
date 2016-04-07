@@ -40,6 +40,7 @@ struct SubdepartmentData
 {
     QString id;
     QString label;
+    QString allLabel;
     bool hasChildren;
     bool isActive;
 };
@@ -66,6 +67,8 @@ public:
     bool isRoot() const override;
     bool hidden() const override;
     int count() const override;
+
+    QSharedPointer<SubdepartmentData> findSubdepartment(const QString &id) const;
 
 Q_SIGNALS:
 
