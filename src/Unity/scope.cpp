@@ -87,7 +87,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_searchInProgress(false)
     , m_activationInProgress(false)
     , m_resultsDirty(false)
-    , m_childScopesDirty(false)
+    , m_childScopesDirty(true)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
     , m_favorite(false)
