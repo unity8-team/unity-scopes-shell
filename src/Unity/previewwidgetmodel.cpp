@@ -78,8 +78,6 @@ void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> con
         m_previewWidgetsIndex.insert(w->id, pos++);
     }
     endInsertRows();
-
-    Q_ASSERT(m_previewWidgetsIndex.size() == m_previewWidgetsOrdered.size());
 }
 
 void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& widget, int row)
@@ -137,7 +135,6 @@ bool PreviewWidgetModel::widgetChanged(PreviewWidgetData* widget)
 
     return false;
 }
-
 
 void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& widget)
 {
@@ -233,7 +230,7 @@ QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    auto widget_data = m_previewWidgetsOrdered.at(index.row());
+    auto widget_data = m_previewWidgetsOrdered.at(row);
     if (!widget_data) {
         return QVariant();
     }
