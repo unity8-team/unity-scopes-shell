@@ -180,8 +180,8 @@ public:
     void setSearchQueryString(const QString& search_query);
 
 public Q_SLOTS:
-    void invalidateResults();
     void invalidateChildScopes();
+    void invalidateResults();
     virtual void dispatchSearch();
     void setSearchInProgress(bool searchInProgress);
     void setActivationInProgress(bool activationInProgress);
@@ -243,8 +243,8 @@ private:
     bool m_isActive;
     bool m_searchInProgress;
     bool m_activationInProgress;
-    bool m_resultsDirty;
     bool m_childScopesDirty;
+    bool m_resultsDirty;
     bool m_delayedSearchProcessing;
     bool m_hasNavigation;
     bool m_favorite;

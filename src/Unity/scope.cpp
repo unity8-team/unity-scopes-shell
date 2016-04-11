@@ -722,6 +722,10 @@ void Scope::dispatchSearch()
 
     setSearchInProgress(true);
 
+    // If applicable, update this scope's child scopes now, as part of the search process
+    // (i.e. while the loading bar is visible).
+    update_child_scopes();
+
     if (m_proxy) {
         scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
@@ -1256,6 +1260,11 @@ void Scope::cancelActivation()
     m_activationController->invalidate();
 }
 
+void Scope::invalidateChildScopes()
+{
+    m_childScopesDirty = true;
+}
+
 void Scope::invalidateResults()
 {
     if (m_isActive) {
@@ -1268,11 +1277,6 @@ void Scope::invalidateResults()
             resultsDirtyChanged();
         }
     }
-}
-
-void Scope::invalidateChildScopes()
-{
-    m_childScopesDirty = true;
 }
 
 void Scope::resetPrimaryNavigationTag()
