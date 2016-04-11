@@ -128,7 +128,7 @@ public:
             res["album"] = "FooAlbum";
             reply->push(res);
         }
-        else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change")
+        else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change" || query_ == "incomplete-layout")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
@@ -328,7 +328,34 @@ public:
 
     virtual void run(PreviewReplyProxy const& reply) override
     {
-        if (result().uri().find("layout-push-order-change") != std::string::npos)
+        if (result().uri().find("incomplete-layout") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute_value("source", Variant("foo.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute_value("title", Variant("Preview title"));
+            PreviewWidget w3("desc", "text");
+            w3.add_attribute_value("text", Variant("Lorum ipsum..."));
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("open")},
+                {"label", Variant("Open")},
+                {"uri", Variant("application:///tmp/non-existent.desktop")}
+            });
+            w4.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            l1.add_column({"img"});
+
+            reply->register_layout({l1});
+            PreviewWidgetList widgets({w2, w1, w3, w4});
+
+            reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("layout-push-order-change") != std::string::npos)
         {
             PreviewWidget w1("img", "image");
             w1.add_attribute_value("source", Variant("foo2.png"));

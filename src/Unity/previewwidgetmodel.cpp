@@ -217,7 +217,10 @@ int PreviewWidgetModel::rowCount(const QModelIndex&) const
 
 QSharedPointer<PreviewWidgetData> PreviewWidgetModel::widget(int index) const
 {
-    return m_previewWidgetsOrdered.at(index);
+    if (index < m_previewWidgetsOrdered.size()) {
+        return m_previewWidgetsOrdered.at(index);
+    }
+    return QSharedPointer<PreviewWidgetData>();
 }
 
 QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const

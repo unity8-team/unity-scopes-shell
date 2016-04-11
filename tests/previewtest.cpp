@@ -252,6 +252,53 @@ private Q_SLOTS:
         );
     }
 
+    void testIncompleteLayout()
+    {
+        m_resultsView->setQuery("incomplete-layout");
+        
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:incomplete-layout"))
+                )
+                .match(m_resultsView->categories())
+        );
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        previewView->setColumnCount(1);
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+    }
+
     void testPreviewAction()
     {
         m_resultsView->setQuery("layout");
@@ -483,7 +530,7 @@ private Q_SLOTS:
             )
             .match(previewView2->widgets())
             );
-        }
+    }
 };
 
 QTEST_GUILESS_MAIN(PreviewTest)

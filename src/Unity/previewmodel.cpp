@@ -375,6 +375,9 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
 
 void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::addWidgetToColumnModel(): processing widget" << widgetData->id;
+#endif      
     //
     // Insert widget in the column based on the column layout definition.
     // If column layout hasn't been defined for current screen setup or
@@ -395,6 +398,12 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
                 destinationColumnIndex = i;
                 break;
             }
+        }
+        if (destinationColumnIndex < 0) {
+#ifdef VERBOSE_MODEL_UPDATES
+            qDebug() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetData->id << " not defined in column layouts";
+#endif    
+            destinationColumnIndex = 0;
         }
     } else {
       // TODO: ask the shell
@@ -421,6 +430,11 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
 
         int index = widgetModel->widgetIndex(widgetData->id);
         if (index < 0) {
+            auto widget = widgetModel->widget(destinationRowIndex);
+            while (widget != nullptr && widget->received) {
+                ++destinationRowIndex;
+                widget = widgetModel->widget(destinationRowIndex);
+            } 
             widgetModel->insertWidget(widgetData, destinationRowIndex);
         } else {
             if (index != destinationRowIndex) {
