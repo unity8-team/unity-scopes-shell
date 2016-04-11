@@ -47,7 +47,7 @@ void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& w
 #ifdef VERBOSE_MODEL_UPDATES
         qDebug() << "PreviewWidgetModel::insertWidget(): adding" << dummyRows << "dummy rows";
 #endif
-        beginInsertRows(QModelIndex(), m_previewWidgetsOrdered.size() - 1, position);
+        beginInsertRows(QModelIndex(), m_previewWidgetsOrdered.size(), position);
         for (int i = 0; i<dummyRows; i++) {
             m_previewWidgetsOrdered.append(QSharedPointer<PreviewWidgetData>());
         }
