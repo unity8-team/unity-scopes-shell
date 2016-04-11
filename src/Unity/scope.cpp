@@ -87,6 +87,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_searchInProgress(false)
     , m_activationInProgress(false)
     , m_resultsDirty(false)
+    , m_childScopesDirty(false)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
     , m_favorite(false)
@@ -888,10 +889,7 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    if (m_settingsModel && m_scopesInstance)
-    {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
-    }
+    update_child_scopes();
     return m_settingsModel.data();
 }
 
@@ -904,11 +902,12 @@ bool Scope::require_child_scopes_refresh() const
     return false;
 }
 
-void Scope::update_child_scopes()
+void Scope::update_child_scopes() const
 {
-    if (m_settingsModel && m_scopesInstance)
+    if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
         m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        m_childScopesDirty = false;
     }
 }
 
@@ -1270,6 +1269,11 @@ void Scope::invalidateResults()
             resultsDirtyChanged();
         }
     }
+}
+
+void Scope::invalidateChildScopes()
+{
+    m_childScopesDirty = true;
 }
 
 void Scope::resetPrimaryNavigationTag()

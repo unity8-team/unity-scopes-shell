@@ -551,10 +551,12 @@ void Scopes::scopeRegistryChanged()
     refreshScopeMetadata();
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
         scope->invalidateResults();
+        scope->invalidateChildScopes();
     }
 
     Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
         scope->invalidateResults();
+        scope->invalidateChildScopes();
     }
 }
 
