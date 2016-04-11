@@ -136,7 +136,7 @@ public:
     int activeFiltersCount() const override;
 
     bool require_child_scopes_refresh() const;
-    void update_child_scopes() const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
@@ -244,7 +244,7 @@ private:
     bool m_searchInProgress;
     bool m_activationInProgress;
     bool m_resultsDirty;
-    mutable bool m_childScopesDirty;
+    bool m_childScopesDirty;
     bool m_delayedSearchProcessing;
     bool m_hasNavigation;
     bool m_favorite;

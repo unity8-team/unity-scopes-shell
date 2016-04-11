@@ -889,7 +889,6 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    update_child_scopes();
     return m_settingsModel.data();
 }
 
@@ -902,7 +901,7 @@ bool Scope::require_child_scopes_refresh() const
     return false;
 }
 
-void Scope::update_child_scopes() const
+void Scope::update_child_scopes()
 {
     if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
