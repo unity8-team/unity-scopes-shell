@@ -240,15 +240,6 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         }
         QString displayName = QString::fromStdString(_("Display results from %1")).arg(QString(scopes_metadata[id]->display_name().c_str()));
 
-        QSharedPointer<QTimer> timer(new QTimer());
-        timer->setProperty("setting_id", id);
-        timer->setSingleShot(true);
-        timer->setInterval(m_settingsTimeout);
-        timer->setTimerType(Qt::VeryCoarseTimer);
-        connect(timer.data(), SIGNAL(timeout()), this,
-                SLOT(settings_timeout()));
-        m_child_scopes_timers[id] = timer;
-
         QSharedPointer<Data> setting(
                 new Data(id, displayName, QStringLiteral("boolean"), QVariantMap(), QVariant(), QVariant::Bool));
 
@@ -297,6 +288,18 @@ bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
         {
             case Roles::RoleValue:
             {
+                if (!m_child_scopes_timers.contains(data->id))
+                {
+                    QSharedPointer<QTimer> timer(new QTimer());
+                    timer->setProperty("setting_id", data->id);
+                    timer->setSingleShot(true);
+                    timer->setInterval(m_settingsTimeout);
+                    timer->setTimerType(Qt::VeryCoarseTimer);
+                    connect(timer.data(), SIGNAL(timeout()), this,
+                            SLOT(settings_timeout()));
+                    m_child_scopes_timers[data->id] = timer;
+                }
+
                 QSharedPointer<QTimer> timer = m_child_scopes_timers[data->id];
                 timer->setProperty("index", row - m_data.size());
                 timer->setProperty("value", value);
