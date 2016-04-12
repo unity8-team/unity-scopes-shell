@@ -132,11 +132,6 @@ private:
     QMap<QString, QVariant> m_allData; // attribute values (field name -> value)
     QHash<int, QList<QStringList>> m_columnLayouts; // number of columns -> list of lists of widget ids
 
-    // Count of widgets in given column, increased as widgets are received and moved/inserted into column models. Note this may be smaller
-    // than the number of widgets currently present in given column model, because when preview is updated, some widgets may not be received
-    // and will be removed when the query finishes
-    QMap<int, int> m_widgetsInColumnCount;
-
     QList<PreviewWidgetModel*> m_previewWidgetModels; // column models (number of columns is set by the shell at this point).
     QMap<QString, QSharedPointer<PreviewWidgetData>> m_previewWidgets; // all widgets, regardless of their columns
     QList<QSharedPointer<PreviewWidgetData>> m_previewWidgetsOrdered; // all widgets, in the order they were received

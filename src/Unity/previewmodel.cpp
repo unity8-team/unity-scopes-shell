@@ -400,9 +400,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
             }
         }
         if (destinationColumnIndex < 0) {
-#ifdef VERBOSE_MODEL_UPDATES
-            qDebug() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetData->id << " not defined in column layouts";
-#endif    
+            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetData->id << " not defined in column layouts";
             destinationColumnIndex = 0;
         }
     } else {
@@ -412,11 +410,13 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
 
     // if destinationRowIndex is -1, need to move after last received
     if (destinationRowIndex == -1) {
-        auto it = m_widgetsInColumnCount.constFind(destinationColumnIndex);
-        if (it != m_widgetsInColumnCount.cend()) {
-            destinationRowIndex = it.value() + 1;
-        } else {
-            destinationRowIndex = 0;
+        Q_ASSERT(destinationColumnIndex >= 0);
+        PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
+        destinationRowIndex = 0;
+        auto widget = widgetModel->widget(destinationRowIndex);
+        while (widget != nullptr && widget->received) {
+            ++destinationRowIndex;
+            widget = widgetModel->widget(destinationRowIndex);
         }
     }
 
@@ -434,7 +434,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
             while (widget != nullptr && widget->received) {
                 ++destinationRowIndex;
                 widget = widgetModel->widget(destinationRowIndex);
-            } 
+            }
             widgetModel->insertWidget(widgetData, destinationRowIndex);
         } else {
             if (index != destinationRowIndex) {
@@ -447,7 +447,6 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
                 widgetModel->updateWidget(widgetData, destinationRowIndex);
             }
         }
-        m_widgetsInColumnCount.insert(destinationColumnIndex, destinationRowIndex);
     }
 }
 
@@ -566,7 +565,6 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
         for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); it++) {
             it.value()->received = false;
         }
-        m_widgetsInColumnCount.clear();
 
         m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
     } catch (std::exception& e) {
