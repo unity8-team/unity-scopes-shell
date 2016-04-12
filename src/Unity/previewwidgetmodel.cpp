@@ -60,10 +60,14 @@ void PreviewWidgetModel::addReplaceWidget(QSharedPointer<PreviewWidgetData> cons
         Q_ASSERT(m_previewWidgetsOrdered.size() - 1 == position);
     } else {
         // Replace existing widget at given position
+        auto oldWidget = m_previewWidgetsOrdered.at(position);
 #ifdef VERBOSE_MODEL_UPDATES
         qDebug() << "PreviewWidgetModel::insertWidget(): replacing widget at position" << position << "with" << widget->id;
 #endif
         m_previewWidgetsOrdered.replace(position, widget);
+        if (oldWidget) {
+            m_previewWidgetsIndex.remove(oldWidget->id);
+        }
         m_previewWidgetsIndex.insert(widget->id, position);
         auto const idx = createIndex(position, 0);
         Q_EMIT dataChanged(idx, idx);
