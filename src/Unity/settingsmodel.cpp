@@ -99,6 +99,8 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
 
 QVariant SettingsModel::data(const QModelIndex& index, int role) const
 {
+    QMutexLocker locker(&m_mutex);
+
     int row = index.row();
     QVariant result;
 
@@ -164,6 +166,8 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
 
 QVariant SettingsModel::value(const QString& id) const
 {
+    QMutexLocker locker(&m_mutex);
+
     m_settings->sync();
 
     // Check for the setting id in the child scopes list first, in case the
@@ -191,6 +195,8 @@ QVariant SettingsModel::value(const QString& id) const
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
 {
+    QMutexLocker locker(&m_mutex);
+
     if (!scopes_metadata.contains(m_scopeId) ||
         !scopes_metadata[m_scopeId]->is_aggregator())
     {
@@ -259,6 +265,8 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
         int role)
 {
+    QMutexLocker locker(&m_mutex);
+
     int row = index.row();
     QVariant result;
 
@@ -310,16 +318,20 @@ int SettingsModel::rowCount(const QModelIndex&) const
 
 int SettingsModel::count() const
 {
+    QMutexLocker locker(&m_mutex);
     return m_data.size() + m_child_scopes_data.size();
 }
 
 bool SettingsModel::require_child_scopes_refresh() const
 {
+    QMutexLocker locker(&m_mutex);
     return m_requireChildScopesRefresh;
 }
 
 void SettingsModel::settings_timeout()
 {
+    QMutexLocker locker(&m_mutex);
+
     QObject *timer = sender();
     if (!timer)
     {

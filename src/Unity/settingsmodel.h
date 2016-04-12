@@ -28,6 +28,7 @@
 
 #include <QAbstractListModel>
 #include <QList>
+#include <QMutex>
 #include <QSharedPointer>
 #include <QSettings>
 
@@ -90,6 +91,7 @@ protected Q_SLOTS:
     void settings_timeout();
 
 protected:
+    mutable QMutex m_mutex;
     QString m_scopeId;
     unity::scopes::ScopeProxy m_scopeProxy;
     int m_settingsTimeout;

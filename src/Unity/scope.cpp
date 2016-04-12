@@ -126,6 +126,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 
 Scope::~Scope()
 {
+    m_childScopesFuture.waitForFinished();
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
@@ -909,7 +910,7 @@ bool Scope::require_child_scopes_refresh() const
 void Scope::update_child_scopes(bool wait_until_complete) const
 {
     // only run the update if child scopes have changed
-    if (m_childScopesDirty)
+    if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
         // reset the flag so that re-entering this method won't restart the update unnecessarily
         m_childScopesDirty = false;
@@ -920,10 +921,7 @@ void Scope::update_child_scopes(bool wait_until_complete) const
         // run the update in a seperate thread
         m_childScopesFuture = QtConcurrent::run([this]
         {
-            if (m_settingsModel && m_scopesInstance)
-            {
-                m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
-            }
+            m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
         });
     }
 
