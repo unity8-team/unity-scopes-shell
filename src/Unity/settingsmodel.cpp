@@ -258,6 +258,7 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
     if (reset) {
         endResetModel();
+        locker.unlock();
         Q_EMIT countChanged();
     }
 }
@@ -372,5 +373,6 @@ void SettingsModel::settings_timeout()
         qWarning() << "No such setting:" << setting_id;
     }
 
+    locker.unlock();
     Q_EMIT settingsChanged();
 }
