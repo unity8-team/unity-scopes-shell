@@ -137,7 +137,7 @@ public:
     int activeFiltersCount() const override;
 
     bool require_child_scopes_refresh() const;
-    void update_child_scopes(bool wait_until_complete = false) const;
+    void update_child_scopes();
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;

@@ -907,7 +907,7 @@ bool Scope::require_child_scopes_refresh() const
     return false;
 }
 
-void Scope::update_child_scopes(bool wait_until_complete) const
+void Scope::update_child_scopes()
 {
     // only run the update if child scopes have changed
     if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
@@ -923,12 +923,6 @@ void Scope::update_child_scopes(bool wait_until_complete) const
         {
             m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
         });
-    }
-
-    // only wait for the update to complete if wait_until_complete has been set
-    if (wait_until_complete)
-    {
-        m_childScopesFuture.waitForFinished();
     }
 }
 
