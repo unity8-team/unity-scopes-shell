@@ -45,7 +45,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);
+    void addReplaceWidget(QSharedPointer<PreviewWidgetData> const&, int);
     void addWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
     void updateWidget(QSharedPointer<PreviewWidgetData> const&);
     void updateWidget(QSharedPointer<PreviewWidgetData> const&, int);

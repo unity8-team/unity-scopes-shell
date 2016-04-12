@@ -40,8 +40,10 @@ PreviewWidgetModel::PreviewWidgetModel(QObject* parent)
 {
 }
 
-void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
+void PreviewWidgetModel::addReplaceWidget(QSharedPointer<PreviewWidgetData> const& widget, int position)
 {
+    // If the position of new widget is past m_previewWidgetsOrdered list, then add
+    // dummy (null) rows.
     if (position >= m_previewWidgetsOrdered.size()) {
         const int dummyRows = position - m_previewWidgetsOrdered.size();
 #ifdef VERBOSE_MODEL_UPDATES
@@ -57,12 +59,13 @@ void PreviewWidgetModel::insertWidget(QSharedPointer<PreviewWidgetData> const& w
         
         Q_ASSERT(m_previewWidgetsOrdered.size() - 1 == position);
     } else {
+        // Replace existing widget at given position
 #ifdef VERBOSE_MODEL_UPDATES
         qDebug() << "PreviewWidgetModel::insertWidget(): replacing widget at position" << position << "with" << widget->id;
 #endif
         m_previewWidgetsOrdered.replace(position, widget);
         m_previewWidgetsIndex.insert(widget->id, position);
-        auto idx = createIndex(position, 0);
+        auto const idx = createIndex(position, 0);
         Q_EMIT dataChanged(idx, idx);
     }
 }
@@ -89,10 +92,10 @@ void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& w
     }
 
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row << ",data=" << widget->data;
+    qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << row << ", data" << widget->data;
 #endif
     m_previewWidgetsOrdered.replace(row, widget);
-    const QModelIndex idx = createIndex(row, 0);
+    auto const idx = createIndex(row, 0);
     Q_EMIT dataChanged(idx, idx);
 }
 
@@ -102,10 +105,10 @@ void PreviewWidgetModel::updateWidget(QSharedPointer<PreviewWidgetData> const& u
         auto widget = m_previewWidgetsOrdered.at(i);
         if (widget != nullptr && updatedWidget->id == widget->id) {
 #ifdef VERBOSE_MODEL_UPDATES
-            qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i << ",data=" << widget->data;
+            qDebug() << "PreviewWidgetModel::updateWidget(): updating widget" << widget->id << " at row" << i << ", data" << widget->data;
 #endif
             m_previewWidgetsOrdered.replace(i, updatedWidget);
-            const QModelIndex idx = createIndex(i, 0);
+            auto const idx = createIndex(i, 0);
             Q_EMIT dataChanged(idx, idx);
             break;
         }
@@ -138,7 +141,7 @@ bool PreviewWidgetModel::widgetChanged(PreviewWidgetData* widget)
 
 void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& widget)
 {
-    int index = widgetIndex(widget->id);
+    const int index = widgetIndex(widget->id);
     if (index >= 0) {
 #ifdef VERBOSE_MODEL_UPDATES
         qDebug() << "PreviewWidgetModel::removeWidget(): removing widget" << widget->id << "at row" << index;
@@ -163,6 +166,9 @@ int PreviewWidgetModel::widgetIndex(QString const &widgetId) const
 
 void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& widget, int sourceRow, int destRow)
 {
+    if (sourceRow == destRow) {
+        return;
+    }
     if (destRow < 0 || destRow >= m_previewWidgetsOrdered.size()) {
         qWarning() << "PreviewWidgetModel::moveWidget(): invalid destRow" << destRow;
         return;
@@ -182,6 +188,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
 #endif
     beginMoveRows(QModelIndex(), sourceRow, sourceRow, QModelIndex(), destRow + (destRow > sourceRow ? 1 : 0));
     m_previewWidgetsOrdered.move(sourceRow, destRow);
+    // Update m_previewWidgetsIndex lookup
     if (sourceRow > destRow) {
         for (int i = destRow + 1; i<sourceRow; i++) {
             auto widget = m_previewWidgetsOrdered.at(i);

@@ -29,6 +29,7 @@
 #include <QMultiMap>
 #include <QStringList>
 #include <QPointer>
+#include <QPair>
 #include <QUuid>
 
 #include <unity/scopes/PreviewWidget.h>
@@ -122,6 +123,7 @@ private:
     void setColumnLayouts(unity::scopes::ColumnLayoutList const&);
     void updatePreviewData(QHash<QString, QVariant> const&);
     PreviewWidgetModel* createExpandableWidgetModel(unity::scopes::PreviewWidget const&, PreviewWidgetData &);
+    QPair<int, int> determinePositionFromLayout(QString const&) const;
     void addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const&);
     void processComponents(QHash<QString, QString> const& components, QVariantMap& out_attributes);
     void dispatchPreview(unity::scopes::Variant const& extra_data = unity::scopes::Variant());

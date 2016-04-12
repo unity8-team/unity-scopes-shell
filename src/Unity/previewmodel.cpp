@@ -374,15 +374,10 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
     }
 }
 
-void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
+QPair<int, int> PreviewModel::determinePositionFromLayout(QString const& widgetId) const
 {
-#ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "PreviewModel::addWidgetToColumnModel(): processing widget" << widgetData->id;
-#endif      
     //
     // Find the column and row based on the column layout definition.
-    // If column layout hasn't been defined for current screen setup or
-    // widget is not present in the layout, then it should be added after last inserted widget.
     int destinationColumnIndex = -1;
     int destinationRowIndex = -1;
 
@@ -394,14 +389,14 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         QList<QStringList> const& columnLayout = m_columnLayouts.value(m_widgetColumnCount);
         // find the row & col
         for (int i = 0; i < columnLayout.size(); i++) {
-            destinationRowIndex = columnLayout[i].indexOf(widgetData->id);
+            destinationRowIndex = columnLayout[i].indexOf(widgetId);
             if (destinationRowIndex >= 0) {
                 destinationColumnIndex = i;
                 break;
             }
         }
         if (destinationColumnIndex < 0) {
-            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetData->id << " not defined in column layouts";
+            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetId << " not defined in column layouts";
             destinationColumnIndex = 0;
         }
     } else {
@@ -409,6 +404,18 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
     }
 
     Q_ASSERT(destinationColumnIndex >= 0);
+    return qMakePair(destinationColumnIndex, destinationRowIndex);
+}
+    
+void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
+{
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::addWidgetToColumnModel(): processing widget" << widgetData->id;
+#endif
+    auto const pos = determinePositionFromLayout(widgetData->id);
+    int destinationColumnIndex = pos.first;
+    int destinationRowIndex = pos.second;
+    
     PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
     Q_ASSERT(widgetModel);
     
@@ -422,17 +429,23 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
     }
 
     //
-    // Place / move widget in the column model
+    // Place / move widget in the column model.
+    // We need to check if we have widget with same id already in the model (from previous preview).
 #ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "PreviewModel::addWidgetToColumnModel(): destination for widget" << widgetData->id << "is row" << destinationRowIndex << ", column" << destinationColumnIndex;
 #endif    
     const int currentPosition = widgetModel->widgetIndex(widgetData->id);
     if (currentPosition < 0) {
+        // Widget with given id not present in the model.
+        // Make sure we do not override another just received widget with this one - this can
+        // happen if another widget was not included in the layout and now we have a widget in the layout
+        // which wants to take same position. So, iterate starting from destinationRowIndex to make sure we don't
+        // overwrite a widget whose received flag is true.
         auto widget = widgetModel->widget(destinationRowIndex);
         while (widget != nullptr && widget->received) {
             widget = widgetModel->widget(++destinationRowIndex);
         }
-        widgetModel->insertWidget(widgetData, destinationRowIndex);
+        widgetModel->addReplaceWidget(widgetData, destinationRowIndex);
     } else {
         if (currentPosition != destinationRowIndex) {
             widgetModel->moveWidget(widgetData, currentPosition, destinationRowIndex);
