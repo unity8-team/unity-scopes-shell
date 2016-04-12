@@ -250,8 +250,8 @@ private:
     bool m_favorite;
     bool m_initialQueryDone;
 
-    mutable bool m_childScopesDirty;
-    mutable QFuture<void> m_childScopesFuture;
+    bool m_childScopesDirty;
+    QFuture<void> m_childScopesFuture;
 
     QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;
