@@ -118,7 +118,9 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
 
     setProcessingAction(false);
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "PreviewModel::processPreviewChunk(): widgets#" << widgets.size();
+#endif
 
     setColumnLayouts(columns);
     addWidgetDefinitions(widgets);
@@ -130,7 +132,6 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
         for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); ) {
             auto widget = it.value();
             if (!widget->received) {
-                qDebug() << "Widget" << widget->id << "not received";
                 for (auto model: m_previewWidgetModels) {
                     model->removeWidget(widget);
                 }
@@ -379,9 +380,9 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
     qDebug() << "PreviewModel::addWidgetToColumnModel(): processing widget" << widgetData->id;
 #endif      
     //
-    // Insert widget in the column based on the column layout definition.
+    // Find the column and row based on the column layout definition.
     // If column layout hasn't been defined for current screen setup or
-    // widget is not present in the layout, then add it after last inserted widget.
+    // widget is not present in the layout, then it should be added after last inserted widget.
     int destinationColumnIndex = -1;
     int destinationRowIndex = -1;
 
@@ -404,48 +405,43 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
             destinationColumnIndex = 0;
         }
     } else {
-      // TODO: ask the shell
       destinationColumnIndex = 0;
     }
 
-    // if destinationRowIndex is -1, need to move after last received
+    Q_ASSERT(destinationColumnIndex >= 0);
+    PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
+    Q_ASSERT(widgetModel);
+    
+    // if destinationRowIndex is -1, need to place it after last received
     if (destinationRowIndex == -1) {
-        Q_ASSERT(destinationColumnIndex >= 0);
-        PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
         destinationRowIndex = 0;
         auto widget = widgetModel->widget(destinationRowIndex);
         while (widget != nullptr && widget->received) {
-            ++destinationRowIndex;
-            widget = widgetModel->widget(destinationRowIndex);
+            widget = widgetModel->widget(++destinationRowIndex);
         }
     }
 
-    if (destinationColumnIndex >= 0 && destinationColumnIndex < m_previewWidgetModels.size()) {
+    //
+    // Place / move widget in the column model
 #ifdef VERBOSE_MODEL_UPDATES
-        qDebug() << "PreviewModel::addWidgetToColumnModel(): destination for widget" << widgetData->id << "is row" << destinationRowIndex << ", column" << destinationColumnIndex;
+    qDebug() << "PreviewModel::addWidgetToColumnModel(): destination for widget" << widgetData->id << "is row" << destinationRowIndex << ", column" << destinationColumnIndex;
 #endif    
-        PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
-
-        Q_ASSERT(widgetModel);
-
-        int index = widgetModel->widgetIndex(widgetData->id);
-        if (index < 0) {
-            auto widget = widgetModel->widget(destinationRowIndex);
-            while (widget != nullptr && widget->received) {
-                ++destinationRowIndex;
-                widget = widgetModel->widget(destinationRowIndex);
-            }
-            widgetModel->insertWidget(widgetData, destinationRowIndex);
-        } else {
-            if (index != destinationRowIndex) {
-                widgetModel->moveWidget(widgetData, index, destinationRowIndex);
-            }
-            // Compare widget content to see if it needs updating.
-            // Icon-actions needs to be updated every time because unity8 requires it to properly deal
-            // with temporaryIcon.
-            if ((widgetData->type == "icon-actions") || (*widgetData != *widgetModel->widget(destinationRowIndex))) {
-                widgetModel->updateWidget(widgetData, destinationRowIndex);
-            }
+    const int currentPosition = widgetModel->widgetIndex(widgetData->id);
+    if (currentPosition < 0) {
+        auto widget = widgetModel->widget(destinationRowIndex);
+        while (widget != nullptr && widget->received) {
+            widget = widgetModel->widget(++destinationRowIndex);
+        }
+        widgetModel->insertWidget(widgetData, destinationRowIndex);
+    } else {
+        if (currentPosition != destinationRowIndex) {
+            widgetModel->moveWidget(widgetData, currentPosition, destinationRowIndex);
+        }
+        // Compare widget content to see if it needs updating.
+        // Icon-actions needs to be updated every time because unity8 requires it to properly deal
+        // with temporaryIcon.
+        if ((widgetData->type == "icon-actions") || (*widgetData != *widgetModel->widget(destinationRowIndex))) {
+            widgetModel->updateWidget(widgetData, destinationRowIndex);
         }
     }
 }
@@ -513,7 +509,7 @@ int PreviewModel::rowCount(const QModelIndex&) const
 
 QVariant PreviewModel::data(const QModelIndex& index, int role) const
 {
-    int row = index.row();
+    const int row = index.row();
     if (row >= m_previewWidgetModels.size())
     {
         qWarning() << "PreviewModel::data - invalid index" << row << "size"
@@ -523,7 +519,7 @@ QVariant PreviewModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case RoleColumnModel:
-            return QVariant::fromValue(m_previewWidgetModels.at(index.row()));
+            return QVariant::fromValue(m_previewWidgetModels.at(row));
         default:
             return QVariant();
     }

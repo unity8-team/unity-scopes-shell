@@ -214,7 +214,7 @@ int PreviewWidgetModel::rowCount(const QModelIndex&) const
 
 QSharedPointer<PreviewWidgetData> PreviewWidgetModel::widget(int index) const
 {
-    if (index < m_previewWidgetsOrdered.size()) {
+    if (index >= 0 && index < m_previewWidgetsOrdered.size()) {
         return m_previewWidgetsOrdered.at(index);
     }
     return QSharedPointer<PreviewWidgetData>();
@@ -222,7 +222,7 @@ QSharedPointer<PreviewWidgetData> PreviewWidgetModel::widget(int index) const
 
 QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
 {
-    int row = index.row();
+    const int row = index.row();
     if (row >= m_previewWidgetsOrdered.size())
     {
         qWarning() << "PreviewWidgetModel::data - invalid index" << row << "size"
@@ -230,7 +230,7 @@ QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    auto widget_data = m_previewWidgetsOrdered.at(row);
+    auto const widget_data = m_previewWidgetsOrdered.at(row);
     if (!widget_data) {
         return QVariant();
     }
