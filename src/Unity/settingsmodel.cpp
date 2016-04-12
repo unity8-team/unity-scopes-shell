@@ -249,9 +249,10 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
 
     if (reset) {
         endResetModel();
-        locker.unlock();
-        Q_EMIT countChanged();
     }
+
+    locker.unlock();
+    Q_EMIT countChanged();
 }
 
 bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,

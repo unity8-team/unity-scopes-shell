@@ -249,6 +249,7 @@ void Scope::metadataRefreshed()
 {
     // refresh Settings view if needed
     if (require_child_scopes_refresh()) {
+        m_childScopesDirty = true;
         update_child_scopes();
     }
 
@@ -894,7 +895,6 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    update_child_scopes(true);
     return m_settingsModel.data();
 }
 
