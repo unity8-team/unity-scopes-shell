@@ -21,6 +21,7 @@
 #define NG_SCOPE_H
 
 // Qt
+#include <QFuture>
 #include <QObject>
 #include <QString>
 #include <QTimer>
@@ -136,7 +137,7 @@ public:
     int activeFiltersCount() const override;
 
     bool require_child_scopes_refresh() const;
-    void update_child_scopes();
+    void update_child_scopes(bool wait_until_complete = false) const;
     QString searchQuery() const override;
     QString noResultsHint() const override;
     QString formFactor() const override;
@@ -243,12 +244,14 @@ private:
     bool m_isActive;
     bool m_searchInProgress;
     bool m_activationInProgress;
-    bool m_childScopesDirty;
     bool m_resultsDirty;
     bool m_delayedSearchProcessing;
     bool m_hasNavigation;
     bool m_favorite;
     bool m_initialQueryDone;
+
+    mutable bool m_childScopesDirty;
+    mutable QFuture<void> m_childScopesFuture;
 
     QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;
