@@ -153,6 +153,13 @@ void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& w
         beginRemoveRows(QModelIndex(), index, index);
         m_previewWidgetsOrdered.removeAt(index);
         m_previewWidgetsIndex.remove(widget->id);
+        // Update index lookup
+        for (int i = index; i<m_previewWidgetsOrdered.size(); i++) {
+            auto widget = m_previewWidgetsOrdered.at(i);
+            if (widget) {
+                m_previewWidgetsIndex[widget->id]--;
+            }
+        }
         endRemoveRows();
     } else {
         qWarning() << "PreviewWidgetModel::removeWidget(): widget" << widget->id << "doesn't exist in the column model";
