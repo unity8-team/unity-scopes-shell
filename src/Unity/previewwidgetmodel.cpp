@@ -195,7 +195,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
         return;
     }
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "Moving widget" << widget->id << "from" << sourceRow << "to" << destRow;
+    qDebug() << "PreviewWidgetModel::moveWidget(): moving widget" << widget->id << "from" << sourceRow << "to" << destRow;
 #endif
     beginMoveRows(QModelIndex(), sourceRow, sourceRow, QModelIndex(), destRow + (destRow > sourceRow ? 1 : 0));
     m_previewWidgetsOrdered.move(sourceRow, destRow);
@@ -206,7 +206,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
             if (widget) {
                 auto it = m_previewWidgetsIndex.find(widget->id);
                 if (it != m_previewWidgetsIndex.end()) {
-                    it.value() = it.value() + 1;
+                    it.value() = i;
                 }
             }
         }
@@ -216,7 +216,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
             if (widget) {
                 auto it = m_previewWidgetsIndex.find(widget->id);
                 if (it != m_previewWidgetsIndex.end()) {
-                    it.value() = it.value() - 1;
+                    it.value() = i;
                 }
             }
         }

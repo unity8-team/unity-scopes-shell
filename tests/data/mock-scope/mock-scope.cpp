@@ -128,7 +128,7 @@ public:
             res["album"] = "FooAlbum";
             reply->push(res);
         }
-        else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change" || query_ == "incomplete-layout")
+        else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change" || query_ == "incomplete-layout" || query_ == "preview-replace-with-removal")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
@@ -352,6 +352,47 @@ public:
             reply->register_layout({l1});
             PreviewWidgetList widgets({w2, w1, w3, w4});
 
+            reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("preview-replace-with-removal") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            w1.add_attribute_value("source", Variant("foo.png"));
+            PreviewWidget w2("hdr", "header");
+            w2.add_attribute_value("title", Variant("Preview title"));
+            PreviewWidget w3("desc", "text");
+            w3.add_attribute_value("text", Variant("Lorum ipsum..."));
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("open")},
+                {"label", Variant("Open")},
+                {"uri", Variant("application:///tmp/non-existent.desktop")}
+            });
+            builder.add_tuple({
+                {"id", Variant("download")},
+                {"label", Variant("Download")}
+            });
+            builder.add_tuple({
+                {"id", Variant("hide")},
+                {"label", Variant("Hide")}
+            });
+            w4.add_attribute_value("actions", builder.end());
+
+            ColumnLayout l1(1);
+            PreviewWidgetList widgets;
+            if (!scope_data_.is_null()) {
+                PreviewWidget extra("extra", "text");
+                extra.add_attribute_value("text", Variant("got scope data"));
+                widgets = {w2, w1, extra};
+                l1.add_column({"hdr", "img", "extra"});
+            } else {
+                widgets = {w1, w2, w3, w4};
+                l1.add_column({"img", "hdr", "desc", "actions"});
+            }
+            reply->register_layout({l1});
             reply->push(widgets);
             return;
         }
