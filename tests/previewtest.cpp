@@ -484,7 +484,7 @@ private Q_SLOTS:
             .column(
                 shm::PreviewMatcher()
                 .widget(shm::PreviewWidgetMatcher("hdr"))
-                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
                 .widget(shm::PreviewWidgetMatcher("extra"))
             )
             .match(previewView2->widgets())

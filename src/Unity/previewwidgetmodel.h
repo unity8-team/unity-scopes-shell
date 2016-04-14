@@ -60,6 +60,7 @@ public:
 private Q_SLOTS:
 
 private:
+    void dumpLookups(QString const&);
     QList<QSharedPointer<PreviewWidgetData>> m_previewWidgetsOrdered;
     QMap<QString, int> m_previewWidgetsIndex;
 

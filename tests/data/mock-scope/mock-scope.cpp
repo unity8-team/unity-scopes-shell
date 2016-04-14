@@ -358,26 +358,14 @@ public:
         else if (result().uri().find("preview-replace-with-removal") != std::string::npos)
         {
             PreviewWidget w1("img", "image");
-            w1.add_attribute_value("source", Variant("foo.png"));
             PreviewWidget w2("hdr", "header");
-            w2.add_attribute_value("title", Variant("Preview title"));
             PreviewWidget w3("desc", "text");
-            w3.add_attribute_value("text", Variant("Lorum ipsum..."));
             PreviewWidget w4("actions", "actions");
 
             VariantBuilder builder;
             builder.add_tuple({
-                {"id", Variant("open")},
-                {"label", Variant("Open")},
-                {"uri", Variant("application:///tmp/non-existent.desktop")}
-            });
-            builder.add_tuple({
                 {"id", Variant("download")},
                 {"label", Variant("Download")}
-            });
-            builder.add_tuple({
-                {"id", Variant("hide")},
-                {"label", Variant("Hide")}
             });
             w4.add_attribute_value("actions", builder.end());
 
@@ -386,8 +374,8 @@ public:
             if (!scope_data_.is_null()) {
                 PreviewWidget extra("extra", "text");
                 extra.add_attribute_value("text", Variant("got scope data"));
-                widgets = {w2, w1, extra};
-                l1.add_column({"hdr", "img", "extra"});
+                widgets = {w2, w4, extra};
+                l1.add_column({"hdr", "actions", "extra"});
             } else {
                 widgets = {w1, w2, w3, w4};
                 l1.add_column({"img", "hdr", "desc", "actions"});

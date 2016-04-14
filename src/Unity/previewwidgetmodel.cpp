@@ -47,7 +47,7 @@ void PreviewWidgetModel::addReplaceWidget(QSharedPointer<PreviewWidgetData> cons
     if (position >= m_previewWidgetsOrdered.size()) {
         const int dummyRows = position - m_previewWidgetsOrdered.size();
 #ifdef VERBOSE_MODEL_UPDATES
-        qDebug() << "PreviewWidgetModel::insertWidget(): adding" << dummyRows << "dummy rows";
+        qDebug() << "PreviewWidgetModel::addReplaceWidget(): adding" << dummyRows << "dummy rows";
 #endif
         beginInsertRows(QModelIndex(), m_previewWidgetsOrdered.size(), position);
         for (int i = 0; i<dummyRows; i++) {
@@ -62,16 +62,21 @@ void PreviewWidgetModel::addReplaceWidget(QSharedPointer<PreviewWidgetData> cons
         // Replace existing widget at given position
         auto oldWidget = m_previewWidgetsOrdered.at(position);
 #ifdef VERBOSE_MODEL_UPDATES
-        qDebug() << "PreviewWidgetModel::insertWidget(): replacing widget at position" << position << "with" << widget->id;
+        qDebug() << "PreviewWidgetModel::addReplaceWidget(): replacing widget at position" << position << "with" << widget->id;
 #endif
         m_previewWidgetsOrdered.replace(position, widget);
         if (oldWidget) {
+            qDebug() << "PreviewWidgetModel::addReplaceWidget(): replaced widget" << oldWidget->id << "at lookup index" << m_previewWidgetsIndex[oldWidget->id];
             m_previewWidgetsIndex.remove(oldWidget->id);
         }
         m_previewWidgetsIndex.insert(widget->id, position);
         auto const idx = createIndex(position, 0);
         Q_EMIT dataChanged(idx, idx);
     }
+
+#ifdef VERBOSE_MODEL_UPDATES
+    dumpLookups("addReplaceWidget");
+#endif
 }
 
 void PreviewWidgetModel::addWidgets(QList<QSharedPointer<PreviewWidgetData>> const& widgetList)
@@ -150,20 +155,28 @@ void PreviewWidgetModel::removeWidget(QSharedPointer<PreviewWidgetData> const& w
 #ifdef VERBOSE_MODEL_UPDATES
         qDebug() << "PreviewWidgetModel::removeWidget(): removing widget" << widget->id << "at row" << index;
 #endif
+        Q_ASSERT(m_previewWidgetsOrdered.at(index) != nullptr);
+        Q_ASSERT(m_previewWidgetsOrdered.at(index)->id == widget->id);
+        Q_ASSERT(m_previewWidgetsIndex[widget->id] == index);
+        
         beginRemoveRows(QModelIndex(), index, index);
         m_previewWidgetsOrdered.removeAt(index);
         m_previewWidgetsIndex.remove(widget->id);
         // Update index lookup
         for (int i = index; i<m_previewWidgetsOrdered.size(); i++) {
-            auto widget = m_previewWidgetsOrdered.at(i);
-            if (widget) {
-                m_previewWidgetsIndex[widget->id]--;
+            auto wdata = m_previewWidgetsOrdered.at(i);
+            if (wdata) {
+                m_previewWidgetsIndex[wdata->id] = i;
             }
         }
         endRemoveRows();
     } else {
-        qWarning() << "PreviewWidgetModel::removeWidget(): widget" << widget->id << "doesn't exist in the column model";
+        qDebug() << "PreviewWidgetModel::removeWidget(): widget" << widget->id << "doesn't exist in the column model";
     }
+
+#ifdef VERBOSE_MODEL_UPDATES
+    dumpLookups("removeWidget");
+#endif
 }
 
 int PreviewWidgetModel::widgetIndex(QString const &widgetId) const
@@ -201,7 +214,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
     m_previewWidgetsOrdered.move(sourceRow, destRow);
     // Update m_previewWidgetsIndex lookup
     if (sourceRow > destRow) {
-        for (int i = destRow + 1; i<sourceRow; i++) {
+        for (int i = destRow + 1; (i<=sourceRow && i<m_previewWidgetsOrdered.size()); i++) {
             auto widget = m_previewWidgetsOrdered.at(i);
             if (widget) {
                 auto it = m_previewWidgetsIndex.find(widget->id);
@@ -211,7 +224,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
             }
         }
     } else {
-        for (int i = sourceRow + 1; i<destRow; i++) {
+        for (int i = sourceRow + 1; (i<=destRow && i<m_previewWidgetsOrdered.size()); i++) {
             auto widget = m_previewWidgetsOrdered.at(i);
             if (widget) {
                 auto it = m_previewWidgetsIndex.find(widget->id);
@@ -223,6 +236,10 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
     }
     m_previewWidgetsIndex.insert(widget->id, destRow);
     endMoveRows();
+    
+#ifdef VERBOSE_MODEL_UPDATES
+    dumpLookups("moveWidget");
+#endif
 }
 
 int PreviewWidgetModel::rowCount(const QModelIndex&) const
@@ -264,4 +281,17 @@ QVariant PreviewWidgetModel::data(const QModelIndex& index, int role) const
     }
 }
 
+void PreviewWidgetModel::dumpLookups(QString const& msg)
+{
+    qDebug() << "--- Widget lookups dump" << msg << "---";
+    for (int i = 0; i<m_previewWidgetsOrdered.size(); i++) {
+        auto wdata = m_previewWidgetsOrdered.at(i);
+        if (wdata) {
+            qDebug() << "Widget" << wdata->id << "at position" << i << ", lookup index" << m_previewWidgetsIndex[wdata->id];
+        } else {
+            qDebug() << "Empty widget slot at index" << i;
+        }
+    }
+}
+    
 } // namespace scopes_ng
