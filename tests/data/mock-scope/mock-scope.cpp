@@ -335,7 +335,11 @@ public:
             w1.add_attribute_value("source", Variant("foo.png"));
             PreviewWidget w2("hdr", "header");
             w2.add_attribute_value("title", Variant("Preview title"));
-            PreviewWidget w3("desc", "text");
+            PreviewWidget w3("desc", "expandable");
+            PreviewWidget w31("sub1", "text");
+            PreviewWidget w32("sub2", "text");
+            w3.add_widget(w31);
+            w3.add_widget(w32);
             w3.add_attribute_value("text", Variant("Lorum ipsum..."));
             PreviewWidget w4("actions", "actions");
 
@@ -402,9 +406,11 @@ public:
             ColumnLayout l1(1);
             PreviewWidgetList widgets;
             if (!scope_data_.is_null()) {
+                w1.add_attribute_value("source", Variant("foo.png"));
                 widgets = {w1, w2, w3, w4};
                 l1.add_column({"hdr", "desc", "actions", "img"});
             } else {
+                w1.add_attribute_value("source", Variant("bar.png"));
                 widgets = {w1, w2, w3, w4};
                 l1.add_column({"img", "hdr", "desc", "actions"});
             }

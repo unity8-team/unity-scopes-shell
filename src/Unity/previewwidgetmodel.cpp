@@ -224,7 +224,7 @@ void PreviewWidgetModel::moveWidget(QSharedPointer<PreviewWidgetData> const& wid
             }
         }
     } else {
-        for (int i = sourceRow + 1; (i<=destRow && i<m_previewWidgetsOrdered.size()); i++) {
+        for (int i = sourceRow; (i<=destRow && i<m_previewWidgetsOrdered.size()); i++) {
             auto widget = m_previewWidgetsOrdered.at(i);
             if (widget) {
                 auto it = m_previewWidgetsIndex.find(widget->id);
