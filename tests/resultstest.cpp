@@ -1094,13 +1094,14 @@ private Q_SLOTS:
                 .match(resultsView->categories())
         );
 
-        resultsView->setQuery("search5");
+        resultsView->setQuery("search7");
         QVERIFY_MATCHRESULT(
             shm::CategoryListMatcher()
             .hasExactly(1)
             .category(shm::CategoryMatcher("cat2")
-                      .result(shm::ResultMatcher("cat2_uri0"))
+                      .result(shm::ResultMatcher("cat2_uri2"))
                       .result(shm::ResultMatcher("cat2_uri1"))
+                      .result(shm::ResultMatcher("cat2_uri0"))
                 )
             .match(resultsView->categories())
             );

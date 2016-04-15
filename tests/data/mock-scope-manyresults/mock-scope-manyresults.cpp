@@ -150,6 +150,15 @@ public:
                 reply->push(res);
             }
         }
+        else if (query_ == "search7")
+        {
+            for (int i = 2; i>=0; i--) {
+                CategorisedResult res(cat2);
+                res.set_uri("cat2_uri" + std::to_string(i));
+                res.set_title("result");
+                reply->push(res);
+            }
+        }
         else if (query_ == "lots_of_results")
         {
             // 2000 items
@@ -157,7 +166,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
 
                 if (i % 100 == 0) {
@@ -172,7 +181,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
 
                 if (i % 100 == 0) {
@@ -187,7 +196,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
 
                 if (i % 100 == 0) {
@@ -202,7 +211,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i*2));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
 
                 if (i % 100 == 0) {
@@ -217,7 +226,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(5000 + i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
 
                 if (i % 100 == 0) {
@@ -232,7 +241,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
             }
         }
@@ -243,7 +252,7 @@ public:
             {
                 CategorisedResult res(cat1);
                 res.set_uri("cat1_uri" + std::to_string(i));
-                res.set_title("result5 for: \"" + query_ + "\"");
+                res.set_title("result");
                 reply->push(res);
             }
         }
