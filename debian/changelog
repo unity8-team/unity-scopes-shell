@@ -1,3 +1,16 @@
+unity-scopes-shell (0.5.7+16.04.20160405-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * Resync trunk.
+
+  [ Marcus Tomlinson ]
+  * Replace QSettings with unity::util::IniParser (LP: #1552082)
+
+  [ Robert Bruce Park ]
+  * Use new bileto_pre_release_hook.
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Tue, 05 Apr 2016 06:04:05 +0000
+
 unity-scopes-shell (0.5.7+16.04.20160317-0ubuntu1) xenial; urgency=medium
 
   [ Pawel Stolowski ]
