@@ -18,7 +18,7 @@
  */
 
 #include "resultsmap.h"
-#include <cassert>
+#include <QDebug>
 
 ResultsMap::ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results)
 {
@@ -33,10 +33,10 @@ void ResultsMap::rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results)
 
 int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
 {
-    assert(result);
+    Q_ASSERT(result != nullptr);
     auto it = m_results.find(result->uri());
     if (it != m_results.end()) {
-        assert(it->second.result);
+        Q_ASSERT(it->second.result != nullptr);
         while (it != m_results.end() && it->second.result->uri() == result->uri())
         {
             if (*(it->second.result) == *result) {
@@ -48,15 +48,15 @@ int ResultsMap::find(std::shared_ptr<unity::scopes::Result> const& result) const
     return -1;
 }
 
-void ResultsMap::updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta)
+void ResultsMap::updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end)
 {
-    for (int i = start; i<end; i++) {
+    for (int i = start; (i<=end && i<results.size()); i++) {
         auto const result = results[i];
         auto it = m_results.find(result->uri());
         while (it != m_results.end() && it->second.result->uri() == result->uri())
         {
             if (*(it->second.result) == *result) {
-                it->second.index += delta;
+                it->second.index = i;
             }
             ++it;
         }
@@ -66,4 +66,12 @@ void ResultsMap::updateIndices(QList<std::shared_ptr<unity::scopes::Result>> con
 void ResultsMap::clear()
 {
     m_results.clear();
+}
+
+void ResultsMap::dump(QString const& msg)
+{
+    qDebug() << "--- ResultsMap" << msg << "---";
+    for (auto it = m_results.begin(); it != m_results.end(); it++) {
+        qDebug() << QString::fromStdString(it->first) << "->" << QString::fromStdString(it->second.result->uri()) << "@" << it->second.index;
+    }
 }
