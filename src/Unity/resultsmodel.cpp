@@ -134,10 +134,12 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
                 // move row
                 beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
                 m_results.move(oldPos, row);
-                if (row > oldPos) {
-                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row);
+                if (row < oldPos) {
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos);                    
                 } else {
-                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos);
+                    // This should never actually happen - as incoming results are iterated
+                    // we should only be facing results which had greater position previously.
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row);
                 }
                 endMoveRows();
             }
