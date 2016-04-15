@@ -70,7 +70,7 @@ public:
                 }
             }
         }
-        if (query_ == "search1")
+        else if (query_ == "search1")
         {
             // five results with uris 0..4 in a single category cat1
             for (int i = 0; i<5; i++) {
@@ -128,6 +128,25 @@ public:
                 CategorisedResult res(cat2);
                 res.set_uri("cat2_uri5");
                 res.set_title("result5 for: \"" + query_ + "\"");
+                reply->push(res);
+            }
+        }
+        else if (query_ == "search5")
+        {
+            for (int i = 0; i<2; i++) {
+                CategorisedResult res(cat2);
+                res.set_uri("cat2_uri" + std::to_string(i));
+                res.set_title("result");
+                reply->push(res);
+            }
+        }
+        else if (query_ == "search6")
+        {
+            // 2 items, reversed order of search5
+            for (int i = 1; i>=0; i--) {
+                CategorisedResult res(cat2);
+                res.set_uri("cat2_uri" + std::to_string(i));
+                res.set_title("result");
                 reply->push(res);
             }
         }

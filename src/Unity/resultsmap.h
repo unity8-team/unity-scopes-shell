@@ -51,13 +51,15 @@ class ResultsMap
                     m_results.insert({result->uri(), rpos });
                     ++it;
                 } else {
+                    // remove duplicate from the input results array
                     it = results.erase(it);
                 }
-        }
+            }
         }
 
-        void updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end, int delta);
+        void updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end);
         void clear();
+        void dump(QString const& msg);
 
     private:
         struct ResultPos {

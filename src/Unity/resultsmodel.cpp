@@ -84,6 +84,8 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     if (results.count() == 0) {
         return;
     }
+ 
+    m_purge = false;
 
     // optimize for simple case when current view is initially empty - just add all the results
     if (m_results.count() == 0) {
@@ -91,17 +93,15 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
         return;
     }
 
-    m_purge = false;
-
     const int oldCount = m_results.count();
 
     // update result -> index mappings with a subset of current result set, starting from lastResultIndex.
     m_search_ctx.newResultsMap.update(results, m_search_ctx.lastResultIndex);
-
+  
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "Last result index=" << m_search_ctx.lastResultIndex;
-#endif
-
+    qDebug() << "Last result index=" << m_search_ctx.lastResultIndex << "category" << m_categoryId;
+#endif  
+    
     int row = 0;
     // iterate over currently visible results, remove results which are no longer present in new set.
     // this needs to be done only once on first run of the new search, since in consecutive runs there
@@ -124,7 +124,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
         // indices of all rows below removed row.
         m_search_ctx.oldResultsMap.rebuild(m_results);
     }
-
+    
     // iterate over new results
     for (row = m_search_ctx.lastResultIndex; row<results.count(); ++row) {
         const int oldPos = m_search_ctx.oldResultsMap.find(results[row]);
@@ -135,9 +135,9 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
                 beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
                 m_results.move(oldPos, row);
                 if (row > oldPos) {
-                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row, -1);
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row);
                 } else {
-                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos, 1);
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos);
                 }
                 endMoveRows();
             }
@@ -145,7 +145,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
             // insert row
             beginInsertRows(QModelIndex(), row, row);
             m_results.insert(row, results[row]);
-            m_search_ctx.oldResultsMap.updateIndices(m_results, row + 1, m_results.size(), 1);
+            m_search_ctx.oldResultsMap.updateIndices(m_results, row + 1, m_results.size());
             endInsertRows();
         }
     }
@@ -164,7 +164,7 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& results)
 {
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "Adding #" << results.count() << "results";
+    qDebug() << "Adding #" << results.count() << "results to category" << m_categoryId;
 #endif
     if (results.count() == 0) {
         return;
@@ -188,6 +188,10 @@ void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedRe
 
 void ResultsModel::clearResults()
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "ResultsModel::clearResults(), category" << m_categoryId;
+#endif
+    
     if (m_results.count() == 0) return;
 
     beginRemoveRows(QModelIndex(), 0, m_results.count() - 1);
