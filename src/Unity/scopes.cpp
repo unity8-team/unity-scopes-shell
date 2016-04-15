@@ -345,6 +345,21 @@ void Scopes::completeDiscoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+
+    prepopulateFirstScope();
+}
+
+void Scopes::prepopulateFirstScope()
+{
+    if (!m_scopes.isEmpty()) {
+        auto& scope = m_scopes.front();
+        if (!scope->initialQueryDone()) {
+            qDebug() << "Pre-populating first scope";
+            scope->setSearchQuery(QLatin1String(""));
+            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+            scope->dispatchSearch();
+        }
+    }
 }
 
 void Scopes::prepopulateNextScopes()

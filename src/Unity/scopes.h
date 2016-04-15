@@ -95,6 +95,7 @@ private Q_SLOTS:
     void discoveryFinished();
     void refreshFinished();
     void invalidateScopeResults(QString const&);
+    void prepopulateFirstScope();
     void prepopulateNextScopes();
 
     void initPopulateScopes();
