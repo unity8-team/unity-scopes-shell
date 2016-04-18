@@ -106,11 +106,17 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_prepopulateFirstScope(true)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
     if (!noFav.isNull()) {
         m_noFavorites = true;
+    }
+
+    QByteArray noPrep = qgetenv("UNITY_SCOPES_NO_PREPOPULATE_FIRST");
+    if (!noPrep.isNull()) {
+        m_prepopulateFirstScope = false;
     }
 
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
@@ -346,7 +352,10 @@ void Scopes::completeDiscoveryFinished()
 
     m_listThread = nullptr;
 
-    prepopulateFirstScope();
+    if (m_prepopulateFirstScope) {
+        m_prepopulateFirstScope = false;
+        prepopulateFirstScope();
+    }
 }
 
 void Scopes::prepopulateFirstScope()

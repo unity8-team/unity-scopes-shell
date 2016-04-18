@@ -61,6 +61,8 @@ private Q_SLOTS:
 
     void init()
     {
+        qputenv("UNITY_SCOPES_NO_PREPOPULATE_FIRST", "1");
+        
         const QStringList favs {"scope://mock-scope-filters"};
         TestUtils::setFavouriteScopes(favs);
 
