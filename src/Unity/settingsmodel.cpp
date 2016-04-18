@@ -21,13 +21,57 @@
 #include "localization.h"
 #include "utils.h"
 
+#include <unity/util/ResourcePtr.h>
+#include <unity/UnityExceptions.h>
+
 #include <QDebug>
 #include <QDir>
 #include <QTextCodec>
 #include <QTimer>
 
+#include <fcntl.h>
+#include <unistd.h>
+
 using namespace scopes_ng;
 namespace sc = unity::scopes;
+
+namespace
+{
+
+typedef unity::util::ResourcePtr<int, std::function<void(int)>> FileLock;
+
+static FileLock unixLock(const QString& path, bool writeLock)
+{
+    FileLock fileLock(::open(path.toUtf8(), writeLock ? O_WRONLY : O_RDONLY), [](int fd)
+    {
+        if (fd != -1)
+        {
+            close(fd);
+        }
+    });
+
+    if (fileLock.get() == -1)
+    {
+        throw unity::FileException("Couldn't open file " + path.toStdString(), errno);
+    }
+
+    struct flock fl;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+    fl.l_type = writeLock ? F_WRLCK : F_RDLCK;
+
+    if (::fcntl(fileLock.get(), F_SETLKW, &fl) != 0)
+    {
+        throw unity::FileException("Couldn't get file lock for " + path.toStdString(), errno);
+    }
+
+    return fileLock;
+}
+
+static const char* GROUP_NAME = "General";
+
+}  // namespace
 
 SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
         const QVariant& settingsDefinitions, QObject* parent,
@@ -38,8 +82,17 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
     configDir.mkpath(scopeId);
     QDir databaseDir = configDir.filePath(scopeId);
 
-    m_settings.reset(new QSettings(databaseDir.filePath(QStringLiteral("settings.ini")), QSettings::IniFormat));
-    m_settings->setIniCodec("UTF-8");
+    m_settings_path = databaseDir.filePath(QStringLiteral("settings.ini"));
+
+    try
+    {
+        tryLoadSettings();
+    }
+    catch(const unity::FileException& e)
+    {
+        // Something has gone wrong, at this point we'll just have to continue with a null m_settings.
+        qWarning() << "SettingsModel::SettingsModel: Failed to read settings file:" << e.what();
+    }
 
     for (const auto &it : settingsDefinitions.toList())
     {
@@ -124,7 +177,37 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
                 break;
             case Roles::RoleValue:
             {
-                result = m_settings->value(data->id, data->defaultValue);
+                try
+                {
+                    tryLoadSettings();
+                    switch (data->variantType)
+                    {
+                        case QVariant::Bool:
+                            result = m_settings->get_boolean(GROUP_NAME, data->id.toStdString());
+                            break;
+                        case QVariant::UInt:
+                            result = m_settings->get_int(GROUP_NAME, data->id.toStdString());
+                            break;
+                        case QVariant::Double:
+                            result = m_settings->get_double(GROUP_NAME, data->id.toStdString());
+                            break;
+                        case QVariant::String:
+                            result = m_settings->get_string(GROUP_NAME, data->id.toStdString()).c_str();
+                            break;
+                        default:
+                            result = data->defaultValue;
+                    }
+                }
+                catch(const unity::FileException& e)
+                {
+                    qWarning() << "SettingsModel::data: Failed to read settings file:" << e.what();
+                    result = data->defaultValue;
+                }
+                catch(const unity::LogicException&)
+                {
+                    qWarning() << "SettingsModel::data: Failed to get a value for setting:" << data->id;
+                    result = data->defaultValue;
+                }
                 result.convert(data->variantType);
                 break;
             }
@@ -185,7 +268,38 @@ QVariant SettingsModel::value(const QString& id) const
     else if (m_data_by_id.contains(id))
     {
         QSharedPointer<Data> data = m_data_by_id[id];
-        auto result = m_settings->value(data->id, data->defaultValue);
+        QVariant result;
+        try
+        {
+            tryLoadSettings();
+            switch (data->variantType)
+            {
+                case QVariant::Bool:
+                    result = m_settings->get_boolean(GROUP_NAME, data->id.toStdString());
+                    break;
+                case QVariant::UInt:
+                    result = m_settings->get_int(GROUP_NAME, data->id.toStdString());
+                    break;
+                case QVariant::Double:
+                    result = m_settings->get_double(GROUP_NAME, data->id.toStdString());
+                    break;
+                case QVariant::String:
+                    result = m_settings->get_string(GROUP_NAME, data->id.toStdString()).c_str();
+                    break;
+                default:
+                    result = data->defaultValue;
+            }
+        }
+        catch(const unity::FileException& e)
+        {
+            qWarning() << "SettingsModel::value: Failed to read settings file:" << e.what();
+            result = data->defaultValue;
+        }
+        catch(const unity::LogicException&)
+        {
+            qWarning() << "SettingsModel::value: Failed to get a value for setting:" << data->id;
+            result = data->defaultValue;
+        }
         result.convert(data->variantType);
         return result;
     }
@@ -369,8 +483,38 @@ void SettingsModel::settings_timeout()
     }
     else if (m_data_by_id.contains(setting_id))
     {
-        m_settings->setValue(setting_id, value);
-        m_settings->sync(); // make sure the change to setting value is synced to fs
+        try
+        {
+            tryLoadSettings();
+            switch (value.type())
+            {
+                case QVariant::Bool:
+                    m_settings->set_boolean(GROUP_NAME, setting_id.toStdString(), value.toBool());
+                    break;
+                case QVariant::Int:
+                case QVariant::UInt:
+                    m_settings->set_int(GROUP_NAME, setting_id.toStdString(), value.toUInt());
+                    break;
+                case QVariant::Double:
+                    m_settings->set_double(GROUP_NAME, setting_id.toStdString(), value.toDouble());
+                    break;
+                case QVariant::String:
+                    m_settings->set_string(GROUP_NAME, setting_id.toStdString(), value.toString().toStdString());
+                    break;
+                default:
+                    qWarning() << "SettingsModel::settings_timeout: Invalid value type for setting:" << setting_id;
+            }
+            FileLock lock = unixLock(m_settings_path, true);
+            m_settings->sync(); // make sure the change to setting value is synced to fs
+        }
+        catch(const unity::FileException& e)
+        {
+            qWarning() << "SettingsModel::settings_timeout: Failed to write settings file:" << e.what();
+        }
+        catch(const unity::LogicException&)
+        {
+            qWarning() << "SettingsModel::settings_timeout: Failed to set a value for setting:" << setting_id;
+        }
     }
     else
     {
@@ -379,4 +523,23 @@ void SettingsModel::settings_timeout()
 
     locker.unlock();
     Q_EMIT settingsChanged();
+}
+
+void SettingsModel::tryLoadSettings() const
+{
+    if (!m_settings)
+    {
+        QFileInfo checkFile(m_settings_path);
+        if (!checkFile.exists() || !checkFile.isFile())
+        {
+            // Config file does not exist, so we create an empty one.
+            if (!QFile(m_settings_path).open(QFile::WriteOnly))
+            {
+                throw unity::FileException("Could not create an empty settings file at: " + m_settings_path.toStdString(), -1);
+            }
+        }
+
+        FileLock lock = unixLock(m_settings_path, false);
+        m_settings.reset(new unity::util::IniParser(m_settings_path.toUtf8()));
+    }
 }
