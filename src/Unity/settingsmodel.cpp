@@ -504,6 +504,9 @@ void SettingsModel::settings_timeout()
             }
             FileLock lock = unixLock(m_settings_path, true);
             m_settings->sync(); // make sure the change to setting value is synced to fs
+
+            locker.unlock();
+            Q_EMIT settingsChanged();
         }
         catch(const unity::FileException& e)
         {
@@ -518,9 +521,6 @@ void SettingsModel::settings_timeout()
     {
         qWarning() << "No such setting:" << setting_id;
     }
-
-    locker.unlock();
-    Q_EMIT settingsChanged();
 }
 
 void SettingsModel::tryLoadSettings() const
