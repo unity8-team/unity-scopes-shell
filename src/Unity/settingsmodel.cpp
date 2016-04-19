@@ -471,6 +471,9 @@ void SettingsModel::settings_timeout()
             try
             {
                 m_scopeProxy->set_child_scopes(m_child_scopes);
+
+                locker.unlock();
+                Q_EMIT settingsChanged();
             }
             catch (std::exception const& e)
             {
