@@ -251,8 +251,6 @@ QVariant SettingsModel::value(const QString& id) const
 {
     QMutexLocker locker(&m_mutex);
 
-    m_settings->sync();
-
     // Check for the setting id in the child scopes list first, in case the
     // aggregator is incorrectly using a scope id as a settings as well.
     if (m_child_scopes_data_by_id.contains(id))
