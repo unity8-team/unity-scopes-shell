@@ -296,6 +296,7 @@ results::Department ResultsView::browseDepartment(const string& id)
 
 results::Department ResultsView::browseAltDepartment(const string& id)
 {
+    Q_UNUSED(id);
     throw std::domain_error("ResultsView::browseAltDepartment() is deprecated");
 }
 
