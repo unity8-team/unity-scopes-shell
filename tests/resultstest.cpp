@@ -698,6 +698,7 @@ private Q_SLOTS:
             {"emblem", sc::Variant()},
             {"mascot", sc::Variant()},
             {"overlay-color", sc::Variant()},
+            {"social-actions", sc::Variant()},
             {"subtitle", sc::Variant()},
             {"summary", sc::Variant()},
             {"title", sc::Variant(sc::VariantMap{{"field", sc::Variant("title")}})}
