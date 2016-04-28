@@ -1407,4 +1407,9 @@ void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
     }
 }
 
+const QNetworkConfigurationManager& Scope::networkManager() const
+{
+    return m_network_manager;
+}
+
 } // namespace scopes_ng

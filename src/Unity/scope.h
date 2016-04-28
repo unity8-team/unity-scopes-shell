@@ -179,6 +179,8 @@ public:
 
     void setSearchQueryString(const QString& search_query);
 
+    const QNetworkConfigurationManager& networkManager() const;
+
 public Q_SLOTS:
     void invalidateResults();
     virtual void dispatchSearch();
