@@ -500,6 +500,9 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
 
         QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+        if (m_associatedScope) {
+            metadata.set_internet_connectivity(m_associatedScope->networkManager().isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+        }
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
         }
@@ -534,6 +537,9 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
             QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
             scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
             metadata.set_scope_data(qVariantToScopeVariant(data));
+            if (m_associatedScope) {
+                metadata.set_internet_connectivity(m_associatedScope->networkManager().isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+            }
 
             if (m_lastActivation) {
                 m_lastActivation->invalidate();
