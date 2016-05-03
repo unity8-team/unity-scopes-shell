@@ -578,6 +578,7 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
                                                             details.value(QStringLiteral("service_name")).toString(),
                                                             details.value(QStringLiteral("service_type")).toString(),
                                                             details.value(QStringLiteral("provider_name")).toString(),
+                                                            details.value(QStringLiteral("auth_params")).toMap(),
                                                             details.value(QStringLiteral("login_passed_action")).toInt(),
                                                             details.value(QStringLiteral("login_failed_action")).toInt(),
                                                             this);
