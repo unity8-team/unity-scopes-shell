@@ -1064,7 +1064,11 @@ void Scope::setSearchQueryString(const QString& search_query)
 
         // only use typing delay if scope is active, otherwise apply immediately
         if (m_isActive) {
-            m_typingTimer.start();
+            //Do not trigger timeout from m_typingTimer when query string is empty.
+            //That will avoid to execute invalidateResults(Query::run) twice after tapping cancel.
+            if (!search_query.isEmpty()) {
+                m_typingTimer.start();
+            }
         } else {
             invalidateResults();
             Q_EMIT searchQueryChanged();
