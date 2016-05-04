@@ -1064,11 +1064,7 @@ void Scope::setSearchQueryString(const QString& search_query)
 
         // only use typing delay if scope is active, otherwise apply immediately
         if (m_isActive) {
-            //Do not trigger timeout from m_typingTimer when query string is empty.
-            //That will avoid to execute invalidateResults(Query::run) twice after tapping cancel.
-            if (!search_query.isEmpty()) {
-                m_typingTimer.start();
-            }
+            m_typingTimer.start();
         } else {
             invalidateResults();
             Q_EMIT searchQueryChanged();
@@ -1282,6 +1278,14 @@ void Scope::resetPrimaryNavigationTag()
     setCurrentNavigationId("");
     m_filters->update(unity::scopes::FilterState());
     filterStateChanged();
+
+    //1.Do not trigger timeout from m_typingTimer to avoid to execute invalidateResults twice 
+    //after tapping cancel.
+    //2.Also make sure query string signal is triggered as query string is empty.
+    if (m_typingTimer.isActive()) {
+        m_typingTimer.stop();
+        Q_EMIT searchQueryChanged();
+    }  
 }
 
 void Scope::resetFilters()
