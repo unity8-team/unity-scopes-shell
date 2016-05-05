@@ -1215,7 +1215,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
         scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
         m_activationController->setListener(listener);
 
-        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri());
+        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri()) << ", categoryId" << categoryId;
 
         auto proxy = proxy_for_result(result);
         unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
