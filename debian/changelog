@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.7+16.04.20160503-0ubuntu1) xenial; urgency=medium
+
+  [ Alberto Mardegan ]
+  * Allow clients to specify authentication parameters. (LP: #1554040)
+
+ -- David Barth <david.barth@canonical.com>  Tue, 03 May 2016 08:12:16 +0000
+
 unity-scopes-shell (0.5.7+16.04.20160405-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
