@@ -106,11 +106,17 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_prepopulateFirstScope(true)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
     if (!noFav.isNull()) {
         m_noFavorites = true;
+    }
+
+    QByteArray noPrep = qgetenv("UNITY_SCOPES_NO_PREPOPULATE_FIRST");
+    if (!noPrep.isNull()) {
+        m_prepopulateFirstScope = false;
     }
 
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
@@ -355,6 +361,24 @@ void Scopes::completeDiscoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+
+    if (m_prepopulateFirstScope) {
+        m_prepopulateFirstScope = false;
+        prepopulateFirstScope();
+    }
+}
+
+void Scopes::prepopulateFirstScope()
+{
+    if (!m_scopes.isEmpty()) {
+        auto& scope = m_scopes.front();
+        if (!scope->initialQueryDone()) {
+            qDebug() << "Pre-populating first scope";
+            scope->setSearchQuery(QLatin1String(""));
+            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+            scope->dispatchSearch();
+        }
+    }
 }
 
 void Scopes::prepopulateNextScopes()
