@@ -27,6 +27,7 @@
 #include "optionselectorfilter.h"
 #include "rangeinputfilter.h"
 #include "valuesliderfilter.h"
+#include "filtergroupwidget.h"
 #include <scope-harness/registry/pre-existing-registry.h>
 #include <scope-harness/test-utils.h>
 #include <unity/shell/scopes/CategoriesInterface.h>
@@ -293,6 +294,54 @@ private Q_SLOTS:
 
         QCOMPARE(filters, m_scope->filters());
         QCOMPARE(static_cast<int>(f3->value()), 75);
+    }
+
+    void testFilterGroup()
+    {
+        TestUtils::performSearch(m_scope, "test_filter_group");
+
+        auto filters = m_scope->filters();
+        QVERIFY(filters != nullptr);
+        QCOMPARE(filters->rowCount(), 2);
+
+        auto idx = filters->index(0, 0);
+        auto f1 = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<OptionSelectorFilter*>();
+        QVERIFY(f1 != nullptr);
+        QCOMPARE(f1->filterId(), QString("f1"));
+
+        idx = filters->index(1, 0);
+        auto gr = filters->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<FilterGroupWidget*>();
+        QVERIFY(gr != nullptr);
+        QCOMPARE(gr->filterId(), QString("group"));
+        QCOMPARE(gr->title(), QString("Group label"));
+
+        auto categories = m_scope->categories();
+        QVERIFY(categories != nullptr);
+        auto results = categories->data(categories->index(0, 0),
+                Categories::RoleResultsSPtr).value<QSharedPointer<unity::shell::scopes::ResultsModelInterface>>();
+        QVERIFY(results != nullptr);
+
+        // check filters within the group
+        QVERIFY(gr->filters() != nullptr);
+        idx = gr->filters()->index(0, 0);
+        auto f2 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<RangeInputFilter*>();
+        QVERIFY(f2 != nullptr);
+        idx = gr->filters()->index(1, 0);
+        auto f3 = gr->filters()->data(idx, uss::FiltersInterface::Roles::RoleFilter).value<ValueSliderFilter*>();
+        QVERIFY(f3 != nullptr);
+
+        // modify filter within the group
+        {
+            f2->setEndValue(300.5f);
+            TestUtils::waitForFilterStateChange(m_scope);
+            TestUtils::waitForSearchFinish(m_scope);
+
+            QCOMPARE(f2->hasStartValue(), true);
+            QCOMPARE(f2->hasEndValue(), true);
+
+            auto resultIdx = results->index(0, 0);
+            QCOMPARE(results->data(resultIdx, unity::shell::scopes::ResultsModelInterface::RoleTitle).toString(), QString("result for range: 2.000000 - 300.500000"));
+        }
     }
 
     void testResetToDefault()

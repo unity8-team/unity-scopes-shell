@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Canonical, Ltd.
+ * Copyright (C) 2016 Canonical, Ltd.
  *
  * Authors:
  *  Pawel Stolowski <pawel.stolowski@canonical.com>
@@ -17,31 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NG_OPTIONSELECTORFILTER_H
-#define NG_OPTIONSELECTORFILTER_H
+#ifndef NG_FILTERGROUPWIDGET_H
+#define NG_FILTERGROUPWIDGET_H
 
-#include <unity/shell/scopes/OptionSelectorFilterInterface.h>
+#include <unity/shell/scopes/ExpandableFilterWidgetInterface.h>
 #include <unity/shell/scopes/FiltersInterface.h>
 #include "filters.h"
-#include <unity/scopes/OptionSelectorFilter.h>
-#include "optionselectoroptions.h"
+#include <unity/scopes/FilterGroup.h>
 #include <QScopedPointer>
 
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT OptionSelectorFilter : public unity::shell::scopes::OptionSelectorFilterInterface, public FilterUpdateInterface
+class Q_DECL_EXPORT FilterGroupWidget : public unity::shell::scopes::ExpandableFilterWidgetInterface, public FilterUpdateInterface
 {
     Q_OBJECT
 
 public:
-    OptionSelectorFilter(unity::scopes::OptionSelectorFilter::SCPtr const& filter, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
+    FilterGroupWidget(QList<unity::scopes::FilterBase::SCPtr> const& filters, unity::scopes::FilterState::SPtr const& filterState, unity::shell::scopes::FiltersInterface *parent = nullptr);
     QString filterId() const override;
     QString title() const override;
     unity::shell::scopes::FiltersInterface::FilterType filterType() const override;
-    QString label() const override;
-    bool multiSelect() const override;
-    unity::shell::scopes::OptionSelectorOptionsInterface* options() const override;
+    unity::shell::scopes::FiltersInterface* filters() const override;
+    void update(FilterWrapper::SCPtr const& filterWrapper) override;
     void update(unity::scopes::FilterBase::SCPtr const& filter) override;
     void update(unity::scopes::FilterState::SPtr const& filterState) override;
     int activeFiltersCount() const override;
@@ -51,17 +49,11 @@ public:
 Q_SIGNALS:
     void filterStateChanged();
 
-protected Q_SLOTS:
-    void onOptionChecked(const QString& id, bool checked);
-
 private:
     QString m_id;
-    QString m_title;
-    bool m_multiSelect;
     QString m_label;
-    QScopedPointer<OptionSelectorOptions> m_options;
+    Filters* m_filters;
     std::weak_ptr<unity::scopes::FilterState> m_filterState;
-    unity::scopes::OptionSelectorFilter::SCPtr m_filter;
 };
 
 } // namespace scopes_ng

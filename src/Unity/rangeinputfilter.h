@@ -58,7 +58,7 @@ public:
 
     void update(unity::scopes::FilterBase::SCPtr const& filter) override;
     void update(unity::scopes::FilterState::SPtr const& filterState) override;
-    bool isActive() const override;
+    int activeFiltersCount() const override;
     QString filterTag() const override;
     void reset() override;
 

@@ -34,35 +34,49 @@
 namespace scopes_ng
 {
 
+struct FilterWrapper
+{
+    UNITY_DEFINES_PTRS(FilterWrapper);
+
+    QList<unity::scopes::FilterBase::SCPtr> filters;
+    std::string id() const;
+    bool isGroup() const;
+};
+
 class FilterUpdateInterface
 {
     public:
         // Apply potential updates of filter definition coming from scope.
         virtual void update(unity::scopes::FilterBase::SCPtr const& filter) = 0;
+        virtual void update(FilterWrapper::SCPtr const& filterWrapper);
 
         // Apply filter state change (e.g. after user executed a canned query).
         virtual void update(unity::scopes::FilterState::SPtr const& filterState) = 0;
 
-        // Check if the filter is active (i.e. has non-default values set).
-        virtual bool isActive() const = 0;
+        // Check if the filter (or group of filters represented by this filter) is active (i.e. greater than 0)
+        virtual int activeFiltersCount() const = 0;
 
         // Reset filter to defaults.
         virtual void reset() = 0;
+
+        virtual ~FilterUpdateInterface() {}
 };
 
 class Q_DECL_EXPORT Filters :
     public ModelUpdate<unity::shell::scopes::FiltersInterface,
-        QList<unity::scopes::FilterBase::SCPtr>,
+        QList<FilterWrapper::SCPtr>,
         QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>>>
 {
     Q_OBJECT
 
 public:
-    explicit Filters(unity::scopes::FilterState const& filterState, unity::shell::scopes::ScopeInterface *parent = nullptr);
+    explicit Filters(unity::scopes::FilterState const& filterState, QObject *parent = nullptr);
+    explicit Filters(unity::scopes::FilterState::SPtr const& filterState, QObject *parent = nullptr);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false);
+    void update(QList<unity::scopes::FilterBase::SCPtr> const& filters, bool containsDepartments = false, bool processGroups = true);
     void update(unity::scopes::FilterState const& filterState);
+    void update(unity::scopes::FilterState::SPtr const& filterState);
 
     unity::scopes::FilterState filterState() const;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> primaryFilter() const;
@@ -81,8 +95,13 @@ Q_SIGNALS:
     void primaryFilterChanged();
 
 private:
+    void updateForNewState();
+
+    static QList<FilterWrapper::SCPtr> preprocessFilters(QList<unity::scopes::FilterBase::SCPtr> const &filters, bool processGroups);
+    static unity::shell::scopes::FiltersInterface::FilterType getFilterType(FilterWrapper::SCPtr const& filterWrapper);
     static unity::shell::scopes::FiltersInterface::FilterType getFilterType(unity::scopes::FilterBase::SCPtr const& filter);
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(unity::scopes::FilterBase::SCPtr const& filter);
+    QSharedPointer<unity::shell::scopes::FilterBaseInterface> createFilterObject(FilterWrapper::SCPtr const& filterWrapper);
     QList<QSharedPointer<unity::shell::scopes::FilterBaseInterface>> m_filters;
     QSharedPointer<unity::shell::scopes::FilterBaseInterface> m_primaryFilter;
     unity::scopes::FilterState::SPtr m_filterState;
