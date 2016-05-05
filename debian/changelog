@@ -1,3 +1,25 @@
+unity-scopes-shell (0.5.7+16.04.20160505-0ubuntu1) xenial; urgency=medium
+
+  [ Marcus Tomlinson ]
+  * Update child scopes in a background thread to greatly improve the
+    performance of Scope::settings() (LP: #1567429)
+
+  [ Pawel Stolowski ]
+  * Apply a few optimizations to results model updates. Set cardinality
+    limit on all searches. (LP: #1539137)
+  * Don't clear preview model when new preview is triggered from an
+    existing preview - update preview model instead. (LP: #1537112,
+    #1485887)
+  * Don't crash if scopes runtime cannot be initialized (e.g. when
+    locale setup is broken). Force LC_ALL when running tests to avoid
+    occasional failures on our builders (locale issues). (LP: #1363946)
+  * Handle social-actions.
+  * Pre-populate first scope on startup (even if the screen is locked).
+    (LP: #1545866)
+  * Support or FilterGroup widget.
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 05 May 2016 09:41:19 +0000
+
 unity-scopes-shell (0.5.7+16.04.20160503-0ubuntu1) xenial; urgency=medium
 
   [ Alberto Mardegan ]
