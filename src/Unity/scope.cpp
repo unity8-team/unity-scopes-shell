@@ -92,6 +92,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_hasNavigation(false)
     , m_favorite(false)
     , m_initialQueryDone(false)
+    , m_childScopesDirty(true)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
@@ -131,6 +132,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 
 Scope::~Scope()
 {
+    m_childScopesFuture.waitForFinished();
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
@@ -253,6 +255,7 @@ void Scope::metadataRefreshed()
 {
     // refresh Settings view if needed
     if (require_child_scopes_refresh()) {
+        m_childScopesDirty = true;
         update_child_scopes();
     }
 
@@ -729,6 +732,10 @@ void Scope::dispatchSearch()
 
     setSearchInProgress(true);
 
+    // If applicable, update this scope's child scopes now, as part of the search process
+    // (i.e. while the loading bar is visible).
+    update_child_scopes();
+
     if (m_proxy) {
         scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
@@ -896,10 +903,6 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    if (m_settingsModel && m_scopesInstance)
-    {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
-    }
     return m_settingsModel.data();
 }
 
@@ -914,9 +917,20 @@ bool Scope::require_child_scopes_refresh() const
 
 void Scope::update_child_scopes()
 {
-    if (m_settingsModel && m_scopesInstance)
+    // only run the update if child scopes have changed
+    if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        // reset the flag so that re-entering this method won't restart the update unnecessarily
+        m_childScopesDirty = false;
+
+        // just in case we have another update still running, wait here for it to complete
+        m_childScopesFuture.waitForFinished();
+
+        // run the update in a seperate thread
+        m_childScopesFuture = QtConcurrent::run([this]
+        {
+            m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        });
     }
 }
 
@@ -1265,6 +1279,11 @@ unity::shell::scopes::PreviewModelInterface* Scope::preview(QVariant const& resu
 void Scope::cancelActivation()
 {
     m_activationController->invalidate();
+}
+
+void Scope::invalidateChildScopes()
+{
+    m_childScopesDirty = true;
 }
 
 void Scope::invalidateResults()
