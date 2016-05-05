@@ -1069,6 +1069,45 @@ private Q_SLOTS:
         );
     }
 
+    void testResultsModelChangesWithReversedResults()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+        resultsView->setQuery("search5");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri0"))
+                    .result(shm::ResultMatcher("cat2_uri1"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search6");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri1"))
+                    .result(shm::ResultMatcher("cat2_uri0"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search7");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+            .hasExactly(1)
+            .category(shm::CategoryMatcher("cat2")
+                      .result(shm::ResultMatcher("cat2_uri2"))
+                      .result(shm::ResultMatcher("cat2_uri1"))
+                      .result(shm::ResultMatcher("cat2_uri0"))
+                )
+            .match(resultsView->categories())
+            );
+    }
+
     void testResultsModelChangesWithDuplicatedUris()
     {
         auto resultsView = m_harness->resultsView();

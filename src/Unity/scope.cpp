@@ -73,6 +73,7 @@ const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
+const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a single scope
 
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
@@ -114,6 +115,11 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     else
     {
         m_typingTimer.setInterval(TYPING_TIMEOUT);
+    }
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_CARDINALITY_OVERRIDE")) {
+        m_cardinality = qgetenv("UNITY_SCOPES_CARDINALITY_OVERRIDE").toInt();
+    } else {
+        m_cardinality = SEARCH_CARDINALITY;
     }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_searchProcessingDelayTimer.setSingleShot(true);
@@ -363,7 +369,9 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+#endif
 
     processResultSet(m_cachedResults); // clears the result list
 
@@ -722,7 +730,7 @@ void Scope::dispatchSearch()
     setSearchInProgress(true);
 
     if (m_proxy) {
-        scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
         if (!userAgent.isEmpty()) {
             meta["user-agent"] = userAgent.toStdString();

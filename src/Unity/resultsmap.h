@@ -18,7 +18,7 @@
  */
 
 #ifndef NG_RESULTS_MAP_H
-#define NGRESULTS_MAP_H
+#define NG_RESULTS_MAP_H
 
 #include <QList>
 #include <memory>
@@ -32,13 +32,35 @@
 class ResultsMap
 {
     public:
-        ResultsMap(QList<std::shared_ptr<unity::scopes::Result>> const &results);
+        ResultsMap() = default;
 
         // note: this constructor modifies the input results list (de-duplicates it).
         ResultsMap(QList<std::shared_ptr<unity::scopes::CategorisedResult>> &results);
         int find(std::shared_ptr<unity::scopes::Result> const& result) const;
 
-        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> const &results);
+        void rebuild(QList<std::shared_ptr<unity::scopes::Result>> &results);
+
+        template <typename ResultType>
+        void update(QList<std::shared_ptr<ResultType>> &results, int start)
+        {
+            int pos = start;
+            for (auto it = results.begin() + start; it != results.end(); ) {
+                std::shared_ptr<ResultType> result = *it;
+                if (find(result) < 0) {
+                    const ResultPos rpos { result, pos++ };
+                    m_results.insert({result->uri(), rpos });
+                    ++it;
+                } else {
+                    // remove duplicate from the input results array
+                    it = results.erase(it);
+                }
+            }
+        }
+
+        void updateIndices(QList<std::shared_ptr<unity::scopes::Result>> const &results, int start, int end);
+        void clear();
+        void dump(QString const& msg);
+
     private:
         struct ResultPos {
             std::shared_ptr<unity::scopes::Result> result;
