@@ -24,9 +24,8 @@
 
 #include <unity/shell/scopes/PreviewWidgetModelInterface.h>
 
-#include <QSet>
+#include <QMap>
 #include <QSharedPointer>
-#include <QMultiMap>
 
 #include <unity/scopes/PreviewWidget.h>
 #include <unity/scopes/Result.h>
@@ -46,18 +45,24 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    void insertWidget(QSharedPointer<PreviewWidgetData> const&, int);
+    void addReplaceWidget(QSharedPointer<PreviewWidgetData> const&, int);
     void addWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
     void updateWidget(QSharedPointer<PreviewWidgetData> const&);
-    void adoptWidgets(QList<QSharedPointer<PreviewWidgetData>> const&);
+    void updateWidget(QSharedPointer<PreviewWidgetData> const&, int);
     bool widgetChanged(PreviewWidgetData*);
+    void removeWidget(QSharedPointer<PreviewWidgetData> const&);
+    int widgetIndex(QString const &widgetId) const;
+    void moveWidget(QSharedPointer<PreviewWidgetData> const&, int, int);
+    QSharedPointer<PreviewWidgetData> widget(int) const;
 
     void clearWidgets();
 
 private Q_SLOTS:
 
 private:
-    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgets;
+    void dumpLookups(QString const&);
+    QList<QSharedPointer<PreviewWidgetData>> m_previewWidgetsOrdered;
+    QMap<QString, int> m_previewWidgetsIndex;
 
     std::shared_ptr<unity::scopes::Result> m_previewedResult;
 };
