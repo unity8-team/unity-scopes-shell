@@ -21,6 +21,7 @@
 #include <unity/scopes/RangeInputFilter.h>
 #include <unity/scopes/ValueSliderFilter.h>
 #include <unity/scopes/ValueSliderLabels.h>
+#include <unity/scopes/FilterGroup.h>
 #include <unity/scopes/ScopeBase.h>
 #include <unity/scopes/SearchReply.h>
 
@@ -57,7 +58,12 @@ public:
         auto opt1 = filter1->add_option("o1", "Option1");
         filter1->add_option("o2", "Option2");
 
-        RangeInputFilter::SPtr filter2 = RangeInputFilter::create("f2", Variant(2.0f), Variant::null(), "start", "", "", "end", "");
+        bool use_groups = (query().query_string() == "test_filter_group");
+
+        auto group = FilterGroup::create("group", "Group label");
+        RangeInputFilter::SPtr filter2 = (use_groups ?
+                RangeInputFilter::create("f2", Variant(2.0f), Variant::null(), "start", "", "", "end", "", group) :
+                RangeInputFilter::create("f2", Variant(2.0f), Variant::null(), "start", "", "", "end", ""));
 
         auto cat1 = reply->register_category("cat1", "Category 1", "");
         CategorisedResult res1(cat1);
@@ -80,7 +86,10 @@ public:
                     (has_end_val ? std::to_string(filter2->end_value(query().filter_state())) : "***"));
         }
 
-        ValueSliderFilter::SPtr filter3 = ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}}));
+        ValueSliderFilter::SPtr filter3 = (use_groups ?
+                ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}}), group) :
+                ValueSliderFilter::create("f3", 1, 99, 50, ValueSliderLabels("Min", "Max", {{33, "One third"}})));
+
 
         Filters filters;
         filters.push_back(std::move(filter1));

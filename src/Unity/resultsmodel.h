@@ -27,8 +27,18 @@
 
 #include <unity/scopes/CategorisedResult.h>
 #include <unordered_map>
+#include "resultsmap.h"
 
 namespace scopes_ng {
+
+struct SearchContext
+{
+    ResultsMap newResultsMap;
+    ResultsMap oldResultsMap;
+    int lastResultIndex;
+
+    void reset();
+};
 
 class Q_DECL_EXPORT ResultsModel : public unity::shell::scopes::ResultsModelInterface
 {
@@ -71,6 +81,7 @@ private:
     QString m_categoryId;
     int m_maxAttributes;
     bool m_purge;
+    SearchContext m_search_ctx;
 };
 
 } // namespace scopes_ng

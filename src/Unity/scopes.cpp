@@ -61,9 +61,9 @@ void ScopeListWorker::run()
         auto registry = m_scopesRuntime->registry();
         m_metadataMap = registry->list();
     }
-    catch (unity::Exception const& err)
+    catch (std::exception const& err)
     {
-        qWarning("ERROR! Caught %s", err.to_string().c_str());
+        qWarning("ERROR! Caught %s", err.what());
     }
     Q_EMIT discoveryFinished();
 }
@@ -106,11 +106,17 @@ Scopes::Scopes(QObject *parent)
     , m_overviewScope(nullptr)
     , m_listThread(nullptr)
     , m_loaded(false)
+    , m_prepopulateFirstScope(true)
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
     if (!noFav.isNull()) {
         m_noFavorites = true;
+    }
+
+    QByteArray noPrep = qgetenv("UNITY_SCOPES_NO_PREPOPULATE_FIRST");
+    if (!noPrep.isNull()) {
+        m_prepopulateFirstScope = false;
     }
 
     connect(m_priv.get(), SIGNAL(safeInvalidateScopeResults(const QString&)), this,
@@ -280,6 +286,16 @@ void Scopes::discoveryFinished()
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
     m_scopesRuntime = thread->getRuntime();
+
+    if (!m_scopesRuntime) {
+        // This signifies a serious problem, such as a broken locale setup. We cannot recover from that.
+        // Return early so that scope objects are not created etc. The Dash will remain blank.
+        qWarning() << "FATAL ERROR! Scopes runtime couldn't be initialized. Please check your system settings and locale data/setup. The Dash will remain empty until the underlying problem is fixed.";
+        m_loaded = true;
+        Q_EMIT loadedChanged();
+        return;
+    }
+
     auto scopes = thread->metadataMap();
     m_priv->m_list_update_callback_connection_.reset(
             new core::ScopedConnection(
@@ -345,6 +361,24 @@ void Scopes::completeDiscoveryFinished()
     Q_EMIT metadataRefreshed();
 
     m_listThread = nullptr;
+
+    if (m_prepopulateFirstScope) {
+        m_prepopulateFirstScope = false;
+        prepopulateFirstScope();
+    }
+}
+
+void Scopes::prepopulateFirstScope()
+{
+    if (!m_scopes.isEmpty()) {
+        auto& scope = m_scopes.front();
+        if (!scope->initialQueryDone()) {
+            qDebug() << "Pre-populating first scope";
+            scope->setSearchQuery(QLatin1String(""));
+            // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
+            scope->dispatchSearch();
+        }
+    }
 }
 
 void Scopes::prepopulateNextScopes()
@@ -550,10 +584,12 @@ void Scopes::scopeRegistryChanged()
     qDebug() << "Refreshing scope metadata";
     refreshScopeMetadata();
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
+        scope->invalidateChildScopes();
         scope->invalidateResults();
     }
 
     Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
+        scope->invalidateChildScopes();
         scope->invalidateResults();
     }
 }

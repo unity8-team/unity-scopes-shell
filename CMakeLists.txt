@@ -50,8 +50,8 @@ find_package(Qt5Gui)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
-pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.4)
-pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=11)
+pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.5)
+pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=12)
 
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
 pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
@@ -103,6 +103,7 @@ endif()
 # gtk and unity-core (actually sigc++) do not like Qt defining macros named
 # "signals" and "slots"
 add_definitions(-DQT_NO_KEYWORDS)
+add_definitions(-DVERBOSE_MODEL_UPDATES)
 
 # Translation
 set(GETTEXT_PACKAGE "unity-plugin-scopes")

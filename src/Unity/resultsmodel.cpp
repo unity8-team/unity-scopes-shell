@@ -23,7 +23,6 @@
 // local
 #include "utils.h"
 #include "iconutils.h"
-#include "resultsmap.h"
 
 #include <map>
 #include <QDebug>
@@ -31,6 +30,13 @@
 namespace scopes_ng {
 
 using namespace unity;
+
+void SearchContext::reset()
+{
+    newResultsMap.clear();
+    oldResultsMap.clear();
+    lastResultIndex = 0;
+}
 
 ResultsModel::ResultsModel(QObject* parent)
  : unity::shell::scopes::ResultsModelInterface(parent)
@@ -78,51 +84,79 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
     if (results.count() == 0) {
         return;
     }
-
+ 
     m_purge = false;
+
+    // optimize for simple case when current view is initially empty - just add all the results
+    if (m_results.count() == 0) {
+        addResults(results);
+        return;
+    }
 
     const int oldCount = m_results.count();
 
-    ResultsMap newResultsMap(results);
-
+    // update result -> index mappings with a subset of current result set, starting from lastResultIndex.
+    m_search_ctx.newResultsMap.update(results, m_search_ctx.lastResultIndex);
+  
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "Last result index=" << m_search_ctx.lastResultIndex << "category" << m_categoryId;
+#endif  
+    
     int row = 0;
-    // iterate over old (i.e. currently visible) results, remove results which are no longer present in new set
-    for (auto it = m_results.begin(); it != m_results.end(); ) {
-        int newPos = newResultsMap.find(*it);
-        bool haveNow = (newPos >= 0);
-        if (!haveNow) {
-            // delete row
-            beginRemoveRows(QModelIndex(), row, row);
-            it = m_results.erase(it);
-            endRemoveRows();
-        } else {
-            ++it;
-            ++row;
+    // iterate over currently visible results, remove results which are no longer present in new set.
+    // this needs to be done only once on first run of the new search, since in consecutive runs there
+    // we will only by appending or moving.
+    if (m_search_ctx.lastResultIndex == 0) {
+        for (auto it = m_results.begin(); it != m_results.end(); ) {
+            int newPos = m_search_ctx.newResultsMap.find(*it);
+            bool haveNow = (newPos >= 0);
+            if (!haveNow) {
+                // delete row
+                beginRemoveRows(QModelIndex(), row, row);
+                it = m_results.erase(it);
+                endRemoveRows();
+            } else {
+                ++it;
+                ++row;
+            }
         }
+        // called only once on new search - it's cheaper to rebuild than to update
+        // indices of all rows below removed row.
+        m_search_ctx.oldResultsMap.rebuild(m_results);
     }
-
-    ResultsMap oldResultsMap(m_results);
-
+    
     // iterate over new results
-    for (row = 0; row<results.count(); ++row) {
-        const int oldPos = oldResultsMap.find(results[row]);
+    for (row = m_search_ctx.lastResultIndex; row<results.count(); ++row) {
+        const int oldPos = m_search_ctx.oldResultsMap.find(results[row]);
         const bool hadBefore = (oldPos >= 0);
         if (hadBefore) {
             if (row != oldPos) {
                 // move row
                 beginMoveRows(QModelIndex(), oldPos, oldPos, QModelIndex(), row + (row > oldPos ? 1 : 0));
                 m_results.move(oldPos, row);
-                oldResultsMap.rebuild(m_results);
+                if (row < oldPos) {
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, row, oldPos);                    
+                } else {
+                    // This should never actually happen - as incoming results are iterated
+                    // we should only be facing results which had greater position previously.
+                    m_search_ctx.oldResultsMap.updateIndices(m_results, oldPos, row);
+                }
                 endMoveRows();
             }
         } else {
             // insert row
             beginInsertRows(QModelIndex(), row, row);
             m_results.insert(row, results[row]);
-            oldResultsMap.rebuild(m_results);
+            m_search_ctx.oldResultsMap.updateIndices(m_results, row + 1, m_results.size());
             endInsertRows();
         }
     }
+
+    m_search_ctx.lastResultIndex = results.count();
+
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "Added #" << (m_results.count() - oldCount) << "results (called with" << results.count() << "), current results#=" << m_results.count();
+#endif
 
     if (oldCount != m_results.count()) {
         Q_EMIT countChanged();
@@ -131,31 +165,42 @@ void ResultsModel::addUpdateResults(QList<std::shared_ptr<unity::scopes::Categor
 
 void ResultsModel::addResults(QList<std::shared_ptr<unity::scopes::CategorisedResult>>& results)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "Adding #" << results.count() << "results to category" << m_categoryId;
+#endif
     if (results.count() == 0) {
         return;
     }
 
     m_purge = false;
 
-    ResultsMap newResultsMap(results); // deduplicate results
-    Q_UNUSED(newResultsMap);
+    m_search_ctx.newResultsMap = ResultsMap(results); // deduplicate results
 
     beginInsertRows(QModelIndex(), m_results.count(), m_results.count() + results.count() - 1);
-    Q_FOREACH(std::shared_ptr<scopes::CategorisedResult> const& result, results) {
+    for (auto const& result: results) {
         m_results.append(result);
     }
     endInsertRows();
+
+    m_search_ctx.oldResultsMap = m_search_ctx.newResultsMap;
+    m_search_ctx.lastResultIndex = m_results.count();
 
     Q_EMIT countChanged();
 }
 
 void ResultsModel::clearResults()
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "ResultsModel::clearResults(), category" << m_categoryId;
+#endif
+    
     if (m_results.count() == 0) return;
 
     beginRemoveRows(QModelIndex(), 0, m_results.count() - 1);
     m_results.clear();
     endRemoveRows();
+
+    m_search_ctx.reset();
 
     Q_EMIT countChanged();
 }
@@ -325,6 +370,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
             return QVariant();
         case RoleQuickPreviewData:
             return componentValue(result, "quick-preview-data");
+        case RoleSocialActions:
+            return componentValue(result, "social-actions");
         default:
             return QVariant();
     }
@@ -333,6 +380,8 @@ ResultsModel::data(const QModelIndex& index, int role) const
 void ResultsModel::markNewSearch()
 {
     m_purge = true;
+    m_search_ctx.lastResultIndex = 0;
+    m_search_ctx.newResultsMap.clear();
 }
 
 bool ResultsModel::needsPurging() const

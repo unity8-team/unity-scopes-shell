@@ -132,14 +132,14 @@ void ValueSliderFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
     m_values->update(valueslider->labels(), valueslider->min(), valueslider->max());
 }
 
-bool ValueSliderFilter::isActive() const
+int ValueSliderFilter::activeFiltersCount() const
 {
     if (auto state = m_filterState.lock()) {
         if (m_filter->has_value(*state) && m_filter->value(*state) != m_filter->default_value()) {
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 QString ValueSliderFilter::filterTag() const

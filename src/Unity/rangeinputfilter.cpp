@@ -154,18 +154,18 @@ void RangeInputFilter::update(unity::scopes::FilterBase::SCPtr const& filter)
     labelChange(m_filter->end_postfix_label(), m_endPostfixLabel, [this]() { Q_EMIT endPostfixLabelChanged(); });
 }
 
-bool RangeInputFilter::isActive() const
+int RangeInputFilter::activeFiltersCount() const
 {
     if (auto state = m_filterState.lock()) {
         // check if current value from filter state is equal to default value
         if (m_filter->has_start_value(*state) && !compare(m_filter->start_value(*state), m_filter->default_start_value())) {
-            return true;
+            return 1;
         }
         if (m_filter->has_end_value(*state) && !compare(m_filter->end_value(*state), m_filter->default_end_value())) {
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 QString RangeInputFilter::filterTag() const

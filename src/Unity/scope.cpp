@@ -73,6 +73,7 @@ const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
+const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a single scope
 
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
@@ -91,6 +92,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_hasNavigation(false)
     , m_favorite(false)
     , m_initialQueryDone(false)
+    , m_childScopesDirty(true)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
@@ -115,6 +117,11 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     {
         m_typingTimer.setInterval(TYPING_TIMEOUT);
     }
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_CARDINALITY_OVERRIDE")) {
+        m_cardinality = qgetenv("UNITY_SCOPES_CARDINALITY_OVERRIDE").toInt();
+    } else {
+        m_cardinality = SEARCH_CARDINALITY;
+    }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_searchProcessingDelayTimer.setSingleShot(true);
     QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
@@ -125,6 +132,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 
 Scope::~Scope()
 {
+    m_childScopesFuture.waitForFinished();
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
@@ -247,6 +255,7 @@ void Scope::metadataRefreshed()
 {
     // refresh Settings view if needed
     if (require_child_scopes_refresh()) {
+        m_childScopesDirty = true;
         update_child_scopes();
     }
 
@@ -363,7 +372,9 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+#endif
 
     processResultSet(m_cachedResults); // clears the result list
 
@@ -721,8 +732,12 @@ void Scope::dispatchSearch()
 
     setSearchInProgress(true);
 
+    // If applicable, update this scope's child scopes now, as part of the search process
+    // (i.e. while the loading bar is visible).
+    update_child_scopes();
+
     if (m_proxy) {
-        scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
         if (!userAgent.isEmpty()) {
             meta["user-agent"] = userAgent.toStdString();
@@ -888,10 +903,6 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    if (m_settingsModel && m_scopesInstance)
-    {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
-    }
     return m_settingsModel.data();
 }
 
@@ -906,9 +917,20 @@ bool Scope::require_child_scopes_refresh() const
 
 void Scope::update_child_scopes()
 {
-    if (m_settingsModel && m_scopesInstance)
+    // only run the update if child scopes have changed
+    if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        // reset the flag so that re-entering this method won't restart the update unnecessarily
+        m_childScopesDirty = false;
+
+        // just in case we have another update still running, wait here for it to complete
+        m_childScopesFuture.waitForFinished();
+
+        // run the update in a seperate thread
+        m_childScopesFuture = QtConcurrent::run([this]
+        {
+            m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        });
     }
 }
 
@@ -1175,6 +1197,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                                                        details.value(QStringLiteral("service_name")).toString(),
                                                        details.value(QStringLiteral("service_type")).toString(),
                                                        details.value(QStringLiteral("provider_name")).toString(),
+                                                       details.value(QStringLiteral("auth_params")).toMap(),
                                                        details.value(QStringLiteral("login_passed_action")).toInt(),
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
@@ -1214,7 +1237,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
         scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
         m_activationController->setListener(listener);
 
-        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri());
+        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri()) << ", categoryId" << categoryId;
 
         auto proxy = proxy_for_result(result);
         unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
@@ -1256,6 +1279,11 @@ unity::shell::scopes::PreviewModelInterface* Scope::preview(QVariant const& resu
 void Scope::cancelActivation()
 {
     m_activationController->invalidate();
+}
+
+void Scope::invalidateChildScopes()
+{
+    m_childScopesDirty = true;
 }
 
 void Scope::invalidateResults()

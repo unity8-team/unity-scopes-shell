@@ -252,6 +252,53 @@ private Q_SLOTS:
         );
     }
 
+    void testIncompleteLayout()
+    {
+        m_resultsView->setQuery("incomplete-layout");
+        
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("test:incomplete-layout"))
+                )
+                .match(m_resultsView->categories())
+        );
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        previewView->setColumnCount(1);
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+    }
+
     void testPreviewAction()
     {
         m_resultsView->setQuery("layout");
@@ -405,6 +452,163 @@ private Q_SLOTS:
         );
     }
 
+    void testPreviewReplacingPreviewWithWidgetRemoval()
+    {
+        m_resultsView->setQuery("preview-replace-with-removal");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        // some widgets removed, one added, order changed
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+        );
+    }
+
+    void testPreviewReplacingPreviewWithWidgetMoved()
+    {
+        m_resultsView->setQuery("preview-replace-with-moves");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+            )
+            .match(previewView2->widgets())
+        );
+    }
+
+    void testPreviewReplacingPreviewWithDifferentPushOrder()
+    {
+        // test preview is still ok when the order the widgets are pushed is different, but the order defined by
+        // layouts remains unchanged.
+        m_resultsView->setQuery("layout-push-order-change");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("desc"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+            );
+    }
+
+    void testPreviewReplacingPreviewWithDifferentLayoutOrder()
+    {
+        m_resultsView->setQuery("layout-order-change");
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+            )
+            .match(previewView->widgets())
+        );
+
+        sc::VariantMap hints {{"session-id", sc::Variant("goo")}};
+        auto sameView = previewView->widgetsInFirstColumn().at("actions").trigger("download", sc::Variant(hints));
+        auto previewView2 = dynamic_pointer_cast<shv::PreviewView>(sameView);
+        QVERIFY(bool(previewView2));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(shm::PreviewWidgetMatcher("hdr"))
+                .widget(shm::PreviewWidgetMatcher("img"))
+                .widget(shm::PreviewWidgetMatcher("actions"))
+                .widget(shm::PreviewWidgetMatcher("extra"))
+            )
+            .match(previewView2->widgets())
+            );
+    }
 };
 
 QTEST_GUILESS_MAIN(PreviewTest)

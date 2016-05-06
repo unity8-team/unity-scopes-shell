@@ -95,6 +95,7 @@ private Q_SLOTS:
     void discoveryFinished();
     void refreshFinished();
     void invalidateScopeResults(QString const&);
+    void prepopulateFirstScope();
     void prepopulateNextScopes();
 
     void initPopulateScopes();
@@ -121,6 +122,7 @@ private:
     QList<QPair<QString, QString>> m_versions;
     QString m_userAgent;
     bool m_loaded;
+    bool m_prepopulateFirstScope;
 
     QSharedPointer<LocationService> m_locationService;
     QTimer m_startupQueryTimeout;
