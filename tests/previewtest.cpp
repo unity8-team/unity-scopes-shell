@@ -135,6 +135,48 @@ private Q_SLOTS:
         );
     }
 
+    void testPreviewWithDuplicatedWidgetId()
+    {
+        m_resultsView->setQuery("preview-with-duplicated-widget-id");
+
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasAtLeast(1)
+                .mode(shm::CategoryListMatcher::Mode::starts_with)
+                .category(shm::CategoryMatcher("cat1")
+                    .hasAtLeast(1)
+                    .mode(shm::CategoryMatcher::Mode::starts_with)
+                    .result(shm::ResultMatcher("preview-with-duplicated-widget-id"))
+                )
+                .match(m_resultsView->categories())
+        );
+
+        auto abstractView = m_resultsView->category(0).result(0).longPress();
+        QVERIFY(bool(abstractView));
+        auto previewView = dynamic_pointer_cast<shv::PreviewView>(abstractView);
+        QVERIFY(bool(previewView));
+
+        QVERIFY_MATCHRESULT(
+            shm::PreviewColumnMatcher()
+            .column(
+                shm::PreviewMatcher()
+                .widget(
+                    shm::PreviewWidgetMatcher("img")
+                    .type("image")
+                )
+                .widget(
+                    shm::PreviewWidgetMatcher("author")
+                    .type("header")
+                )
+                .widget(
+                    shm::PreviewWidgetMatcher("hdr")
+                    .type("header")
+                )
+            )
+            .match(previewView->widgets())
+        );
+    }
+
     void testExpandablePreviewWidget()
     {
 //        QScopedPointer<PreviewStack> preview_stack;

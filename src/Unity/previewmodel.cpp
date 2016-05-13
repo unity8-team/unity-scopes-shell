@@ -396,7 +396,7 @@ QPair<int, int> PreviewModel::determinePositionFromLayout(QString const& widgetI
             }
         }
         if (destinationColumnIndex < 0) {
-            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetId << " not defined in column layouts";
+            qWarning() << "PreviewModel::determinePositionFromLayout(): widget" << widgetId << " not defined in column layouts";
             destinationColumnIndex = 0;
         }
     } else {
@@ -424,6 +424,10 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         destinationRowIndex = 0;
         auto widget = widgetModel->widget(destinationRowIndex);
         while (widget != nullptr && widget->received) {
+            if (widget->id == widgetData->id) {
+                qWarning() << "Received duplicated widget ids:" << widget->id;
+                return;
+            }
             widget = widgetModel->widget(++destinationRowIndex);
         }
     }
