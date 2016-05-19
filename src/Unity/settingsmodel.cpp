@@ -84,16 +84,6 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
 
     m_settings_path = databaseDir.filePath(QStringLiteral("settings.ini"));
 
-    try
-    {
-        tryLoadSettings();
-    }
-    catch(const unity::FileException& e)
-    {
-        // Something has gone wrong, at this point we'll just have to continue with a null m_settings.
-        qWarning() << "SettingsModel::SettingsModel: Failed to read settings file:" << e.what();
-    }
-
     for (const auto &it : settingsDefinitions.toList())
     {
         QVariantMap data = it.toMap();
@@ -179,7 +169,7 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
             {
                 try
                 {
-                    tryLoadSettings();
+                    tryLoadSettings(true);
                     switch (data->variantType)
                     {
                         case QVariant::Bool:
@@ -269,7 +259,7 @@ QVariant SettingsModel::value(const QString& id) const
         QVariant result;
         try
         {
-            tryLoadSettings();
+            tryLoadSettings(true);
             switch (data->variantType)
             {
                 case QVariant::Bool:
@@ -486,7 +476,7 @@ void SettingsModel::settings_timeout()
     {
         try
         {
-            tryLoadSettings();
+            tryLoadSettings(false);
             switch (value.type())
             {
                 case QVariant::Bool:
@@ -526,15 +516,19 @@ void SettingsModel::settings_timeout()
     }
 }
 
-void SettingsModel::tryLoadSettings() const
+void SettingsModel::tryLoadSettings(bool read_only) const
 {
     if (!m_settings)
     {
         QFileInfo checkFile(m_settings_path);
         if (!checkFile.exists() || !checkFile.isFile())
         {
+            if (read_only)
+            {
+                throw unity::FileException("Could not locate a settings file at: " + m_settings_path.toStdString(), -1);
+            }
             // Config file does not exist, so we create an empty one.
-            if (!QFile(m_settings_path).open(QFile::WriteOnly))
+            else if (!QFile(m_settings_path).open(QFile::WriteOnly))
             {
                 throw unity::FileException("Could not create an empty settings file at: " + m_settings_path.toStdString(), -1);
             }
