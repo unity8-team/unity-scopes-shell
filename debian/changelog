@@ -1,3 +1,22 @@
+unity-scopes-shell (0.5.7+16.04.20160519.1-0ubuntu1) xenial; urgency=medium
+
+  [ Gary.Wzl ]
+  * Stop typing timer when reset navigation tag(tapping cancel). Also
+    make sure relevant signal(searchQueryChanged) is triggered to keep
+    query string updated as query string is empty after tapping cancel
+    (LP: #1576311)
+
+  [ Marcus Tomlinson ]
+  * Only create an empty settings file when attempting to write to one
+    (LP: #1583055)
+
+  [ Pawel Stolowski ]
+  * Reject preview widgets with duplicated IDs. (LP: #1581495)
+  * Set internet connectivity status in ActionMetadata (previews and
+    preview actions). (LP: #1502282)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 19 May 2016 10:04:39 +0000
+
 unity-scopes-shell (0.5.7+16.04.20160505-0ubuntu1) xenial; urgency=medium
 
   [ Marcus Tomlinson ]
