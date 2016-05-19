@@ -84,6 +84,15 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
 
     m_settings_path = databaseDir.filePath(QStringLiteral("settings.ini"));
 
+    try
+    {
+        tryLoadSettings(true);
+    }
+    catch(const unity::FileException&)
+    {
+        // No settings file found, at this point we'll just have to continue with a null m_settings.
+    }
+
     for (const auto &it : settingsDefinitions.toList())
     {
         QVariantMap data = it.toMap();
