@@ -1,3 +1,72 @@
+unity-scopes-shell (0.5.7+16.04.20160505-0ubuntu1) xenial; urgency=medium
+
+  [ Marcus Tomlinson ]
+  * Update child scopes in a background thread to greatly improve the
+    performance of Scope::settings() (LP: #1567429)
+
+  [ Pawel Stolowski ]
+  * Apply a few optimizations to results model updates. Set cardinality
+    limit on all searches. (LP: #1539137)
+  * Don't clear preview model when new preview is triggered from an
+    existing preview - update preview model instead. (LP: #1537112,
+    #1485887)
+  * Don't crash if scopes runtime cannot be initialized (e.g. when
+    locale setup is broken). Force LC_ALL when running tests to avoid
+    occasional failures on our builders (locale issues). (LP: #1363946)
+  * Handle social-actions.
+  * Pre-populate first scope on startup (even if the screen is locked).
+    (LP: #1545866)
+  * Support or FilterGroup widget.
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 05 May 2016 09:41:19 +0000
+
+unity-scopes-shell (0.5.7+16.04.20160503-0ubuntu1) xenial; urgency=medium
+
+  [ Alberto Mardegan ]
+  * Allow clients to specify authentication parameters. (LP: #1554040)
+
+ -- David Barth <david.barth@canonical.com>  Tue, 03 May 2016 08:12:16 +0000
+
+unity-scopes-shell (0.5.7+16.04.20160405-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * Resync trunk.
+
+  [ Marcus Tomlinson ]
+  * Replace QSettings with unity::util::IniParser (LP: #1552082)
+
+  [ Robert Bruce Park ]
+  * Use new bileto_pre_release_hook.
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Tue, 05 Apr 2016 06:04:05 +0000
+
+unity-scopes-shell (0.5.7+16.04.20160317-0ubuntu1) xenial; urgency=medium
+
+  [ Pawel Stolowski ]
+  * Preliminary support for filters.
+
+  [ CI Train Bot ]
+  * debian/libscope-harness.symbols.in: update to released version.
+
+  [ Marcus Tomlinson ]
+  * The "FIXME" in Scope::executeCannedQuery() is no longer necessary
+    since scope->invalidateResults() itself now ensures that there is
+    only ever one search is in progress. (LP: #1537139)
+
+ -- Michael Zanetti <michael.zanetti@canonical.com>  Thu, 17 Mar 2016 22:35:47 +0000
+
+unity-scopes-shell (0.5.6+16.04.20160226.1-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * debian/libscope-harness.symbols.in: update to released version.
+
+  [ Pawel Stolowski ]
+  * Removed preview stack. Return single preview model from Scope.
+  * Show activation progress bar when activate is called on scope proxy.
+    (LP: #1537132)
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Fri, 26 Feb 2016 12:38:34 +0000
+
 unity-scopes-shell (0.5.6+16.04.20160216-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
@@ -91,10 +160,6 @@ unity-scopes-shell (0.5.5+15.10.20150924-0ubuntu1) wily; urgency=medium
   [ Albert Astals Cid ]
   * Call parent class ::event (LP: #1495467)
   * Improvements from running clazy over the code
-
-  [ CI Train Bot ]
-  * Improvements from running clazy over the code
-  * New rebuild forced.
 
  -- Pawel Stolowski <ci-train-bot@canonical.com>  Thu, 24 Sep 2015 12:44:30 +0000
 

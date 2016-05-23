@@ -37,12 +37,16 @@ macro(run_tests)
                        ${_test}.cpp
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterBaseInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorFilterInterface.h
+                       ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorOptionsInterface.h
                        ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/SettingsModelInterface.h
                       )
         qt5_use_modules(${_test}Exec Test Core Qml DBus)
         set_tests_properties(test${CLASSNAME}${_test}
                 PROPERTIES
-                  RUN_SERIAL TRUE)
+                  RUN_SERIAL TRUE
+                  ENVIRONMENT "LC_ALL=C")
 
         target_link_libraries(${_test}Exec
             Unity-qml
@@ -57,12 +61,15 @@ macro(run_tests)
 endmacro(run_tests)
 
 run_tests(
-    departmentstest
+    filterstest
+    filtersendtoendtest
+    optionselectorfiltertest
     favoritestest
     #locationtest
     overviewtest
     previewtest
     resultstest
+    scopesinittest
     settingsendtoendtest
     settingstest
     utilstest

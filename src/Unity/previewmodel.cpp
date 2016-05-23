@@ -27,11 +27,15 @@
 #include "previewwidgetmodel.h"
 #include "resultsmodel.h"
 #include "utils.h"
+#include "logintoaccount.h"
 
 // Qt
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+
+#include <unity/scopes/Scope.h>
+#include <unity/scopes/ActionMetadata.h>
 
 namespace scopes_ng
 {
@@ -42,12 +46,24 @@ PreviewModel::PreviewModel(QObject* parent) :
     unity::shell::scopes::PreviewModelInterface (parent),
     m_loaded(false),
     m_processingAction(false),
-    m_delayedClear(false),
     m_widgetColumnCount(1)
 {
+    connect(this, &PreviewModel::triggered, this, &PreviewModel::widgetTriggered);
+
     // we have one column by default
     PreviewWidgetModel* columnModel = new PreviewWidgetModel(this);
     m_previewWidgetModels.append(columnModel);
+}
+
+PreviewModel::~PreviewModel()
+{
+    if (m_listener) {
+        m_listener->invalidate();
+    }
+
+    if (m_lastActivation) {
+        m_lastActivation->invalidate();
+    }
 }
 
 void PreviewModel::setResult(std::shared_ptr<scopes::Result> const& result)
@@ -64,6 +80,9 @@ bool PreviewModel::event(QEvent* ev)
             case PushEvent::PREVIEW:
                 processPreviewChunk(pushEvent);
                 return true;
+            case PushEvent::ACTIVATION:
+                processActionResponse(pushEvent);
+                return true;
             default:
                 qWarning("PreviewModel: Unhandled PushEvent type");
                 break;
@@ -71,6 +90,18 @@ bool PreviewModel::event(QEvent* ev)
     }
 
     return unity::shell::scopes::PreviewModelInterface::event(ev);
+}
+
+void PreviewModel::setAssociatedScope(scopes_ng::Scope* scope, QUuid const& session_id, QString const& userAgent)
+{
+    m_associatedScope = scope;
+    m_session_id = session_id;
+    m_userAgent = userAgent;
+}
+
+scopes_ng::Scope* PreviewModel::associatedScope() const
+{
+    return m_associatedScope;
 }
 
 void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
@@ -85,56 +116,46 @@ void PreviewModel::processPreviewChunk(PushEvent* pushEvent)
         return;
     }
 
-    if (m_delayedClear) {
-        clearAll();
-        m_delayedClear = false;
+    setProcessingAction(false);
 
-        setProcessingAction(false);
-    }
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::processPreviewChunk(): widgets#" << widgets.size();
+#endif
 
-    if (!columns.empty()) {
-        setColumnLayouts(columns);
-    }
+    setColumnLayouts(columns);
     addWidgetDefinitions(widgets);
     updatePreviewData(preview_data);
 
     // status in [FINISHED, ERROR]
     if (status != CollectorBase::Status::INCOMPLETE) {
         // FIXME: do something special when preview finishes with error?
+        for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); ) {
+            auto widget = it.value();
+            if (!widget->received) {
+                for (auto model: m_previewWidgetModels) {
+                    model->removeWidget(widget);
+                }
+                m_previewWidgetsOrdered.removeOne(widget);
+                it = m_previewWidgets.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+#ifdef VERBOSE_MODEL_UPDATES
+        qDebug() << "PreviewModel::processPreviewChunk(): preview complete";
+#endif
+        Q_ASSERT(m_previewWidgets.size() == m_previewWidgetsOrdered.size());
         m_loaded = true;
-        Q_EMIT loadedChanged();
-    }
-}
-
-void PreviewModel::setDelayedClear()
-{
-    m_delayedClear = true;
-    // signal right away that the preview is "dirty"
-    if (m_loaded) {
-        m_loaded = false;
-        Q_EMIT loadedChanged();
-    }
-}
-
-void PreviewModel::clearAll()
-{
-    // clear column models
-    for (int i = 0; i < m_previewWidgetModels.size(); i++) {
-        m_previewWidgetModels[i]->clearWidgets();
-    }
-    m_allData.clear();
-    m_columnLayouts.clear();
-    m_previewWidgets.clear();
-    m_dataToWidgetMap.clear();
-
-    if (m_loaded) {
-        m_loaded = false;
         Q_EMIT loadedChanged();
     }
 }
 
 void PreviewModel::setWidgetColumnCount(int count)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::setWidgetColumnCount():" << count;
+#endif
     if (count != m_widgetColumnCount && count > 0) {
         int oldCount = m_widgetColumnCount;
         m_widgetColumnCount = count;
@@ -160,8 +181,8 @@ void PreviewModel::setWidgetColumnCount(int count)
             endRemoveRows();
         }
         // recalculate which columns do the widgets belong to
-        for (int i = 0; i < m_previewWidgets.size(); i++) {
-            addWidgetToColumnModel(m_previewWidgets[i]);
+        for (auto it = m_previewWidgetsOrdered.cbegin(); it != m_previewWidgetsOrdered.cend(); it++) {
+            addWidgetToColumnModel(*it);
         }
 
         Q_EMIT widgetColumnCountChanged();
@@ -176,6 +197,26 @@ int PreviewModel::widgetColumnCount() const
 bool PreviewModel::loaded() const
 {
     return m_loaded;
+}
+
+void PreviewModel::loadForResult(scopes::Result::SPtr const& result)
+{
+    m_previewedResult = result;
+    if (m_listener) {
+        m_listener->invalidate(); // TODO: is this needed?
+    }
+
+    dispatchPreview();
+}
+
+unity::scopes::Result::SPtr PreviewModel::previewedResult() const
+{
+    return m_previewedResult;
+}
+
+void PreviewModel::update(unity::scopes::PreviewWidgetList const& widgets)
+{
+    updateWidgetDefinitions(widgets);
 }
 
 bool PreviewModel::processingAction() const
@@ -193,6 +234,9 @@ void PreviewModel::setProcessingAction(bool processing)
 
 void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 {
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::setColumnLayouts()";
+#endif    
     if (layouts.empty()) return;
 
     for (auto it = layouts.begin(); it != layouts.end(); ++it) {
@@ -217,23 +261,26 @@ void PreviewModel::setColumnLayouts(scopes::ColumnLayoutList const& layouts)
 void PreviewModel::addWidgetDefinitions(scopes::PreviewWidgetList const& widgets)
 {
     processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
-        m_previewWidgets.append(widgetData);
-        addWidgetToColumnModel(widgetData);
+            auto it = m_previewWidgets.find(widgetData->id);
+            if (it != m_previewWidgets.end()) {
+                it.value() = widgetData;
+            } else {
+                m_previewWidgets.insert(widgetData->id, widgetData);
+                m_previewWidgetsOrdered.append(widgetData);
+            }
+            addWidgetToColumnModel(widgetData);
     });
 }
 
 void PreviewModel::updateWidgetDefinitions(unity::scopes::PreviewWidgetList const& widgets)
 {
     processWidgetDefinitions(widgets, [this](QSharedPointer<PreviewWidgetData> widgetData) {
-        for (int i = 0; i<m_previewWidgets.size(); i++) {
-                if (m_previewWidgets.at(i)->id == widgetData->id) {
-                    m_previewWidgets.replace(i, widgetData);
-
-                    // Update widget with that id in all models
-                    for (auto model: m_previewWidgetModels) {
-                        model->updateWidget(widgetData);
-                    }
-                    break;
+            auto it = m_previewWidgets.find(widgetData->id);
+            if (it != m_previewWidgets.end()) {
+                it.value() = widgetData;
+                // Update widget with that id in all models
+                for (auto model: m_previewWidgetModels) {
+                    model->updateWidget(widgetData);
                 }
         }
     });
@@ -327,8 +374,10 @@ void PreviewModel::processComponents(QHash<QString, QString> const& components, 
     }
 }
 
-void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
+QPair<int, int> PreviewModel::determinePositionFromLayout(QString const& widgetId) const
 {
+    //
+    // Find the column and row based on the column layout definition.
     int destinationColumnIndex = -1;
     int destinationRowIndex = -1;
 
@@ -340,20 +389,73 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         QList<QStringList> const& columnLayout = m_columnLayouts.value(m_widgetColumnCount);
         // find the row & col
         for (int i = 0; i < columnLayout.size(); i++) {
-            destinationRowIndex = columnLayout[i].indexOf(widgetData->id);
+            destinationRowIndex = columnLayout[i].indexOf(widgetId);
             if (destinationRowIndex >= 0) {
                 destinationColumnIndex = i;
                 break;
             }
         }
+        if (destinationColumnIndex < 0) {
+            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetId << " not defined in column layouts";
+            destinationColumnIndex = 0;
+        }
     } else {
-      // TODO: ask the shell
       destinationColumnIndex = 0;
     }
 
-    if (destinationColumnIndex >= 0 && destinationColumnIndex < m_previewWidgetModels.size()) {
-        PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
-        widgetModel->insertWidget(widgetData, destinationRowIndex);
+    Q_ASSERT(destinationColumnIndex >= 0);
+    return qMakePair(destinationColumnIndex, destinationRowIndex);
+}
+    
+void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> const& widgetData)
+{
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::addWidgetToColumnModel(): processing widget" << widgetData->id;
+#endif
+    auto const pos = determinePositionFromLayout(widgetData->id);
+    int destinationColumnIndex = pos.first;
+    int destinationRowIndex = pos.second;
+    
+    PreviewWidgetModel* widgetModel = m_previewWidgetModels.at(destinationColumnIndex);
+    Q_ASSERT(widgetModel);
+    
+    // if destinationRowIndex is -1, need to place it after last received
+    if (destinationRowIndex == -1) {
+        destinationRowIndex = 0;
+        auto widget = widgetModel->widget(destinationRowIndex);
+        while (widget != nullptr && widget->received) {
+            widget = widgetModel->widget(++destinationRowIndex);
+        }
+    }
+
+    //
+    // Place / move widget in the column model.
+    // We need to check if we have widget with same id already in the model (from previous preview).
+#ifdef VERBOSE_MODEL_UPDATES
+    qDebug() << "PreviewModel::addWidgetToColumnModel(): destination for widget" << widgetData->id << "is row" << destinationRowIndex << ", column" << destinationColumnIndex;
+#endif    
+    const int currentPosition = widgetModel->widgetIndex(widgetData->id);
+    if (currentPosition < 0) {
+        // Widget with given id not present in the model.
+        // Make sure we do not override another just received widget with this one - this can
+        // happen if another widget was not included in the layout and now we have a widget in the layout
+        // which wants to take same position. So, iterate starting from destinationRowIndex to make sure we don't
+        // overwrite a widget whose received flag is true.
+        auto widget = widgetModel->widget(destinationRowIndex);
+        while (widget != nullptr && widget->received) {
+            widget = widgetModel->widget(++destinationRowIndex);
+        }
+        widgetModel->addReplaceWidget(widgetData, destinationRowIndex);
+    } else {
+        if (currentPosition != destinationRowIndex) {
+            widgetModel->moveWidget(widgetData, currentPosition, destinationRowIndex);
+        }
+        // Compare widget content to see if it needs updating.
+        // Icon-actions needs to be updated every time because unity8 requires it to properly deal
+        // with temporaryIcon.
+        if ((widgetData->type == "icon-actions") || (*widgetData != *widgetModel->widget(destinationRowIndex))) {
+            widgetModel->updateWidget(widgetData, destinationRowIndex);
+        }
     }
 }
 
@@ -369,8 +471,8 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
         }
     }
 
-    for (int i = 0; i < m_previewWidgets.size(); i++) {
-        PreviewWidgetData* widget = m_previewWidgets.at(i).data();
+    for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); it++) {
+        PreviewWidgetData* widget = it.value().data();
         if (changedWidgets.contains(widget)) {
             // re-process attributes and emit dataChanged
             processComponents(widget->component_map, widget->data);
@@ -406,13 +508,10 @@ void PreviewModel::updatePreviewData(QHash<QString, QVariant> const& data)
 
 PreviewWidgetData* PreviewModel::getWidgetData(QString const& widgetId) const
 {
-    for (int i = 0; i < m_previewWidgets.size(); i++) {
-        PreviewWidgetData* widgetData = m_previewWidgets[i].data();
-        if (widgetData->id == widgetId) {
-            return widgetData;
-        }
+    auto it = m_previewWidgets.constFind(widgetId);
+    if (it != m_previewWidgets.cend()) {
+        return it.value().data();
     }
-
     return nullptr;
 }
 
@@ -423,7 +522,7 @@ int PreviewModel::rowCount(const QModelIndex&) const
 
 QVariant PreviewModel::data(const QModelIndex& index, int role) const
 {
-    int row = index.row();
+    const int row = index.row();
     if (row >= m_previewWidgetModels.size())
     {
         qWarning() << "PreviewModel::data - invalid index" << row << "size"
@@ -433,10 +532,171 @@ QVariant PreviewModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case RoleColumnModel:
-            return QVariant::fromValue(m_previewWidgetModels.at(index.row()));
+            return QVariant::fromValue(m_previewWidgetModels.at(row));
         default:
             return QVariant();
     }
 }
+
+void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
+{
+    qDebug() << "PreviewModel::dispatchPreview()";
+    // TODO: figure out if the result can produce a preview without sending a request to the scope
+    // if (m_previewedResult->has_early_preview()) { ... }
+    try {
+        auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
+        QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
+        scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+        if (!extra_data.is_null()) {
+            metadata.set_scope_data(extra_data);
+        }
+        if (!m_session_id.isNull()) {
+            metadata["session-id"] = uuidToString(m_session_id).toStdString();
+        }
+        if (!m_userAgent.isEmpty()) {
+            metadata["user-agent"] = m_userAgent.toStdString();
+        }
+
+        std::shared_ptr<PreviewDataReceiver> listener(new PreviewDataReceiver(this));
+        // invalidate previous listener (if any); TODO: is this needed?
+        if (m_listener) {
+            m_listener->invalidate();
+        }
+        m_listener = listener;
+
+        if (m_loaded) {
+            m_loaded = false;
+            Q_EMIT loadedChanged();
+        }
+
+        // mark all existing preview widgets as 'not received'
+        for (auto it = m_previewWidgets.begin(); it != m_previewWidgets.end(); it++) {
+            it.value()->received = false;
+        }
+
+        m_lastPreviewQuery = proxy->preview(*(m_previewedResult.get()), metadata, listener);
+    } catch (std::exception& e) {
+        qWarning("Caught an error from preview(): %s", e.what());
+    } catch (...) {
+        qWarning("Caught an error from preview()");
+    }
+}
+
+void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actionId, QVariantMap const& data)
+{
+    qDebug() << "PreviewModel::widgetTriggered(): widget=" << widgetId << "action=" << actionId << "data=" << data;
+
+    auto action = [this, widgetId, actionId, data]() {
+        try {
+            auto proxy = m_associatedScope ? m_associatedScope->proxy_for_result(m_previewedResult) : m_previewedResult->target_scope_proxy();
+
+            QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
+            scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+            metadata.set_scope_data(qVariantToScopeVariant(data));
+
+            if (m_lastActivation) {
+                m_lastActivation->invalidate();
+            }
+            std::shared_ptr<ActivationReceiver> listener(new ActivationReceiver(this, m_previewedResult));
+            m_lastActivation = listener;
+
+            setProcessingAction(true);
+
+            // FIXME: don't block
+            proxy->perform_action(*(m_previewedResult.get()), metadata, widgetId.toStdString(), actionId.toStdString(), listener);
+        } catch (std::exception& e) {
+            qWarning("Caught an error from perform_action(%s, %s): %s", widgetId.toStdString().c_str(), actionId.toStdString().c_str(), e.what());
+        } catch (...) {
+            qWarning("Caught an error from perform_action()");
+        }
+    };
+
+    PreviewWidgetData* widgetData = getWidgetData(widgetId);
+    if (widgetData != nullptr) {
+        QString wtype = widgetData->type;
+        auto uriAction = [this, wtype, data, action]() {
+            if ((wtype == QLatin1String("actions") || wtype == QLatin1String("icon-actions")) && data.contains(QStringLiteral("uri"))) {
+                if (m_associatedScope) {
+                    m_associatedScope->activateUri(data.value(QStringLiteral("uri")).toString());
+                    return;
+                }
+            }
+            action();
+        };
+
+        if (m_associatedScope && widgetData->data.contains(QStringLiteral("online_account_details")))
+        {
+            QVariantMap details = widgetData->data.value(QStringLiteral("online_account_details")).toMap();
+            if (details.contains(QStringLiteral("service_name")) &&
+                details.contains(QStringLiteral("service_type")) &&
+                details.contains(QStringLiteral("provider_name")) &&
+                details.contains(QStringLiteral("login_passed_action")) &&
+                details.contains(QStringLiteral("login_failed_action")))
+            {
+                LoginToAccount *login = new LoginToAccount(details.contains(QStringLiteral("scope_id")) ? details.value(QStringLiteral("scope_id")).toString() : QLatin1String(""),
+                                                            details.value(QStringLiteral("service_name")).toString(),
+                                                            details.value(QStringLiteral("service_type")).toString(),
+                                                            details.value(QStringLiteral("provider_name")).toString(),
+                                                            details.value(QStringLiteral("auth_params")).toMap(),
+                                                            details.value(QStringLiteral("login_passed_action")).toInt(),
+                                                            details.value(QStringLiteral("login_failed_action")).toInt(),
+                                                            this);
+                connect(login, SIGNAL(searchInProgress(bool)), m_associatedScope, SLOT(setSearchInProgress(bool)));
+                connect(login, &LoginToAccount::finished, [this, login, uriAction](bool, int action_code_index) {
+                    if (action_code_index >= 0 && action_code_index <= scopes::OnlineAccountClient::LastActionCode_)
+                    {
+                        scopes::OnlineAccountClient::PostLoginAction action_code = static_cast<scopes::OnlineAccountClient::PostLoginAction>(action_code_index);
+                        switch (action_code)
+                        {
+                            case scopes::OnlineAccountClient::DoNothing:
+                                return;
+                            case scopes::OnlineAccountClient::InvalidateResults:
+                                m_associatedScope->invalidateResults();
+                                return;
+                            default:
+                                break;
+                        }
+                    }
+                    uriAction();
+                    login->deleteLater();
+                });
+                login->loginToAccount();
+                return; // main execution ends here
+            }
+        } else {
+            uriAction();
+        }
+    } else {
+        qWarning("Action triggered for unknown widget \"%s\"", widgetId.toStdString().c_str());
+    }
+}
+
+void PreviewModel::processActionResponse(PushEvent* pushEvent)
+{
+    std::shared_ptr<scopes::ActivationResponse> response;
+    scopes::Result::SPtr result;
+    QString categoryId;
+    pushEvent->collectActivationResponse(response, result, categoryId);
+    if (!response) return;
+
+    switch (response->status()) {
+        case scopes::ActivationResponse::ShowPreview: // replace current preview
+            qDebug() << "PreviewModel::processActionResponse(): ShowPreview";
+            // the preview is marked as processing action, leave the flag on until the preview is updated
+            dispatchPreview(scopes::Variant(response->scope_data()));
+            break;
+        // TODO: case to nest preview (once such API is available)
+        default:
+            if (m_associatedScope) {
+                qDebug() << "PreviewModel::processActionResponse(): handleActivation";
+                m_associatedScope->handleActivation(response, result);
+            }
+
+            setProcessingAction(false);
+            break;
+    }
+}
+
 
 } // namespace scopes_ng

@@ -698,6 +698,7 @@ private Q_SLOTS:
             {"emblem", sc::Variant()},
             {"mascot", sc::Variant()},
             {"overlay-color", sc::Variant()},
+            {"social-actions", sc::Variant()},
             {"subtitle", sc::Variant()},
             {"summary", sc::Variant()},
             {"title", sc::Variant(sc::VariantMap{{"field", sc::Variant("title")}})}
@@ -1066,6 +1067,45 @@ private Q_SLOTS:
                 )
                 .match(resultsView->categories())
         );
+    }
+
+    void testResultsModelChangesWithReversedResults()
+    {
+        auto resultsView = m_harness->resultsView();
+        resultsView->setActiveScope("mock-scope-manyresults");
+        resultsView->setQuery("search5");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri0"))
+                    .result(shm::ResultMatcher("cat2_uri1"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search6");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+                .hasExactly(1)
+                .category(shm::CategoryMatcher("cat2")
+                    .result(shm::ResultMatcher("cat2_uri1"))
+                    .result(shm::ResultMatcher("cat2_uri0"))
+                )
+                .match(resultsView->categories())
+        );
+
+        resultsView->setQuery("search7");
+        QVERIFY_MATCHRESULT(
+            shm::CategoryListMatcher()
+            .hasExactly(1)
+            .category(shm::CategoryMatcher("cat2")
+                      .result(shm::ResultMatcher("cat2_uri2"))
+                      .result(shm::ResultMatcher("cat2_uri1"))
+                      .result(shm::ResultMatcher("cat2_uri0"))
+                )
+            .match(resultsView->categories())
+            );
     }
 
     void testResultsModelChangesWithDuplicatedUris()

@@ -31,7 +31,6 @@
 #include <categories.h>
 #include <overviewresults.h>
 #include <previewmodel.h>
-#include <previewstack.h>
 #include <previewwidgetmodel.h>
 
 #include <scope-harness/registry/pre-existing-registry.h>

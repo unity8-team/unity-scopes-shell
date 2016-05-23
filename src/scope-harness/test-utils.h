@@ -51,13 +51,13 @@ Q_DECL_EXPORT
 static void performSearch(QSharedPointer<shell::scopes::ScopeInterface> scope, QString const& searchString);
 
 Q_DECL_EXPORT
+static void waitForFilterStateChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
+
+Q_DECL_EXPORT
 static void waitForResultsChange(QSharedPointer<shell::scopes::ScopeInterface> scope);
 
 Q_DECL_EXPORT
 static void waitForSearchFinish(QSharedPointer<shell::scopes::ScopeInterface> scope);
-
-Q_DECL_EXPORT
-static bool previewForFirstResult(scopes_ng::Scope::Ptr scope, QString const& searchString, QScopedPointer<scopes_ng::PreviewStack>& preview_stack);
 
 Q_DECL_EXPORT
 static void setFavouriteScopes(const QStringList& cannedQueries);

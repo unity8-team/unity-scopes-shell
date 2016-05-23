@@ -41,7 +41,7 @@ namespace scopes_ng {
 const int MAX_NUMBER_OF_CATEGORIES = 32; // when reached, any excess categories which have no results will be removed
 
 // FIXME: this should be in a common place
-#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0 }, "subtitle":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null, "overlay-color":null }, "resources":{}})"
+#define CATEGORY_JSON_DEFAULTS R"({"schema-version":1,"template": {"category-layout":"grid","card-layout":"vertical","card-size":"small","overlay-mode":null,"collapsed-rows":2}, "components": { "title":null, "art": { "aspect-ratio":1.0 }, "subtitle":null, "social-actions":null, "mascot":null, "emblem":null, "summary":null, "attributes": { "max-count":2 }, "background":null, "overlay-color":null }, "resources":{}})"
 
 class CategoryData
 {
@@ -517,12 +517,14 @@ void Categories::countChanged()
 
 void Categories::updateResult(unity::scopes::Result const& result, QString const& categoryId, unity::scopes::Result const& updated_result)
 {
+    qDebug() << "Categories::updateResult(): update result with uri" << QString::fromStdString(result.uri()) << ", category id" << categoryId;
     for (auto catData: m_categories) {
         if (catData->categoryId() == categoryId) {
             catData->resultsModel()->updateResult(result, updated_result);
-            break;
+            return;
         }
     }
+    qWarning() << "Categories::updateResult(): no category with id" << categoryId;
 }
 
 QVariant

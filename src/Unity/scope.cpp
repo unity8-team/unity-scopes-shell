@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2013 Canonical, Ltd.
+ * Copyright (C) 2015 Canonical, Ltd.
  *
  * Authors:
  *  Michal Hruby <michal.hruby@canonical.com>
+ *  Pawel Stolowski <pawel.stolowski@canonical.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +24,8 @@
 // local
 #include "categories.h"
 #include "collectors.h"
-#include "previewstack.h"
 #include "locationaccesshelper.h"
+#include "previewmodel.h"
 #include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
@@ -73,6 +74,7 @@ const int SEARCH_PROCESSING_DELAY = 1000;
 const int RESULTS_TTL_SMALL = 30000; // 30 seconds
 const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
+const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a single scope
 
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
@@ -84,20 +86,28 @@ Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 Scope::Scope(scopes_ng::Scopes* parent) :
       m_query_id(0)
     , m_formFactor(QStringLiteral("phone"))
+    , m_activeFiltersCount(0)
     , m_isActive(false)
     , m_searchInProgress(false)
+    , m_activationInProgress(false)
     , m_resultsDirty(false)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
-    , m_hasAltNavigation(false)
     , m_favorite(false)
     , m_initialQueryDone(false)
+    , m_childScopesDirty(true)
     , m_searchController(new CollectionController)
     , m_activationController(new CollectionController)
     , m_status(Status::Okay)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     m_categories.reset(new Categories(this));
+    m_filters.reset(new Filters(m_filterState, this));
+
+    connect(m_filters.data(), SIGNAL(primaryFilterChanged()), this, SIGNAL(primaryNavigationFilterChanged()));
+
+    QQmlEngine::setObjectOwnership(m_filters.data(), QQmlEngine::CppOwnership);
+    connect(m_filters.data(), SIGNAL(filterStateChanged()), this, SLOT(filterStateChanged()));
 
     setScopesInstance(parent);
 
@@ -110,6 +120,11 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     {
         m_typingTimer.setInterval(TYPING_TIMEOUT);
     }
+    if (qEnvironmentVariableIsSet("UNITY_SCOPES_CARDINALITY_OVERRIDE")) {
+        m_cardinality = qgetenv("UNITY_SCOPES_CARDINALITY_OVERRIDE").toInt();
+    } else {
+        m_cardinality = SEARCH_CARDINALITY;
+    }
     QObject::connect(&m_typingTimer, &QTimer::timeout, this, &Scope::typingFinished);
     m_searchProcessingDelayTimer.setSingleShot(true);
     QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
@@ -120,6 +135,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
 
 Scope::~Scope()
 {
+    m_childScopesFuture.waitForFinished();
 }
 
 void Scope::processSearchChunk(PushEvent* pushEvent)
@@ -127,17 +143,15 @@ void Scope::processSearchChunk(PushEvent* pushEvent)
     CollectorBase::Status status;
     QList<std::shared_ptr<scopes::CategorisedResult>> results;
     scopes::Department::SCPtr rootDepartment;
-    scopes::OptionSelectorFilter::SCPtr sortOrderFilter;
-    scopes::FilterState filterState;
+    QList<scopes::FilterBase::SCPtr> filters;
 
-    status = pushEvent->collectSearchResults(results, rootDepartment, sortOrderFilter, filterState);
+    status = pushEvent->collectSearchResults(results, rootDepartment, filters);
     if (status == CollectorBase::Status::CANCELLED) {
         return;
     }
 
     m_rootDepartment = rootDepartment;
-    m_sortOrderFilter = sortOrderFilter;
-    m_receivedFilterState = filterState;
+    m_receivedFilters = filters;
 
     if (m_cachedResults.empty()) {
         m_cachedResults.swap(results);
@@ -210,6 +224,8 @@ bool Scope::event(QEvent* ev)
 
 void Scope::handleActivation(std::shared_ptr<scopes::ActivationResponse> const& response, scopes::Result::SPtr const& result, QString const& categoryId)
 {
+    setActivationInProgress(false);
+
     switch (response->status()) {
         case scopes::ActivationResponse::NotHandled:
             activateUri(QString::fromStdString(result->uri()));
@@ -242,6 +258,7 @@ void Scope::metadataRefreshed()
 {
     // refresh Settings view if needed
     if (require_child_scopes_refresh()) {
+        m_childScopesDirty = true;
         update_child_scopes();
     }
 
@@ -273,15 +290,15 @@ void Scope::setCannedQuery(unity::scopes::CannedQuery const& query)
 
 void Scope::handlePreviewUpdate(unity::scopes::Result::SPtr const& result, unity::scopes::PreviewWidgetList const& widgets)
 {
-    for (auto stack: m_previewStacks) {
-        auto previewedResult = stack->previewedResult();
+    for (auto model: m_previewModels) {
+        auto previewedResult = model->previewedResult();
 
         if (result == nullptr) {
             qWarning() << "handlePreviewUpdate: result is null";
             return;
         }
         if (previewedResult != nullptr && *result == *previewedResult) {
-            stack->update(widgets);
+            model->update(widgets);
         }
     }
 }
@@ -308,10 +325,8 @@ void Scope::executeCannedQuery(unity::scopes::CannedQuery const& query, bool all
 
     if (scope) {
         scope->setCannedQuery(query);
-        // FIXME: implement better way to do multiple changes to search props and dispatch single search
-        if (!scope->searchInProgress()) {
-            scope->invalidateResults();
-        }
+        scope->invalidateResults();
+
         if (scope != this) {
             Q_EMIT gotoScope(scopeId);
         } else {
@@ -360,7 +375,9 @@ void Scope::flushUpdates(bool finalize)
         return;
     }
 
+#ifdef VERBOSE_MODEL_UPDATES
     qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+#endif
 
     processResultSet(m_cachedResults); // clears the result list
 
@@ -404,17 +421,14 @@ void Scope::flushUpdates(bool finalize)
     }
 
     m_lastRootDepartment = m_rootDepartment;
+    bool containsDepartments = (m_rootDepartment.get() != nullptr);
 
     //
     // only consider resetting current department id if we are in final flushUpdates
     // or received departments already. We don't know if we should reset it
     // until query finishes because departments may still arrive.
-    if (finalize || m_rootDepartment.get() != nullptr)
+    if (finalize || containsDepartments)
     {
-        bool containsDepartments = m_rootDepartment.get() != nullptr;
-        // design decision - no navigation when doing searches
-        containsDepartments &= m_searchQuery.isEmpty();
-
         if (containsDepartments != m_hasNavigation) {
             m_hasNavigation = containsDepartments;
             Q_EMIT hasNavigationChanged();
@@ -425,54 +439,30 @@ void Scope::flushUpdates(bool finalize)
             m_currentNavigationId = QLatin1String("");
             Q_EMIT currentNavigationIdChanged();
         }
+        processPrimaryNavigationTag(m_currentNavigationId);
     }
 
-    // process the alt navigation (sort order filter)
-    QString currentAltNav(m_currentAltNavigationId);
-
-    if (m_sortOrderFilter && m_sortOrderFilter != m_lastSortOrderFilter) {
-        // build the nodes
-        m_altNavTree.reset(new DepartmentNode);
-        m_altNavTree->initializeForFilter(m_sortOrderFilter);
-
-        if (m_sortOrderFilter->has_active_option(m_receivedFilterState)) {
-            auto active_options = m_sortOrderFilter->active_options(m_receivedFilterState);
-            scopes::FilterOption::SCPtr active_option = *active_options.begin();
-            if (active_option) {
-                currentAltNav = QString::fromStdString(active_option->id());
-            }
-        }
-    }
-
-    m_lastSortOrderFilter = m_sortOrderFilter;
-
-    //
-    // only consider resetting alt nav id if we are in final flushUpdates
-    // or received alt nav filter already. We don't know if we should reset it
-    // until query finishes because filter may still arrive.
-    if (finalize || m_sortOrderFilter.get() != nullptr)
+    // process filters
+    if (finalize || m_receivedFilters.size() > 0)
     {
-        bool containsAltNav = m_sortOrderFilter.get() != nullptr;
-        // design decision - no navigation when doing searches
-        containsAltNav &= m_searchQuery.isEmpty();
-
-        if (containsAltNav != m_hasAltNavigation) {
-            m_hasAltNavigation = containsAltNav;
-            Q_EMIT hasAltNavigationChanged();
+        qDebug() << "Processing" << m_receivedFilters.size() << "filters";
+        const bool containsFilters = (m_receivedFilters.size() > 0);
+        const bool haveFiltersAlready = (m_filters->rowCount() > 0);
+        if (containsFilters) {
+            m_filters->update(m_receivedFilters, containsDepartments);
+            processPrimaryNavigationTag(m_currentNavigationId);
+            if (!haveFiltersAlready) {
+                Q_EMIT filtersChanged();
+            }
+            qDebug() << "Current number of filters:" << m_filters->rowCount();
         }
-
-        if (!containsAltNav && !m_currentAltNavigationId.isEmpty()) {
-            qDebug() << "Resetting alt nav id";
-            m_currentAltNavigationId = QLatin1String("");
-            Q_EMIT currentAltNavigationIdChanged();
-        }
-
-        if (containsAltNav && currentAltNav != m_currentAltNavigationId) {
-            m_currentAltNavigationId = currentAltNav;
-            Q_EMIT currentAltNavigationIdChanged();
-
-            // update the alt navigation models
-            updateNavigationModels(m_altNavTree.data(), m_altNavModels, m_currentAltNavigationId);
+        else
+        {
+            qDebug() << "Removing all filters";
+            m_filters->clear();
+            if (haveFiltersAlready) {
+                Q_EMIT filtersChanged();
+            }
         }
     }
 }
@@ -678,6 +668,14 @@ void Scope::setSearchInProgress(bool searchInProgress)
     }
 }
 
+void Scope::setActivationInProgress(bool activationInProgress)
+{
+    if (m_activationInProgress != activationInProgress) {
+        m_activationInProgress = activationInProgress;
+        Q_EMIT activationInProgressChanged();
+    }
+}
+
 void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 {
     if (m_status != status) {
@@ -690,6 +688,7 @@ void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
         qDebug() << "Setting current nav id:" <<  this->id() << id;
+        processPrimaryNavigationTag(id);
         m_currentNavigationId = id;
         Q_EMIT currentNavigationIdChanged();
     }
@@ -736,8 +735,12 @@ void Scope::dispatchSearch()
 
     setSearchInProgress(true);
 
+    // If applicable, update this scope's child scopes now, as part of the search process
+    // (i.e. while the loading bar is visible).
+    update_child_scopes();
+
     if (m_proxy) {
-        scopes::SearchMetadata meta(QLocale::system().name().toStdString(), m_formFactor.toStdString());
+        scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
         if (!userAgent.isEmpty()) {
             meta["user-agent"] = userAgent.toStdString();
@@ -885,6 +888,11 @@ bool Scope::searchInProgress() const
     return m_searchInProgress;
 }
 
+bool Scope::activationInProgress() const
+{
+    return m_activationInProgress;
+}
+
 unity::shell::scopes::ScopeInterface::Status Scope::status() const
 {
     return m_status;
@@ -916,10 +924,6 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
-    if (m_settingsModel && m_scopesInstance)
-    {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
-    }
     return m_settingsModel.data();
 }
 
@@ -941,18 +945,22 @@ bool Scope::require_child_scopes_refresh() const
 
 void Scope::update_child_scopes()
 {
-    if (m_settingsModel && m_scopesInstance)
+    // only run the update if child scopes have changed
+    if (m_childScopesDirty && m_settingsModel && m_scopesInstance)
     {
-        m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        // reset the flag so that re-entering this method won't restart the update unnecessarily
+        m_childScopesDirty = false;
+
+        // just in case we have another update still running, wait here for it to complete
+        m_childScopesFuture.waitForFinished();
+
+        // run the update in a seperate thread
+        m_childScopesFuture = QtConcurrent::run([this]
+        {
+            m_settingsModel->update_child_scopes(m_scopesInstance->getAllMetadata());
+        });
     }
 }
-
-/*
-Filters* Scope::filters() const
-{
-    return m_filters.get();
-}
-*/
 
 unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& navId)
 {
@@ -974,54 +982,19 @@ unity::shell::scopes::NavigationInterface* Scope::getNavigation(QString const& n
     return navModel;
 }
 
-unity::shell::scopes::NavigationInterface* Scope::getAltNavigation(QString const& navId)
-{
-    if (!m_altNavTree) return nullptr;
-
-    DepartmentNode* node = m_altNavTree->findNodeById(navId);
-    if (!node) return nullptr;
-
-    Department* navModel = new Department;
-    navModel->setScopeId(this->id());
-    navModel->loadFromDepartmentNode(node);
-    navModel->markSubdepartmentActive(m_currentAltNavigationId);
-
-    // sharing m_inverseDepartments with getNavigation
-    m_altNavModels.insert(navId, navModel);
-    m_inverseDepartments.insert(navModel, navId);
-    QObject::connect(navModel, &QObject::destroyed, this, &Scope::departmentModelDestroyed);
-
-    return navModel;
-}
-
-QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, QString const& primaryFilterId, QString const& primaryOptionId)
+QString Scope::buildQuery(QString const& scopeId, QString const& searchQuery, QString const& departmentId, unity::scopes::FilterState const& filterState)
 {
     scopes::CannedQuery q(scopeId.toStdString());
     q.set_query_string(searchQuery.toStdString());
     q.set_department_id(departmentId.toStdString());
-
-    if (!primaryFilterId.isEmpty() && !primaryOptionId.isEmpty()) {
-        scopes::FilterState filter_state;
-        scopes::OptionSelectorFilter::update_state(filter_state, primaryFilterId.toStdString(), primaryOptionId.toStdString(), true);
-        q.set_filter_state(filter_state);
-    }
-
+    q.set_filter_state(filterState);
     return QString::fromStdString(q.to_uri());
 }
 
-void Scope::setNavigationState(QString const& navId, bool altNavigation)
+void Scope::setNavigationState(QString const& navId)
 {
-    QString primaryFilterId;
-    if (m_sortOrderFilter) {
-        primaryFilterId = QString::fromStdString(m_sortOrderFilter->id());
-    }
-    if (!altNavigation) {
-        // switch current department id
-        performQuery(buildQuery(id(), m_searchQuery, navId, primaryFilterId, m_currentAltNavigationId));
-    } else {
-        // switch current primary filter
-        performQuery(buildQuery(id(), m_searchQuery, m_currentNavigationId, primaryFilterId, navId));
-    }
+    // switch current department id
+    performQuery(buildQuery(id(), m_searchQuery, navId, m_filterState));
 }
 
 void Scope::departmentModelDestroyed(QObject* obj)
@@ -1032,16 +1005,16 @@ void Scope::departmentModelDestroyed(QObject* obj)
     if (it == m_inverseDepartments.end()) return;
 
     m_departmentModels.remove(it.value(), navigation);
-    m_altNavModels.remove(it.value(), navigation);
     m_inverseDepartments.erase(it);
 }
 
-void Scope::previewStackDestroyed(QObject *obj)
+void Scope::previewModelDestroyed(QObject *obj)
 {
-    for (auto it = m_previewStacks.begin(); it != m_previewStacks.end(); it++)
+    for (auto it = m_previewModels.begin(); it != m_previewModels.end(); it++)
     {
         if (*it == obj) {
-            m_previewStacks.erase(it);
+            qDebug() << "PreviewModel destroyed";
+            m_previewModels.erase(it);
             break;
         }
     }
@@ -1093,19 +1066,14 @@ bool Scope::hasNavigation() const
     return m_hasNavigation;
 }
 
-QString Scope::currentAltNavigationId() const
-{
-    return m_currentAltNavigationId;
-}
-
-bool Scope::hasAltNavigation() const
-{
-    return m_hasAltNavigation;
-}
-
 QVariantMap Scope::customizations() const
 {
     return m_customizations;
+}
+
+int Scope::activeFiltersCount() const
+{
+    return m_activeFiltersCount;
 }
 
 void Scope::setSearchQuery(const QString& search_query)
@@ -1143,11 +1111,6 @@ void Scope::setSearchQueryString(const QString& search_query)
             ++m_query_id;
         }
         m_searchQuery = search_query;
-
-        // atm only empty query can have a filter state
-        if (!m_searchQuery.isEmpty()) {
-            m_filterState = scopes::FilterState();
-        }
 
         // only use typing delay if scope is active, otherwise apply immediately
         if (m_isActive) {
@@ -1239,13 +1202,17 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                 scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result));
                 m_activationController->setListener(listener);
 
+                setActivationInProgress(true);
+
                 auto proxy = proxy_for_result(result);
                 unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
                 scopes::QueryCtrlProxy controller = proxy->activate(*(result.get()), metadata, listener);
                 m_activationController->setController(controller);
             } catch (std::exception& e) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate(): %s", e.what());
             } catch (...) {
+                setActivationInProgress(false);
                 qWarning("Caught an error from activate()");
             }
         }
@@ -1264,6 +1231,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
                                                        details.value(QStringLiteral("service_name")).toString(),
                                                        details.value(QStringLiteral("service_type")).toString(),
                                                        details.value(QStringLiteral("provider_name")).toString(),
+                                                       details.value(QStringLiteral("auth_params")).toMap(),
                                                        details.value(QStringLiteral("login_passed_action")).toInt(),
                                                        details.value(QStringLiteral("login_failed_action")).toInt(),
                                                        this);
@@ -1303,7 +1271,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
         scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
         m_activationController->setListener(listener);
 
-        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri());
+        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri()) << ", categoryId" << categoryId;
 
         auto proxy = proxy_for_result(result);
         unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
@@ -1316,7 +1284,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
     }
 }
 
-unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
+unity::shell::scopes::PreviewModelInterface* Scope::preview(QVariant const& result_var, QString const& categoryId)
 {
     if (!result_var.canConvert<std::shared_ptr<scopes::Result>>()) {
         qWarning("Cannot preview, unable to convert %s to Result", result_var.typeName());
@@ -1334,17 +1302,22 @@ unity::shell::scopes::PreviewStackInterface* Scope::preview(QVariant const& resu
         return nullptr;
     }
 
-    PreviewStack* stack = new PreviewStack(nullptr);
-    QObject::connect(stack, &QObject::destroyed, this, &Scope::previewStackDestroyed);
-    m_previewStacks.append(stack);
-    stack->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
-    stack->loadForResult(result);
-    return stack;
+    PreviewModel* previewModel = new PreviewModel(nullptr);
+    QObject::connect(previewModel, &QObject::destroyed, this, &Scope::previewModelDestroyed);
+    m_previewModels.append(previewModel);
+    previewModel->setAssociatedScope(this, m_session_id, m_scopesInstance->userAgentString());
+    previewModel->loadForResult(result);
+    return previewModel;
 }
 
 void Scope::cancelActivation()
 {
     m_activationController->invalidate();
+}
+
+void Scope::invalidateChildScopes()
+{
+    m_childScopesDirty = true;
 }
 
 void Scope::invalidateResults()
@@ -1359,6 +1332,19 @@ void Scope::invalidateResults()
             resultsDirtyChanged();
         }
     }
+}
+
+void Scope::resetPrimaryNavigationTag()
+{
+    qDebug() << "resetPrimaryNavigationTag()";
+    setCurrentNavigationId("");
+    m_filters->update(unity::scopes::FilterState());
+    filterStateChanged();
+}
+
+void Scope::resetFilters()
+{
+    m_filters->reset();
 }
 
 void Scope::closeScope(unity::shell::scopes::ScopeInterface* scope)
@@ -1403,6 +1389,84 @@ void Scope::activateUri(QString const& uri)
 bool Scope::initialQueryDone() const
 {
     return m_initialQueryDone;
+}
+
+unity::shell::scopes::FiltersInterface* Scope::filters() const
+{
+    if (m_filters && m_filters->rowCount() == 0) {
+        return nullptr;
+    }
+    return m_filters.data();
+}
+
+unity::shell::scopes::FilterBaseInterface* Scope::primaryNavigationFilter() const
+{
+    return m_filters->primaryFilter().data();
+}
+
+QString Scope::primaryNavigationTag() const
+{
+    return m_primaryNavigationTag;
+}
+
+void Scope::filterStateChanged()
+{
+    qDebug() << "Filters changed";
+    m_filterState = m_filters->filterState();
+    processPrimaryNavigationTag(m_currentNavigationId);
+    processActiveFiltersCount();
+    invalidateResults();
+}
+
+//
+// Iterate over all filters to calculate the number of active ones.
+void Scope::processActiveFiltersCount()
+{
+    const int count = m_filters->activeFiltersCount();
+    if (count != m_activeFiltersCount) {
+        m_activeFiltersCount = count;
+        Q_EMIT activeFiltersCountChanged();
+    }
+    qDebug() << "active filters count:" << m_activeFiltersCount;
+}
+
+//
+// Determine primary navigation tag (the "brick" in search bar) from
+// current department (if departments are present) or primary navigation
+// filter (if scopes doesn't have departments but has filters and one of
+// them has 'Primary' flag set.
+void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
+{
+    QString tag;
+    // has departments?
+    if (m_rootDepartment) {
+        auto it = m_departmentModels.constFind(targetDepartmentId);
+        if (it != m_departmentModels.constEnd()) {
+            tag = (targetDepartmentId == "" ? "" : it.value()->label());
+        } else {
+            it = m_departmentModels.constFind(m_currentNavigationId);
+            if (it != m_departmentModels.constEnd()) {
+                auto subDept = (*it)->findSubdepartment(targetDepartmentId);
+                if (subDept) {
+                    tag = subDept->label;
+                } else {
+                    qWarning() << "Scope::processPrimaryNavigationTag(): no subdepartment '" << targetDepartmentId << "'";
+                }
+            } else {
+                qWarning() << "Scope::processPrimaryNavigationTag(): no department model for '" << m_currentNavigationId << "'";
+            }
+        }
+    } else {
+        auto pf = m_filters->primaryFilter();
+        if (pf) {
+            tag = pf->filterTag();
+        }
+    }
+    qDebug() << "Scope::processPrimaryNavigationTag(): tag is '" << tag << "'";
+    if (m_primaryNavigationTag != tag) {
+        m_primaryNavigationTag = tag;
+        Q_EMIT primaryNavigationTagChanged();
+    }
 }
 
 } // namespace scopes_ng

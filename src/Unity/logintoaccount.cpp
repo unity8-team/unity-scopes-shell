@@ -18,18 +18,20 @@
  */
 
 #include "logintoaccount.h"
+#include "utils.h"
 #include <unity/scopes/OnlineAccountClient.h>
 #include <QtConcurrent>
 
 using namespace unity;
 
-LoginToAccount::LoginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name,
+LoginToAccount::LoginToAccount(QString const& scope_id, QString const& service_name, QString const& service_type, QString const& provider_name, QVariantMap const& auth_params,
         int login_passed_action, int login_failed_action, QObject *parent)
     : QObject(parent),
       m_scope_id(scope_id),
       m_service_name(service_name),
       m_service_type(service_type),
       m_provider_name(provider_name),
+      m_auth_params(auth_params),
       m_login_passed_action(login_passed_action),
       m_login_failed_action(login_failed_action)
 {
@@ -60,7 +62,8 @@ void LoginToAccount::loginToAccount()
     QFuture<bool> service_enabled_future = QtConcurrent::run([&]
     {
         // Check if at least one account has the specified service enabled
-        scopes::OnlineAccountClient oa_client(m_service_name.toStdString(), m_service_type.toStdString(), m_provider_name.toStdString());
+        scopes::OnlineAccountClient oa_client(m_service_name.toStdString(), m_service_type.toStdString(), m_provider_name.toStdString(),
+                                              scopes_ng::qVariantToScopeVariant(m_auth_params).get_dict());
         auto service_statuses = oa_client.get_service_statuses();
         for (auto const& status : service_statuses)
         {

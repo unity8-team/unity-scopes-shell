@@ -20,6 +20,13 @@ set(QMLPLUGIN_SRC
     collectors.cpp
     department.cpp
     departmentnode.cpp
+    filters.cpp
+    filtergroupwidget.cpp
+    optionselectorfilter.cpp
+    optionselectoroptions.cpp
+    rangeinputfilter.cpp
+    valuesliderfilter.cpp
+    valueslidervalues.cpp
     geoip.cpp
     localization.h
     locationaccesshelper.cpp
@@ -28,7 +35,6 @@ set(QMLPLUGIN_SRC
     overviewresults.cpp
     overviewscope.cpp
     previewmodel.cpp
-    previewstack.cpp
     previewwidgetmodel.cpp
     resultsmap.cpp
     resultsmodel.cpp
@@ -41,10 +47,17 @@ set(QMLPLUGIN_SRC
     logintoaccount.cpp
     # We need these headers here so moc runs and we get the moc-stuff
     # compiled in, otherwise we miss some symbols
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FiltersInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/FilterBaseInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ExpandableFilterWidgetInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorFilterInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/OptionSelectorOptionsInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/RangeInputFilterInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ValueSliderFilterInterface.h
+    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ValueSliderValuesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/CategoriesInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/NavigationInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewModelInterface.h
-    ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewStackInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/PreviewWidgetModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ResultsModelInterface.h
     ${SCOPES_API_INCLUDEDIR}/unity/shell/scopes/ScopeInterface.h

@@ -25,11 +25,12 @@
 #include <unity/scopes/Scope.h>
 #include <unity/scopes/ScopeMetadata.h>
 #include <unity/shell/scopes/SettingsModelInterface.h>
+#include <unity/util/IniParser.h>
 
 #include <QAbstractListModel>
 #include <QList>
+#include <QMutex>
 #include <QSharedPointer>
-#include <QSettings>
 
 QT_BEGIN_NAMESPACE
 class QDir;
@@ -90,14 +91,19 @@ Q_SIGNALS:
 protected Q_SLOTS:
     void settings_timeout();
 
+private:
+    void tryLoadSettings() const;
+
 protected:
+    mutable QMutex m_mutex;
     QString m_scopeId;
     unity::scopes::ScopeProxy m_scopeProxy;
     int m_settingsTimeout;
 
+    QString m_settings_path;
     QList<QSharedPointer<Data>> m_data;
     QMap<QString, QSharedPointer<Data>> m_data_by_id;
-    QScopedPointer<QSettings> m_settings;
+    mutable QScopedPointer<unity::util::IniParser> m_settings;
     QMap<QString, QSharedPointer<QTimer>> m_timers;
 
     QList<QSharedPointer<Data>> m_child_scopes_data;
