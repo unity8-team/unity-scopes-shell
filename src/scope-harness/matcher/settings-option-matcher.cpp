@@ -18,6 +18,7 @@
 
 #include <scope-harness/matcher/settings-option-matcher.h>
 #include <boost/optional.hpp>
+#include <cmath>
 
 using namespace std;
 using namespace boost;
