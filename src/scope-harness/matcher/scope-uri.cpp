@@ -21,6 +21,7 @@
 #include <QUrl>
 
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
