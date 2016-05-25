@@ -1,3 +1,24 @@
+unity-scopes-shell (0.5.7+16.10.20160525-0ubuntu1) yakkety; urgency=medium
+
+  [ Gary.Wzl ]
+  * Stop typing timer when reset navigation tag(tapping cancel). Also
+    make sure relevant signal(searchQueryChanged) is triggered to keep
+    query string updated as query string is empty after tapping cancel
+    (LP: #1576311)
+
+  [ Marcus Tomlinson ]
+  * Only create an empty settings file when attempting to write to one
+    (LP: #1583055)
+
+  [ Pawel Stolowski ]
+  * Don't depend on qt5-default.
+  * Reject preview widgets with duplicated IDs. (LP: #1581495)
+  * Set internet connectivity status in ActionMetadata (previews and
+    preview actions). (LP: #1502282)
+  * Workaround dependency issue on yakkety.
+
+ -- Pawel Stolowski <ci-train-bot@canonical.com>  Wed, 25 May 2016 08:16:27 +0000
+
 unity-scopes-shell (0.5.7+16.10.20160523-0ubuntu1) yakkety; urgency=medium
 
   [ Pawel Stolowski ]
