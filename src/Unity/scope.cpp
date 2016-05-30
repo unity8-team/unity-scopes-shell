@@ -838,6 +838,10 @@ void Scope::createSettingsModel()
         m_settingsModel.reset();
     }
     Q_EMIT settingsChanged();
+
+    // Force child scopes refresh
+    m_childScopesDirty = true;
+    update_child_scopes();
 }
 
 QString Scope::id() const
