@@ -838,10 +838,6 @@ void Scope::createSettingsModel()
         m_settingsModel.reset();
     }
     Q_EMIT settingsChanged();
-
-    // Force child scopes refresh
-    m_childScopesDirty = true;
-    update_child_scopes();
 }
 
 QString Scope::id() const
@@ -935,7 +931,10 @@ void Scope::locationAccessChanged()
 {
     qDebug() << "Location access changed, recreating settings model for scope" << id();
     createSettingsModel();
-    Q_EMIT settingsChanged();
+
+    // Force child scopes refresh
+    m_childScopesDirty = true;
+    update_child_scopes();
 }
 
 bool Scope::require_child_scopes_refresh() const
