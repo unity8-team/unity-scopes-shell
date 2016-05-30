@@ -6,6 +6,8 @@ include /usr/share/dpkg/default.mk
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
+export QT_SELECT=5
+
 DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 ifneq (,$(findstring powerpc,$(DEB_HOST_GNU_TYPE)))
 # Work around pointer equality problem with -Bsymbolic-functions:

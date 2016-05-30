@@ -288,6 +288,15 @@ public:
             res["setting-distanceUnit"] = settings_["distanceUnit"];
             reply->push(res);
         }
+        else if (query_ == "preview-with-duplicated-widget-id")
+        {
+            auto cat = reply->register_category("cat1", "Category 1", "");
+            CategorisedResult res(cat);
+            res.set_uri(query_);
+            res.set_title("result for: \"" + query_ + "\"");
+            res.set_art("art");
+            reply->push(res);
+        }
         else
         {
             auto cat = reply->register_category("cat1", "Category 1", "");
@@ -359,6 +368,15 @@ public:
 
             reply->push(widgets);
             return;
+        }
+        else if (result().uri().find("preview-with-duplicated-widget-id") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            PreviewWidget w2("author", "header");
+            PreviewWidget w3("hdr", "header");
+            PreviewWidget w4("author", "text");
+
+            reply->push({w1, w2, w3, w4});
         }
         else if (result().uri().find("preview-replace-with-removal") != std::string::npos)
         {

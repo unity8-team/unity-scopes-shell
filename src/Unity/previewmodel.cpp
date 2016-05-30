@@ -396,7 +396,7 @@ QPair<int, int> PreviewModel::determinePositionFromLayout(QString const& widgetI
             }
         }
         if (destinationColumnIndex < 0) {
-            qWarning() << "PreviewModel::addWidgetToColumnModel(): widget" << widgetId << " not defined in column layouts";
+            qWarning() << "PreviewModel::determinePositionFromLayout(): widget" << widgetId << " not defined in column layouts";
             destinationColumnIndex = 0;
         }
     } else {
@@ -424,6 +424,10 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         destinationRowIndex = 0;
         auto widget = widgetModel->widget(destinationRowIndex);
         while (widget != nullptr && widget->received) {
+            if (widget->id == widgetData->id) {
+                qWarning() << "Received duplicated widget ids:" << widget->id;
+                return;
+            }
             widget = widgetModel->widget(++destinationRowIndex);
         }
     }
@@ -548,6 +552,9 @@ void PreviewModel::dispatchPreview(scopes::Variant const& extra_data)
 
         QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
         scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
+        if (m_associatedScope) {
+            metadata.set_internet_connectivity(m_associatedScope->networkManager().isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+        }
         if (!extra_data.is_null()) {
             metadata.set_scope_data(extra_data);
         }
@@ -594,6 +601,9 @@ void PreviewModel::widgetTriggered(QString const& widgetId, QString const& actio
             QString formFactor(m_associatedScope ? m_associatedScope->formFactor() : QStringLiteral("phone"));
             scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), formFactor.toStdString());
             metadata.set_scope_data(qVariantToScopeVariant(data));
+            if (m_associatedScope) {
+                metadata.set_internet_connectivity(m_associatedScope->networkManager().isOnline() ? scopes::SearchMetadata::Connected : scopes::SearchMetadata::Disconnected);
+            }
 
             if (m_lastActivation) {
                 m_lastActivation->invalidate();

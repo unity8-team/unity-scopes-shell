@@ -92,7 +92,7 @@ protected Q_SLOTS:
     void settings_timeout();
 
 private:
-    void tryLoadSettings() const;
+    void tryLoadSettings(bool read_only) const;
 
 protected:
     mutable QMutex m_mutex;

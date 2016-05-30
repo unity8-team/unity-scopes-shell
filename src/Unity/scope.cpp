@@ -1340,6 +1340,14 @@ void Scope::resetPrimaryNavigationTag()
     setCurrentNavigationId("");
     m_filters->update(unity::scopes::FilterState());
     filterStateChanged();
+
+    //1.Do not trigger timeout from m_typingTimer to avoid to execute invalidateResults twice 
+    //after tapping cancel.
+    //2.Also make sure query string signal is triggered as query string is empty.
+    if (m_typingTimer.isActive()) {
+        m_typingTimer.stop();
+        Q_EMIT searchQueryChanged();
+    }  
 }
 
 void Scope::resetFilters()
@@ -1467,6 +1475,11 @@ void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
         m_primaryNavigationTag = tag;
         Q_EMIT primaryNavigationTagChanged();
     }
+}
+
+const QNetworkConfigurationManager& Scope::networkManager() const
+{
+    return m_network_manager;
 }
 
 } // namespace scopes_ng
