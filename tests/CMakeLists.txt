@@ -7,7 +7,6 @@ set(TEST_RUNTIME_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/data/Runtime.ini")
 add_subdirectory(data)
 
 add_definitions(
-    -DGEOIP_SERVER_BINARY="${CMAKE_CURRENT_SOURCE_DIR}/geoip.ubuntu.com.py"
     -DTEST_DATA_DIR="${TEST_DATA_DIR}"
     -DTEST_RUNTIME_CONFIG="${TEST_RUNTIME_CONFIG}"
     -DTEST_SETTINGS_UNICODE="${CMAKE_CURRENT_SOURCE_DIR}/data/settings-unicode.ini"
@@ -18,7 +17,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}
     ${SCOPESLIB_INCLUDE_DIRS}
-    ${UBUNTU_LOCATION_SERVICE_INCLUDE_DIRS}
     ${QTDBUSTEST_INCLUDE_DIRS}
     ${QTDBUSMOCK_INCLUDE_DIRS}
     ${GSETTINGSQT_INCLUDE_DIRS}
@@ -65,7 +63,6 @@ run_tests(
     filtersendtoendtest
     optionselectorfiltertest
     favoritestest
-    #locationtest
     overviewtest
     previewtest
     resultstest

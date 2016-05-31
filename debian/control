@@ -13,17 +13,13 @@ Build-Depends: cmake,
                libgsettings-qt-dev (>= 0.1),
                libqtdbustest1-dev (>= 0.2),
                libqtdbusmock1-dev (>= 0.2),
-               libubuntu-location-service-dev (>= 2.0.1),
                pkg-config,
                python3-dev,
-# the two python- lines should be removed once lp bug #1582280 is fixed
-               python-singledispatch | python-tornado (<< 4.3.0),
-               python-backports-abc | python-tornado (<< 4.3.0),
-               python-tornado,
                python3-sphinx,
                qtdeclarative5-dev,
                qtdeclarative5-dev-tools,
                qtdeclarative5-qtquick2-plugin,
+               qtpositioning5-dev,
                unity-schemas (>= 7.3.1),
                libonline-accounts-client-dev,
                intltool,
@@ -61,7 +57,7 @@ Replaces: unity8-private (<< 7.84)
 Description: QML plugin for Scopes
  Plugin to integrate scopes with the Unity shell
 
-Package: libscope-harness3
+Package: libscope-harness2
 Section: libdevel
 Architecture: any
 Multi-Arch: same
@@ -77,7 +73,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         libscope-harness3 (= ${binary:Version})
+         libscope-harness2 (= ${binary:Version})
 Description: Test harness for Unity scopes
  Drive Unity scopes with a simple synchronous API. Make assertions
  about results. Development files.

@@ -22,11 +22,6 @@
 
 #include <QObject>
 
-#include <com/ubuntu/location/heading.h>
-#include <com/ubuntu/location/position.h>
-#include <com/ubuntu/location/update.h>
-#include <com/ubuntu/location/velocity.h>
-
 #include <unity/scopes/Location.h>
 
 namespace scopes_ng
