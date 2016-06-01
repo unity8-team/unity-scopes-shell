@@ -141,6 +141,7 @@ Scopes::Scopes(QObject *parent)
     QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::geoIpLookupFinished, m_locationAccessHelper.data(), &LocationAccessHelper::geoIpLookupFinished);
+    m_locationAccessHelper->init();
 
     createUserAgentString();
 

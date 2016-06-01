@@ -36,6 +36,10 @@ LocationAccessHelper::LocationAccessHelper(QObject *parent) :
     m_dotFileExists(false),
     m_denied(true)
 {
+}
+
+void LocationAccessHelper::init()
+{
     auto const path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QDir locationPromptFile(path);
     m_dotFileExists = locationPromptFile.exists(scopesLocationDotFile);

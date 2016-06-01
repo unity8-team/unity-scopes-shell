@@ -30,6 +30,7 @@ class Q_DECL_EXPORT LocationAccessHelper: public QObject
 
 public:
     LocationAccessHelper(QObject *parent = nullptr);
+    void init();
 
     bool shouldRequestLocation() const;
     bool isLocationAccessDenied() const;
