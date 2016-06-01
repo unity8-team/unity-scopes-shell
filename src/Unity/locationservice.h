@@ -54,8 +54,7 @@ public:
 
     virtual QSharedPointer<Token> activate() = 0;
 
-public Q_SLOTS:
-    void requestInitialLocation() {}
+    virtual void requestInitialLocation() = 0;
 
 Q_SIGNALS:
     // emited when location changes and only when access has been granted by apparmor

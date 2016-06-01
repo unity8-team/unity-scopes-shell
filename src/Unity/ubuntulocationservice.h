@@ -50,7 +50,7 @@ public:
 
 public Q_SLOTS:
 
-    void requestInitialLocation();
+    void requestInitialLocation() override;
 
 Q_SIGNALS:
     void enqueueActivate();
