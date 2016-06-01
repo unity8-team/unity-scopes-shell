@@ -24,7 +24,7 @@
 namespace scopes_ng
 {
 
-class LocationAccessHelper: public QObject
+class Q_DECL_EXPORT LocationAccessHelper: public QObject
 {
     Q_OBJECT
 
@@ -42,6 +42,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void accessChanged();
+    void requestInitialLocation();
 
 private:
     void createLocationPromptFile();

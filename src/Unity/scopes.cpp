@@ -137,6 +137,7 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
+    connect(m_locationAccessHelper.data(), SIGNAL(requestInitialLocation()), m_locationService.data(), SLOT(requestInitialLocation()));
     QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::geoIpLookupFinished, m_locationAccessHelper.data(), &LocationAccessHelper::geoIpLookupFinished);
@@ -348,6 +349,10 @@ void Scopes::discoveryFinished()
         // Either the the location data needs to change, or the timeout happens
         connect(m_locationService.data(), &LocationService::locationChanged,
                 this, &Scopes::completeDiscoveryFinished);
+        connect(m_locationService.data(), &LocationService::accessDenied,
+                this, &Scopes::completeDiscoveryFinished);
+        connect(m_locationService.data(), &LocationService::locationTimeout,
+                this, &Scopes::completeDiscoveryFinished);
         connect(&m_startupQueryTimeout, &QTimer::timeout, this,
                 &Scopes::completeDiscoveryFinished);
         m_startupQueryTimeout.setSingleShot(true);
@@ -358,6 +363,7 @@ void Scopes::discoveryFinished()
 
 void Scopes::completeDiscoveryFinished()
 {
+    qDebug() << "Scopes discovery completed";
     // Kill off everything that could potentially trigger the startup queries
     m_startupQueryTimeout.stop();
     disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,

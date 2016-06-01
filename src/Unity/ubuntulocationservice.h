@@ -48,6 +48,10 @@ public:
 
     QSharedPointer<Token> activate() override;
 
+public Q_SLOTS:
+
+    void requestInitialLocation();
+
 Q_SIGNALS:
     void enqueueActivate();
 

@@ -52,12 +52,16 @@ public:
 
     virtual bool isActive() const = 0;
 
-public Q_SLOTS:
     virtual QSharedPointer<Token> activate() = 0;
+
+public Q_SLOTS:
+    void requestInitialLocation() {}
 
 Q_SIGNALS:
     // emited when location changes and only when access has been granted by apparmor
     void locationChanged();
+
+    void locationTimeout();
 
     // emited when geoip lookup finishes (including initial lookup on startup). regardless of apparmor permissions
     // (receiving it doesn't mean position updates are allowed).

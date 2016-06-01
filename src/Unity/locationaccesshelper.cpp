@@ -39,6 +39,12 @@ LocationAccessHelper::LocationAccessHelper(QObject *parent) :
     auto const path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QDir locationPromptFile(path);
     m_dotFileExists = locationPromptFile.exists(scopesLocationDotFile);
+
+    if (m_dotFileExists) {
+        // dot file exists, it means user was already prompted for location so we can
+        // safely request location on startup without risking immediate trusted prompt.
+        Q_EMIT requestInitialLocation();
+    }
 }
 
 bool LocationAccessHelper::shouldRequestLocation() const

@@ -116,6 +116,7 @@ public:
 
 Q_SIGNALS:
     void locationChanged();
+    void locationTimeout();
     void geoIpLookupFinished();
     void accessDenied();
 
@@ -162,6 +163,7 @@ public Q_SLOTS:
     void onPositionUpdateTimeout()
     {
         qWarning() << "Position update timeout";
+        Q_EMIT locationTimeout();
     }
 
     void onError(QGeoPositionInfoSource::Error positioningError)
@@ -202,6 +204,13 @@ public Q_SLOTS:
         m_deactivateTimer.start();
     }
 
+    void requestInitialLocation()
+    {
+        qDebug() << "Requesting initial location update";
+        m_locationSource->requestUpdate();
+        m_geoipTimer.start();
+    }
+
 public:
     bool m_active;
 
@@ -238,6 +247,7 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
 
     // Connect to signals (which will be queued)
     connect(p.data(), &Priv::locationChanged, this, &LocationService::locationChanged, Qt::QueuedConnection);
+    connect(p.data(), &Priv::locationTimeout, this, &LocationService::locationTimeout, Qt::QueuedConnection);
     connect(p.data(), &Priv::geoIpLookupFinished, this, &LocationService::geoIpLookupFinished, Qt::QueuedConnection);
     connect(p.data(), &Priv::accessDenied, this, &LocationService::accessDenied, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
@@ -326,6 +336,11 @@ bool UbuntuLocationService::hasLocation() const
 QSharedPointer<LocationService::Token> UbuntuLocationService::activate()
 {
     return QSharedPointer<Token>(new TokenImpl(*this));
+}
+
+void UbuntuLocationService::requestInitialLocation()
+{
+    p->requestInitialLocation();
 }
 
 #include "ubuntulocationservice.moc"
