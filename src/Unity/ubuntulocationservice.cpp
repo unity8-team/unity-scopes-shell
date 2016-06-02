@@ -20,9 +20,7 @@
 #include "ubuntulocationservice.h"
 
 #include <QDebug>
-#include <QMutexLocker>
 #include <QRunnable>
-#include <QThreadPool>
 #include <QTimer>
 #include <QGeoPositionInfo>
 #include <QGeoPositionInfoSource>
@@ -74,22 +72,18 @@ class UbuntuLocationService::Priv : public QObject
 Q_OBJECT
 
 public:
-    Priv() :
-        m_resultMutex(QMutex::Recursive)
+    Priv()
     {
     }
 
     void init(const GeoIp::Ptr& geoIp)
     {
         m_geoIp = geoIp;
-        m_geoIp->whollyMoveThread(thread());
 
-        m_deactivateTimer.moveToThread(thread());
         m_deactivateTimer.setInterval(DEACTIVATE_INTERVAL);
         m_deactivateTimer.setSingleShot(true);
         m_deactivateTimer.setTimerType(Qt::VeryCoarseTimer);
 
-        m_geoipTimer.moveToThread(thread());
         m_geoipTimer.setInterval(GEOIP_INTERVAL);
         m_geoipTimer.setTimerType(Qt::CoarseTimer);
 
@@ -179,7 +173,6 @@ public Q_SLOTS:
     {
         qDebug() << "GeoIP request finished";
         {
-            QMutexLocker lock(&m_resultMutex);
             m_result = result;
         }
         Q_EMIT geoIpLookupFinished();
@@ -227,16 +220,12 @@ public:
 
     GeoIp::Ptr m_geoIp;
 
-    QMutex m_resultMutex;
-
     GeoIp::Result m_result;
 };
 
 UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
         p(new Priv())
 {
-    p->moveToThread(&m_thread);
-
     // If the location service is disabled
     if (qEnvironmentVariableIsSet("UNITY_SCOPES_NO_LOCATION"))
     {
@@ -252,20 +241,11 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp) :
     connect(p.data(), &Priv::accessDenied, this, &LocationService::accessDenied, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueActivate, p.data(), &Priv::activate, Qt::QueuedConnection);
     connect(this, &UbuntuLocationService::enqueueDeactivate, p.data(), &Priv::deactivate, Qt::QueuedConnection);
-
-    m_thread.start();
 }
 
 UbuntuLocationService::~UbuntuLocationService()
 {
     p.reset();
-
-    m_thread.quit();
-
-    if (m_thread.isRunning())
-    {
-        m_thread.wait();
-    }
 }
 
 scopes::Location UbuntuLocationService::location() const
@@ -274,7 +254,6 @@ scopes::Location UbuntuLocationService::location() const
 
     GeoIp::Result result;
     {
-        QMutexLocker lock(&p->m_resultMutex);
         result = p->m_result;
     }
 

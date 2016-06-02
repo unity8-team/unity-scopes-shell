@@ -346,6 +346,8 @@ void Scopes::discoveryFinished()
     }
     else
     {
+        qDebug() << "Waiting for initial location update";
+
         // Otherwise we have to wait for location data
         // Either the the location data needs to change, or the timeout happens
         connect(m_locationService.data(), &LocationService::locationChanged,

@@ -24,7 +24,6 @@
 #include "locationservice.h"
 
 #include <QSharedPointer>
-#include <QThread>
 
 namespace scopes_ng
 {
@@ -59,8 +58,6 @@ Q_SIGNALS:
 
 protected:
     class Priv;
-
-    QThread m_thread;
 
     QSharedPointer<Priv> p;
 };
