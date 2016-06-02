@@ -45,6 +45,7 @@ void LocationAccessHelper::init()
     m_dotFileExists = locationPromptFile.exists(scopesLocationDotFile);
 
     if (m_dotFileExists) {
+        m_numOfSearches = 0;
         // dot file exists, it means user was already prompted for location so we can
         // safely request location on startup without risking immediate trusted prompt.
         Q_EMIT requestInitialLocation();
