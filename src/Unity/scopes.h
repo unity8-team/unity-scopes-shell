@@ -44,7 +44,7 @@ class QGSettings;
 namespace scopes_ng
 {
 
-class LocationService;
+class UbuntuLocationService;
 class LocationAccessHelper;
 class Scope;
 class OverviewScope;
@@ -77,7 +77,7 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
     Scope::Ptr overviewScopeSPtr() const;
 
-    QSharedPointer<LocationService> locationService() const;
+    QSharedPointer<UbuntuLocationService> locationService() const;
     QString userAgentString() const;
 
     Scope::Ptr findTempScope(QString const& id) const;
@@ -130,7 +130,7 @@ private:
     bool m_loaded;
     bool m_prepopulateFirstScope;
 
-    QSharedPointer<LocationService> m_locationService;
+    QSharedPointer<UbuntuLocationService> m_locationService;
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;

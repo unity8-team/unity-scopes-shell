@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Canonical, Ltd.
+ * Copyright (C) 2014-2016 Canonical, Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,51 +15,80 @@
  *
  * Authors:
  *  Pete Woods <pete.woods@canonical.com>
+ *  Pawel Stolowski <pawel.stolowski@canonical.com>
  */
 
 #ifndef UBUNTULOCATIONSERVICE_H
 #define UBUNTULOCATIONSERVICE_H
 
 #include "geoip.h"
-#include "locationservice.h"
 
+#include <QObject>
 #include <QSharedPointer>
+#include <QTimer>
+#include <QGeoPositionInfo>
+#include <QGeoPositionInfoSource>
+#include <unity/scopes/Location.h>
 
 namespace scopes_ng
 {
 
-class Q_DECL_EXPORT UbuntuLocationService : public LocationService
+class Q_DECL_EXPORT UbuntuLocationService: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(unity::scopes::Location location READ location NOTIFY locationChanged)
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
 
 public:
+    typedef QSharedPointer<UbuntuLocationService> Ptr;
+    class Token : public QObject
+    {
+    };
+
     class TokenImpl;
 
     UbuntuLocationService(const GeoIp::Ptr& geoIp = GeoIp::Ptr(new GeoIp));
-
-    virtual ~UbuntuLocationService();
-
-    unity::scopes::Location location() const override;
-
-    bool hasLocation() const override;
-
-    bool isActive() const override;
-
-    QSharedPointer<Token> activate() override;
+    unity::scopes::Location location() const;
+    bool hasLocation() const;
+    bool isActive() const;
+    QSharedPointer<Token> activate();
 
 public Q_SLOTS:
-
-    void requestInitialLocation() override;
+    void requestInitialLocation();
 
 Q_SIGNALS:
-    void enqueueActivate();
+    // emited when location changes and only when access has been granted by apparmor
+    void locationChanged();
 
+    void locationTimeout();
+
+    // emited when geoip lookup finishes (including initial lookup on startup). regardless of apparmor permissions
+    // (receiving it doesn't mean position updates are allowed).
+    void geoIpLookupFinished();
+    void activeChanged();
+    void accessDenied();
+    void enqueueActivate();
     void enqueueDeactivate();
 
-protected:
-    class Priv;
+protected Q_SLOTS:
+    void doActivate();
+    void doDeactivate();
+    void update();
+    void positionChanged(const QGeoPositionInfo& update);
+    void onPositionUpdateTimeout();
+    void onError(QGeoPositionInfoSource::Error positioningError);
+    void requestFinished(const GeoIp::Result& result);
 
-    QSharedPointer<Priv> p;
+protected:
+    bool m_active;
+    QGeoPositionInfoSource *m_locationSource;
+    QGeoPositionInfo m_lastLocation;
+    bool m_locationUpdatedAtLeastOnce = false;
+    int m_activationCount = 0;
+    QTimer m_geoipTimer;
+    QTimer m_deactivateTimer;
+    GeoIp::Ptr m_geoIp;
+    GeoIp::Result m_result;
 };
 
 } // namespace scopes_ng

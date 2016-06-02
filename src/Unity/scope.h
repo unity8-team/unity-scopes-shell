@@ -43,7 +43,7 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
-#include "locationservice.h"
+#include "ubuntulocationservice.h"
 #include "locationaccesshelper.h"
 
 namespace scopes_ng
@@ -52,7 +52,6 @@ namespace scopes_ng
 class Categories;
 class PushEvent;
 class PreviewModel;
-class LocationService;
 class SettingsModel;
 class Scopes;
 
@@ -282,8 +281,8 @@ private:
     QMultiMap<QString, Department*> m_departmentModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
-    QSharedPointer<LocationService> m_locationService;
-    QSharedPointer<LocationService::Token> m_locationToken;
+    QSharedPointer<UbuntuLocationService> m_locationService;
+    QSharedPointer<UbuntuLocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
     QList<PreviewModel*> m_previewModels;
 };

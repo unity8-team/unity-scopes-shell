@@ -30,7 +30,6 @@ set(QMLPLUGIN_SRC
     geoip.cpp
     localization.h
     locationaccesshelper.cpp
-    locationservice.cpp
     overviewcategories.cpp
     overviewresults.cpp
     overviewscope.cpp

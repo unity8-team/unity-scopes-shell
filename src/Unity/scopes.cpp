@@ -350,11 +350,11 @@ void Scopes::discoveryFinished()
 
         // Otherwise we have to wait for location data
         // Either the the location data needs to change, or the timeout happens
-        connect(m_locationService.data(), &LocationService::locationChanged,
+        connect(m_locationService.data(), &UbuntuLocationService::locationChanged,
                 this, &Scopes::completeDiscoveryFinished);
-        connect(m_locationService.data(), &LocationService::accessDenied,
+        connect(m_locationService.data(), &UbuntuLocationService::accessDenied,
                 this, &Scopes::completeDiscoveryFinished);
-        connect(m_locationService.data(), &LocationService::locationTimeout,
+        connect(m_locationService.data(), &UbuntuLocationService::locationTimeout,
                 this, &Scopes::completeDiscoveryFinished);
         connect(&m_startupQueryTimeout, &QTimer::timeout, this,
                 &Scopes::completeDiscoveryFinished);
@@ -371,7 +371,7 @@ void Scopes::completeDiscoveryFinished()
     m_startupQueryTimeout.stop();
     disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
                &Scopes::completeDiscoveryFinished);
-    disconnect(m_locationService.data(), &LocationService::locationChanged,
+    disconnect(m_locationService.data(), &UbuntuLocationService::locationChanged,
                this, &Scopes::completeDiscoveryFinished);
 
     processFavoriteScopes();
@@ -814,7 +814,7 @@ bool Scopes::loaded() const
     return m_loaded;
 }
 
-LocationService::Ptr Scopes::locationService() const
+UbuntuLocationService::Ptr Scopes::locationService() const
 {
     return m_locationService;
 }

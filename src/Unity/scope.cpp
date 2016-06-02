@@ -26,7 +26,6 @@
 #include "collectors.h"
 #include "locationaccesshelper.h"
 #include "previewmodel.h"
-#include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
 #include "settingsmodel.h"
