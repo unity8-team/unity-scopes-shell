@@ -78,8 +78,6 @@ void LocationAccessHelper::geoIpLookupFinished()
 
 void LocationAccessHelper::positionChanged()
 {
-    qDebug() << "LocationAccessHelper::positionChanged";
-
     if (m_denied) {
         m_denied = false;
         Q_EMIT accessChanged();

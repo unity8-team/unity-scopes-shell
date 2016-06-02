@@ -148,8 +148,6 @@ void UbuntuLocationService::update()
 
 void UbuntuLocationService::positionChanged(const QGeoPositionInfo& update)
 {
-    qDebug() << "Position updated:" << update;
-
     m_locationUpdatedAtLeastOnce = true;
     m_lastLocation = update;
     Q_EMIT locationChanged();
