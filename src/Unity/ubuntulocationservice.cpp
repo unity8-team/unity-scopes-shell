@@ -251,7 +251,7 @@ QSharedPointer<UbuntuLocationService::Token> UbuntuLocationService::activate()
 void UbuntuLocationService::requestInitialLocation()
 {
     qDebug() << "Requesting initial location update";
-    m_locationSource->requestUpdate();
+    m_locationSource->startUpdates();
     m_geoipTimer.start();
 }
 
