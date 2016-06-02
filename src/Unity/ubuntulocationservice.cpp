@@ -82,13 +82,13 @@ UbuntuLocationService::UbuntuLocationService(const GeoIp::Ptr& geoIp)
     connect(m_locationSource, SIGNAL(error(QGeoPositionInfoSource::Error)), this, SLOT(onError(QGeoPositionInfoSource::Error)));
 
     // Wire up the deactivate timer
-    connect(&m_deactivateTimer, &QTimer::timeout, this, &UbuntuLocationService::update, Qt::QueuedConnection);
+    connect(&m_deactivateTimer, &QTimer::timeout, this, &UbuntuLocationService::update);
 
     // Wire up the network request finished timer
-    connect(m_geoIp.data(), &GeoIp::finished, this, &UbuntuLocationService::requestFinished, Qt::QueuedConnection);
+    connect(m_geoIp.data(), &GeoIp::finished, this, &UbuntuLocationService::requestFinished);
 
     // Wire up the GeoIP repeat timer
-    connect(&m_geoipTimer, &QTimer::timeout, m_geoIp.data(), &GeoIp::start, Qt::QueuedConnection);
+    connect(&m_geoipTimer, &QTimer::timeout, m_geoIp.data(), &GeoIp::start);
 
     // Connect to signals (which will be queued)
     connect(this, &UbuntuLocationService::enqueueActivate, this, &UbuntuLocationService::doActivate, Qt::QueuedConnection);
