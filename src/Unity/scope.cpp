@@ -738,6 +738,20 @@ void Scope::dispatchSearch()
     // (i.e. while the loading bar is visible).
     update_child_scopes();
 
+    // handle the case where single scope is refreshed multiple times without switching
+    // to another scope, which would never trigger location prompt.
+    if (m_scopeMetadata && m_scopeMetadata->location_data_needed() && !m_locationToken)
+    {
+        if (m_isActive)
+        {
+            Q_ASSERT(m_scopesInstance);
+
+            if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
+                m_locationToken = m_locationService->activate();
+            }
+        }
+    }
+
     if (m_proxy) {
         scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
