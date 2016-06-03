@@ -137,7 +137,7 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
-    connect(m_locationAccessHelper.data(), SIGNAL(requestInitialLocation()), m_locationService.data(), SLOT(requestInitialLocation()));
+    QObject::connect(m_locationAccessHelper.data(), &LocationAccessHelper::requestInitialLocation, m_locationService.data(), &UbuntuLocationService::requestInitialLocation);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
     QObject::connect(m_locationService.data(), &UbuntuLocationService::geoIpLookupFinished, m_locationAccessHelper.data(), &LocationAccessHelper::geoIpLookupFinished);
@@ -372,6 +372,10 @@ void Scopes::completeDiscoveryFinished()
     disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
                &Scopes::completeDiscoveryFinished);
     disconnect(m_locationService.data(), &UbuntuLocationService::locationChanged,
+               this, &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &UbuntuLocationService::accessDenied,
+               this, &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &UbuntuLocationService::locationTimeout,
                this, &Scopes::completeDiscoveryFinished);
 
     processFavoriteScopes();
