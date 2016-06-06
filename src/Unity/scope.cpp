@@ -1157,7 +1157,7 @@ void Scope::activate(QVariant const& result_var, QString const& categoryId)
 
     auto const activateResult = [this, result, categoryId, result_var]() {
         if (result->direct_activation()) {
-            if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
+            if (result->uri().find("scope://") == 0 || id() == QLatin1String("clickscope") || id() == QLatin1String("libertine-scope.ubuntu_libertine-scope") || (id() == QLatin1String("videoaggregator") && categoryId == QLatin1String("myvideos-getstarted"))) {
                 activateUri(QString::fromStdString(result->uri()));
             } else {
                 Q_EMIT previewRequested(result_var);
