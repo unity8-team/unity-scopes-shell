@@ -23,7 +23,7 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#define NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT 3
+#define NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT 0
 
 namespace scopes_ng
 {
