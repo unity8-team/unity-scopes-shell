@@ -37,7 +37,7 @@ public:
     /* getters */
     QString id() const override;
 
-    void dispatchSearch() override;
+    void dispatchSearch(bool) override;
     void setActive(const bool) override;
 
     void updateFavorites(const QStringList& favorites);

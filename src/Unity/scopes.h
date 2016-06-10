@@ -88,9 +88,6 @@ public:
 Q_SIGNALS:
     void metadataRefreshed();
 
-public Q_SLOTS:
-    void searchDispatched(QString const& scopeId);
-
 protected:
     virtual QString readPartnerId();
 

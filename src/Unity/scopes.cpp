@@ -173,11 +173,6 @@ QSharedPointer<LocationAccessHelper> Scopes::locationAccessHelper() const
     return m_locationAccessHelper;
 }
 
-void Scopes::searchDispatched(QString const& scopeId)
-{
-    m_locationAccessHelper->searchDispatched(scopeId);
-}
-
 int Scopes::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent)
@@ -403,7 +398,7 @@ void Scopes::prepopulateFirstScope()
             qDebug() << "Pre-populating first scope";
             scope->setSearchQuery(QLatin1String(""));
             // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-            scope->dispatchSearch();
+            scope->dispatchSearch(true);
         }
     }
 }
@@ -420,7 +415,7 @@ void Scopes::prepopulateNextScopes()
                     qDebug() << "Pre-populating scope" << scope->id();
                     scope->setSearchQuery(QLatin1String(""));
                     // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-                    scope->dispatchSearch();
+                    scope->dispatchSearch(true);
                 }
             }
             break;

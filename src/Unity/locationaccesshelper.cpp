@@ -23,8 +23,6 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#define NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT 6
-
 namespace scopes_ng
 {
 
@@ -32,7 +30,6 @@ const QString LocationAccessHelper::scopesLocationDotFile = ".scopesLocationProm
 
 LocationAccessHelper::LocationAccessHelper(QObject *parent) :
     QObject(parent),
-    m_numOfSearches(NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT),
     m_dotFileExists(false),
     m_denied(true)
 {
@@ -45,29 +42,20 @@ void LocationAccessHelper::init()
     m_dotFileExists = locationPromptFile.exists(scopesLocationDotFile);
 
     if (m_dotFileExists) {
-        m_numOfSearches = 0;
         // dot file exists, it means user was already prompted for location so we can
         // safely request location on startup without risking immediate trusted prompt.
         Q_EMIT requestInitialLocation();
     }
 }
 
-bool LocationAccessHelper::shouldRequestLocation() const
+bool LocationAccessHelper::trustedPromptWasShown() const
 {
-    return m_dotFileExists || (m_numOfSearches == 0);
+    return m_dotFileExists;
 }
 
 bool LocationAccessHelper::isLocationAccessDenied() const
 {
     return m_denied;
-}
-
-void LocationAccessHelper::searchDispatched(QString const& /* scopeId */)
-{
-    if (m_numOfSearches > 0) {
-        --m_numOfSearches;
-        qDebug() << "Number of searches before requesting location:" << m_numOfSearches;
-    }
 }
 
 void LocationAccessHelper::geoIpLookupFinished()

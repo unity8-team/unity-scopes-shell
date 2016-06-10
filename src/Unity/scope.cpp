@@ -78,7 +78,6 @@ const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
     auto scope = Scope::Ptr(new Scope(parent), &QObject::deleteLater);
-    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), parent, SLOT(searchDispatched(QString const&)));
     return scope;
 }
 
@@ -698,7 +697,7 @@ void Scope::setFilterState(scopes::FilterState const& filterState)
     m_filterState = filterState;
 }
 
-void Scope::dispatchSearch()
+void Scope::dispatchSearch(bool programmaticSearch)
 {
     m_initialQueryDone = true;
 
@@ -746,7 +745,7 @@ void Scope::dispatchSearch()
         {
             Q_ASSERT(m_scopesInstance);
 
-            if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
+            if ((!programmaticSearch) || m_scopesInstance->locationAccessHelper()->trustedPromptWasShown()) {
                 m_locationToken = m_locationService->activate();
             }
         }
@@ -780,8 +779,6 @@ void Scope::dispatchSearch()
 
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
-
-        Q_EMIT searchDispatched(id());
 
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
@@ -1160,17 +1157,7 @@ void Scope::setActive(const bool active) {
 
         if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
         {
-            if (m_isActive)
-            {
-                Q_ASSERT(m_scopesInstance);
-
-                if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
-                    m_locationToken = m_locationService->activate();
-                } else {
-                    qDebug() << "Waiting for more searches before requesting location";
-                }
-            }
-            else
+            if (!m_isActive)
             {
                 m_locationToken.reset();
             }

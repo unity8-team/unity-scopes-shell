@@ -185,7 +185,7 @@ public:
 public Q_SLOTS:
     void invalidateChildScopes();
     void invalidateResults();
-    virtual void dispatchSearch();
+    virtual void dispatchSearch(bool programmaticSearch = false);
     void setSearchInProgress(bool searchInProgress);
     void setActivationInProgress(bool activationInProgress);
 
@@ -194,7 +194,6 @@ Q_SIGNALS:
     void favoriteChanged(bool);
     void activationFailed(QString const& id);
     void updateResultRequested();
-    void searchDispatched(QString const &scopeId);
 
 private Q_SLOTS:
     void typingFinished();

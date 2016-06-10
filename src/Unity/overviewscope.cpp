@@ -145,7 +145,7 @@ void OverviewScope::updateFavorites(const QStringList& favs)
     categories->updateOtherScopes(otherScopes, scopeIdToName);
 }
 
-void OverviewScope::dispatchSearch()
+void OverviewScope::dispatchSearch(bool)
 {
     qWarning() << "Search is not implemented for Manage Dash";
 }
