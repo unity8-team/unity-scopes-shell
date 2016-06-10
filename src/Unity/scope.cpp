@@ -698,7 +698,7 @@ void Scope::setFilterState(scopes::FilterState const& filterState)
     m_filterState = filterState;
 }
 
-void Scope::dispatchSearch()
+void Scope::dispatchSearch(bool programmaticSearch)
 {
     m_initialQueryDone = true;
 
@@ -747,7 +747,9 @@ void Scope::dispatchSearch()
             Q_ASSERT(m_scopesInstance);
 
             if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
-                m_locationToken = m_locationService->activate();
+                if ((!programmaticSearch) || m_scopesInstance->locationAccessHelper()->trustedPromptWasShown()) {
+                    m_locationToken = m_locationService->activate();
+                }
             }
         }
     }
@@ -1160,17 +1162,7 @@ void Scope::setActive(const bool active) {
 
         if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
         {
-            if (m_isActive)
-            {
-                Q_ASSERT(m_scopesInstance);
-
-                if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
-                    m_locationToken = m_locationService->activate();
-                } else {
-                    qDebug() << "Waiting for more searches before requesting location";
-                }
-            }
-            else
+            if (!m_isActive)
             {
                 m_locationToken.reset();
             }

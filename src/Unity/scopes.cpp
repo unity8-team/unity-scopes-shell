@@ -403,7 +403,7 @@ void Scopes::prepopulateFirstScope()
             qDebug() << "Pre-populating first scope";
             scope->setSearchQuery(QLatin1String(""));
             // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-            scope->dispatchSearch();
+            scope->dispatchSearch(true);
         }
     }
 }
@@ -420,7 +420,7 @@ void Scopes::prepopulateNextScopes()
                     qDebug() << "Pre-populating scope" << scope->id();
                     scope->setSearchQuery(QLatin1String(""));
                     // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-                    scope->dispatchSearch();
+                    scope->dispatchSearch(true);
                 }
             }
             break;

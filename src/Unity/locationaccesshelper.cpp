@@ -23,7 +23,7 @@
 #include <QStandardPaths>
 #include <QDebug>
 
-#define NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT 6
+#define NUM_OF_SEARCHES_BEFORE_LOCATION_PROMPT 3
 
 namespace scopes_ng
 {
@@ -52,9 +52,14 @@ void LocationAccessHelper::init()
     }
 }
 
+bool LocationAccessHelper::trustedPromptWasShown() const
+{
+    return m_dotFileExists;
+}
+
 bool LocationAccessHelper::shouldRequestLocation() const
 {
-    return m_dotFileExists || (m_numOfSearches == 0);
+    return trustedPromptWasShown() || (m_numOfSearches == 0);
 }
 
 bool LocationAccessHelper::isLocationAccessDenied() const

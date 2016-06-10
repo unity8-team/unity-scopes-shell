@@ -33,6 +33,7 @@ public:
     void init();
 
     bool shouldRequestLocation() const;
+    bool trustedPromptWasShown() const;
     bool isLocationAccessDenied() const;
 
 public Q_SLOTS:
