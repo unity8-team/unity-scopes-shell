@@ -173,11 +173,6 @@ QSharedPointer<LocationAccessHelper> Scopes::locationAccessHelper() const
     return m_locationAccessHelper;
 }
 
-void Scopes::searchDispatched(QString const& scopeId)
-{
-    m_locationAccessHelper->searchDispatched(scopeId);
-}
-
 int Scopes::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent)

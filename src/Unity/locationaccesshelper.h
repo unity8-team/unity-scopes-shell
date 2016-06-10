@@ -32,12 +32,10 @@ public:
     LocationAccessHelper(QObject *parent = nullptr);
     void init();
 
-    bool shouldRequestLocation() const;
     bool trustedPromptWasShown() const;
     bool isLocationAccessDenied() const;
 
 public Q_SLOTS:
-    void searchDispatched(QString const& scopeId);
     void accessDenied();
     void positionChanged();
     void geoIpLookupFinished();
@@ -49,7 +47,6 @@ Q_SIGNALS:
 private:
     void createLocationPromptFile();
 
-    int m_numOfSearches;
     bool m_dotFileExists;
     bool m_denied;
 

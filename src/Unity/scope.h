@@ -194,7 +194,6 @@ Q_SIGNALS:
     void favoriteChanged(bool);
     void activationFailed(QString const& id);
     void updateResultRequested();
-    void searchDispatched(QString const &scopeId);
 
 private Q_SLOTS:
     void typingFinished();

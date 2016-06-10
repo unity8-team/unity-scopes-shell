@@ -78,7 +78,6 @@ const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
     auto scope = Scope::Ptr(new Scope(parent), &QObject::deleteLater);
-    connect(scope.data(), SIGNAL(searchDispatched(QString const&)), parent, SLOT(searchDispatched(QString const&)));
     return scope;
 }
 
@@ -746,10 +745,8 @@ void Scope::dispatchSearch(bool programmaticSearch)
         {
             Q_ASSERT(m_scopesInstance);
 
-            if (m_scopesInstance->locationAccessHelper()->shouldRequestLocation()) {
-                if ((!programmaticSearch) || m_scopesInstance->locationAccessHelper()->trustedPromptWasShown()) {
-                    m_locationToken = m_locationService->activate();
-                }
+            if ((!programmaticSearch) || m_scopesInstance->locationAccessHelper()->trustedPromptWasShown()) {
+                m_locationToken = m_locationService->activate();
             }
         }
     }
@@ -782,8 +779,6 @@ void Scope::dispatchSearch(bool programmaticSearch)
 
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
-
-        Q_EMIT searchDispatched(id());
 
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
