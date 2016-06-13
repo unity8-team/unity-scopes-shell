@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.7+16.10.20160613-0ubuntu1) yakkety; urgency=medium
+
+  * No change rebuild to account for ABI break in location-service.
+
+ -- marcus.tomlinson@canonical.com <marcus.tomlinson@canonical.com>  Mon, 13 Jun 2016 05:24:50 +0000
+
 unity-scopes-shell (0.5.7+16.10.20160525-0ubuntu1) yakkety; urgency=medium
 
   [ Gary.Wzl ]
