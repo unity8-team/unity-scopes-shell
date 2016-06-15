@@ -24,8 +24,8 @@
 // local
 #include "categories.h"
 #include "collectors.h"
+#include "locationaccesshelper.h"
 #include "previewmodel.h"
-#include "locationservice.h"
 #include "utils.h"
 #include "scopes.h"
 #include "settingsmodel.h"
@@ -77,7 +77,8 @@ const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a
 
 Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
 {
-    return Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+    auto scope = Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+    return scope;
 }
 
 Scope::Scope(scopes_ng::Scopes* parent) :
@@ -696,7 +697,7 @@ void Scope::setFilterState(scopes::FilterState const& filterState)
     m_filterState = filterState;
 }
 
-void Scope::dispatchSearch()
+void Scope::dispatchSearch(bool programmaticSearch)
 {
     m_initialQueryDone = true;
 
@@ -736,6 +737,20 @@ void Scope::dispatchSearch()
     // (i.e. while the loading bar is visible).
     update_child_scopes();
 
+    // handle the case where single scope is refreshed multiple times without switching
+    // to another scope, which would never trigger location prompt.
+    if (m_scopeMetadata && m_scopeMetadata->location_data_needed() && !m_locationToken)
+    {
+        if (m_isActive)
+        {
+            Q_ASSERT(m_scopesInstance);
+
+            if ((!programmaticSearch) || m_scopesInstance->locationAccessHelper()->trustedPromptWasShown()) {
+                m_locationToken = m_locationService->activate();
+            }
+        }
+    }
+
     if (m_proxy) {
         scopes::SearchMetadata meta(m_cardinality, QLocale::system().name().toStdString(), m_formFactor.toStdString());
         auto const userAgent = m_scopesInstance->userAgentString();
@@ -764,6 +779,7 @@ void Scope::dispatchSearch()
 
         scopes::SearchListenerBase::SPtr listener(new SearchResultReceiver(this));
         m_searchController->setListener(listener);
+
         try {
             qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
             scopes::QueryCtrlProxy controller = m_queryUserData ?
@@ -792,6 +808,11 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
     m_customizations = converted.toMap();
     Q_EMIT customizationsChanged();
 
+    createSettingsModel();
+}
+
+void Scope::createSettingsModel()
+{
     try
     {
         scopes::Variant settings_definitions;
@@ -806,10 +827,20 @@ void Scope::setScopeData(scopes::ScopeMetadata const& data)
             shareDir = QDir::home().filePath(QStringLiteral(".config/unity-scopes"));
         }
 
+        Q_ASSERT(m_scopesInstance);
+
         m_settingsModel.reset(
                 new SettingsModel(shareDir, id(),
-                        scopeVariantToQVariant(settings_definitions), this));
+                        scopeVariantToQVariant(settings_definitions),
+                        !m_scopesInstance->locationAccessHelper()->isLocationAccessDenied(),
+                        this));
+
         QObject::connect(m_settingsModel.data(), &SettingsModel::settingsChanged, this, &Scope::invalidateResults);
+
+        // If the scope needs location, then changes to global location access need to be monitored.
+        if (m_scopeMetadata->location_data_needed()) {
+            QObject::connect(m_scopesInstance->locationAccessHelper().data(), &LocationAccessHelper::accessChanged, this, &Scope::locationAccessChanged);
+        }
     }
     catch (unity::scopes::NotFoundException&)
     {
@@ -904,6 +935,16 @@ unity::shell::scopes::CategoriesInterface* Scope::categories() const
 unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 {
     return m_settingsModel.data();
+}
+
+void Scope::locationAccessChanged()
+{
+    qDebug() << "Location access changed, recreating settings model for scope" << id();
+    createSettingsModel();
+
+    // Force child scopes refresh
+    m_childScopesDirty = true;
+    update_child_scopes();
 }
 
 bool Scope::require_child_scopes_refresh() const
@@ -1116,11 +1157,7 @@ void Scope::setActive(const bool active) {
 
         if (m_scopeMetadata && m_scopeMetadata->location_data_needed())
         {
-            if (m_isActive)
-            {
-                m_locationToken = m_locationService->activate();
-            }
-            else
+            if (!m_isActive)
             {
                 m_locationToken.reset();
             }

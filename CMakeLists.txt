@@ -47,6 +47,7 @@ find_package(Qt5DBus)
 find_package(Qt5Qml)
 find_package(Qt5Quick)
 find_package(Qt5Gui)
+find_package(Qt5Positioning)
 find_package(Qt5Test)
 find_package(Boost COMPONENTS regex REQUIRED)
 
@@ -54,7 +55,6 @@ pkg_check_modules(SCOPESLIB REQUIRED libunity-scopes>=1.0.5)
 pkg_check_modules(SCOPES_API REQUIRED unity-shell-scopes=12)
 
 pkg_check_modules(GSETTINGSQT REQUIRED gsettings-qt)
-pkg_check_modules(UBUNTU_LOCATION_SERVICE REQUIRED ubuntu-location-service)
 pkg_check_modules(ONLINE_ACCOUNTS_CLIENT REQUIRED OnlineAccountsClient)
 
 # Standard install paths
@@ -122,6 +122,6 @@ ADD_CUSTOM_TARGET(
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(data)
-add_subdirectory(tools)
+#add_subdirectory(tools)
 add_subdirectory(po)
 add_subdirectory(docs)

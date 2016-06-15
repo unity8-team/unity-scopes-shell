@@ -43,7 +43,8 @@
 #include "collectors.h"
 #include "departmentnode.h"
 #include "department.h"
-#include "locationservice.h"
+#include "ubuntulocationservice.h"
+#include "locationaccesshelper.h"
 
 namespace scopes_ng
 {
@@ -51,7 +52,6 @@ namespace scopes_ng
 class Categories;
 class PushEvent;
 class PreviewModel;
-class LocationService;
 class SettingsModel;
 class Scopes;
 
@@ -185,7 +185,7 @@ public:
 public Q_SLOTS:
     void invalidateChildScopes();
     void invalidateResults();
-    virtual void dispatchSearch();
+    virtual void dispatchSearch(bool programmaticSearch = false);
     void setSearchInProgress(bool searchInProgress);
     void setActivationInProgress(bool activationInProgress);
 
@@ -200,6 +200,7 @@ private Q_SLOTS:
     void flushUpdates(bool finalize = false);
     void metadataRefreshed();
     void departmentModelDestroyed(QObject* obj);
+    void locationAccessChanged();
     void filterStateChanged();
     void previewModelDestroyed(QObject *obj);
 
@@ -208,6 +209,7 @@ protected:
 
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
+    void createSettingsModel();
 
     unity::scopes::ScopeProxy proxy() const;
 
@@ -278,8 +280,8 @@ private:
     QMultiMap<QString, Department*> m_departmentModels;
     QMap<Department*, QString> m_inverseDepartments;
     QMetaObject::Connection m_metadataConnection;
-    QSharedPointer<LocationService> m_locationService;
-    QSharedPointer<LocationService::Token> m_locationToken;
+    QSharedPointer<UbuntuLocationService> m_locationService;
+    QSharedPointer<UbuntuLocationService::Token> m_locationToken;
     QNetworkConfigurationManager m_network_manager;
     QList<PreviewModel*> m_previewModels;
 };

@@ -29,7 +29,7 @@ set(QMLPLUGIN_SRC
     valueslidervalues.cpp
     geoip.cpp
     localization.h
-    locationservice.cpp
+    locationaccesshelper.cpp
     overviewcategories.cpp
     overviewresults.cpp
     overviewscope.cpp

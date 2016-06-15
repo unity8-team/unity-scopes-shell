@@ -22,6 +22,7 @@
 
 #include <unity/shell/scopes/ScopesInterface.h>
 #include "scope.h"
+#include "locationaccesshelper.h"
 
 // Qt
 #include <QList>
@@ -43,7 +44,8 @@ class QGSettings;
 namespace scopes_ng
 {
 
-class LocationService;
+class UbuntuLocationService;
+class LocationAccessHelper;
 class Scope;
 class OverviewScope;
 
@@ -75,12 +77,13 @@ public:
     unity::shell::scopes::ScopeInterface* overviewScope() const override;
     Scope::Ptr overviewScopeSPtr() const;
 
-    QSharedPointer<LocationService> locationService() const;
+    QSharedPointer<UbuntuLocationService> locationService() const;
     QString userAgentString() const;
 
     Scope::Ptr findTempScope(QString const& id) const;
     void addTempScope(Scope::Ptr const& scope);
     Q_INVOKABLE void closeScope(unity::shell::scopes::ScopeInterface* scope) override;
+    QSharedPointer<LocationAccessHelper> locationAccessHelper() const;
 
 Q_SIGNALS:
     void metadataRefreshed();
@@ -124,10 +127,11 @@ private:
     bool m_loaded;
     bool m_prepopulateFirstScope;
 
-    QSharedPointer<LocationService> m_locationService;
+    QSharedPointer<UbuntuLocationService> m_locationService;
     QTimer m_startupQueryTimeout;
     QTimer m_scopesToDeleteTimer;
     QTimer m_registryRefreshTimer;
+    QSharedPointer<LocationAccessHelper> m_locationAccessHelper;
 
     unity::scopes::Runtime::SPtr m_scopesRuntime;
     QMap<QString, Scope::Ptr> m_tempScopes;

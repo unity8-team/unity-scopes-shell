@@ -107,6 +107,7 @@ Scopes::Scopes(QObject *parent)
     , m_listThread(nullptr)
     , m_loaded(false)
     , m_prepopulateFirstScope(true)
+    , m_locationAccessHelper(new LocationAccessHelper(nullptr))
     , m_priv(new Priv())
 {
     QByteArray noFav = qgetenv("UNITY_SCOPES_NO_FAVORITES");
@@ -136,6 +137,11 @@ Scopes::Scopes(QObject *parent)
     connect(&m_registryRefreshTimer, SIGNAL(timeout()), this, SLOT(scopeRegistryChanged()));
 
     m_locationService.reset(new UbuntuLocationService());
+    QObject::connect(m_locationAccessHelper.data(), &LocationAccessHelper::requestInitialLocation, m_locationService.data(), &UbuntuLocationService::requestInitialLocation);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::accessDenied, m_locationAccessHelper.data(), &LocationAccessHelper::accessDenied);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::locationChanged, m_locationAccessHelper.data(), &LocationAccessHelper::positionChanged);
+    QObject::connect(m_locationService.data(), &UbuntuLocationService::geoIpLookupFinished, m_locationAccessHelper.data(), &LocationAccessHelper::geoIpLookupFinished);
+    m_locationAccessHelper->init();
 
     createUserAgentString();
 
@@ -160,6 +166,11 @@ QString Scopes::userAgentString() const
 void Scopes::purgeScopesToDelete()
 {
     m_scopesToDelete.clear();
+}
+
+QSharedPointer<LocationAccessHelper> Scopes::locationAccessHelper() const
+{
+    return m_locationAccessHelper;
 }
 
 int Scopes::rowCount(const QModelIndex& parent) const
@@ -330,9 +341,15 @@ void Scopes::discoveryFinished()
     }
     else
     {
+        qDebug() << "Waiting for initial location update";
+
         // Otherwise we have to wait for location data
         // Either the the location data needs to change, or the timeout happens
-        connect(m_locationService.data(), &LocationService::locationChanged,
+        connect(m_locationService.data(), &UbuntuLocationService::locationChanged,
+                this, &Scopes::completeDiscoveryFinished);
+        connect(m_locationService.data(), &UbuntuLocationService::accessDenied,
+                this, &Scopes::completeDiscoveryFinished);
+        connect(m_locationService.data(), &UbuntuLocationService::locationTimeout,
                 this, &Scopes::completeDiscoveryFinished);
         connect(&m_startupQueryTimeout, &QTimer::timeout, this,
                 &Scopes::completeDiscoveryFinished);
@@ -344,11 +361,16 @@ void Scopes::discoveryFinished()
 
 void Scopes::completeDiscoveryFinished()
 {
+    qDebug() << "Scopes discovery completed";
     // Kill off everything that could potentially trigger the startup queries
     m_startupQueryTimeout.stop();
     disconnect(&m_startupQueryTimeout, &QTimer::timeout, this,
                &Scopes::completeDiscoveryFinished);
-    disconnect(m_locationService.data(), &LocationService::locationChanged,
+    disconnect(m_locationService.data(), &UbuntuLocationService::locationChanged,
+               this, &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &UbuntuLocationService::accessDenied,
+               this, &Scopes::completeDiscoveryFinished);
+    disconnect(m_locationService.data(), &UbuntuLocationService::locationTimeout,
                this, &Scopes::completeDiscoveryFinished);
 
     processFavoriteScopes();
@@ -376,7 +398,7 @@ void Scopes::prepopulateFirstScope()
             qDebug() << "Pre-populating first scope";
             scope->setSearchQuery(QLatin1String(""));
             // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-            scope->dispatchSearch();
+            scope->dispatchSearch(true);
         }
     }
 }
@@ -393,7 +415,7 @@ void Scopes::prepopulateNextScopes()
                     qDebug() << "Pre-populating scope" << scope->id();
                     scope->setSearchQuery(QLatin1String(""));
                     // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
-                    scope->dispatchSearch();
+                    scope->dispatchSearch(true);
                 }
             }
             break;
@@ -791,7 +813,7 @@ bool Scopes::loaded() const
     return m_loaded;
 }
 
-LocationService::Ptr Scopes::locationService() const
+UbuntuLocationService::Ptr Scopes::locationService() const
 {
     return m_locationService;
 }
