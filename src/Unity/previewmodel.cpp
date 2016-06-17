@@ -451,6 +451,7 @@ void PreviewModel::addWidgetToColumnModel(QSharedPointer<PreviewWidgetData> cons
         }
         widgetModel->addReplaceWidget(widgetData, destinationRowIndex);
     } else {
+        widgetModel->widget(currentPosition)->received = true;
         if (currentPosition != destinationRowIndex) {
             widgetModel->moveWidget(widgetData, currentPosition, destinationRowIndex);
         }

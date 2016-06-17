@@ -129,7 +129,7 @@ public:
             reply->push(res);
         }
         else if (query_ == "layout" || query_ == "layout-push-order-change" || query_ == "layout-order-change" || query_ == "incomplete-layout"
-                 || query_ == "preview-replace-with-removal" || query_ == "preview-replace-with-moves")
+                 || query_ == "preview-replace-with-removal" || query_ == "preview-replace-with-moves" || query_ == "preview-replace-no-layouts")
         {
             CategoryRenderer minimal_rndr(R"({"schema-version": 1, "components": {"title": "title"}})");
             auto cat = reply->register_category("cat1", "Category 1", "", minimal_rndr);
@@ -405,6 +405,22 @@ public:
             }
             reply->register_layout({l1});
             reply->push(widgets);
+            return;
+        }
+        else if (result().uri().find("preview-replace-no-layouts") != std::string::npos)
+        {
+            PreviewWidget w1("img", "image");
+            PreviewWidget w2("hdr", "header");
+            PreviewWidget w3("desc", "text");
+            PreviewWidget w4("actions", "actions");
+
+            VariantBuilder builder;
+            builder.add_tuple({
+                {"id", Variant("download")},
+                {"label", Variant("Download")}
+            });
+            w4.add_attribute_value("actions", builder.end());
+            reply->push({w1, w2, w3, w4});
             return;
         }
         else if (result().uri().find("preview-replace-with-moves") != std::string::npos)
