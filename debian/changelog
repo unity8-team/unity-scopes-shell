@@ -1,3 +1,15 @@
+unity-scopes-shell (0.5.7+16.10.20160617.1-0ubuntu1) yakkety; urgency=medium
+
+  [ Michael Zanetti ]
+  * add libertine-scope to the list of exceptions that can directly
+    activate things
+
+  [ Pawel Stolowski ]
+  * Set widget status as received if it already exists in the model.
+    (LP: #1590188)
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 17 Jun 2016 15:13:38 +0000
+
 unity-scopes-shell (0.5.7+16.10.20160615-0ubuntu1) yakkety; urgency=medium
 
   * Use Qt Location API. (LP: #1419829)
