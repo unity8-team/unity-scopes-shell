@@ -374,7 +374,7 @@ void Scope::flushUpdates(bool finalize)
     }
 
 #ifdef VERBOSE_MODEL_UPDATES
-    qDebug() << "flushUpdates:" << id() << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
+    qDebug() << id() << ": flushUpdates:" << "#results =" << m_cachedResults.count() << "finalize:" << finalize;
 #endif
 
     processResultSet(m_cachedResults); // clears the result list
@@ -433,7 +433,7 @@ void Scope::flushUpdates(bool finalize)
         }
 
         if (!containsDepartments && !m_currentNavigationId.isEmpty()) {
-            qDebug() << "Resetting current nav id";
+            qDebug() << id() << ": Resetting current nav id";
             m_currentNavigationId = QLatin1String("");
             Q_EMIT currentNavigationIdChanged();
         }
@@ -443,7 +443,7 @@ void Scope::flushUpdates(bool finalize)
     // process filters
     if (finalize || m_receivedFilters.size() > 0)
     {
-        qDebug() << "Processing" << m_receivedFilters.size() << "filters";
+        qDebug() << id() << ": Processing" << m_receivedFilters.size() << "filters";
         const bool containsFilters = (m_receivedFilters.size() > 0);
         const bool haveFiltersAlready = (m_filters->rowCount() > 0);
         if (containsFilters) {
@@ -452,11 +452,11 @@ void Scope::flushUpdates(bool finalize)
             if (!haveFiltersAlready) {
                 Q_EMIT filtersChanged();
             }
-            qDebug() << "Current number of filters:" << m_filters->rowCount();
+            qDebug() << id() << ": Current number of filters:" << m_filters->rowCount();
         }
         else
         {
-            qDebug() << "Removing all filters";
+            qDebug() << id() << ": Removing all filters";
             m_filters->clear();
             if (haveFiltersAlready) {
                 Q_EMIT filtersChanged();
@@ -685,7 +685,7 @@ void Scope::setStatus(shell::scopes::ScopeInterface::Status status)
 void Scope::setCurrentNavigationId(QString const& id)
 {
     if (m_currentNavigationId != id) {
-        qDebug() << "Setting current nav id:" <<  this->id() << id;
+        qDebug() << this->id() << ": Setting current nav id:" <<  this->id() << id;
         processPrimaryNavigationTag(id);
         m_currentNavigationId = id;
         Q_EMIT currentNavigationIdChanged();
@@ -781,7 +781,7 @@ void Scope::dispatchSearch(bool programmaticSearch)
         m_searchController->setListener(listener);
 
         try {
-            qDebug() << "Dispatching search:" << id() << m_searchQuery << m_currentNavigationId;
+            qDebug() << id() << ": Dispatching search:" << m_searchQuery << m_currentNavigationId << "(programmatic:" << programmaticSearch << ")";
             scopes::QueryCtrlProxy controller = m_queryUserData ?
                 m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, *m_queryUserData, meta, listener) :
                 m_proxy->search(m_searchQuery.toStdString(), m_currentNavigationId.toStdString(), m_filterState, meta, listener);
@@ -939,7 +939,7 @@ unity::shell::scopes::SettingsModelInterface* Scope::settings() const
 
 void Scope::locationAccessChanged()
 {
-    qDebug() << "Location access changed, recreating settings model for scope" << id();
+    qDebug() << id() << ": Location access changed, recreating settings model";
     createSettingsModel();
 
     // Force child scopes refresh
@@ -1026,7 +1026,7 @@ void Scope::previewModelDestroyed(QObject *obj)
     for (auto it = m_previewModels.begin(); it != m_previewModels.end(); it++)
     {
         if (*it == obj) {
-            qDebug() << "PreviewModel destroyed";
+            qDebug() << id() << ": PreviewModel destroyed";
             m_previewModels.erase(it);
             break;
         }
@@ -1274,7 +1274,7 @@ void Scope::activateAction(QVariant const& result_var, QString const& categoryId
         scopes::ActivationListenerBase::SPtr listener(new ActivationReceiver(this, result, categoryId));
         m_activationController->setListener(listener);
 
-        qDebug() << "Activating result action for result with uri '" << QString::fromStdString(result->uri()) << ", categoryId" << categoryId;
+        qDebug() << id() << ": Activating result action for result with uri '" << QString::fromStdString(result->uri()) << ", categoryId" << categoryId;
 
         auto proxy = proxy_for_result(result);
         unity::scopes::ActionMetadata metadata(QLocale::system().name().toStdString(), m_formFactor.toStdString());
@@ -1339,7 +1339,7 @@ void Scope::invalidateResults(bool programmaticSearch)
 
 void Scope::resetPrimaryNavigationTag()
 {
-    qDebug() << "resetPrimaryNavigationTag()";
+    qDebug() << id() << ": resetPrimaryNavigationTag()";
     setCurrentNavigationId("");
     m_filters->update(unity::scopes::FilterState());
     filterStateChanged();
@@ -1422,7 +1422,7 @@ QString Scope::primaryNavigationTag() const
 
 void Scope::filterStateChanged()
 {
-    qDebug() << "Filters changed";
+    qDebug() << id() << ": Filters changed";
     m_filterState = m_filters->filterState();
     processPrimaryNavigationTag(m_currentNavigationId);
     processActiveFiltersCount();
@@ -1438,7 +1438,7 @@ void Scope::processActiveFiltersCount()
         m_activeFiltersCount = count;
         Q_EMIT activeFiltersCountChanged();
     }
-    qDebug() << "active filters count:" << m_activeFiltersCount;
+    qDebug() << id() << ": Active filters count:" << m_activeFiltersCount;
 }
 
 //
@@ -1473,7 +1473,7 @@ void Scope::processPrimaryNavigationTag(QString const &targetDepartmentId)
             tag = pf->filterTag();
         }
     }
-    qDebug() << "Scope::processPrimaryNavigationTag(): tag is '" << tag << "'";
+    qDebug() << id() << ": processPrimaryNavigationTag(): tag is '" << tag << "'";
     if (m_primaryNavigationTag != tag) {
         m_primaryNavigationTag = tag;
         Q_EMIT primaryNavigationTagChanged();
