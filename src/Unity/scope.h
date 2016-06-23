@@ -184,7 +184,7 @@ public:
 
 public Q_SLOTS:
     void invalidateChildScopes();
-    void invalidateResults();
+    void invalidateResults(bool programmaticSearch = false);
     virtual void dispatchSearch(bool programmaticSearch = false);
     void setSearchInProgress(bool searchInProgress);
     void setActivationInProgress(bool activationInProgress);

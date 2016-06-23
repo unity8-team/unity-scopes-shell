@@ -128,7 +128,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::CoarseTimer);
-    QObject::connect(&m_invalidateTimer, &QTimer::timeout, this, &Scope::invalidateResults);
+    connect(&m_invalidateTimer, SIGNAL(timeout()), this, SLOT(invalidateResults()));
 }
 
 Scope::~Scope()
@@ -835,7 +835,7 @@ void Scope::createSettingsModel()
                         !m_scopesInstance->locationAccessHelper()->isLocationAccessDenied(),
                         this));
 
-        QObject::connect(m_settingsModel.data(), &SettingsModel::settingsChanged, this, &Scope::invalidateResults);
+        connect(m_settingsModel.data(), SIGNAL(settingsChanged()), this, SLOT(invalidateResults()));
 
         // If the scope needs location, then changes to global location access need to be monitored.
         if (m_scopeMetadata->location_data_needed()) {
@@ -1323,10 +1323,10 @@ void Scope::invalidateChildScopes()
     m_childScopesDirty = true;
 }
 
-void Scope::invalidateResults()
+void Scope::invalidateResults(bool programmaticSearch)
 {
     if (m_isActive) {
-        dispatchSearch();
+        dispatchSearch(programmaticSearch);
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
         if (!m_resultsDirty)
