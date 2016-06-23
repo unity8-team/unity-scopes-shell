@@ -1151,7 +1151,7 @@ void Scope::setFormFactor(const QString& form_factor) {
 }
 
 void Scope::setActive(const bool active) {
-    qDebug() << id() << "setActive:" << active;
+    qDebug() << id() << ": setActive:" << active;
 
     if (active != m_isActive) {
         m_isActive = active;
@@ -1327,9 +1327,12 @@ void Scope::invalidateChildScopes()
 
 void Scope::invalidateResults(bool programmaticSearch)
 {
-    qDebug() << id() << ": results invalidated (programmatic:" << programmaticSearch << ")";
+    qDebug() << id() << ": results invalidated, programmatic:" << programmaticSearch << ", active:" << m_isActive;
 
-    if (m_isActive) {
+    // if it's a programmatic invalidation (due to scope registry changes for example), then dispatch search even
+    // if scope is not currently active, otherwise later when it becomes active we won't know what was the cause
+    // results becoming 'dirty'.
+    if (m_isActive || programmaticSearch) {
         dispatchSearch(programmaticSearch);
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
