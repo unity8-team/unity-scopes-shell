@@ -1151,6 +1151,8 @@ void Scope::setFormFactor(const QString& form_factor) {
 }
 
 void Scope::setActive(const bool active) {
+    qDebug() << id() << "setActive:" << active;
+
     if (active != m_isActive) {
         m_isActive = active;
         Q_EMIT isActiveChanged();
@@ -1325,6 +1327,8 @@ void Scope::invalidateChildScopes()
 
 void Scope::invalidateResults(bool programmaticSearch)
 {
+    qDebug() << id() << ": results invalidated (programmatic:" << programmaticSearch << ")";
+
     if (m_isActive) {
         dispatchSearch(programmaticSearch);
     } else {
@@ -1350,7 +1354,7 @@ void Scope::resetPrimaryNavigationTag()
     if (m_typingTimer.isActive()) {
         m_typingTimer.stop();
         Q_EMIT searchQueryChanged();
-    }  
+    }
 }
 
 void Scope::resetFilters()
