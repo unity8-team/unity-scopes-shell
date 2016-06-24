@@ -294,6 +294,8 @@ void Scopes::populateScopes()
 
 void Scopes::discoveryFinished()
 {
+    qDebug() << "Scopes discovery finished";
+
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
     m_scopesRuntime = thread->getRuntime();
@@ -395,7 +397,7 @@ void Scopes::prepopulateFirstScope()
     if (!m_scopes.isEmpty()) {
         auto& scope = m_scopes.front();
         if (!scope->initialQueryDone()) {
-            qDebug() << "Pre-populating first scope";
+            qDebug() << "Pre-populating first scope:" << scope->id();
             scope->setSearchQuery(QLatin1String(""));
             // must dispatch search explicitly since setSearchQuery will not do that for inactive scope
             scope->dispatchSearch(true);
@@ -558,6 +560,8 @@ void Scopes::dashSettingsChanged(QString const& key)
 
 void Scopes::refreshFinished()
 {
+    qDebug() << "Scopes registry refresh finished";
+
     ScopeListWorker* thread = qobject_cast<ScopeListWorker*>(sender());
 
     auto scopes = thread->metadataMap();
@@ -607,12 +611,12 @@ void Scopes::scopeRegistryChanged()
     refreshScopeMetadata();
     Q_FOREACH(Scope::Ptr scope, m_scopes) {
         scope->invalidateChildScopes();
-        scope->invalidateResults();
+        scope->invalidateResults(true);
     }
 
     Q_FOREACH(Scope::Ptr scope, m_tempScopes) {
         scope->invalidateChildScopes();
-        scope->invalidateResults();
+        scope->invalidateResults(true);
     }
 }
 
