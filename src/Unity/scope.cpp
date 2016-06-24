@@ -128,7 +128,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     QObject::connect(&m_searchProcessingDelayTimer, SIGNAL(timeout()), this, SLOT(flushUpdates()));
     m_invalidateTimer.setSingleShot(true);
     m_invalidateTimer.setTimerType(Qt::CoarseTimer);
-    connect(&m_invalidateTimer, SIGNAL(timeout()), this, SLOT(invalidateResults()));
+    QObject::connect(&m_invalidateTimer, &QTimer::timeout, [this]() { invalidateResults(); });
 }
 
 Scope::~Scope()
@@ -835,7 +835,7 @@ void Scope::createSettingsModel()
                         !m_scopesInstance->locationAccessHelper()->isLocationAccessDenied(),
                         this));
 
-        connect(m_settingsModel.data(), SIGNAL(settingsChanged()), this, SLOT(invalidateResults()));
+        QObject::connect(m_settingsModel.data(), &SettingsModel::settingsChanged, [this]() { invalidateResults(); });
 
         // If the scope needs location, then changes to global location access need to be monitored.
         if (m_scopeMetadata->location_data_needed()) {
