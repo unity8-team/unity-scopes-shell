@@ -1334,7 +1334,7 @@ void Scope::invalidateResults(bool programmaticSearch)
     // becomes active we won't know if it was because of programmatic search.
     bool firstBoot = (m_scopesInstance != nullptr && !m_scopesInstance->locationAccessHelper()->trustedPromptWasShown());
 
-    if (m_isActive || (programmaticSearch && !firstBoot)) {
+    if (m_isActive || (programmaticSearch && firstBoot)) {
         dispatchSearch(programmaticSearch);
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
