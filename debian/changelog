@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.7+16.10.20160624.2-0ubuntu1) yakkety; urgency=medium
+
+  * Treat search triggered by registry changes as programmatic search
+    (i.e. not triggering location prompt). Enhanced debug messages. (LP:
+    #1595421)
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Fri, 24 Jun 2016 14:08:26 +0000
+
 unity-scopes-shell (0.5.7+16.10.20160617.1-0ubuntu1) yakkety; urgency=medium
 
   [ Michael Zanetti ]
