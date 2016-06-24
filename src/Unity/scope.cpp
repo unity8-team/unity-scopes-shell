@@ -1329,10 +1329,12 @@ void Scope::invalidateResults(bool programmaticSearch)
 {
     qDebug() << id() << ": results invalidated, programmatic:" << programmaticSearch << ", active:" << m_isActive;
 
-    // if it's a programmatic invalidation (due to scope registry changes for example), then dispatch search even
-    // if scope is not currently active, otherwise later when it becomes active we won't know what was the cause
-    // results becoming 'dirty'.
-    if (m_isActive || programmaticSearch) {
+    // If it's a programmatic invalidation (due to scope registry changes for example) and the trusted prompt was never shown before,
+    // then dispatch search even if scope is not currently active; just setting 'dirty' flag is problematic because when the scope
+    // becomes active we won't know if it was because of programmatic search.
+    bool firstBoot = (m_scopesInstance != nullptr && !m_scopesInstance->locationAccessHelper()->trustedPromptWasShown());
+
+    if (m_isActive || (programmaticSearch && !firstBoot)) {
         dispatchSearch(programmaticSearch);
     } else {
         // mark the results as dirty, so next setActive() re-sends the query
