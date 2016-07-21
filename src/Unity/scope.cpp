@@ -75,13 +75,13 @@ const int RESULTS_TTL_MEDIUM = 300000; // 5 minutes
 const int RESULTS_TTL_LARGE = 3600000; // 1 hour
 const int SEARCH_CARDINALITY = 300; // maximum number of results accepted from a single scope
 
-Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent)
+Scope::Ptr Scope::newInstance(scopes_ng::Scopes* parent, bool favorite)
 {
-    auto scope = Scope::Ptr(new Scope(parent), &QObject::deleteLater);
+    auto scope = Scope::Ptr(new Scope(parent, favorite), &QObject::deleteLater);
     return scope;
 }
 
-Scope::Scope(scopes_ng::Scopes* parent) :
+Scope::Scope(scopes_ng::Scopes* parent, bool favorite) :
       m_query_id(0)
     , m_formFactor(QStringLiteral("phone"))
     , m_activeFiltersCount(0)
@@ -91,7 +91,7 @@ Scope::Scope(scopes_ng::Scopes* parent) :
     , m_resultsDirty(false)
     , m_delayedSearchProcessing(false)
     , m_hasNavigation(false)
-    , m_favorite(false)
+    , m_favorite(favorite)
     , m_initialQueryDone(false)
     , m_childScopesDirty(true)
     , m_searchController(new CollectionController)

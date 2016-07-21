@@ -47,6 +47,7 @@ namespace scopes_ng
 class UbuntuLocationService;
 class LocationAccessHelper;
 class Scope;
+class Favorites;
 class OverviewScope;
 
 class Q_DECL_EXPORT Scopes : public unity::shell::scopes::ScopesInterface
@@ -92,7 +93,7 @@ protected:
     virtual QString readPartnerId();
 
 private Q_SLOTS:
-    void dashSettingsChanged(QString const &key);
+    void favoritesChanged();
     void processFavoriteScopes();
     void populateScopes();
     void discoveryFinished();
@@ -117,7 +118,7 @@ private:
     QList<QSharedPointer<Scope>> m_scopes;
     QList<QSharedPointer<Scope>> m_scopesToDelete;
     bool m_noFavorites;
-    QStringList m_favoriteScopes;
+    Favorites* m_favoriteScopes;
     QGSettings* m_dashSettings;
     QMap<QString, unity::scopes::ScopeMetadata::SPtr> m_cachedMetadata;
     QSharedPointer<OverviewScope> m_overviewScope;
