@@ -465,6 +465,11 @@ void Scopes::processFavoriteScopes()
             }
         }
 
+        // special-case clickscope; append it to favorites if it was uninstalled (and in consequence removed from favorites) - see LP: #1603186
+        if (m_cachedMetadata.contains(CLICK_SCOPE_ID) && !m_favoriteScopes.contains(CLICK_SCOPE_ID)) {
+            setFavorite(CLICK_SCOPE_ID, true);
+        }
+
         // this prevents further processing if we get called back when calling scope->setFavorite() below
         if (m_favoriteScopes == newFavorites)
             return;
