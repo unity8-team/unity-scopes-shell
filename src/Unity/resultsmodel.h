@@ -73,10 +73,10 @@ public:
     bool needsPurging() const;
 
 private:
-    QVariant componentValue(unity::scopes::Result const* result, std::string const& fieldName) const;
+    QVariant componentValue(unity::scopes::Result const* result, Roles field) const;
     QVariant attributesValue(unity::scopes::Result const* result) const;
 
-    std::unordered_map<std::string, std::string> m_componentMapping;
+    QVector<std::string> m_componentMapping;
     QList<std::shared_ptr<unity::scopes::Result>> m_results;
     QString m_categoryId;
     int m_maxAttributes;

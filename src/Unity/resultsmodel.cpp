@@ -43,6 +43,7 @@ ResultsModel::ResultsModel(QObject* parent)
  , m_maxAttributes(2)
  , m_purge(true)
 {
+    m_componentMapping.resize(RoleSocialActions + 1);
 }
 
 QString ResultsModel::categoryId() const
@@ -60,17 +61,45 @@ void ResultsModel::setCategoryId(QString const& id)
 
 void ResultsModel::setComponentsMapping(QHash<QString, QString> const& mapping)
 {
-    std::unordered_map<std::string, std::string> newMapping;
+    QVector<std::string> newMapping(RoleSocialActions + 1);
     for (auto it = mapping.begin(); it != mapping.end(); ++it) {
-        newMapping[it.key().toStdString()] = it.value().toStdString();
+        Roles field;
+        const QString fieldName = it.key();
+        if (fieldName == QLatin1String("title")) {
+            field = RoleTitle;
+        } else if (fieldName == QLatin1String("attributes")) {
+            field = RoleAttributes;
+        } else if (fieldName == QLatin1String("art")) {
+            field = RoleArt;
+        } else if (fieldName == QLatin1String("subtitle")) {
+            field = RoleSubtitle;
+        } else if (fieldName == QLatin1String("mascot")) {
+            field = RoleMascot;
+        } else if (fieldName == QLatin1String("emblem")) {
+            field = RoleEmblem;
+        } else if (fieldName == QLatin1String("summary")) {
+            field = RoleSummary;
+        } else if (fieldName == QLatin1String("background")) {
+            field = RoleBackground;
+        } else if (fieldName == QLatin1String("overlay-color")) {
+            field = RoleOverlayColor;
+        } else if (fieldName == QLatin1String("quick-preview-data")) {
+            field = RoleQuickPreviewData;
+        } else if (fieldName == QLatin1String("social-actions")) {
+            field = RoleSocialActions;
+        } else {
+            qDebug() << "Unknown components field" << fieldName;
+            break;
+        }
+        newMapping[field] = it.value().toStdString();
     }
 
     if (rowCount() > 0) {
         beginResetModel();
-        m_componentMapping.swap(newMapping);
+        m_componentMapping = newMapping;
         endResetModel();
     } else {
-        m_componentMapping.swap(newMapping);
+        m_componentMapping = newMapping;
     }
 }
 
@@ -218,13 +247,11 @@ int ResultsModel::count() const
 }
 
 QVariant
-ResultsModel::componentValue(scopes::Result const* result, std::string const& fieldName) const
+ResultsModel::componentValue(scopes::Result const* result, Roles field) const
 {
-    auto mappingIt = m_componentMapping.find(fieldName);
-    if (mappingIt == m_componentMapping.end()) {
+    std::string const& realFieldName = m_componentMapping[field];
+    if (realFieldName.empty())
         return QVariant();
-    }
-    std::string const& realFieldName = mappingIt->second;
     try {
         scopes::Variant const& v = result->value(realFieldName);
         return scopeVariantToQVariant(v);
@@ -238,12 +265,8 @@ ResultsModel::componentValue(scopes::Result const* result, std::string const& fi
 QVariant
 ResultsModel::attributesValue(scopes::Result const* result) const
 {
-    auto mappingIt = m_componentMapping.find("attributes");
-    if (mappingIt == m_componentMapping.end()) {
-        return QVariant();
-    }
     try {
-        std::string const& realFieldName = mappingIt->second;
+        std::string const& realFieldName = m_componentMapping[RoleAttributes];
         scopes::Variant const& v = result->value(realFieldName);
         if (v.which() != scopes::Variant::Type::Array) {
             return QVariant();
@@ -301,7 +324,7 @@ void ResultsModel::updateResult(scopes::Result const& result, scopes::Result con
 QVariant
 ResultsModel::data(const QModelIndex& index, int role) const
 {
-    int row = index.row();
+    const int row = index.row();
     if (row >= m_results.size())
     {
         qWarning() << "ResultsModel::data - invalid index" << row << "size"
@@ -309,7 +332,7 @@ ResultsModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    scopes::Result* result = m_results.at(index.row()).get();
+    scopes::Result* result = m_results.at(row).get();
 
     switch (role) {
         case RoleUri:
@@ -319,11 +342,9 @@ ResultsModel::data(const QModelIndex& index, int role) const
         case RoleDndUri:
             return QString::fromStdString(result->dnd_uri());
         case RoleResult:
-            return QVariant::fromValue(std::static_pointer_cast<unity::scopes::Result>(m_results.at(index.row())));
-        case RoleTitle:
-            return componentValue(result, "title");
+            return QVariant::fromValue(std::static_pointer_cast<unity::scopes::Result>(m_results.at(row)));
         case RoleArt: {
-            QString image(componentValue(result, "art").toString());
+            QString image(componentValue(result, RoleArt).toString());
             if (image.isEmpty()) {
                 QString uri(QString::fromStdString(result->uri()));
                 // FIXME: figure out a better way and get rid of this, it's an awful hack
@@ -339,25 +360,24 @@ ResultsModel::data(const QModelIndex& index, int role) const
             }
             return image;
         }
+        case RoleTitle:
         case RoleSubtitle:
-            return componentValue(result, "subtitle");
         case RoleMascot:
-            return componentValue(result, "mascot");
         case RoleEmblem:
-            return componentValue(result, "emblem");
+        case RoleSummary:
+        case RoleOverlayColor:
+        case RoleQuickPreviewData:
+        case RoleSocialActions:
+            return componentValue(result, Roles(role));
         case RoleAttributes:
             return attributesValue(result);
-        case RoleSummary:
-            return componentValue(result, "summary");
         case RoleBackground: {
-            QVariant backgroundVariant(componentValue(result, "background"));
+            QVariant backgroundVariant(componentValue(result, RoleBackground));
             if (backgroundVariant.isNull()) {
                 return backgroundVariant;
             }
             return backgroundUriToVariant(backgroundVariant.toString());
         }
-        case RoleOverlayColor:
-            return componentValue(result, "overlay-color");
         case RoleScopeId:
             if (result->uri().compare(0, 8, "scope://") == 0) {
                 try {
@@ -368,10 +388,6 @@ ResultsModel::data(const QModelIndex& index, int role) const
                 }
             }
             return QVariant();
-        case RoleQuickPreviewData:
-            return componentValue(result, "quick-preview-data");
-        case RoleSocialActions:
-            return componentValue(result, "social-actions");
         default:
             return QVariant();
     }
