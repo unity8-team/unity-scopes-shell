@@ -70,6 +70,7 @@ int Favorites::setFavorite(QString const& scopeId, bool value)
         int pos = position(scopeId);
         if (pos >= 0) {
             m_favoriteScopes.removeAt(pos);
+            m_positionLookup.remove(scopeId);
             for (int i = pos; i<m_favoriteScopes.size(); i++) {
                 m_positionLookup[m_favoriteScopes[i]] = i;
             }
