@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.7+16.10.20160624.2-0ubuntu2) yakkety; urgency=medium
+
+  * No-change rebuild for boost soname change.
+
+ -- Matthias Klose <doko@ubuntu.com>  Thu, 04 Aug 2016 08:33:27 +0000
+
 unity-scopes-shell (0.5.7+16.10.20160624.2-0ubuntu1) yakkety; urgency=medium
 
   * Treat search triggered by registry changes as programmatic search
