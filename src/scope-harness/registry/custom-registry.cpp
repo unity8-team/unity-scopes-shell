@@ -38,6 +38,8 @@ namespace registry
 namespace
 {
 
+const static int c_processTimeout = 15000;
+
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
 Registry.Identity = Registry
@@ -55,6 +57,7 @@ Scoperunner.Path = %2
 Scope.InstallDir = %3
 Click.InstallDir = %4
 OEM.InstallDir = %5
+Process.Timeout = %6
 )";
 
 const static QString MW_CONFIG = R"(
@@ -218,7 +221,8 @@ void CustomRegistry::start()
             .arg(scopeRunnerBin.fileName())
             .arg(scopeInstallDir.path())
             .arg(clickInstallDir.path())
-            .arg(oemInstallDir.path());
+            .arg(oemInstallDir.path())
+            .arg(c_processTimeout);
 
     QString mwIni = MW_CONFIG
             .arg(endpointsDir.path());
