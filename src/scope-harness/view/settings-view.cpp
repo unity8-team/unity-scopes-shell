@@ -155,7 +155,7 @@ void SettingsView::set(const std::string& option_id, const sc::Variant &value)
             }
             QSignalSpy settingChangedSpy(settings, SIGNAL(settingsChanged()));
             settings->setData(index, ng::scopeVariantToQVariant(val), ss::SettingsModelInterface::Roles::RoleValue);
-            TestUtils::throwIfNot(settingChangedSpy.wait(), "Settings update failed");
+            TestUtils::throwIfNot(settingChangedSpy.wait(SIG_SPY_TIMEOUT), "Settings update failed");
             TestUtils::waitForSearchFinish(p->m_scope);
             return;
         }

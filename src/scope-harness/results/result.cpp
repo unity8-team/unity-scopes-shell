@@ -105,7 +105,7 @@ public:
 
         if (spy.empty())
         {
-            TestUtils::throwIfNot(spy.wait(), "Scope activation signal failed to emit");
+            TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Scope activation signal failed to emit");
         }
 
         QVariantList response = spy.front();

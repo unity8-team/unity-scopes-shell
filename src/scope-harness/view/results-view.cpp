@@ -123,7 +123,7 @@ struct ResultsView::_Priv
 
         if (!navigationModel->loaded())
         {
-            TestUtils::throwIfNot(spy.wait(), "Department model failed to load");
+            TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Department model failed to load");
         }
 
         return results::Department(internal::DepartmentArguments{navigationModel});
@@ -184,7 +184,7 @@ void ResultsView::setActiveScope(const string &id_)
             }
             if (scope->searchInProgress())
             {
-                TestUtils::throwIfNot(spy.wait(), "Active scope didn't finish searching");
+                TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Active scope didn't finish searching");
             }
 
             break;
@@ -223,11 +223,11 @@ void ResultsView::setQuery(const string& searchString_)
     p->m_active_scope->setSearchQuery(searchString);
     // search should not be happening yet
     TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search was in progress too soon");
-    TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
+    TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search spy received no events");
     if (p->m_active_scope->searchInProgress())
     {
         // wait for the search to finish
-        TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
+        TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search spy received no events");
     }
     TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
 }
@@ -246,7 +246,7 @@ void ResultsView::forceRefresh()
     if (p->m_active_scope->searchInProgress())
     {
         // wait for the search to finish
-        TestUtils::throwIfNot(spy.wait(), "Search spy received no events");
+        TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search spy received no events");
     }
     TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search did not complete");
 }
@@ -258,9 +258,9 @@ void ResultsView::waitForResultsChange()
     TestUtils::throwIf(p->m_active_scope->searchInProgress(), "Search is already in progress");
     // wait for the search to finish
     QSignalSpy spy(p->m_active_scope.data(), SIGNAL(searchInProgressChanged()));
-    TestUtils::throwIfNot(spy.wait(), "Search status didn't change");
+    TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search status didn't change");
     if(spy.size() == 1) {
-        TestUtils::throwIfNot(spy.wait(), "Search status didn't change");
+        TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search status didn't change");
     }
     TestUtils::throwIf(p->m_active_scope->searchInProgress(), "");
 }
