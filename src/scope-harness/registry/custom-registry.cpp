@@ -39,6 +39,7 @@ namespace
 {
 
 const static int c_processTimeout = 60000;
+const static int c_registryTimeout = 15000;
 
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
@@ -63,6 +64,7 @@ Process.Timeout = %6
 const static QString MW_CONFIG = R"(
 [Zmq]
 EndpointDir = %1
+Registry.Timeout = %2
 )";
 
 }
@@ -225,7 +227,8 @@ void CustomRegistry::start()
             .arg(c_processTimeout);
 
     QString mwIni = MW_CONFIG
-            .arg(endpointsDir.path());
+            .arg(endpointsDir.path())
+            .arg(c_registryTimeout);
 
     runtimeConfig.write(runtimeIni.toUtf8());
     registryConfig.write(registryIni.toUtf8());
