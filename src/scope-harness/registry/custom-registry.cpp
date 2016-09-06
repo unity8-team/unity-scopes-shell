@@ -39,7 +39,7 @@ namespace
 {
 
 const static int c_processTimeout = 60000;
-const static int c_registryTimeout = 15000;
+const static int c_registryTimeout = 60000;
 
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
