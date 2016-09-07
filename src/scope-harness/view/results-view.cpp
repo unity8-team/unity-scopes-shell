@@ -180,7 +180,7 @@ void ResultsView::setActiveScope(const string &id_)
 
             if (!scope->searchInProgress())
             {
-                spy.wait(100);
+                spy.wait(SIG_SPY_TIMEOUT);
             }
             if (scope->searchInProgress())
             {
