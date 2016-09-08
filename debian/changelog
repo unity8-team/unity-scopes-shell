@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8-0ubuntu1) UNRELEASED; urgency=medium
+
+  * Increase scope-harness timeouts to assist scope testing on slow builders.
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Thu, 08 Sep 2016 10:47:19 +0200
+
 unity-scopes-shell (0.5.7+16.10.20160624.2-0ubuntu2) yakkety; urgency=medium
 
   * No-change rebuild for boost soname change.
