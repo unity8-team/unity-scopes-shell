@@ -38,8 +38,10 @@ namespace registry
 namespace
 {
 
-const static int c_processTimeout = 60000;
-const static int c_registryTimeout = 60000;
+const static int c_processTimeout = 15000;
+const static int c_twoWayTimeout = 15000;
+const static int c_locateTimeout = 15000;
+const static int c_registryTimeout = 15000;
 
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
@@ -64,7 +66,9 @@ Process.Timeout = %6
 const static QString MW_CONFIG = R"(
 [Zmq]
 EndpointDir = %1
-Registry.Timeout = %2
+Default.Twoway.Timeout = %2
+Locate.Timeout = %3
+Registry.Timeout = %4
 )";
 
 }
@@ -228,6 +232,8 @@ void CustomRegistry::start()
 
     QString mwIni = MW_CONFIG
             .arg(endpointsDir.path())
+            .arg(c_twoWayTimeout)
+            .arg(c_locateTimeout)
             .arg(c_registryTimeout);
 
     runtimeConfig.write(runtimeIni.toUtf8());
