@@ -38,10 +38,10 @@ namespace registry
 namespace
 {
 
-const static int c_processTimeout = 14000;
-const static int c_twoWayTimeout = 15000;
-const static int c_locateTimeout = 15000;
-const static int c_registryTimeout = 15000;
+const static int c_processTimeout = 60000;
+const static int c_twoWayTimeout = 60000;
+const static int c_locateTimeout = 60000;
+const static int c_registryTimeout = 60000;
 
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
