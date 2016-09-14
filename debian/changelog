@@ -1,8 +1,12 @@
-unity-scopes-shell (0.5.8-0ubuntu1) UNRELEASED; urgency=medium
+unity-scopes-shell (0.5.8+16.10.20160914.2-0ubuntu1) yakkety; urgency=medium
 
+  [ Marcus Tomlinson ]
   * Increase scope-harness timeouts to assist scope testing on slow builders.
 
- -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Thu, 08 Sep 2016 10:47:19 +0200
+  [ Pawel Stolowski ]
+  * Fix sed line in the bileto hook script. (LP: #1612460)
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Wed, 14 Sep 2016 12:55:51 +0000
 
 unity-scopes-shell (0.5.7+16.10.20160624.2-0ubuntu2) yakkety; urgency=medium
 
