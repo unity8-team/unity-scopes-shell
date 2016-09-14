@@ -87,7 +87,7 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
 
     // wait till the registry spawns
     QSignalSpy spy(p->m_scopes.get(), SIGNAL(loadedChanged()));
-    TestUtils::throwIfNot(spy.wait(), "Scopes failed to initalize");
+    TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Scopes failed to initalize");
 
     TestUtils::throwIf(p->m_scopes->rowCount() == 0 || !p->m_scopes->loaded(), "No scopes loaded");
 
@@ -98,7 +98,7 @@ ScopeHarness::ScopeHarness(registry::Registry::SPtr registry) :
         QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
         if (scope->searchInProgress())
         {
-            TestUtils::throwIfNot(spy.wait(), "Search progress didn't change");
+            TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Search progress didn't change");
         }
     }
 }

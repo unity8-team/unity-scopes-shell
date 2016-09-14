@@ -90,7 +90,7 @@ void TestUtils::refreshSearch(ng::Scope::Ptr scope)
     QVERIFY(scope->searchInProgress() || spy.count() > 1);
     if (scope->searchInProgress()) {
         // wait for the search to finish
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     }
     QCOMPARE(scope->searchInProgress(), false);
 }
@@ -103,10 +103,10 @@ void TestUtils::performSearch(QSharedPointer<ss::ScopeInterface> scope, QString 
     scope->setSearchQuery(searchString);
     // search should not be happening yet
     QCOMPARE(scope->searchInProgress(), false);
-    QVERIFY(spy.wait());
+    QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     if (scope->searchInProgress()) {
         // wait for the search to finish
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     }
     QCOMPARE(scope->searchInProgress(), false);
 }
@@ -116,9 +116,9 @@ void TestUtils::waitForResultsChange(QSharedPointer<ss::ScopeInterface> scope)
     QCOMPARE(scope->searchInProgress(), false);
     // wait for the search to finish
     QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
-    QVERIFY(spy.wait());
+    QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     if(spy.size() == 1) {
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     }
     QCOMPARE(scope->searchInProgress(), false);
 }
@@ -127,10 +127,10 @@ void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
 {
     QCOMPARE(scope->searchInProgress(), true);
     QSignalSpy spy(scope.data(), SIGNAL(searchInProgressChanged()));
-    QVERIFY(spy.wait());
+    QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     if (scope->searchInProgress()) {
         // wait for the search to finish
-        QVERIFY(spy.wait());
+        QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     }
     QCOMPARE(scope->searchInProgress(), false);
 }
@@ -138,7 +138,7 @@ void TestUtils::waitForSearchFinish(QSharedPointer<ss::ScopeInterface> scope)
 void TestUtils::waitForFilterStateChange(QSharedPointer<ss::ScopeInterface> scope)
 {
     QSignalSpy spy(scope->filters(), SIGNAL(filterStateChanged()));
-    QVERIFY(spy.wait());
+    QVERIFY(spy.wait(SIG_SPY_TIMEOUT));
     QCOMPARE(spy.count(), 1);
 }
 

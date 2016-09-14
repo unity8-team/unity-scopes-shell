@@ -63,7 +63,7 @@ struct PreviewView::_Priv
         if (!previewModel->loaded())
         {
             QSignalSpy spy(previewModel, SIGNAL(loadedChanged()));
-            spy.wait();
+            spy.wait(SIG_SPY_TIMEOUT);
         }
 
         vector<preview::PreviewWidgetList> previewModels;

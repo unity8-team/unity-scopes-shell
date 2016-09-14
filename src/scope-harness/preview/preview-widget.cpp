@@ -160,7 +160,7 @@ view::AbstractView::SPtr PreviewWidget::trigger(const string& name, const sc::Va
 
     TestUtils::throwIfNot(p->m_previewModel->processingAction(), "Should be processing action");
     QSignalSpy spy(p->m_previewModel, SIGNAL(processingActionChanged()));
-    TestUtils::throwIfNot(spy.wait(), "Processing action property didn't change");
+    TestUtils::throwIfNot(spy.wait(SIG_SPY_TIMEOUT), "Processing action property didn't change");
     TestUtils::throwIf(p->m_previewModel->processingAction(), "Should have finished processing action");
 
     view::PreviewView::SPtr previewView = p->m_previewView.lock();

@@ -28,6 +28,8 @@
 namespace unity {
 namespace scopeharness {
 
+static constexpr int SIG_SPY_TIMEOUT = 60000; // milliseconds
+
 class TestUtils
 {
 public:
