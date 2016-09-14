@@ -50,8 +50,8 @@ else
     harness_so_ver=$(expr $major + 1)
     infile="${dir}"/shlibs.in
     outfile="${dir}"/shlibs
-    cat "$infile" | sed -e "s/HARNESS_SO_VERSION@/${harness_so_ver}/g" \
-        -e "s/HARNESS_MAJORMINOR/${harness_major_minor}/g" > "$outfile"
+    cat "$infile" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" \
+        -e "s/@HARNESS_MAJORMINOR@/${harness_major_minor}/g" > "$outfile"
 fi
 
 cat "${dir}/control.in" | sed -e "s/@HARNESS_SO_VERSION@/${harness_so_ver}/g" > "${dir}/control"
