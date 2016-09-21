@@ -38,6 +38,11 @@ namespace registry
 namespace
 {
 
+const static int c_processTimeout = 60000;
+const static int c_twoWayTimeout = 60000;
+const static int c_locateTimeout = 60000;
+const static int c_registryTimeout = 60000;
+
 const static QString RUNTIME_CONFIG = R"(
 [Runtime]
 Registry.Identity = Registry
@@ -55,11 +60,15 @@ Scoperunner.Path = %2
 Scope.InstallDir = %3
 Click.InstallDir = %4
 OEM.InstallDir = %5
+Process.Timeout = %6
 )";
 
 const static QString MW_CONFIG = R"(
 [Zmq]
 EndpointDir = %1
+Default.Twoway.Timeout = %2
+Locate.Timeout = %3
+Registry.Timeout = %4
 )";
 
 }
@@ -218,10 +227,14 @@ void CustomRegistry::start()
             .arg(scopeRunnerBin.fileName())
             .arg(scopeInstallDir.path())
             .arg(clickInstallDir.path())
-            .arg(oemInstallDir.path());
+            .arg(oemInstallDir.path())
+            .arg(c_processTimeout);
 
     QString mwIni = MW_CONFIG
-            .arg(endpointsDir.path());
+            .arg(endpointsDir.path())
+            .arg(c_twoWayTimeout)
+            .arg(c_locateTimeout)
+            .arg(c_registryTimeout);
 
     runtimeConfig.write(runtimeIni.toUtf8());
     registryConfig.write(registryIni.toUtf8());
