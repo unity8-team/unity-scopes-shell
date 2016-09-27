@@ -20,6 +20,7 @@ set(QMLPLUGIN_SRC
     collectors.cpp
     department.cpp
     departmentnode.cpp
+    favorites.cpp
     filters.cpp
     filtergroupwidget.cpp
     optionselectorfilter.cpp

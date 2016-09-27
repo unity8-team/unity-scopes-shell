@@ -110,7 +110,7 @@ class Q_DECL_EXPORT Scope : public unity::shell::scopes::ScopeInterface
 public:
     typedef QSharedPointer<Scope> Ptr;
 
-    static Scope::Ptr newInstance(scopes_ng::Scopes* parent);
+    static Scope::Ptr newInstance(scopes_ng::Scopes* parent, bool favorite = false);
 
     virtual ~Scope();
 
@@ -205,7 +205,7 @@ private Q_SLOTS:
     void previewModelDestroyed(QObject *obj);
 
 protected:
-    explicit Scope(scopes_ng::Scopes* parent);
+    explicit Scope(scopes_ng::Scopes* parent, bool favorite = false);
 
     void setStatus(unity::shell::scopes::ScopeInterface::Status status);
     void invalidateLastSearch();
