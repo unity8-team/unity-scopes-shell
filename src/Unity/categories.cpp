@@ -538,7 +538,7 @@ Categories::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
-    QSharedPointer<CategoryData> catData = m_categories.at(row);
+    const QSharedPointer<CategoryData> &catData = m_categories.at(row);
 
     if (!catData)
     {
