@@ -86,10 +86,10 @@ public:
                 qDebug() << "Header link for category" << QString::fromStdString(m_category->id()) << ":" <<
                     QString::fromStdString(m_category->query()->to_uri());
             } else {
-                "headerLink(): category query is null" << QString::fromStdString(m_category->id());
+              qDebug() << "headerLink(): category query is null" << QString::fromStdString(m_category->id());
             }
         } else {
-            "headerLink(): category is null";
+          qDebug() << "headerLink(): category is null";
         }
         return m_category && m_category->query() ?
             QString::fromStdString(m_category->query()->to_uri()) : QString();
