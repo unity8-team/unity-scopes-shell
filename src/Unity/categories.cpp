@@ -81,6 +81,12 @@ public:
 
     QString headerLink() const
     {
+        if (m_category) {
+            qDebug() << "Header link for category" << QString::fromStdString(m_category->id()) << ":" <<
+                QString::fromStdString(m_category->query()->to_uri());
+        } else {
+            "headerLink(): catgory is null";
+        }
         return m_category && m_category->query() ?
             QString::fromStdString(m_category->query()->to_uri()) : QString();
     }
@@ -159,6 +165,7 @@ public:
         }
         if (oldQuery != newQuery) {
             roles.append(Categories::RoleHeaderLink);
+            qDebug() << "Category header link changed for category" << QString::fromStdString(category->id());
         }
         if (category->renderer_template().data() != m_rawTemplate) {
             roles.append(Categories::RoleRawRendererTemplate);
@@ -560,8 +567,10 @@ Categories::data(const QModelIndex& index, int role) const
             return catData->rendererTemplate().toVariant();
         case RoleComponents:
             return catData->components().toVariant();
-        case RoleHeaderLink:
+        case RoleHeaderLink: {
+                                 qDebug() << "Requested header link";
             return catData->headerLink();
+                             }
         case RoleResults:
         {
             QSharedPointer<ResultsModel> resultsModel = catData->resultsModel();
