@@ -29,7 +29,6 @@
 
 #include <QAbstractListModel>
 #include <QList>
-#include <QMutex>
 #include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
@@ -95,7 +94,6 @@ private:
     void tryLoadSettings(bool read_only) const;
 
 protected:
-    mutable QMutex m_mutex;
     QString m_scopeId;
     unity::scopes::ScopeProxy m_scopeProxy;
     int m_settingsTimeout;

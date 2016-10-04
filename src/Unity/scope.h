@@ -21,7 +21,6 @@
 #define NG_SCOPE_H
 
 // Qt
-#include <QFuture>
 #include <QObject>
 #include <QString>
 #include <QTimer>
@@ -256,7 +255,6 @@ private:
     int m_cardinality;
 
     bool m_childScopesDirty;
-    QFuture<void> m_childScopesFuture;
 
     QMap<std::string, QList<std::shared_ptr<unity::scopes::CategorisedResult>>> m_category_results;
     std::unique_ptr<CollectionController> m_searchController;
