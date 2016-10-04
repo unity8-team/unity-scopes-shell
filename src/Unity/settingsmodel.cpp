@@ -158,8 +158,6 @@ SettingsModel::SettingsModel(const QDir& configDir, const QString& scopeId,
 
 QVariant SettingsModel::data(const QModelIndex& index, int role) const
 {
-    QMutexLocker locker(&m_mutex);
-
     int row = index.row();
     QVariant result;
 
@@ -255,8 +253,6 @@ QVariant SettingsModel::data(const QModelIndex& index, int role) const
 
 QVariant SettingsModel::value(const QString& id) const
 {
-    QMutexLocker locker(&m_mutex);
-
     // Check for the setting id in the child scopes list first, in case the
     // aggregator is incorrectly using a scope id as a settings as well.
     if (m_child_scopes_data_by_id.contains(id))
@@ -313,8 +309,6 @@ QVariant SettingsModel::value(const QString& id) const
 
 void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> const& scopes_metadata)
 {
-    QMutexLocker locker(&m_mutex);
-
     if (!scopes_metadata.contains(m_scopeId) ||
         !scopes_metadata[m_scopeId]->is_aggregator())
     {
@@ -369,15 +363,12 @@ void SettingsModel::update_child_scopes(QMap<QString, sc::ScopeMetadata::SPtr> c
         endResetModel();
     }
 
-    locker.unlock();
     Q_EMIT countChanged();
 }
 
 bool SettingsModel::setData(const QModelIndex &index, const QVariant &value,
         int role)
 {
-    QMutexLocker locker(&m_mutex);
-
     int row = index.row();
     QVariant result;
 
@@ -441,20 +432,16 @@ int SettingsModel::rowCount(const QModelIndex&) const
 
 int SettingsModel::count() const
 {
-    QMutexLocker locker(&m_mutex);
     return m_data.size() + m_child_scopes_data.size();
 }
 
 bool SettingsModel::require_child_scopes_refresh() const
 {
-    QMutexLocker locker(&m_mutex);
     return m_requireChildScopesRefresh;
 }
 
 void SettingsModel::settings_timeout()
 {
-    QMutexLocker locker(&m_mutex);
-
     QObject *timer = sender();
     if (!timer)
     {
@@ -478,7 +465,6 @@ void SettingsModel::settings_timeout()
             {
                 m_scopeProxy->set_child_scopes(m_child_scopes);
 
-                locker.unlock();
                 Q_EMIT settingsChanged();
             }
             catch (std::exception const& e)
@@ -514,7 +500,6 @@ void SettingsModel::settings_timeout()
             FileLock lock = unixLock(m_settings_path, true);
             m_settings->sync(); // make sure the change to setting value is synced to fs
 
-            locker.unlock();
             Q_EMIT settingsChanged();
         }
         catch(const unity::FileException& e)
