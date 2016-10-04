@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.8+16.10.20161004-0ubuntu1) yakkety; urgency=medium
+
+  * Don't make changes to the settings model from a separate thread.
+    (LP: #1627795)
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Tue, 04 Oct 2016 08:11:32 +0000
+
 unity-scopes-shell (0.5.8+16.10.20160921-0ubuntu1) yakkety; urgency=medium
 
   [ Marcus Tomlinson ]
