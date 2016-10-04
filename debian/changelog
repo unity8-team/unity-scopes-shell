@@ -1,3 +1,19 @@
+unity-scopes-shell (0.5.8+16.10.20161004-0ubuntu1) yakkety; urgency=medium
+
+  [ Albert Astals Cid ]
+  * Optimize ResultsModel::data a bit
+  * Save creating/destroying a QSharedPointer
+
+  [ Marcus Tomlinson ]
+  * Don't make changes to the settings model from a separate thread.
+    (LP: #1627795)
+
+  [ Pawel Stolowski ]
+  * Optimize scope favoriting. Make sure click scope is favorited back
+    if reinstalled. (LP: #1583067, #1603186)
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Tue, 04 Oct 2016 09:00:09 +0000
+
 unity-scopes-shell (0.5.8+16.10.20160921-0ubuntu1) yakkety; urgency=medium
 
   [ Marcus Tomlinson ]
