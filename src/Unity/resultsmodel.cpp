@@ -353,12 +353,12 @@ ResultsModel::data(const QModelIndex& index, int role) const
                     result_meta[QStringLiteral("artist")] = scopeVariantToQVariant(result->value("artist"));
                     result_meta[QStringLiteral("album")] = scopeVariantToQVariant(result->value("album"));
                 }
-                QString thumbnailerUri(uriToThumbnailerProviderString(uri, result_meta));
+                QString thumbnailerUri(uriToThumbnailerProviderString(relativeToSnapRoot(uri), result_meta));
                 if (!thumbnailerUri.isNull()) {
                     return thumbnailerUri;
                 }
             }
-            return image;
+            return relativeToSnapRoot(image);
         }
         case RoleTitle:
         case RoleSubtitle:

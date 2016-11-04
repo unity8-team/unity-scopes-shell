@@ -21,6 +21,8 @@
 #include "utils.h"
 
 #include <QStringList>
+#include <QFile>
+#include <QUrl>
 
 namespace scopes_ng
 {
@@ -138,6 +140,25 @@ Q_DECL_EXPORT QString uuidToString(QUuid const& uuid)
         return uuid_str.mid(1, 36);
     }
     return uuid_str;
+}
+
+Q_DECL_EXPORT QString relativeToSnapRoot(QString const& path)
+{
+    static QString snapRoot = QFile::decodeName(qgetenv("SNAP"));
+    if (snapRoot.isEmpty()) {
+        return path;
+    }
+
+    if (path.startsWith("/")) {
+        return snapRoot + path;
+    }
+    if (path.startsWith("file://")) {
+        // convert from uri to local path, append snap root, convert back to uri
+        const QUrl uri(path);
+        return QUrl::fromLocalFile(snapRoot + "/" + uri.toLocalFile()).toString();
+    }
+    // return intact
+    return path;
 }
 
 } // namespace scopes_ng

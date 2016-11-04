@@ -64,6 +64,7 @@ src/python/scope_harness/results-view-py.cpp
 src/python/scope_harness/preview-widget-py.cpp
 src/python/scope_harness/preview-widget-list-py.cpp
 src/Unity/rangeinputfilter.cpp
+src/Unity/favorites.cpp
 src/Unity/previewwidgetmodel.cpp
 src/Unity/departmentnode.cpp
 src/Unity/logintoaccount.cpp
@@ -133,6 +134,7 @@ src/Unity/optionselectorfilter.h
 src/Unity/ubuntulocationservice.h
 src/Unity/localization.h
 src/Unity/previewmodel.h
+src/Unity/favorites.h
 src/Unity/scopes.h
 src/Unity/overviewresults.h
 src/Unity/plugin.h
