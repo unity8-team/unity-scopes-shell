@@ -1,3 +1,11 @@
+unity-scopes-shell (0.5.8+17.04.20161115-0ubuntu1) zesty; urgency=medium
+
+  [ Michael Terry ]
+  * Handle running inside a snap by paying attention to the $SNAP
+    prefix. (LP: #1629009)
+
+ -- Marcus Tomlinson <marcus.tomlinson@canonical.com>  Tue, 15 Nov 2016 05:12:34 +0000
+
 unity-scopes-shell (0.5.8+16.10.20161004-0ubuntu1) yakkety; urgency=medium
 
   [ Albert Astals Cid ]
