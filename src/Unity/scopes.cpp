@@ -211,8 +211,9 @@ void Scopes::lsbReleaseFinished()
         {QStringLiteral("libunity-scopes"), QStringLiteral("scopes-api")}});
 
     // determine versions of unity8, unity-plugin-scopes and libunity-scopes1.0
+    QString snapRoot = QFile::decodeName(qgetenv("SNAP"));
     for (QMap<QString, QString>::const_iterator pkg = versions.constBegin(); pkg != versions.constEnd(); pkg++) {
-        QFile versionFile("/var/lib/" + pkg.key() + "/version");
+        QFile versionFile(snapRoot + "/var/lib/" + pkg.key() + "/version");
         if (versionFile.open(QIODevice::ReadOnly)) {
             QTextStream str(&versionFile);
             QString ver;
