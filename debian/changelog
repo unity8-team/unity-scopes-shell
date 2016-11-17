@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8+17.04.20161117-0ubuntu1) zesty; urgency=medium
+
+  * Added new 'expandable' attribute to the default category renderer.
+
+ -- Pawel Stolowski <pawel.stolowski@canonical.com>  Thu, 17 Nov 2016 17:07:40 +0000
+
 unity-scopes-shell (0.5.8+17.04.20161115.3-0ubuntu1) zesty; urgency=medium
 
   [ Michael Terry ]
