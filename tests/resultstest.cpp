@@ -647,6 +647,7 @@ private Q_SLOTS:
             {"card-size", sc::Variant("small")},
             {"category-layout", sc::Variant("grid")},
             {"collapsed-rows", sc::Variant(2.0)},
+            {"expandable", sc::Variant(true)},
             {"overlay-mode", sc::Variant()}
         };
 
@@ -687,6 +688,7 @@ private Q_SLOTS:
             {"card-size", sc::Variant("small")},
             {"category-layout", sc::Variant("grid")},
             {"collapsed-rows", sc::Variant(2.0)},
+            {"expandable", sc::Variant(true)},
             {"overlay-mode", sc::Variant()}
         };
 
