@@ -126,21 +126,27 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
         ++row;
     }
 
-    // iterate over results, move rows if positions changes
-    for (int i = 0; i<m_results.size(); )
-    {
-        auto scope_meta = m_results.at(i);
-        const QString id = QString::fromStdString(scope_meta->scope_id());
-        if (newResult.contains(id)) {
-            pos = newResult[id];
-            if (pos != i) {
-                beginMoveRows(QModelIndex(), i, i, QModelIndex(), pos + (pos > i ? 1 : 0));
-                m_results.move(i, pos);
-                endMoveRows();
-                continue;
-            }
+
+    // Iterate over results, move rows if positions changes.
+    // Use the ordering of newResults to sort m_results.
+    // Since the list is small and usually already sorted, or has only a
+    // single element out of order, insertion sort suffices.
+    QList<int> sort_keys;
+    for (int i = 0; i < m_results.size(); i++){
+        QString current_string = QString::fromStdString(m_results.at(i)->scope_id());
+        sort_keys.append(newResult[current_string]);
+    }
+
+    for (int i = 1; i < m_results.size(); i++) {
+
+        int j = i;
+        while (j > 0 && sort_keys.at(j - 1) > sort_keys.at(j)) {
+            sort_keys.swap(j, j - 1);
+            beginMoveRows(QModelIndex(), j, j, QModelIndex(), j - 1);
+            m_results.move(j - 1, j);
+            endMoveRows();
+            j -= 1;
         }
-        i++;
     }
 
     Q_EMIT countChanged();
