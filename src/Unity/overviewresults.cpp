@@ -138,14 +138,13 @@ void OverviewResultsModel::setResults(const QList<unity::scopes::ScopeMetadata::
     }
 
     for (int i = 1; i < m_results.size(); i++) {
-
         int j = i;
         while (j > 0 && sort_keys.at(j - 1) > sort_keys.at(j)) {
             sort_keys.swap(j, j - 1);
             beginMoveRows(QModelIndex(), j, j, QModelIndex(), j - 1);
             m_results.move(j - 1, j);
             endMoveRows();
-            j -= 1;
+            j--;
         }
     }
 
