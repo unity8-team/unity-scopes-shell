@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8+17.04.20161219.1-0ubuntu1) zesty; urgency=medium
+
+  * Compatibility with unversioned cmake-extras modules (LP: #1563573)
+
+ -- Pete Woods <pete.woods@canonical.com>  Mon, 19 Dec 2016 10:43:32 +0000
+
 unity-scopes-shell (0.5.8+17.04.20161115.3-0ubuntu1) zesty; urgency=medium
 
   [ Michael Terry ]
