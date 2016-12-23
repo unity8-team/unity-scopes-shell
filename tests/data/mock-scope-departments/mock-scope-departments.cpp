@@ -170,7 +170,7 @@ public:
         return nullptr;
     }
 
-    virtual ChildScopeList find_child_scopes() const
+    virtual ChildScopeList find_child_scopes() const override
     {
         ChildScopeList list;
         list.push_back({"mock-scope-double-nav", registry()->get_metadata("mock-scope-double-nav"), true});

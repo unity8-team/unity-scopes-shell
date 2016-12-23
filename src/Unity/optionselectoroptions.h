@@ -33,7 +33,7 @@ namespace scopes_ng
 {
 
 class OptionSelectorFilter;
-class OptionSelectorOption;
+struct OptionSelectorOption;
 
 class Q_DECL_EXPORT OptionSelectorOptions :
     public ModelUpdate<unity::shell::scopes::OptionSelectorOptionsInterface,
