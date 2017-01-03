@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8+17.04.20170103-0ubuntu1) zesty; urgency=medium
+
+  * Fix the list sorting of overviewresults (LP: #1646947)
+
+ -- Josh Arenson <josharenson@gmail.com>  Tue, 03 Jan 2017 17:48:31 +0000
+
 unity-scopes-shell (0.5.8+17.04.20161115.3-0ubuntu1) zesty; urgency=medium
 
   [ Michael Terry ]
