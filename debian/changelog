@@ -1,3 +1,10 @@
+unity-scopes-shell (0.5.8+17.04.20170126-0ubuntu1) zesty; urgency=medium
+
+  [ Albert Astals Cid ]
+  * Misc fixes
+
+ -- Michał Sawicz <michal.sawicz@canonical.com>  Thu, 26 Jan 2017 13:08:50 +0000
+
 unity-scopes-shell (0.5.8+17.04.20161115.3-0ubuntu1) zesty; urgency=medium
 
   [ Michael Terry ]
