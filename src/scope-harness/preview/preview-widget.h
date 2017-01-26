@@ -30,7 +30,7 @@ namespace scopeharness
 {
 namespace internal
 {
-class PreviewWidgetArguments;
+struct PreviewWidgetArguments;
 }
 namespace view
 {

@@ -116,7 +116,7 @@ void OverviewScope::processFavorites(const QStringList& favs, QList<scopes::Scop
     }
 
     QList<ScopeInfo> scopes;
-    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata.values()) {
+    Q_FOREACH(scopes::ScopeMetadata::SPtr const& metadata, allMetadata) {
         if (metadata->invisible())
             continue;
         scopes.append(ScopeInfo(metadata));

@@ -756,7 +756,7 @@ public:
         return query;
     }
 
-    virtual ActivationQueryBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id)
+    virtual ActivationQueryBase::UPtr perform_action(Result const& result, ActionMetadata const& meta, std::string const& widget_id, std::string const& action_id) override
     {
         cout << "scope-A: called perform_action: " << widget_id << ", " << action_id << endl;
         if (widget_id == "actions" && action_id == "hide")

@@ -457,8 +457,6 @@ private Q_SLOTS:
         resultsView->setActiveScope("mock-scope-ttl");
         resultsView->setQuery("query text");
 
-        const QString query("query text");
-
         QVERIFY_MATCHRESULT(
             shm::CategoryListMatcher()
                 .category(shm::CategoryMatcher("cat1")
