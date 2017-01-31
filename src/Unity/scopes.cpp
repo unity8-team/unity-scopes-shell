@@ -48,7 +48,6 @@ using namespace unity;
 
 #define SCOPES_SCOPE_ID "scopes"
 #define PARTNER_ID_FILE "/custom/partner-id"
-#define CLICK_SCOPE_ID "clickscope"
 
 void ScopeListWorker::run()
 {
@@ -447,12 +446,6 @@ void Scopes::processFavoriteScopes()
             }
         }
 
-        // special-case clickscope; append it to favorites if it was uninstalled (and in consequence removed from favorites) - see LP: #1603186
-        if (m_cachedMetadata.contains(CLICK_SCOPE_ID) && !m_favoriteScopes->hasScope(CLICK_SCOPE_ID)) {
-            qDebug() << "Favoriting" << CLICK_SCOPE_ID;
-            m_favoriteScopes->setFavorite(CLICK_SCOPE_ID, true);
-        }
-
         QSet<QString> scopesInTheModel;
         int row = 0;
         // remove un-favorited scopes
@@ -654,12 +647,6 @@ QStringList Scopes::getFavoriteIds() const
 
 void Scopes::setFavorite(QString const& scopeId, bool value)
 {
-    if (scopeId == QStringLiteral(CLICK_SCOPE_ID) && !value)
-    {
-        qWarning() << "Cannot unfavorite" << scopeId;
-        return;
-    }
-
     int row = m_favoriteScopes->setFavorite(scopeId, value);
     if (row >= 0)
     {
