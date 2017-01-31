@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8+17.04.20170131.1-0ubuntu1) zesty; urgency=medium
+
+  * clickscope is no longer special
+
+ -- Albert Astals Cid <albert.astals@canonical.com>  Tue, 31 Jan 2017 14:39:10 +0000
+
 unity-scopes-shell (0.5.8+17.04.20170126-0ubuntu1) zesty; urgency=medium
 
   [ Albert Astals Cid ]
