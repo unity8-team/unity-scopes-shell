@@ -1,3 +1,9 @@
+unity-scopes-shell (0.5.8+17.04.20170310-0ubuntu1) zesty; urgency=medium
+
+  * Compatibility with unversioned cmake-extras modules (LP: #1563573)
+
+ -- Pete Woods <pete.woods@canonical.com>  Fri, 10 Mar 2017 16:18:28 +0000
+
 unity-scopes-shell (0.5.8+17.04.20170131.1-0ubuntu1) zesty; urgency=medium
 
   * clickscope is no longer special
